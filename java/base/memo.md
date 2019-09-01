@@ -1323,7 +1323,7 @@
         //分别指定父路径和子路径来创建File对象
         public File(String parent, String child)
         //通过父File对象和子文件路径创建File对象
-        public FIle(FIle parent, String child)
+        public File(File parent, String child)
         ```
     * 常用方法
         * 获取功能
@@ -1335,7 +1335,7 @@
             * public long length() :获取文件长度(即:字节数)。不能获取目录的长度。 
             * public long lastModified() :获取最后一次的修改时间，毫秒值
             * public String[] list() :获取指定目录下的所有文件或者文件目录的名称数组 
-            * ublic File[] listFiles() :获取指定目录下的所有文件或者文件目录的File数组
+            * public File[] listFiles() :获取指定目录下的所有文件或者文件目录的File数组
         * 重命名
             * public boolean renameTo(File dest)：
                 * 使用方法：file1.renameTo(file2)，file1必须存在，file2必须不存在??????
@@ -1368,8 +1368,8 @@
         |处理流|访问数组|ByteArrayInputStream|ByteArrayOutputStream|CharArrayReader|CharArrayWriter|
         |处理流|访问管道|PipedInputStream|PipedOutputStream|PipedReader|PipedWriter|
         |处理流|访问字符串|||StringReader|StringWriter|
-        |处理流|缓冲流<br>(与访问文件<br>的流一一对应)|**BufferedInputStream**|**BufferedOutputStream**|**BufferedReader**|**BufferedWriter**|
-        |处理流|转换流<br>(将字节流转字符流)|||**InputStreamReader**|**OutputStreamWriter**|
+        |处理流|缓冲流|**BufferedInputStream**|**BufferedOutputStream**|**BufferedReader**|**BufferedWriter**|
+        |处理流|转换流|||**InputStreamReader**|**OutputStreamWriter**|
         |处理流|对象流|**ObjectInputStream**|**ObjectOutputStream**|||
         |处理流||FilterInputStream|FilterOutputStream|FilterReader|FilterWriter|
         |处理流|打印流||PrintStream||PrintWtrier|
@@ -1383,7 +1383,7 @@
             |-|-|-|
             |输入流|InputStrean|Reader|
             |输出流|OutputStrean|writer|
-            
+
         * 数据单位：字节流(8bit)，字符流(16bit，处理文本文件 )
         * 流向：输入流，输出流
         * 流的角色：
@@ -1446,6 +1446,7 @@
 * 节点流
     * 如果文件存在，直接输出会覆盖文件中的已有内容
         * 可以使用输出流构造器：FileOutputStream(path:file, append:true)，在文件的末尾添加内容
+    * 可以不套接File，直接使用文件目录来创建对象，构造器内部封装的Filedd
     * FileInputStream
         * 单个字节读取
             ```java
@@ -1722,6 +1723,103 @@
         ```
 
 * 转换流
+    * InputStreamReader 编码：InputStream --> Reader
+    * OutputStreamWriter 解码：Writer --> OutputStream
+    * 使用时需要和字节流进行套接
+    * 文件拷贝
+        ```java
+        public static void method(String readPath, String writePath){
+            BufferedReader br = null;
+            BufferedWriter bw = null;
+            try {
+                // 解码:InputStream --> InputStreamReader --> buffered
+                File file1 = new File(readPath);
+                FileInputStream fis = new FileInputStream(file1);
+                InputStreamReader isr = new InputStreamReader(fis, "UTF-8");
+                br = new BufferedReader(isr);
+
+                // 编码:OutputStream --> OutputStreamWriter --> buffered
+                File file2 = new File(writePath);
+                FileOutputStream fos = new FileOutputStream(file2);
+                OutputStreamWriter osw = new OutputStreamWriter(fos, "UTF-8");
+                bw = new BufferedWriter(osw);
+
+                String str;
+                while ((str = br.readLine()) != null) {
+                    bw.write(str);
+                    bw.newLine();
+                }
+                bw.flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                if (bw != null){
+                    try {
+                        bw.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+                if (br != null){
+                    try {
+                        br.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+        ```
+* 标准输入输出流
+    * 标准输入： System.in (从键盘输入)
+        * 类型：InputStream
+        * 将键盘输入导入Buffered流
+            ```java
+            InputStream is = System.in;
+            // 解码
+            InputStreamReader isr = new InputStreamReader(is);
+            // 套接到buffered
+            BufferedReader br = new BufferedReader(isr);
+            ```
+    * 标准输出： System.out (输出到显示器)
+        * 类型：PrintStream
+    * 可以通过System来对默认设备进行修改
+        * public static void setIn(InputStream in)
+        * public static void setOut(PrintStream out)
+
+* 打印流
+    * PrintStream  写入字节
+    * PrintWrite 写入字符
+    * System.out 返回的是PrintStream实例对象
+    * 打印流有自动flush功能
+    * 打印流的输出不会抛出IOException异常
+    * 输出到文件
+    ```java
+    public void method(){
+        PrintStream ps = null;
+        try {
+            FileOutputStream fos = new FileOutputStream("...");
+            ps = new PrintStream(fos, true);
+            if (ps != null){
+                System.setOut(ps);// 重定向输出位置
+            }
+            // 单字节输出ACSII码
+            for (int i = 0; i < 255; i++) {
+                System.out.print((char) i);
+                if (i %50 == 0){
+                    System.out.println();
+                }
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } finally {
+            if (ps != null){
+                ps.close();
+            }
+        }
+
+    }
+    ```
 
 # 扩展
 [top](#catalog)
