@@ -302,7 +302,7 @@
                 System.out.println(arr);//输出数组的地址
 
                 char[] arr1 = new char[10];
-                System.out.println(arr1); //输出10个：          
+                System.out.println(arr1); //输出10个特殊字符
                 ```
 
     * 构造器
