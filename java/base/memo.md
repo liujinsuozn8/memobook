@@ -12,6 +12,7 @@
 - [内存解析](#内存解析)
 - [重载与重写](#重载与重写)
 - [类](#类)
+- [对象的序列化](#对象的序列化)
 - [object](#object)
 - [String](#string)
 - [基本类型的池](#基本类型的池)
@@ -23,6 +24,7 @@
 - [枚举类](#枚举类)
 - [注解](#注解)
 - [io流](#io流)
+- [多线程](#多线程)
 - [扩展](#扩展)
 
 # 基本流程：
@@ -629,6 +631,23 @@
             * 常常使用一个方法，使其返回值为某个类或接口的对象，而这个类或接口在方法内部创建（返回某种接口，内部类是该接口的实现类）
             * 局部内部类可以使用外部方法的局部变量，但是必须是final的
     * 编译后，内部类会有独立的*.class文件，文件名前面会自动附加：`外部类名$`
+
+# 对象的序列化
+[top](#catalog)
+* `内存中的Java对象 <--> 平台无关的二进制流` 之间转化，可以保存到磁盘上或通过网络传播
+* 可以将任何实现了Serializable接口的对象转化为字节数据，使用器在保存和传输时可以被还原
+* JavaEE --> RMI(Remote Method Invoke远程方法调用) --> 序列化
+    * 序列化时RMI过程的参数和返回值都必须实现的机制，时JavaEE的基础
+* 类必须实现`Serializable`或`Externalizable`接口，否则会引发NotSerializableException异常
+* private static final long serialVersionUID;
+    * 表示序列化版本标识符的静态变量
+        * 用来表明类的不同版本间的兼容性(对序列化对象进行版本控制)
+        * 序列化时，用serialVersionUID验证版本的一致性
+        * 反序列化时，jvm将字节流中的serialVersionUID与本地对应实体类的serialVersionUID进行比较，**如果相同则一致，进行反序列化；不一致，则引发InvalidCastException**
+    * 如果没有显示定义该常量，它的只是运行时根据类内部细节自动生成的，**如果类的实例变量发生变化，则serialVersionUID会变化**
+* 如果类的成员变量**不是基本数据类型或String，而是其他引用类型，则该类型必须时可序列化的**，否则无法序列化
+* 对象流ObjectInputStream、ObjectOutputStream不能序列化static和transient修饰的成员变量
+
 
 # object
 [top](#catalog)
@@ -1820,6 +1839,211 @@
 
     }
     ```
+
+* 数据流
+    * 用于读取和写出基本数据类型、String类的数据
+    * DataInputStream
+        * 套接再InputStream子类的流上
+        * 可用方法
+            * boolean readBoolean() 
+            * char readChar() 
+            * double readDouble() 
+            * long readLong()
+            * String readUTF()  读取字符串
+            * byte readByte()
+            * float readFloat()
+            * short readShort()
+            * int readInt() 
+            * void readFully(byte[] b) 读取字节数组
+    * DataOutputStream
+        * 套接再OutputStream子类的流上
+        * 可用方法
+            * writeBoolean(boolean v) 
+            * writeChar(char v)
+            * writeDouble(double v)
+            * writeLong(long v)
+            * writeUTF(String str)
+            * writeByte(byte v)
+            * writeFloat(float v)
+            * writeShort(short)
+            * writeInt(int v)
+            * write(byte[] b)
+    * 怎么写的就怎么读出来，各类型数据的顺序要相同
+
+* 对象流
+    * ObjectInputStream、ObjectOutputStream
+        * 使用时需要套接InputStream、OutputStream及其子类
+    * 将java中的对象写入数据源，也可以从数据源中读取
+    * 对象流ObjectInputStream、ObjectOutputStream不能序列化static和transient修饰的成员变量
+    * 序列化与反序列化
+        ```java
+        class Person implements Serializable {
+            String name;
+            Integer age;
+            public Person(String name, Integer age) {
+                this.name = name;
+                this.age = age;
+            }
+            @Override
+            public String toString() {
+                return "Person{" +
+                        "name='" + name + '\'' +
+                        ", age=" + age +
+                        '}';
+            }
+        }
+
+        // 序列化
+        @Test
+        public void method(){
+            Person p1 = new Person("aaa", 11);
+            Person p2 = new Person("bbb", 12);
+            ObjectOutputStream oos = null;
+            try {
+                FileOutputStream fos = new FileOutputStream("...");
+                oos =new ObjectOutputStream(fos);
+
+                oos.writeObject(p1);
+                oos.flush();
+                oos.writeObject(p2);
+                oos.flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                if (oos != null){
+                    try {
+                        oos.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+
+        // 反序列化
+        @Test
+        public void method2(){
+            ObjectInputStream ois = null;
+            try {
+                FileInputStream fis = new FileInputStream("...");
+                ois = new ObjectInputStream(fis);
+
+                Person p1 = (Person) ois.readObject();
+                System.out.println(p1);
+                Person p2 = (Person) ois.readObject();
+                System.out.println(p2);
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                if (ois != null){
+                    try {
+                        ois.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+        ```
+    
+* 随机存取文件流(RandomAccessFile类)
+    * 内部实现了DataInput、DataOutput两个接口，该类可读可写
+        * 支持随机访问，程序可以直接跳到文件的任意地方来读写文件
+        * 类对象内部有一个记录指针，记录当前的读写位置
+        * 类对象可以自由移动记录指针
+            * long getFIlePointer() 获取文件记录指针的当前位置
+            * void seek、(long pos) 将文件记录指针定位到pos位置
+        * 可以在已存在的文件后追加内容
+    * 构造器
+        * public RandomAccessFIle(File file, String mode)
+        * public RandomAccessFIle(String name, String mode)
+        * mode参数
+            * r模式，不会创建文件，如果文件不存在，会出现异常
+            * rw模式，如果文件不存在会创建文件，如果存在则不会创建
+                * seek到某个位置后，rw添加的文字会对原字符进行覆盖
+
+            |mode||
+            |-|-|
+            |r|只读方式打开|
+            |rw|可读取和写入|
+            |rwd|可读取、写入，同步更新文件内容|
+            |rws|可读取、写入，同步更新文件内容和元数据|
+    * 数据的插入
+        ```java
+        @Test
+        public void method3(){
+            RandomAccessFile raf = null;
+            try{
+                raf = new RandomAccessFile("...", "rw");
+                raf.seek(6);
+
+                byte[] b = new byte[5];
+                int len;
+                StringBuffer sb = new StringBuffer();
+                while ((len=raf.read(b)) != -1){
+                    sb.append(new String(b, 0, len));
+                }
+                raf.seek(6);
+                raf.write("random test".getBytes());
+                raf.write(sb.toString().getBytes());
+            }catch (IOException e) {
+                e.printStackTrace();
+            }finally {
+                if (raf != null){
+                    try {
+                        raf.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+        ```
+* 流程创建节点流，然后套接到处理流中。字节流用byte[]循环接收，字符流用char[]/String循环接受 
+    * 转换流先套接到一个字节流，然后当作字符流用，套接到其他处理流中
+
+# 多线程
+[top](#catalog)
+* 程序：完成特定任务，用某种语言编写的一组指令的集合---一段静态代码，静态对象
+* 进程：程序的一次执行过程/正在运行的一个程序。是动态的过程，有生命周期
+* 线程：进程进一步细分，是程序内部的一条执行路径
+    * 多线程：同时并行执行多个线程
+    * 调度、执行的单位，每个线程有独立的运行栈和程序计数器
+    * 线程间切换的开销小
+    * 线程间共享进程资源(内存单元)，会带来安全问题
+* 单核CPU中是一种假的多线程，一个时间单元内，只能执行一个线程的任务，然后在多个任务之间进行切换
+* 一个java程序java.exe，至少三个线程：main()主线程，gc()垃圾回收线程，异常处理线程
+    * 如果发生异常，会影响主线程
+* 并发与并行
+    * 并发：一个CPU同时执行多个任务(多任务间切换)(时间片策略)
+    * 并行：多个CPU同时执行多个任务
+* 多线程的优点
+    * 提高程序的响应。对于图形化界面更有意义，可以增强用户体验
+    * 提高CPU利用率
+    * 改善结构，可将多个任务进行拆分，分别独立运行
+* 多线程的使用场景
+    * 同时执行多个任务
+    * 程序需要实现一些等待的任务：用户输入，文件读写操作，网络操作，搜索等，此时CPU空闲，可以做其他操作，提高CPU的利用率
+    * 需要在后台运行一些程序
+* 线程的创建与使用
+    * 创建方式1
+        1. 创建一个继承与Thread类的子类
+        2. 重写Thread类的run() 该线程的操纵
+        3. 创建Thread类的子类的对象 在主线程中创建
+        4. 调用对象的start()
+        ```java
+        class MyThread extends Thread{
+            @Override
+            public void run() {
+                ...
+            }
+        }
+        // 执行
+        public static void main(String[] args) {
+            MyThread t1 = new MyThread();
+            t1.start();
+        }
+        ```
 
 # 扩展
 [top](#catalog)
