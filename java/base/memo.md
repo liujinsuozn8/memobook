@@ -2025,12 +2025,42 @@
     * 同时执行多个任务
     * 程序需要实现一些等待的任务：用户输入，文件读写操作，网络操作，搜索等，此时CPU空闲，可以做其他操作，提高CPU的利用率
     * 需要在后台运行一些程序
+* Thread类
+    * run()
+        * 每个线程都通过run方法来操作，run()方法的主体称为线程体,**需要重写**
+        * 手动调用run()，只是成员方法调用，没有真正启动多线程
+        * run()由JVM调用，调用时间、执行过程有操作系统的CPU调度决定
+    * start()
+        * 作用：启动线程，调用run()
+        * 必须使用start()启动多线程
+        * start()启动一次。重复调用会抛出IllegalThreadStateException
+    * 构造器
+        * Thread()
+        * Thread(String threadname) 创建线程并指定**线程实例名**
+        * Thread(Runnable target) 指定创建线程的目标对象，该对象实现了Runnable接口中的run()方法
+        * Thread(Runnable target, String name)
+    * 如果某个线程操作只执行一个，也可以使用匿名子类来实现
+        ```java
+        new Thread(){
+            @Override
+            public void run() {...}
+        }.start();
+        ```
+    * 常用方法
+        * public static Thread currentThread() 返回当前代码执行的线程
+        * getName() 获取当前线程的名字
+        * setName() 设置当前线程的名字
+        * yield() 
+            * 释放当前CPU的执行权(有可能下一个时间片中有拿回执行权)
+            * 释放后，将执行的机会让给**优先级相同或更高的线程**
+            * 若队列中没有同优先级的线程，则忽略此方法
+        * join() 阻塞当前线程，来执行其他线程，直线调用join()的线程执行完成
 * 线程的创建与使用
-    * 创建方式1
+    * 创建方式1:继承Thread
         1. 创建一个继承与Thread类的子类
         2. 重写Thread类的run() 该线程的操纵
         3. 创建Thread类的子类的对象 在主线程中创建
-        4. 调用对象的start()
+        4. 调用对象的start() (内部自动调用run())
         ```java
         class MyThread extends Thread{
             @Override
