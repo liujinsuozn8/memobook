@@ -2027,7 +2027,7 @@
     * 需要在后台运行一些程序
 * java的线程调度方式
     * 同优先级线程组成**先进先出队列(先到先服务)**，使用时间片策略
-    * 对高优先级，使用优先调度的抢占式策略（高优先级抢占低优先级的CPU执行权，但这只是从概率上来讲，而不是只有高优先级的先执行在执行低优先级的）
+    * 对高优先级，使用优先调度的抢占式策略（高优先级抢占低优先级的CPU执行权，但这只是**从概率上来讲**，而**不是只有高优先级的先执行再执行低优先级的**）
 * 线程的优先级
     * 优先级等级
         * MAX_PRIORITY=10
@@ -2071,7 +2071,7 @@
         * yield() 
             * 释放当前CPU的执行权(有可能下一个时间片中有拿回执行权)
             * 释放后，将执行的机会让给**优先级相同或更高的线程**
-            * 若队列中没有同优先级的线程，则忽略此方法
+            * **若队列中没有同优先级的线程，则忽略此方法**
         * join() 阻塞当前线程，来执行其他线程，直线调用join()的对象的线程执行完成
         * stop() 已过时，强制结束线程
         * static void sleep(long millis) 阻塞线程的执行，参数：毫秒
@@ -2128,7 +2128,172 @@
         * 阻塞：线程被挂起，让出CPU的控制权
         * 死亡：线程工作完成、或先层呢被提前强制终止、出现异常导致结束
     * 状态的切换![threadLeftCycle](./imgs/threadLeftCycle.png)
+* 共享数据：多个线程共同操作的变量
+    * 如`extends Thread`方式中的静态变量，`implements  Runnable`方式中类对象复用时用到的成员变量
+* 多线程的线程安全问题
+    * 主要问题
+        * 多线程执行具有**不确定性**，会引起执行结果的不稳定
+        * 多个线程共享数据，会造成操作的不完整性，会读脏数据
+    * 产生问题的必要条件：**存在共享数据**
+    * 出现问题的原因：某个线程A在尚未执行完任务X时，另一线程B也去执行线程X，如果A对X中的资源操作尚未结束，B也去操作X中的资源，则会导致不完整性或读脏数据的问题
 * 线程的同步
+    * 问题的解决方法
+        * 当线程A执行X时，直到A执行完之前，禁止其他线程操作X，即使A执行X时有阻塞其他线程也不可以使用X
+        * JAVA中使用同步来解决问题
+    * 同步的缺点
+        * 操作同步代码时，只能有一个线程参与，其他线程等待，相当于是一个单线程的过程，效率低
+    * 同步的方法
+        * 方法1:同步代码块
+            ```java
+                synchronized(同步监视器---可以简称为锁){
+                    //需要被同步的代码
+                }
+            ```
+            * **操作共享数据的代码(不能多也不能少)**，即为需要被同步的代码
+            * 同步监视器可以简称为锁，任何一个类的对象都可以作为锁
+                * 要求多个线程必须共用一把锁
+                * 实现Runnable接口的形式中，作为锁的对象可以是当前的实例对象`this`
+                * Thread继承形式中，作为锁的对象可以是当前类`A.class`
+                * 作为锁的对象可以和任务无关
+                    ```java
+                    class A implements Runnable{
+                        private int x = 100;
+                        Object obj = new Object();
+                        @Override
+                        public void run() {
+                            while (true){
+                                synchronized (obj) {
+                                    if (x > 0) {
+                                        System.out.println(x);
+                                        x--;
+                                    } else {
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    ```
+            
+                
+        * 方法2:同步方法
+            * **不需要显示声明同步监视器**
+            * 如果操作共享数据的代码是一个方法，则可以将该方法声明为同步的:synchronized
+                * 实现Runnable接口的形式中，同步方法中默认使用同步监视器是：**this**
+                    ```java
+                    public synchronized void method(E v){...}
+                    ```
+                * 继承Thread的形式中，同步方法**必须是静态方法**（使用的是后非静态run()可以调用静态方法），默认使用的同步监视器是：`A.class`
+                    ```java
+                    public static synchronized void method(E v){...}
+                    ```
+        * 一个Thread类中，所有静态方法公用一把锁--**A.class**，所有非静态方法公用同一把锁--**this**
+
+        *  方法3:Lock (JDK5.0以后)
+            * 显示定义Lock对象来充当同步锁实现同步
+            * 每次只能有一个线程读Lock对象加锁，线程访问共享资源之前应该先获得Lock对象
+            * 常用ReentrantLock（实现了Lock），有和synchronized相同的并发型和内存语义，可以显示加锁(lock)、解锁(unlock)
+                ```java
+                public class LockTest {
+                    public static void main(String[] args) {
+                        A w = new A();
+
+                        Thread t1 = new Thread(w);
+                        Thread t2 = new Thread(w);
+                        Thread t3 = new Thread(w);
+
+                        t1.setName("t1");
+                        t2.setName("t2");
+                        t3.setName("t3");
+
+                        t1.start();
+                        t2.start();
+                        t3.start();
+                    }
+                }
+
+                class A implements Runnable{
+                    private int ticket = 100;
+                    // 实例化Lock
+                    private ReentrantLock lock = new ReentrantLock();
+
+                    @Override
+                    public void run() {
+                        while (true) {
+                            try {
+                                // 加锁
+                                lock.lock();
+                                if (ticket > 0) {
+                                    try {
+                                        Thread.sleep(100);
+                                    } catch (InterruptedException e) {
+                                        e.printStackTrace();
+                                    }
+                                    System.out.println(Thread.currentThread().getName() + ":" + ticket);
+                                    ticket--;
+                                } else {
+                                    break;
+                                }
+                            }finally{
+                                // 解锁
+                                lock.unlock();
+                            }
+                        }
+                    }
+                }
+                ```
+    * 能够释放锁的操作
+        * 当前线程的同步方法、同步代码块执行结束
+        * 同步方法、同步代码块中遇到break、return终止了执行
+        * 同步方法、同步代码块中出现了未处理的Error或Exception，导致异常结束
+        * 同步方法、同步代码块中执行了线程对象的wait()方法，会使**当前线程暂停，并释放锁**
+    * 不会释放锁的操作
+        * 同步方法、同步代码块中调用了Thread.sleep()、Thread.yield()方法暂停当前线程的执行
+        * 执行同步代码块是，其他线程调用了该线程的suspend()，将该线程刮起，该线程不会释放锁
+* 线程的死锁
+    * 死锁
+        * 不同的线程分别占用对方需要的同步资源不放弃，都在等待对方放弃**自己需要的资源**，
+        * 出现死锁后，不会出现异常，不会出现提示，只是所有的线程多处于阻塞状态，无法继续
+    * 解决方法
+        * 设计专门的算法、原则
+        * 减少同步资源的定义
+        * 避免嵌套同步代码、同步方法
+
+* 线程安全的**懒汉式单例模式**
+    ```java
+    class A {
+        private A(){ }
+        private static A instance = null;
+
+    //    public static synchronized A getInstance(){
+    //        if(instance == null){
+    //            instance = new A();
+    //        }
+    //        return instance;
+    //    }
+        public static A getInstance() {
+    //        效率低
+    //        synchronized (A.class) {
+    //            if (instance == null) {
+    //                instance = new A();
+    //            }
+    //            return instance;
+    //        }
+
+            // 如果已经有线程创建了实例，则不进入同步代码中进行等待，
+            // 而是直接使用。防止实例已经被某个线程创建了，而更多的线程还在等带同步锁的状态，效率更高
+            if (instance == null){
+                // 如果为创建实例，则进入同步代码，添加线程锁（第一个线程）
+                synchronized (A.class) {
+                    if (instance == null) {
+                        instance = new A();
+                    }
+                }
+            }
+            return instance;
+        }
+    }
+    ```
 
 # 扩展
 [top](#catalog)
