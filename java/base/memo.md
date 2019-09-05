@@ -2069,8 +2069,7 @@
         * getName() 获取当前线程的名字
         * setName() 设置当前线程的名字
         * yield() 
-            * 释放当前CPU的执行权(有可能下一个时间片中有拿回执行权)
-            * 释放后，将执行的机会让给**优先级相同或更高的线程**
+            * 暂停当前正在振兴的线程，把执行机会让会优先级相同或恒高的线程
             * **若队列中没有同优先级的线程，则忽略此方法**
         * join() 阻塞当前线程，来执行其他线程，直线调用join()的对象的线程执行完成
         * stop() 已过时，强制结束线程
@@ -2120,7 +2119,7 @@
     * 实现接口方式的优势
         * 实现接口的方式没有单继承的局限性
         * 多线程可以共享同一个对象中的资源
-* 生命周期
+* 线程的生命周期
     * 5种状态
         * 新建：Thread及其子类创建实例对象
         * 就绪：执行实例对象的start()，**进入线程队列等待CPU时间片，已具备的运行的条件，值时还没有被分配CPU资源
@@ -2151,7 +2150,7 @@
             ```
             * **操作共享数据的代码(不能多也不能少)**，即为需要被同步的代码
             * 同步监视器可以简称为锁，任何一个类的对象都可以作为锁
-                * 要求多个线程必须共用一把锁
+                * **要求多个线程必须共用一把锁**
                 * 实现Runnable接口的形式中，作为锁的对象可以是当前的实例对象`this`
                 * Thread继承形式中，作为锁的对象可以是当前类`A.class`
                 * 作为锁的对象可以和任务无关
@@ -2246,7 +2245,7 @@
         * 当前线程的同步方法、同步代码块执行结束
         * 同步方法、同步代码块中遇到break、return终止了执行
         * 同步方法、同步代码块中出现了未处理的Error或Exception，导致异常结束
-        * 同步方法、同步代码块中执行了线程对象的wait()方法，会使**当前线程暂停，并释放锁**
+        * 同步方法、同步代码块中执行了线程对象的**wait()**方法，会使**当前线程暂停，并释放锁**
     * 不会释放锁的操作
         * 同步方法、同步代码块中调用了Thread.sleep()、Thread.yield()方法暂停当前线程的执行
         * 执行同步代码块是，其他线程调用了该线程的suspend()，将该线程刮起，该线程不会释放锁
@@ -2294,6 +2293,75 @@
         }
     }
     ```
+* synchronized和 Lock的比较
+    * Lock是显式的，需要手动开启、关闭；synchornized是隐式的，会自动释放锁
+    * Lock只有**代码块锁**，synchronized有**代码块和方法锁**
+    * 使用Lock锁，JVM将花费较少的时间来调度线程，**性能更好**，并且具有更好的扩展性(有更多的子类)
+* 线程的通信
+    * synchronized中使用的通信方法
+        * wait():线程进入阻塞状态，释放锁，可以使用notify，notigyAll唤醒线程
+        * notify():唤醒有一个被wait的线程，**如果有多个wait的线程，则唤醒优先级最高的那个**
+        * notifyAll():唤醒所有被wait的线程
+        * 这三个方法**定义在java.lang.Object中**
+        * 这三个方法的调用者必须是同步监视器，否则会出现`IllegalMonitorStateException`异常
+            ```java
+            Object obj = new Object();
+            synchronized (obj){
+                //调用或者和同步监视器不一致会引发IllegalMonitorStateException
+                this.notify(); 
+                this.wait();
+            }
+            ```
+    * 通信实例：双线程交替输出
+        ```java
+        package com.ljs.mythread;
+
+        public class CommunicationTest {
+            public static void main(String[] args) {
+                Number n = new Number();
+
+                Thread t1 = new Thread(n);
+                Thread t2 = new Thread(n);
+                t1.start();
+                t2.start();
+            }
+        }
+
+        class Number implements Runnable{
+            private int number = 1;
+            @Override
+            public void run() {
+                while (true) {
+                    synchronized (this) {
+                        notify();
+                        if (number <= 100) {
+                            System.out.println(Thread.currentThread().getName() + ":" + number);
+                            number++;
+
+                            try {
+                                wait();
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        } else {
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        ```
+* wait与sleep的异同
+    * 相同点：执行后，都能使当前线程进入阻塞状态
+    * 不同点：
+        * 定义位置不同：sleepit-Thread静态方法，wait-Object实例方法
+        * 调用的范围：sleep-任何地点，wait-同步代码/代码块中
+        * sleep-不释放锁，wait-释放锁
+* 分析多线程问题的流程
+    * 是否是多线程问题
+    * 是否有共享数据
+    * 如果解决线程安全问题（三种多线程创建方法）
+    * 是否有线程通信
 
 # 扩展
 [top](#catalog)
