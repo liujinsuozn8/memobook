@@ -2119,6 +2119,64 @@
     * 实现接口方式的优势
         * 实现接口的方式没有单继承的局限性
         * 多线程可以共享同一个对象中的资源
+    * 创建方式3:**实现Callable接口**
+        * **需要重写call()**
+        * 功能
+            * 可以有返回值，并支持泛型的返回值，需要借助FutureTask类(如获取返回结果)
+            * 方法可以抛出异常
+        * Future接口
+            * 可以对Runnable、Callable任务的执行结果进行**取消、查询是否完成、获取结果等操作**
+            * **FutureTask**是Future接口的**唯一实现类**
+        * FutureTask
+            * FutureTask同时实现了Runnable、Callable接口
+            * 可以作为Runnable线程执行
+            * 可以作为Future得到Callable的返回值
+            * 可用方法
+                * get() 获取构造器参数Callable对象call()的返回值
+        * 实例
+            ```java
+            public class CallableTest {
+                public static void main(String[] args) {
+                    NumThread numThread = new NumThread();
+                    // 使用Callable对象作为参数初始化
+                    FutureTask<Integer> futureTask = new FutureTask(numThread);
+                    // 使用Thread来执行多线程
+                    new Thread(futureTask).start();
+                    try {
+                        Integer sum = futureTask.get();
+                        System.out.println(sum);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    } catch (ExecutionException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            class NumThread implements Callable<Integer>{
+                @Override
+                public Integer call() throws Exception {
+                    int sum = 0;
+                    for (int i = 1; i <= 100; i++) {
+                        if (i % 2 == 0) {
+                            sum += i;
+                        }
+                    }
+                    return sum;
+                }
+            }
+            ```
+    * 创建方法4:**线程池**
+        * 其他三种方法的问题：经常创建和销毁使用量特别大的资源，对性能的影响很大
+        * 解决方法：提前创建好多个线程，放入线程池中，使用时直接获取，使用完后，再放回池中。避免重复的创建、销毁操作，重复利用线程
+        * 使用线程池的好处：
+            * 提高响应速度(减少了线程创建的时间)
+            * 降低资源消耗(重复利用线程)
+            * 便于线程的管理(可以设置)
+                * corePoolSize 核心池的大小
+                * maximunPoolSIze 最大线程数
+                * keepAliveTime 线程没有任务时最多保持多长时间后会终止
+
 * 线程的生命周期
     * 5种状态
         * 新建：Thread及其子类创建实例对象
@@ -2129,12 +2187,19 @@
     * 状态的切换![threadLeftCycle](./imgs/threadLeftCycle.png)
 * 共享数据：多个线程共同操作的变量
     * 如`extends Thread`方式中的静态变量，`implements  Runnable`方式中类对象复用时用到的成员变量
-* 多线程的线程安全问题
-    * 主要问题
+* 多线程的问题
+    * 安全问题
         * 多线程执行具有**不确定性**，会引起执行结果的不稳定
         * 多个线程共享数据，会造成操作的不完整性，会读脏数据
-    * 产生问题的必要条件：**存在共享数据**
-    * 出现问题的原因：某个线程A在尚未执行完任务X时，另一线程B也去执行线程X，如果A对X中的资源操作尚未结束，B也去操作X中的资源，则会导致不完整性或读脏数据的问题
+        * 产生问题的必要条件：**存在共享数据**
+        * 出现问题的原因：某个线程A在尚未执行完任务X时，另一线程B也去执行线程X，如果A对X中的资源操作尚未结束，B也去操作X中的资源，则会导致不完整性或读脏数据的问题
+    * 线程的死锁
+        * 不同的线程分别占用对方需要的同步资源不放弃，都在等待对方放弃**自己需要的资源**，
+        * 出现死锁后，不会出现异常，不会出现提示，只是所有的线程多处于阻塞状态，无法继续
+        * 解决方法
+            * 设计专门的算法、原则
+            * 减少同步资源的定义
+            * 避免嵌套同步代码、同步方法
 * 线程的同步
     * 问题的解决方法
         * 当线程A执行X时，直到A执行完之前，禁止其他线程操作X，即使A执行X时有阻塞其他线程也不可以使用X
@@ -2186,7 +2251,6 @@
                     ```java
                     public static synchronized void method(E v){...}
                     ```
-        * 一个Thread类中，所有静态方法公用一把锁--**A.class**，所有非静态方法公用同一把锁--**this**
 
         *  方法3:Lock (JDK5.0以后)
             * 显示定义Lock对象来充当同步锁实现同步
@@ -2241,62 +2305,6 @@
                     }
                 }
                 ```
-    * 能够释放锁的操作
-        * 当前线程的同步方法、同步代码块执行结束
-        * 同步方法、同步代码块中遇到break、return终止了执行
-        * 同步方法、同步代码块中出现了未处理的Error或Exception，导致异常结束
-        * 同步方法、同步代码块中执行了线程对象的**wait()**方法，会使**当前线程暂停，并释放锁**
-    * 不会释放锁的操作
-        * 同步方法、同步代码块中调用了Thread.sleep()、Thread.yield()方法暂停当前线程的执行
-        * 执行同步代码块是，其他线程调用了该线程的suspend()，将该线程刮起，该线程不会释放锁
-* 线程的死锁
-    * 死锁
-        * 不同的线程分别占用对方需要的同步资源不放弃，都在等待对方放弃**自己需要的资源**，
-        * 出现死锁后，不会出现异常，不会出现提示，只是所有的线程多处于阻塞状态，无法继续
-    * 解决方法
-        * 设计专门的算法、原则
-        * 减少同步资源的定义
-        * 避免嵌套同步代码、同步方法
-
-* 线程安全的**懒汉式单例模式**
-    ```java
-    class A {
-        private A(){ }
-        private static A instance = null;
-
-    //    public static synchronized A getInstance(){
-    //        if(instance == null){
-    //            instance = new A();
-    //        }
-    //        return instance;
-    //    }
-        public static A getInstance() {
-    //        效率低
-    //        synchronized (A.class) {
-    //            if (instance == null) {
-    //                instance = new A();
-    //            }
-    //            return instance;
-    //        }
-
-            // 如果已经有线程创建了实例，则不进入同步代码中进行等待，
-            // 而是直接使用。防止实例已经被某个线程创建了，而更多的线程还在等带同步锁的状态，效率更高
-            if (instance == null){
-                // 如果为创建实例，则进入同步代码，添加线程锁（第一个线程）
-                synchronized (A.class) {
-                    if (instance == null) {
-                        instance = new A();
-                    }
-                }
-            }
-            return instance;
-        }
-    }
-    ```
-* synchronized和 Lock的比较
-    * Lock是显式的，需要手动开启、关闭；synchornized是隐式的，会自动释放锁
-    * Lock只有**代码块锁**，synchronized有**代码块和方法锁**
-    * 使用Lock锁，JVM将花费较少的时间来调度线程，**性能更好**，并且具有更好的扩展性(有更多的子类)
 * 线程的通信
     * synchronized中使用的通信方法
         * wait():线程进入阻塞状态，释放锁，可以使用notify，notigyAll唤醒线程
@@ -2351,6 +2359,117 @@
             }
         }
         ```
+        * 通信实例：生产者-消费者问题
+            ```java
+            //生产者消费者
+            public class ProductTest {
+                public static void main(String[] args) {
+                    Clerk clerk = new Clerk();
+
+                    Producer p1 = new Producer(clerk);
+                    p1.setName("producer1");
+                    Consumer c1 = new Consumer(clerk);
+                    c1.setName("consumer1");
+                    Consumer c2 = new Consumer(clerk);
+                    c2.setName("consumer2");
+
+                    p1.start();
+                    c1.start();
+                    c2.start();
+                }
+            }
+
+            //店员
+            class Clerk{
+                private int productCount = 0;
+                public synchronized void produceProducer() {
+                    //生产
+                    if (productCount < 20){
+                        productCount++;
+                        System.out.println(Thread.currentThread().getName() + " make " + productCount);
+                        notify();
+                    } else {
+                        try {
+                            wait();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+
+                public synchronized void consumeProducer() {
+                    //消费
+                    if (productCount > 0 ){
+                        System.out.println(Thread.currentThread().getName() + " consum" + productCount);
+                        productCount--;
+                        notify();
+                    }else{
+                        try {
+                            wait();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+
+            //生产者
+            class Producer extends Thread{
+                private Clerk clerk;
+                public Producer(Clerk clerk) {
+                    this.clerk = clerk;
+                }
+
+                @Override
+                public void run() {
+                    System.out.println(getName() + "start make");
+
+                    while (true){
+                        try {
+                            Thread.sleep(10);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        clerk.produceProducer();
+                    }
+                }
+            }
+
+            // 消费者
+            class Consumer extends Thread{
+                private Clerk clerk;
+                public Consumer(Clerk clerk) {
+                    this.clerk = clerk;
+                }
+
+                @Override
+                public void run() {
+                    System.out.println(getName() + "start consumer");
+
+                    while (true){
+                        try {
+                            Thread.sleep(100);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        clerk.consumeProducer();
+                    }
+                }
+            }
+            ```
+* 一个Thread类中，所有静态方法共用一把锁--**A.class**，所有非静态方法共用同一把锁--**this**
+* 能够释放锁的操作
+    * 当前线程的同步方法、同步代码块执行结束
+    * 同步方法、同步代码块中遇到break、return终止了执行
+    * 同步方法、同步代码块中出现了未处理的Error或Exception，导致异常结束
+    * 同步方法、同步代码块中执行了线程对象的**wait()**方法，会使**当前线程暂停，并释放锁**
+* 不会释放锁的操作
+    * 同步方法、同步代码块中调用了Thread.sleep()、Thread.yield()方法暂停当前线程的执行
+    * 执行同步代码块是，其他线程调用了该线程的suspend()，将该线程刮起，该线程不会释放锁
+* synchronized 和 Lock的比较
+    * Lock是显式的，需要手动开启、关闭；synchornized是隐式的，会自动释放锁
+    * Lock只有**代码块锁**，synchronized有**代码块和方法锁**
+    * 使用Lock锁，JVM将花费较少的时间来调度线程，**性能更好**，并且具有更好的扩展性(有更多的子类)
 * wait与sleep的异同
     * 相同点：执行后，都能使当前线程进入阻塞状态
     * 不同点：
@@ -2362,6 +2481,44 @@
     * 是否有共享数据
     * 如果解决线程安全问题（三种多线程创建方法）
     * 是否有线程通信
+
+
+* 线程安全的**懒汉式单例模式**
+    ```java
+    class A {
+        private A(){ }
+        private static A instance = null;
+
+    //    public static synchronized A getInstance(){
+    //        if(instance == null){
+    //            instance = new A();
+    //        }
+    //        return instance;
+    //    }
+        public static A getInstance() {
+    //        效率低
+    //        synchronized (A.class) {
+    //            if (instance == null) {
+    //                instance = new A();
+    //            }
+    //            return instance;
+    //        }
+
+            // 如果已经有线程创建了实例，则不进入同步代码中进行等待，
+            // 而是直接使用。防止实例已经被某个线程创建了，而更多的线程还在等带同步锁的状态，效率更高
+            if (instance == null){
+                // 如果为创建实例，则进入同步代码，添加线程锁（第一个线程）
+                synchronized (A.class) {
+                    if (instance == null) {
+                        instance = new A();
+                    }
+                }
+            }
+            return instance;
+        }
+    }
+    ```
+
 
 # 扩展
 [top](#catalog)
