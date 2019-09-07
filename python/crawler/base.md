@@ -4,6 +4,7 @@
 - [基本库的使用](#基本库的使用)
 	- [urllib](#基本库的使用-urllib)
 	- [request](#基本库的使用-request)
+- [解析库的使用](#解析库的使用)
 
 # 爬虫基础
 [top](#catalog)
@@ -85,7 +86,7 @@
 		* 核心DOM：针对任何结构化文档的标准模型
 		* XML DOM:针对DOM文档的标准模型
 		* HTML DOM：针对HTML文档的标准模型
-	× HTML DOM 标准
+	* HTML DOM 标准
 		* 整个文档是一个文档节点
 		* 每个HTML元素是元素节点
 		* HTML元素内的文本是文本节点
@@ -159,6 +160,7 @@
 		* 当用户情趣页面时，如果该用户还没有会话，则服务器将自动创建一个会话对象
 		* 会话过期或被放弃后，服务器将终止该会话
 		* 关闭浏览器不会导致会话被删除
+		* **会话可以用于模拟在一个浏览器中打开同一站点的不同页面**
 	* Cookies
 		* **Cookies保存在客户端，即浏览器**		
 		* 会话维持（利用Cookies保持状态）
@@ -467,6 +469,202 @@
 
 ## 基本库的使用-request
 [top](#catalog)
+* 返回结果：
+	* requests.models.Response
+	* 对象属性
+		* status_code: 状态码，int
+		* headers:响应头，requests.structures.CaselnsensitiveDict
+		* cookies: requests.cookies.RequestsCookieJar
+		* url:str
+		* history：请求历史，list
+		* text：请求结果-字符串，str
+		* context：请求结果-字节流，bytes
+* 内置状态码查询对象：requests.code
 * 创建get请求
-	* 
+	* 发送get请求
+		```python
+		import requests
+		data = {
+			'name':'xx',
+			'age':22
+		}
+		# 通过params来添加参数，相当于：https://httpbin.org/get?name=xx&age=22
+		r = requests.get('http://httpbin.org/get', params=data)
+		# 将json格式的字符串转化为字典
+		print(r.json())
+		```
+	* 抓取二进制数据
+		```python
+		import requests
+		r = requests.get('https://github.com/favicon.ico')
+		with open('favicon.ico', 'wb') as f:
+			#r.text 输出字符串
+			#r.context 输出字节流
+			f.write(r.content)
+		```
+* 创建POST请求
+	* 基本用法
+		```python
+		import requests
+		data = {'name':'xxx', 'age':22}
+		r = requests.post('http://httpbin.org/post', data=data)
+		print(r.text)
+		```
+	* 文件上传
+		```python
+		import requests
+		files = {'files': open('favicon.ico', 'rb')}
+		r = requests.post('http://httpbin.org/post', files=files)
+		#返回结果中会包含files字段，form字段为空
+		```
+* Cookies
+	* 获取Cookie
+		```python
+		import requests
+		r = requests.get('https://www.baidu.com')
+		print(r.cookies)
+		for k, v in r.cookies.items():
+			print(f'{k} : {v}')
+		```
+	* 设定Cookies
+		```python
+		headers = {
+			'Cookie':'...',
+			'User-Agent':'...'
+		}
+		r = requests.get('...', headers=headers)
+
+		#通过cookies参数设定
+		jar = requests.cookies.RequestsCookieJar()
+		jar.set(k,v)
+		jar.set(k,v)
+		jar.set(k,v)
+		...
+
+		headers = {
+			'User-Agent':'...'
+		}
+		r = requests.get('...', headers=headers, cookies=jar)
+		```
+	* 会话维持
+		* 多次请求同一站点时，相当于**打开了两个浏览器**，两次请求不能互通，实际上是执行了多个会话。但是每次请求时都加入相同的Cookies信息又比较麻烦
+		* 通过Session来维持会话，多次请求同一站点时，相当于**在一个浏览器中打开了一个新的选项卡**
+			```python
+			import requests
+			s = requests.Session()
+			s.get('http://httpbin.org/cookies/set/number/123456789') 
+			r = s.get('http://httpbin.org/cookies')
+			print(r.text)
+			```
+	* SSL证书验证
+		* 通过参数verify控制是否检查SSL证书，默认为True
+		```python
+		import requests
+		# 忽略警告
+		# from requests.packages import urllib3
+		# urllib3.disable_warnings()
+		
+		# 捕获警告到日志忽略警告
+		# import logging
+		# logging.captureWarnings(True)
+		
+		# 使用本地证书做客户端证书，需要有crt和 key文件，key必须是解密状态
+		# response = requests.get('https://www.12306.cn', cert=('/path/server.crt','/path/key'))
+		response = requests.get('https://www.12306.cn', verify=False)
+		print(response.status_code)
+		```
+	* 代理设置
+		* 通过proxies参数来设置
+		* 若代理需要HTTP Basic Auth，可以使用类似`http://user:password@host:port`的语法来设置代理
+			```python
+			import requests
+			proxies = {
+				"http":"http://user:password@10.10.1.10:3128/"
+			}
+			requests.get("https://www.taobao.com", proxies=proxies)
+			```
+		* 使用SOCKS协议的代理
+			```python
+			import requests
+			proxies = {
+				'http':'socks5://user:password@host:port',
+				'https':'socks5://user:password@host:port'
+			requests.get("https://www.taobao.com", proxies=proxies)
+			```
+	* 超时设置
+		* 通过timeout设置超时时间。默认为None，即永久等待
+		* 请求分为连接和读取，timeout包含这两部分时间。如果需要分段设置，需要传入一个元祖
+		`requests.get('https://www.taobao.com', timeout=(5, 11))`
+	* 身份认证
+		* requests自带身份认证功能
+			```python
+			import requests
+			from requests.auth import HTTPBasicAuth
+			r = requests.get('...,' auth=HTTPBasicAuth('username','password'))
+			# 认证成功返回200，认证返回401
+			print(r.status_code)
+			```
+		* 通过元祖设定参数
+			`r = requests.get('...,' auth=('username','password'))`
+		* OAuth认证方式？？？？？？
+	* Prepared Request
+		* 与urllib.request.Request相似，通过构造数据结构来存储各种参数
+		* 有了Request对象之后，就可以将请求当作独立对象来看待
+		* 调用时使用session的prepare_request()将数据结构转换成Prepared Request对象，在调用send()
+			```python
+			import requests
+			url = 'http://httpbin.org/post'
+			data = {'name':'xx','age':22}
+			headers = {'User-Agent':'...'}
+			req = requests.Request('POST', url, data=data, headers=headers)
+			s = requests.Session()
+			prepped = s.prepare_request(req)
+			r = s.send(prepped)
+			print(r.text)
+			```
+* 爬取实例
+	```python
+	import requests, re, json, time
+	# https://maoyan.com/board/4?offset=10
+
+	def get_one_page(url):
+		headers = {
+			"User-Agent":'...'
+		}
+		response = requests.get(url, headers=headers)
+		if response.status_code == 200:
+			return response.text
+
+		return None
+
+	#从页面中提取排名、图片url、名称
+	def parse_one_page(html):
+		pattern = re.compile(
+			'<dd>.*?<i.*?board-index.*?>(.*?)</i>.*?data-src="(.*?)".*?name.*?a.*?>(.*?)</a>',
+			re.S
+		)
+		items = re.findall(pattern, html)
+		for item in items:
+			yield {
+				'index':item[0],
+				'image':item[1],
+				'title':item[2]
+			}
+	# 将信息保存到文件中
+	def write_to_file(content):
+		with open('result.txt', 'a', encoding='utf-8') as f:
+			f.write(json.dumps(content, ensure_ascii=False) + '\n')
+	# 分页访问
+	def crawler(offset):
+		url = f'http://maoyan.com/board/4?offset={offset}'
+		html = get_one_page(url)
+		for item in parse_one_page(html):
+			write_to_file(item)
+
+	for i in range(10):
+		crawler(i*10)
+		time.sleep(2)
+	```
+# 解析库的使用
+[top](#catalog)
 ************************************
