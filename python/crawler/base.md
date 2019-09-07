@@ -1,4 +1,10 @@
+<span id="catalog"></span>
+- [爬虫基础](#爬虫基础)
+- [Robots协议](#robots协议)
+- [基本库的使用](#基本库的使用)
+
 # 爬虫基础
+[top](#catalog)
 * 请求
 	* 请求方法(request method)
 		* 常用请求方法：
@@ -209,12 +215,48 @@
 	* 常见代理设置
 		* 免费/付费代理
 		* ADSL拨号：拨一次号换一次IP，稳定性高
-		
+
+# Robots协议
+[top](#catalog)
+* 爬虫协议/机器人协议，全名：网络爬虫排除标准(Robots Exclusion Protocol)
+* 用来告诉爬虫和搜索引擎，哪些页面可以抓取，哪些页面不可以抓取
+* 通常是一个robots.txt文本文件，一般放在网络根目录下
+	* 一个搜索爬虫访问一个站点是，会首先检查这个站点根目录下是否存在robots.txt文件。
+		* 如果存在，爬虫会根据文件中定义的爬取范围来爬取
+		* 如果不存在，爬虫会访问所有可访问的页面
+* robots.txt文件
+	* 样例
+		```python
+		User-agent: * 
+		Disallow: / 
+		Allow: /public/
+		```
+	* User-agent：有效的爬虫名称
+	* Disallow：不允许被爬取的页面。如果为空，则所有页面都可以爬取
+	* Allow：可以抓取的页面
+* 常见的搜索爬虫的名称及其对应网站
+
+|爬虫名称|名称|网站|
+|-|-|-|
+|BaiduSpider|百度|www.baidu.com|
+|Googlebot|谷歌|www.google.com|
+|360Spider|360搜索|www.so.com|
+|YodaoBot|有道|www.youdao.com|
+|ia_archiver|Alexa|www.alexa.cn|
+|Scooter|altavista|www.altavista.com|
+
 # 基本库的使用
+[top](#catalog)
 * urllib
 	* 基本模块
 		* request： 最基本的HTTP请求模块，可以模拟发送请求
 			* urlopen(url):返回一个HTTPResponse类型的对象
+				```python
+				url = 'http://httpbin.org/post'
+				data = bytes(up.urlencode({'word':'hello'}), encoding='utf8')
+				response = ur.urlopen(url, data=data)
+				print(response.read().decode('utf-8'))
+				```
 				* 参数
 					* data： 使用data后，请求方式变为POST。参数需要转化成字节流
 						* 参数字典的转化：urllib.parse.urlencode({key:value})
@@ -232,7 +274,21 @@
 					* reason
 					* debuglevel
 					* closed
+				
 			* Request(url, data=None, headers={}, origin_req_host=None, unverifiable=False, method=None)： 
+				```python
+				# Request传入多个参数
+				url = 'http://httpbin.org/post'
+				headers = {
+					'User-Agent':'Mozilla/4.0 (compatible; MSIE 5.5; Windows NT)',
+					'Host':'httpbin.org'
+				}
+				dict = {'name':'Germey'}
+				data = bytes(up.urlencode(dict), encoding='utf8')
+				req = ur.Request(url, data=data, headers=headers, method='POST')
+				response = ur.urlopen(req)
+				print(response.read().decode('utf-8'))
+				```
 				* 通过构造数据结构，将请求独立成一个对象，可以更灵活的配置参数
 				* data：必须是bytes字符流,如果是参数字典需要使用`urllib.parse.urlencode({key:value})`转化
 				* headers：请求头，一个字典。
@@ -250,9 +306,160 @@
 				* HTTPCookieProcess:用于处理Cookies
 				* ProxyHandler:用于设置代理，默认代理为空
 				* HTTPPasswordMgr:用于管理密码，它维护了用户名和密码表
-				* HTTPBasicAuthHandler:用于管理认证，如果一个链接打开时需要认证，可以使用该类
-				* 其他参考
-		* error：异常处理：
-		* parse：工具模块，提供了许多URL处理方法，如：拆分、解析、合并等
-		* robotparser：主要用来识别网站的robots.txt文件，判断网站是否可爬
+				* HTTPBasicAuthHandler:用于管理认证，如果一个链接打开时需要认证，可以使用该类解决
+				* 其他参考：htts://docs.python.org/3/library/urllib.request.html#urllib.request.BaseHandler
+			* OpenerDirector:可以进行更深层的配置，实现更高级的功能
+				* Cookie
+					* 输出cookie
+						```python
+						import http.cookiejar
+						cookie = http.cookiejar.CookieJar()
+						handler = ur.HTTPCookieProcessor(cookie)
+						opener = ur.build_opener(handler)
+						response = opener.open('http://www.baidu.com')
+						for item in cookie:
+							print(f'{item.name} = {item.value}')
+						```
+					* 保存cookie到文件
+						```python
+						import http.cookiejar
+						filename = 'cookie.txt'
+						# MozillaCookieJar是CookieJar的子类，用来处理和文件相关的操作
+						#可以读取、保存cookie，可以将Cookies保存成Mozilla型浏览器的Cookies格式。
+						cookie = http.cookiejar.MozillaCookieJar(filename)
+						# 同样可以读取和保存Cookies，但是会保存成libwww-perl(LWP)格式的Cookies文件
+						#cookie = http.cookiejar.LWPCookieJar(filename)
+						handler = ur.HTTPCookieProcessor(cookie)
+						opener = ur.build_opener(handler)
+						response = opener.open('http://www.baidu.com')
+						cookie.save(ignore_discard=True, ignore_expires=True)
+						```
+					* 读取cookie
+						```python
+						import http.cookiejar
+						filename = 'cookie.txt'
+						cookie = http.cookiejar.LWPCookieJar()
+						cookie.load(filename, ignore_discard=True, ignore_expires=True)
+						handler = ur.HTTPCookieProcessor(cookie)
+						opener = ur.build_opener(handler)
+						response = opener.open('http://www.baidu.com')
+						print(response.read().decode('utf-8'))
+						```
+		* error：异常处理
+			* URLError: error模块的基类，request模块的异常都可以通过这个类来捕获
+				* e.reason:返回错误原因
+					```python
+					import urllib.error as ue
+					try:
+						response = ur.urlopen('https:www.baidu.cn')
+					except ue.URLError as e:
+						print(e.reason)
+					```
+			* HTTPError:URLError的子类，用来处理HTTP请求错误
+				* 属性
+					* code：返回HTTP状态码，如404表示网页不存在，500表示服务器内部错误
+					* reason：返回错误原因
+					* headers：返回请求头
+					```python
+					import urllib.error as ue
+					#先捕获子类异常，再捕获父类异常
+					try:
+						response = ur.urlopen('https://www.baidu.c', timeout=1)
+					except ue.HTTPError as e:
+						print(e.reason, e.code, e.headers, sep='\n')
+					except ue.URLError as e:
+						print(e.reason)
+					```
+				* 返回的reason是对象
+					```python
+					import urllib.error as ue
+					import socket
+					try:
+						response = ur.urlopen('https://www.baidu.c', timeout=1)
+					except ue.URLError as e:
+						print(type(e.reason)) #<class 'socket.timeout'>
+						if isinstance(e.reason, socket.timeout):
+							print('timeout')
+					```
+		* parse：工具模块，提供了许多URL处理方法(解析链接)，如：拆分、解析、合并等
+			* 支持的URL协议：
+				>file, ftp, gopher, hdl, http, https, imap, mailto, mms
+				news, nntp, prospero, rsync, rtsp, rtspu, sftp, sip, sips
+				snews, svn, svn+ssh, telnet, wais
+			* urlparse(urlstring, scheme='', allow_fragments=True):实现url的识别和分段
+				* 分段标准：scheme://netloc/path;params?query#fragment
+					```python
+					url = 'http://www.baidu.com/index.html;user?id=5#comment'
+					result = up.urlparse(url)
+					#ParseResult(scheme='http', netloc='www.baidu.com', 
+					#	path='/index.html', params='user', query='id=5', 
+					#	fragment='comment')
+
+					# scheme协议，netloc域名，path访问路径，params参数，
+					# query查询条件，fragment锚点(用于直接定位页面内部的下拉位置)
+					```
+				* scheme:默认协议，如果url中没有协议信息，会将该参数作为默认协议
+				* allow_fragments:是否忽略`fragments`，如果设为False，会被忽略，将会被解析为：path、params、query的一部分
+					```python
+					url = 'www.baidu.com/index.html;user?id=5#comment'
+					result = up.urlparse(url, allow_fragments=False)
+					#ParseResult(scheme='', netloc='', path='www.baidu.com/index.html'
+					#	, params='user', query='id=5#comment', fragment='')
+					```
+			* urlunparse():**接受6个参数，合成url**
+				```python
+				data =['http', 'www.baidu.com', 'index.html', 'user', 'a=6', 'comment']
+				print(up.urlunparse(data))
+				# http://www.baidu.com/index.html;user?a=6#comment
+				```
+			* urlsplit():与urlparse类似，只返回5个结果，其中params会合并带path中
+				```python
+				url = 'www.baidu.com/index.html;user?id=5#comment'
+				result = up.urlsplit(url)
+				#SplitResult(scheme='', netloc='', path='www.baidu.com/index.html;user', 
+				#		query='id=5', fragment='comment')
+				```
+			* urlunsplit():**接受5个参数，合成url**
+			* urljoin():提供一个base_url作为第一个参数，新链接作为第二个参数，自动分析base_url的scheme、netloc、path，对新链接的缺失部分进行补充
+				* scheme、netloc、path在新链接中存在，则用新链接的；如果不存在，则用base_url中的
+				* base_url中的params、query、fragment是无效的
+			* urlencode():通过字典来构造GET请求的参数
+				```python
+				params = {'name':'xxx', 'age':22}
+				ps = up.urlencode(params)
+				#name=xxx&age=22
+				```
+			* parse_qs():将请求参数转换为字典
+				```python
+				ps = 'name=xxx&age=22'
+				params = up.parse_qs(ps)
+				#{'name': ['xxx'], 'age': ['22']}
+				```
+			* parse_qsl():将参数转换为元祖列表
+				```python
+				ps = 'name=xxx&age=22'
+				params = up.parse_qsl(ps)
+				#[('name', 'xxx'), ('age', '22')]
+				```
+			* quote():将文字转换为URL编码
+				```python
+				k='中文'
+				q=up.quote(k)
+				```
+			* unquote():对url进行解码
+		* robotparser：分析Robots协议，主要用来识别网站的robots.txt文件，判断网站是否可爬
+			* set_url():设置robots.txt文件的位置
+				* 两种设置方法：`RobotFileParser('....')`，或`rp=RobotFileParser();rp.set_url('...')`
+				```python
+				import urllib.robotparser as urobot
+				rp = urobot.RobotFileParser()
+				rp.set_url('http://www.jianshu.com/robots.txt')
+				rp.read()
+				print(rp.can_fetch('*','http://www.jianshu.com/p/b67554025d7d'))
+				```
+			* read():读取文件，并分析。该方法不返回任何内容。如果不调用，后续的判断结构都是False
+			* parse():传入的是文件某些行的内容，方法会按照robot.txt文件的规则进行解析
+			* can_fetch(User-agent, 抓取的URL):返回的是该URL是否可以抓取
+			* mtime():返回上次抓取和分析robot.txt的时间。这对于长时间分析和抓取的搜索爬虫是 很有必要的，你可能需要定期检查来抓取最新的robots.txt。？？？？？？
+			* modified():将当前时间设置为上次抓取和分析robot.txt的时间？？？？？
 ************************************
