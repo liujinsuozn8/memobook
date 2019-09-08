@@ -5,6 +5,10 @@
 	- [urllib](#基本库的使用-urllib)
 	- [request](#基本库的使用-request)
 - [解析库的使用](#解析库的使用)
+	- [解析库的使用-XPath](#解析库的使用-XPath)
+	- [解析库的使用-lxml](#解析库的使用-lxml)
+	- [解析库的使用-bs4](#解析库的使用-bs4)
+	- [解析库的使用-pyquery](#解析库的使用-pyquery)
 
 # 爬虫基础
 [top](#catalog)
@@ -666,5 +670,156 @@
 		time.sleep(2)
 	```
 # 解析库的使用
+## 解析库的使用-XPath
 [top](#catalog)
+* 常用规则
+
+	|表达式|描述|
+	|-|-|
+	|nodename|选取此节点的所有子节点|
+	|/|从当前节点选取直接子节点|
+	|//|从当前节点选择子孙节点|
+	|.|选取当前节点|
+	|..|选取当前节点的父节点|
+	|@|选取属性|
+## 解析库的使用-lxml
+[top](#catalog)
+* 基本使用
+	```python
+	from lxml import etree
+	text = '''
+	<div>
+	<ul>
+	<li class="item-O"><a href="linkl.html">first item</a></li>
+	<li class="item-1"><a href="link2.html">second item</a></li>
+	<li class="item-inactive"><a href="link3.html">third item</a></li>
+	<li class="item-1"><a href="link4.html">fourth item</a></li>
+	<li class="item-0"><a href="link5.html">fifth item</a>
+	</ul>
+	</div>
+	'''
+	# 直接读取文本文件进行解析
+	# html = etree.parse ('./test.html', etree.HTMLParser())
+	html = etree.HTML(text) #会自动补全标签，并添加body、html节点
+	result = etree.tostring(html) #返回的结果时bytes
+	print(result.decode('utf-8'))
+	```
+* 选取节点
+	```python
+	from lxml import etree
+	html = etree.parse('./test.html', etree.HTMLParser())
+	result = html.xpath('//li') #返回一个list
+	#//li/a 获取所有li下的a节点
+	# 获取父节点
+	#result = html.xpath('//a[@href="link4.html"]/../@class')
+	#result = html.xpath('//a[@href="link4.html"]/parent::*/@class')
+	```
+## 解析库的使用-bs4
+[top](#catalog)
+* 解析器
+
+	|解析器|使用方法|优势|劣势|
+	|-|-|-|-|
+	|python标准库|BeautifulSoup(markup, "html.parser")|Python的内置标准库、执行速度适中、文档容错能力强|Python2.7.3及Python3.2.2<br>之前的版本文档容错能力差|
+	|lxml HTML解析器|BeautifulSoup(markup, "lxml")|速度快、文档容错能力强|需要安装c语言库|
+	|lxml xml解析器|BeautifulSoup(markup, "xml")|速度快、唯一支持XML的解析器|需要安装c语言库|
+	|html5lib|BeautifulSoup(markup, "html5lib")|最好的容错性、以浏览器的方式解析文档、生成HTML5格式的文档|速度慢、不依赖外部扩展|
+* 基本使用
+	```python
+	from bs4 import BeautifulSoup
+	soup = BeautifulSoup('<p>hello</p>', 'lxml')  # 初始化时，自动补全html、body标签
+	print(soup.prettify()) #以标准的缩紧格式输出
+	print(soup.p.string)  # hello，.string获取节点内的文本
+	```
+* 节点选择器
+	* 返回结果都是：bs4.element.Tag 类型
+	* soup.xxx 的方式只能选择第一个匹配的节点，后面的都会忽略
+	* .childern 获取当前节点的子节点，返回一个生成器
+	* .parent 获取当前节点的父节点
+	* .parents 获取当前节点的所有祖先节点
+	* .descendants 获取当前节点的所有子孙节点返回一个生成器
+	* .next_sibling，.previous_sibling 获取当前节点的兄弟节点
+	* .string 或get_text() 获取节点中的文本
+	* .attrs 获取节点中的属性
+* 方法选择器
+	* find_all(name, attrs={'key':value}, recursive, text, **kwargs) 获取符和元素的节点
+		* text 可以是字符串，也可以时正则表达式
+	* find() 和返回find_all相同，返回的时第一个匹配的节点
+	* find_parents 返回所有祖先节点
+	* find_parent 返回直接父节点
+	* find_next_siblings() 返回后面的所有兄弟节点
+	* find_next_sibling() 返回后面的一个兄弟节点
+	* find_previous_siblings() 返回前面的所有兄弟节点
+	* find_previous_sibling() 返回前面的一个兄弟节点
+	* find_all_next() 返回节点后所有符合条件的节点
+	* find_next() 返回节点后第一个符合条件的节点
+	* find_all_previous() 返回节点后所有符合条件的节点
+	* find_previous() 返回第一个符合条件的节点
+* css选择器
+	* .select()
+
+## 解析库的使用-pyquery
+[top](#catalog)
+* 初始化
+	* 字符串初始化
+		```python
+		from pyquery import PyQuery as pq
+		html = '...'
+		doc = pq(html)
+		```
+	* url初始化
+		```python
+		from pyquery import PyQuery as pq
+		doc = pq(url='https://...')
+		print(doc('title'))
+		```
+	* 文件初始化
+		```python
+		from pyquery import PyQuery as pq
+		doc = pq(filename='test.html')
+		print(doc('li'))
+		```
+* 基本CSS选择器
+	```python
+	from pyquery import PyQuery as pq
+	html = '''
+	<div id="container">
+	<ul class="list">
+	<li class="item-O"><a href="linkl.html">first item</a></li>
+	<li class="item-1"><a href="link2.html">second item</a></li>
+	<li class="item-inactive"><a href="link3.html">third item</a></li>
+	<li class="item-1"><a href="link4.html">fourth item</a></li>
+	<li class="item-0"><a href="link5.html">fifth item</a>
+	</ul>
+	</div>
+	'''
+	doc = pq(html)
+	print(doc('#container .list li'))
+	print(type(doc('#container .list li'))) #返回类型 pyquery.pyquery.PyQuery
+	```
+* 查找节点
+	* find() 查找当前节点的所有子孙节点
+		```python
+		doc = pq(html)
+		items = doc('.list')
+		lis = items.find('li')
+		print(type(lis)) #返回类型 pyquery.pyquery.PyQuery
+		print(lis)
+		```
+	* childern() 查找所有子节点
+	* parent() 返回父节点
+	* parents() 返回所有祖先节点
+	* siblings(css选择器) 返回所有兄弟节点
+* 遍历：items() 返回一个生成器
+* 获取信息
+	* attr() / attr.xxx 获取属性
+	* text() 获取所有节点的文本，忽略节点内部的HTML，只返回纯文本内容
+	* html() 返回第一个节点的内部html文本
+* 节点操作
+	* addClass() 给节点添加类
+	* removeClass() 从节点删除类
+	* attr(name, value) 添加属性
+	* text('...') 设定文本内容
+	* `html('<tag>...</tag>')` 添加HTML文本
+	* remove() 删除某个节点
 ************************************
