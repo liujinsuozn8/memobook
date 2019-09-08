@@ -9,6 +9,7 @@
 	- [解析库的使用-lxml](#解析库的使用-lxml)
 	- [解析库的使用-bs4](#解析库的使用-bs4)
 	- [解析库的使用-pyquery](#解析库的使用-pyquery)
+- [数据存储](#数据存储)
 
 # 爬虫基础
 [top](#catalog)
@@ -822,4 +823,26 @@
 	* text('...') 设定文本内容
 	* `html('<tag>...</tag>')` 添加HTML文本
 	* remove() 删除某个节点
+
+# 数据存储
+[top](#catalog)
+* CSV
+	* 写入CSV
+		```python
+		import csv
+		with open('xxx.csv', 'w') as f:
+			write = csv.writer(f, delimiter=',')
+			write.writerow(...)
+		```
+	* 按字典格式写入CSV
+		```python
+		import csv
+		with open('xxx.csv', 'w', encoding='utf-8') as f:
+			names = ['id', 'name']
+			write = csv.DictWriter(f, fieldnames=names)
+			write.writeheader() #写入头信息
+			write.writerow({'id':'xxx', 'name':'yyyy'})
+			write.writerow({'id':'xxx', 'name':'yyyy'})
+			write.writerow({'id':'xxx', 'name':'yyyy'})
+		```
 ************************************
