@@ -687,25 +687,114 @@
 
 # string
 [top](#catalog)
-* 字符串的所处位置
-    * 对于String常量，如：`String s = "AA";`
-        * 字符串会存储在**字符串常量池**中
+* 继承关系：
+    ```java
+    public final class String
+        implements java.io.Serializable, Comparable<String>, CharSequence 
+    ```
+    * 一个final类，不可再继承
+    * 可序列化 Serializable
+    * 可比较大小 Comparable
+* 底层的存储：`private final char value[]`，一个不可变的字符数组
+* 不可变性
+    * 重新赋值时，需要重新指定内存区域
+    * 进行连接操作时，实际是创建了一个新的字符串
+    * 使用replace方法时，需要重新指定内存区域，原始字符串不会修改
+* String对象的创建
+    ```java
+    String str = "hello";
+
+    // this.value = new char[0];
+    String s1 = new String();
+
+    // this.value = original.value
+    String s2 = new String(String original);
+
+    // 将字符数组进行拷贝
+    // this.value = Arrays.copyOf(value, value.length);
+    String s3 = new String(char[] a);
+
+    String s4 = new String(char[] a, int startIndex, int count)
+    ```
+* 字符串的内存结构
+    * 字面量的方式创建， 如：`String s = "AA";`
+        * 字符串会存储在**方法区的字符串常量池(元空间)**中
         * String对象会指向字符串常量池中的某一个
         * 如果初始化String时，常量中已经有了同样的数据，则不会开辟新的空间来创建数据，而是直接指向已有的数据
-    * 对于通过new创建的String对象：`String s = new String("AA")`
+    * new实例对象的方式创建：`String s = new String("AA")`
         * new创建的对象，会在堆空间中开辟内存，然后堆内存中的数据再**指向字符串常量池**中的数据
-    * 结果
-    ```java
-    String s1 = "aa";
-    String s2 = "aa";
-    String s3 = new String("aa");
-    System.out.print(s1==s2); //true
-    System.out.print(s1.equals(s2)); //true
-    System.out.print(s1==s3); //false
-    System.out.print(s1.equals(s3)); //true
-    ```
-* ![stringVal](./imgs/stringVal.png)
-* String的equals方法被重写过，是直接比较两个对象的内容
+    * 拼接式创建：`String s2 = s1 + "aa";`,`String s2 = "bb" + "aa";`
+        * 常量和常量的**拼接结果在常量**，且常量池中不会存在相同内容的常量
+        * 只要有一个时变量，结果就在堆中
+        * 如果拼接的结果调用intern(), 返回值就在常量池中
+        * 拼接式创建字符串的比较
+            ```java
+            String s1 = "aa";
+            String s2 = "bb";
+
+            String ss = s1; //s1 和 ss指向的都是常量池中的对象
+            System.out.println(s1 == ss);//true
+
+            String s3 = "aabb";
+            String s4 = "aa" + "bb";
+            // 通过其他字符串变量进行创建时，相当于使用new进行创建
+            // 会在堆空间中开辟内存，然后指向字符串常量池中的变量
+            String s5 = s1 + "bb"; 
+            String s6 = "aa" + s2;
+            String s7 = s1 + s2;
+
+            System.out.println(s3 == s4);//true
+            System.out.println(s3 == s5);//false
+            System.out.println(s3 == s6);//false
+            System.out.println(s3 == s7);//false
+            System.out.println(s5 == s6);//false
+            System.out.println(s5 == s7);//false
+            System.out.println(s6 == s7);//false
+
+            String s8 = s5.intern(); //s8指向的是s5使用的常量池对象
+            System.out.println(s3 == s8);//true
+            ```
+    * 字面量和new创建字符串的比较结果
+        ```java
+        
+        String s1 = "aa";
+        String s2 = "aa";
+        String s3 = new String("aa");
+        String s4 = new String("aa");
+        System.out.print(s1==s2); //true
+        System.out.print(s1.equals(s2)); //true
+        System.out.print(s1==s3); //false
+        System.out.print(s1.equals(s3)); //true
+        System.out.print(s3==s4); //false
+        System.out.print(s3.equals(s4)); //true
+
+        class A {
+            String name;
+
+            public A(String name) {
+                this.name = name;
+            }
+        }
+        // 通过字面量创建的字符串的地址是相同的，都保存在字符串常量池中
+        A a1 = new A("xxx");
+        A a2 = new A("xxx");
+        System.out.println(a1.name == a2.name);//true
+        System.out.println(a1.name.equals(a2.name)); //true
+
+        A a3 = new A(new String("xxx"));
+        A a4 = new A(new String("xxx"));
+        System.out.println(a3.name == a4.name); //false
+        System.out.println(a3.name.equals(a4.name)); //true
+        ```
+    * ![stringVal](./imgs/stringVal.png)
+* String常用方法
+    * int length(): 返回字符串的长度，`return value.length;`
+    * char charAt(int index): 返回某索引处的字符 `return value[index];`
+    * boolean isEmpty(): 判断是否是空字符串：`return value.length == 0;`
+    * String toLowerCase(): 使用默认语言环境，将String中的所有字符转换为小写
+    * String toUpperCase(): 使用默认语言环境，将String中的所有字符转换为大写
+    * String的equals方法被重写过，是直接比较两个对象的内容
+    * String trim(): 删除首位的空格，并返回一个新的字符串
 
 # 基本类型的池
 [top](#catalog)
@@ -2176,6 +2265,48 @@
                 * corePoolSize 核心池的大小
                 * maximunPoolSIze 最大线程数
                 * keepAliveTime 线程没有任务时最多保持多长时间后会终止
+        * 相关API
+            * ExecutorService:真正的线程池接口
+                * 常见子类**ThreadPoolExecutor**
+                * void execute(Runnable command): 执行任务/命令，没有返回值，一般用来执行Runnable
+                * <T> Future<T> submit(Callable<T> task):执行任务，有返回值，一般用来执行Callable
+                * void shutdown():关闭线程池
+            * Executors:工具类，线程池的工厂类，用于创建并返回不同类型的线程池
+                * Executors.newCachedThreadPool():创建一个可根据需要创建新线程的线程池
+                * Executors.newFixedThreadPool(n):创建一个可重用固定线程数的线程池
+                * Executors.newSingleThreadExecutor():创建一个只有一个线程的线程池
+                * Executors.newScheduledThreadPool(n):创建一个线程池，它可安排在给定延迟后运行命令或定期的执行
+        * 实例
+            ```java
+            public class TestPool {
+                public static void main(String[] args) {
+                    // 提供指定线程数量的线程池
+                    ExecutorService service = Executors.newFixedThreadPool(10);
+                    ThreadPoolExecutor service1 = (ThreadPoolExecutor)service;
+
+                    // 设置线程池的属性
+                    //System.out.println(service.getClass());
+                    service1.setCorePoolSize(15);
+                    // 执行指定线程操作，需要提供实现Runnable接口的对象
+                    service.execute(new NumberThread()); // 适合Runnable
+                    //service.submit(); //  适合Callable
+                    // 关闭线程池
+                    service.shutdown();
+                }
+            }
+
+            class NumberThread implements Runnable{
+
+                @Override
+                public void run() {
+                    for (int i = 0; i < 100; i++) {
+                        if (i % 2 == 0) {
+                            System.out.println(Thread.currentThread().getName() + ":" +i);
+                        }
+                    }
+                }
+            }
+            ```
 
 * 线程的生命周期
     * 5种状态
