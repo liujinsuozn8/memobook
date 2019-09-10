@@ -14,8 +14,8 @@
 - [类](#类)
 - [对象的序列化](#对象的序列化)
 - [object](#object)
-- [String](#string)
 - [基本类型的池](#基本类型的池)
+- [String](#string)
 - [包装类](#包装类)
 - [三目运算符](#三目运算符)
 - [异常](#异常)
@@ -684,6 +684,9 @@
             * x.equal(null)，**永远都返回false**
             * x.equal(和x不同类型的对象)，**永远都返回false**
 
+# 基本类型的池
+[top](#catalog)
+* 对于整形数据，范围-128～127的数都在**池中**，所以`Integet i = 1; Integet j = 1; i==j //true`
 
 # string
 [top](#catalog)
@@ -793,12 +796,32 @@
     * boolean isEmpty(): 判断是否是空字符串：`return value.length == 0;`
     * String toLowerCase(): 使用默认语言环境，将String中的所有字符转换为小写
     * String toUpperCase(): 使用默认语言环境，将String中的所有字符转换为大写
-    * String的equals方法被重写过，是直接比较两个对象的内容
     * String trim(): 删除首位的空格，并返回一个新的字符串
-
-# 基本类型的池
-[top](#catalog)
-* 对于整形数据，范围-128～127的数都在**池中**，所以`Integet i = 1; Integet j = 1; i==j //true`
+    * boolean equals(Object obj):比较字符串的内容是否相同
+    * boolean equalsIgnoreCase(String anotherString):比较字符串内容，忽略大小写
+    * String concat(String str):连接两个字符串，并返回一个新的字符串，先当相当于`+`(**并且返回的也是一个堆中的对象**)
+    * int compareTo(String  anotherString):
+        * 接口`Comparable`的实现方法
+        * 比较两个字符串**内容**的大小，返回的是字符码值的减法结果
+    * String substirng(int beginIndex):返回一个新字符串，范围：[beginIndex, 最后一个字符]
+    * String substirng(int beginIndex, int endIndex):返回一个新字符串，范围：[beginIndex, endIndex)
+    * boolean endsWith(String suffix): 字符串是否以指定后缀结束
+    * boolean startsWith(String prefix): 字符串是否以指定前缀开始
+    * boolean startsWith(String prefix, int toffset): 从toffset开始是否以prefix开始
+    * boolean contains(CharSequence s):是否包含指定char序列
+    * indexOf(String str): 返回指定字符串第一次出现的索引，未找到返回-1
+    * indexOf(String str, int fromIndex): 从fromIndex开始，str第一次出现的索引，未找到返回-1
+    * int lastIndexOf(String str):从右开始，指定字符串第一次出现的索引
+        * 和indexOf结果一样的情况：只包含一个str，不包含str
+    * int lastIndexOf(String str, int fromIndex):从fromIndex反响查找，指定字符串第一次出现的索引
+    * String replace(char oldChar, char newChar):用newChar替换oldChar，返回一个新字符串
+    * String replace(CharSequence target, CharSequence replacement):用replacement替换target，返回一个新字符串
+    * String repalceAll(String regex, String replacement):使用replacement替换所有匹配正则表达式的子字符串
+    * String repalceFirst(String regex, String replacement):使用replacement替换匹配正则表达式的第一个子字符串
+    * boolean matches(String regex): 检查字符串是否匹配郑培表达式regex
+    * String[] split(String regex):根据正则表达式拆分字符串
+    * String[] split(String regex, int limit): 根据正则表达式拆分字符串，最多不超过limit，如果超过了，则都放到最后一个元素中
+* String的equals方法被重写过，是直接比较两个对象的内容
 
 # 包装类
 [top](#catalog)
