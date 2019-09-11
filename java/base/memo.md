@@ -901,6 +901,17 @@
 	* 空参构造器：`new StringBuffer();`，默认创建长度为16的char[]
 	* String对象构造：`new StringBuffer(String str);`，创建长度为str.length + 16的char[]
 	* 指定容量构造:`StringBuffer(int capacity)`，创建长度为**capacity**的char[]
+	* 通过null来初始化对象
+		* String对象可以声明为null:`String str = null;`
+		* StringBuffer不可以使用null构造，会引发`java.lang.NullPointerException` 异常
+			```
+			// 直接使用null构造
+			StringBuffer sb = new StringBuffer(null);
+			
+			// 间接使用null构造
+			String str = null;
+			StringBuffer sb2 = new StringBuffer(str);
+			```
 * 存储结构底层分析
     ```java
     String str = new String();//value = new char[0]
@@ -923,7 +934,7 @@
     ```
 * 扩容方式
 	* 扩容操作：默认情况下扩容为原来数组的2倍+1，然后将字符数组拷贝到新数组中
-		* **为了替该效率，在基本了解字符的增长情况时，应该使用指定容量的构造器`StringBuffer(int capacity)`，来尽量避免扩容操作
+		* 为了提高效率，在基本了解字符的增长情况时，应该使用指定容量的构造器`StringBuffer(int capacity)`，来尽量避免扩容操作
 	```java
 	// StringBuffer
 	@Override
@@ -957,6 +968,32 @@
 			System.out.println(sb.length());// 长度为4
 			System.out.println(sb); // 输出：null
 			```
+			* 底层代码：
+				```java
+				// AbstractStringBuilder.java
+				public AbstractStringBuilder append(StringBuffer sb) {
+					if (sb == null)
+						return appendNull(); // 如果参数是sb=null，则使用appendNull方法添加字符串：null
+					int len = sb.length();
+					ensureCapacityInternal(count + len);
+					sb.getChars(0, len, value, count);
+					count += len;
+					return this;
+				}
+				
+				// 对容量进行检查，然后添加 'n'、'u'、'l'、'l' 四个字符
+				private AbstractStringBuilder appendNull() {
+					int c = count;
+					ensureCapacityInternal(c + 4);
+					final char[] value = this.value;
+					value[c++] = 'n';
+					value[c++] = 'u';
+					value[c++] = 'l';
+					value[c++] = 'l';
+					count = c;
+					return this;
+				}
+				```
 	* **删** synchronized StringBuffer delete(int start, int end)
 		* 删除范围[start, end)的字符
 		* return this , 直接修改对象本身
@@ -984,6 +1021,19 @@
 	* **查** synchronized char charAt(int index) 返回index处的字符
 	* synchronized void setCharAt(int index, char ch) 将index处的字符替换为ch
 	* synchronized String toString() 将内部的char[]转换为String
+* 注意，可以使用append添加null，不可以使用null来构造StringBuffer对象：
+	```java
+	String str = null;
+	StringBuffer sb = new StringBuffer();
+	sb.append(str);
+	System.out.println(sb.length());// 长度为4
+	System.out.println(sb); // 输出：null
+	
+	sb.append(null); //error
+	
+	StringBuffer sb2 = new StringBuffer(null); //Exception：java.lang.NullPointerException
+	```
+
 ## 字符串-StringBuilder
 [top](#catalog)
 * 可变字符序列，底层是char[]可变字符数组(在父类AbstractStringBuilder中)
