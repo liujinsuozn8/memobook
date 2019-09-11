@@ -809,7 +809,8 @@
     * boolean isEmpty(): 判断是否是空字符串：`return value.length == 0;`
     * String toLowerCase(): 使用默认语言环境，将String中的所有字符转换为小写
     * String toUpperCase(): 使用默认语言环境，将String中的所有字符转换为大写
-    * String trim(): 删除首位的空格，并返回一个新的字符串
+    * String trim(): 删除首位的空格，并返回一个字符串
+        * 如果首或尾部有空格则返回一个新的字符串对象，如果首或尾部没有空格，则返回该字符串本身
     * boolean equals(Object obj):比较字符串的内容是否相同
     * boolean equalsIgnoreCase(String anotherString):比较字符串内容，忽略大小写
     * String concat(String str):连接两个字符串，并返回一个新的字符串，先当相当于`+`(**并且返回的也是一个堆中的对象**)
@@ -824,6 +825,29 @@
     * boolean contains(CharSequence s):是否包含指定char序列
     * indexOf(String str): 返回指定字符串第一次出现的索引，未找到返回-1
     * indexOf(String str, int fromIndex): 从fromIndex开始，str第一次出现的索引，未找到返回-1
+        ```java
+        //统计一个字符串在另一个字符串中出现的次数
+        public static int findCount(String str, String sub){
+            int subLength = sub.length();
+            int strLength = str.length();
+            int startIndex = 0;
+            int count = 0;
+            int si;
+            // 判断起始index范围 + 从起始index开始子字符串是否存在(如果不存在，则结束检索)
+            while ((startIndex < strLength-1) && (si = str.indexOf(sub, startIndex)) != -1){
+                count++;
+                startIndex = si + subLength;
+            }
+            return count;
+        }
+        
+        @Test
+        public test(){
+            String str = "abcfffabsdfabhfgaba"; // ab = 4
+            String sub = "ab";
+            int result = findCount(str, sub)
+        }
+        ```
     * int lastIndexOf(String str):从右开始，指定字符串第一次出现的索引
         * 和indexOf结果一样的情况：只包含一个str，不包含str
     * int lastIndexOf(String str, int fromIndex):从fromIndex反响查找，指定字符串第一次出现的索引
@@ -872,7 +896,12 @@
 [top](#catalog)
 * 可变字符序列，底层是char[]可变字符数组(在父类AbstractStringBuilder中)
 * 效率低，内部使用了线程安全的synchronized同步方法
-* 底层分析
+* length的值等于有效字符个数，不等于char[]的长度
+* 初始化容量：
+	* 空参构造器：`new StringBuffer();`，默认创建长度为16的char[]
+	* String对象构造：`new StringBuffer(String str);`，创建长度为str.length + 16的char[]
+	* 指定容量构造:`StringBuffer(int capacity)`，创建长度为**capacity**的char[]
+* 存储结构底层分析
     ```java
     String str = new String();//value = new char[0]
         
@@ -892,13 +921,98 @@
     //}
     System.out.println(sb2.length()); //输出3
     ```
+* 扩容方式
+	* 扩容操作：默认情况下扩容为原来数组的2倍+1，然后将字符数组拷贝到新数组中
+		* **为了替该效率，在基本了解字符的增长情况时，应该使用指定容量的构造器`StringBuffer(int capacity)`，来尽量避免扩容操作
+	```java
+	// StringBuffer
+	@Override
+    public synchronized StringBuffer append(String str) {
+        toStringCache = null;
+        super.append(str);
+        return this;
+    }
+	
+	// AbstractStringBuilder
+	public AbstractStringBuilder append(String str) {
+        if (str == null)
+            return appendNull();
+        int len = str.length();
+        ensureCapacityInternal(count + len);//确保容量足够 count是已经存储的数量，len是新添加字符串的长度
+        str.getChars(0, len, value, count);
+        count += len;
+        return this;
+    }
+	```
+* 常用方法
+	* **增** synchronized StringBuffer append(type obj)
+		* 进行字符串拼接，参数类型可以是基本数据类型、Object、字符串、StringBuffer等
+		* return this , 直接修改对象本身
+		* 支持链式调用
+		* **当obj=null时，将会插入字符串`null`**
+			```java
+			String str = null;
+			StringBuffer sb = new StringBuffer();
+			sb.append(str); // 如果直接添加null： sb.append(null); 会引发异常
+			System.out.println(sb.length());// 长度为4
+			System.out.println(sb); // 输出：null
+			```
+	* **删** synchronized StringBuffer delete(int start, int end)
+		* 删除范围[start, end)的字符
+		* return this , 直接修改对象本身
+		* 支持链式调用
+	* **改** synchronized StringBuffer replace(int start, int end, String str)
+		* 把范围[start, end)的字符替换为str中的字符
+			* 可以理解为:先删除[start, end)范围的数据，再从start开始插入str，[end,字符串结束]的字符全部移动到str后边
+			* 如果替换的过程中容量不足，则自动扩容
+		* return this , 直接修改对象本身
+		* 支持链式调用
+	* **增** synchronized StringBuffer insert(int offset, String str)
+		* 从offset位置开始，插入str
+		* return this , 直接修改对象本身
+		* 支持链式调用
+	* synchronized StringBuffer reverse(): 
+		* 翻转字符串
+		* return this , 直接修改对象本身
+		* 支持链式调用
+	* **查** indexOf
+		* int indexOf(String str) 返回str第一次出现的索引
+		* synchronized int indexOf(String str, int fromIndex) 从fromIndex开始，返回str第一次出现的索引
+	* substring
+		* synchronized **String** substring(int start) 返回范围[start, 结束]的**字符串**
+		* synchronized **String** substring(int start, int end) 返回范围[start, end)的**字符串**
+	* **查** synchronized char charAt(int index) 返回index处的字符
+	* synchronized void setCharAt(int index, char ch) 将index处的字符替换为ch
+	* synchronized String toString() 将内部的char[]转换为String
 ## 字符串-StringBuilder
 [top](#catalog)
 * 可变字符序列，底层是char[]可变字符数组(在父类AbstractStringBuilder中)
 * 效率比StringBuffer高，线程不安全的
+* 初始化容量： 参考StringBuffer
+* 存储结构底层分析： 参考StringBuffer
+* 扩容方式： 参考StringBuffer
+* 常用方法： 参考StringBuffer
+
 ## 三种类型的异同
 [top](#catalog)
-        
+* 相同点
+	* 底层的存储都是char[]
+* 不同点
+	* String
+		* 不可变字符序列
+		* 使用效率最差
+		* 可以使用字面量来创建对象:`String a = "aaaa";`
+		* 作为参数传递时，如果改变形参不会影响字符串本身
+	* StringBuffer
+		* 可变字符序列, 初始容量为16，每次扩容为原来的2倍+1
+		* 线程安全，效率比StringBuilder低
+		* 必须通过构造器创建对象
+		* 作为参数传递时，如果改变形参会直接改变对象本身
+	* StringBuilder
+		* 可变字符序列
+		* 线程不安全，效率高
+        * 必须通过构造器创建对象
+		* 作为参数传递时，如果改变形参会直接改变对象本身
 
 # 包装类
 [top](#catalog)
