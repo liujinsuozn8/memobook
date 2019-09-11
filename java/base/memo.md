@@ -15,7 +15,11 @@
 - [对象的序列化](#对象的序列化)
 - [object](#object)
 - [基本类型的池](#基本类型的池)
-- [String](#string)
+- 字符串
+    - [字符串-string](#字符串-string)
+    - [字符串-StringBuffer](#字符串-stringbuffer)
+    - [字符串-StringBuilder](#字符串-stringbuilder)
+    - [三种类型的异同](#三种类型的异同)
 - [包装类](#包装类)
 - [三目运算符](#三目运算符)
 - [异常](#异常)
@@ -102,6 +106,19 @@
         * 编译时类型：声明变量时的类型
         * 运行时类型：实际赋值给变量的类型
         * 以`=`为界：编译时，看左边；运行时，看右边
+* 各数据类型的默认初始化
+    
+    |成员变量类型|初始值|
+    |-|-|
+    |byte|0|
+    |short|0|
+    |int|0|
+    |long|0L|
+    |float|0.0F|
+    |double|0.0|
+    |char|0 或 '\u0000'|
+    |boolean|false|
+    |引用类型|null|
 
 # 运算符
 [top](#catalog)
@@ -132,6 +149,7 @@
 # 数组
 [top](#catalog)
 * 数组工具类：Arrays
+* 直接输出数组内容时，可以使用：`Arrays.toString(type[]);`
 * 数组中的元素可以是任何数据类型，包括基本数据类型和引用数据类型
 * 创建数组对象会在内存中开辟一整块连续的空间，而数组名中引用的是这块连续空间的**首地址**
 * 数组的长度一旦确定，就不能修改
@@ -163,6 +181,7 @@
         * 基本类型，默认初始化各不相同
         * 引用类型，默认初始化为null
     * 数组变量在**栈内存**，各元素对象在**堆内存**
+* **可以创建长度为0的数组**：`type[] t = new type[0];`，用`Arrays.toString`输出时会输出`[]`。如果直接输出该数组，则控制台没有任何输出
 
 # package
 [top](#catalog)
@@ -266,18 +285,6 @@
         p = null;
         ```
     * 对象被创建时，会读各种类型的成员变量进行初始化赋值变量的默认初始化赋值
-    
-        |成员变量类型|初始值|
-        |-|-|
-        |byte|0|
-        |short|0|
-        |int|0|
-        |long|0L|
-        |float|0.0F|
-        |double|0.0|
-        |char|0 或 '\u0000'|
-        |boolean|false|
-        |引用类型|null|
 * 类的成员
     * 属性
         * 成员变量(类体内声明的变量)：
@@ -688,7 +695,8 @@
 [top](#catalog)
 * 对于整形数据，范围-128～127的数都在**池中**，所以`Integet i = 1; Integet j = 1; i==j //true`
 
-# string
+# 字符串
+## 字符串-string
 [top](#catalog)
 * 继承关系：
     ```java
@@ -716,7 +724,6 @@
     // 将字符数组进行拷贝
     // this.value = Arrays.copyOf(value, value.length);
     String s3 = new String(char[] a);
-
     String s4 = new String(char[] a, int startIndex, int count)
     ```
 * 字符串的内存结构
@@ -727,8 +734,9 @@
     * new实例对象的方式创建：`String s = new String("AA")`
         * new创建的对象，会在堆空间中开辟内存，然后堆内存中的数据再**指向字符串常量池**中的数据
     * 拼接式创建：`String s2 = s1 + "aa";`,`String s2 = "bb" + "aa";`
-        * 常量和常量的**拼接结果在常量**，且常量池中不会存在相同内容的常量
-        * 只要有一个时变量，结果就在堆中
+        * 常量和常量的**拼接结果在字符串常量池**，且常量池中不会存在相同内容的常量
+        * 只要有一个是变量，字符串对象就在堆中
+            * **<label style="color:red">如果变量使用final修饰，即常量时，字符串对象仍然在字符串常量池中</label>**
         * 如果拼接的结果调用intern(), 返回值就在常量池中
         * 拼接式创建字符串的比较
             ```java
@@ -756,6 +764,11 @@
 
             String s8 = s5.intern(); //s8指向的是s5使用的常量池对象
             System.out.println(s3 == s8);//true
+
+            final String fs = "aa";
+            String s9 = fs + "bb"; // 创建的字符串对象在字符串常量池中
+            System.out.println(s3 == s9);//true
+            
             ```
     * 字面量和new创建字符串的比较结果
         ```java
@@ -820,8 +833,72 @@
     * String repalceFirst(String regex, String replacement):使用replacement替换匹配正则表达式的第一个子字符串
     * boolean matches(String regex): 检查字符串是否匹配郑培表达式regex
     * String[] split(String regex):根据正则表达式拆分字符串
+        ``` java
+        String st2 = "werw|vdgd|fg|hg";
+        String[] st3 = st2.split("\\|");
+        // st3 = [werw, vdgd, fg, hg]
+        ```
     * String[] split(String regex, int limit): 根据正则表达式拆分字符串，最多不超过limit，如果超过了，则都放到最后一个元素中
+        ``` java
+        String st2 = "werw|vdgd|fg|hg";
+        String[] st3 = st2.split("\\|",2);
+        // st3 = [werw, vdgd|fg|hg]
+        ```
+    * string与char[]之间的转换
+        * string-->char[]: 
+            * char toCharArray() 将字符串转换为字符数组
+            * void getChars(int srcBegin, int srcEnd, char[] dst, int dstBegin) 将范围[srcBegin, srcEnd)的字符保存到dst中，从dst的dstBegin开始存放，并且会覆盖之前的内容
+                ```java
+                String str1 = "abcdefghijkl";
+                char[] char2 = new char[]{'1','2','3','4','5','6','7','8'};
+                str1.getChars(2,6,char2, 3);
+                System.out.println(char2); // 123cdef8
+                //char[] char2 = new char[8]; // 默认初始化时，输出：[   cdef ]
+                ```
+        * char[]-->string: 
+            * new String(char[] cs) 使用字符数组创建字符串
+            * new String(char[] cs, int offset, int length) 用范围[offset, offset+length]的字符创建字符串
+    * string与byte[]之间的转换
+        * string-->byte[] 编码
+            * byte[] getBytes() 使用平台默认的字符集将string编码为byte序列，并保存到byte数组中
+            * byte[] getBytes(String charsetName) 使用指定字符集将string编码为byte序列，并保存到byte数组中
+        * byte[]-->string 解码(与编码时所使用的字符集必须一致，否则会出现乱码)
+            * new String(byte[]) 使用平台默认的字符集解码byte数组，并创建字符串
+            * new String(byte[], charsetName) 使用指定字符集解码byte数组，并创建字符串
 * String的equals方法被重写过，是直接比较两个对象的内容
+
+
+## 字符串-StringBuffer
+[top](#catalog)
+* 可变字符序列，底层是char[]可变字符数组(在父类AbstractStringBuilder中)
+* 效率低，内部使用了线程安全的synchronized同步方法
+* 底层分析
+    ```java
+    String str = new String();//value = new char[0]
+        
+    StringBuffer sb1 = new StringBuffer();// char[] value = new char[16]
+    // 构造器代码
+    //public StringBuilder() {
+    //        super(16);//默认创建容量为16的char[]
+    //    }
+    sb1.append('a'); //value[0] = 'a';
+    sb1.append('b'); //value[1] = 'a';
+
+    StringBuffer sb2 = new StringBuffer("abc");
+    // 构造器代码
+    //public StringBuffer(String str) {
+    //    super(str.length() + 16);//创建字符串长度+16长度的字符数组
+    //    append(str);//再将字符串添加到字符数组中
+    //}
+    System.out.println(sb2.length()); //输出3
+    ```
+## 字符串-StringBuilder
+[top](#catalog)
+* 可变字符序列，底层是char[]可变字符数组(在父类AbstractStringBuilder中)
+* 效率比StringBuffer高，线程不安全的
+## 三种类型的异同
+[top](#catalog)
+        
 
 # 包装类
 [top](#catalog)
