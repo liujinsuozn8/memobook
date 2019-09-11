@@ -29,6 +29,9 @@
 - [注解](#注解)
 - [io流](#io流)
 - [多线程](#多线程)
+- 日期时间api
+	- [日期时间api-JDK8之前](#日期时间api-JDK8之前)
+	- [日期时间api-JDK8之后](#日期时间api-JDK8之后)
 - [扩展](#扩展)
 
 # 基本流程：
@@ -2913,6 +2916,22 @@
         }
     }
     ```
+
+# 日期时间api
+## 日期时间api-JDK8之前
+[top](#catalog)
+* 基本结构 ???????
+* java.lang.System类
+	* public static native long currentTimeMillis();
+		* 返回当前时间与1970年1月1日0时0分0秒之间以**毫秒为单位的时间差**(时间戳)
+* java.util.Date类
+	* 表示特定的时间，精确到毫秒
+	* java.sql.Date 也有一个Date类，是java.util.Date的子类：`public class Date extends java.util.Date`
+	* 构造器的使用：
+		* 无参构造器：`Date date1 = new Date();`
+
+## 日期时间api-JDK8之后
+[top](#catalog)
 
 
 # 扩展
