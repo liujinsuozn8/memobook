@@ -19,7 +19,7 @@
     - [字符串-string](#字符串-string)
     - [字符串-StringBuffer](#字符串-stringbuffer)
     - [字符串-StringBuilder](#字符串-stringbuilder)
-    - [三种类型的异同](#三种类型的异同)
+    - [三种类型的关系](#三种类型的关系)
 - [包装类](#包装类)
 - [三目运算符](#三目运算符)
 - [异常](#异常)
@@ -470,6 +470,18 @@
                 4. private方法**不能重写**
                 5. 子类中抛出的异常 <= 父类中抛出的异常
             * 子类与父类中同名同参数的方法必须同时声明为非static的(即为重写)，或者同时声明为 static的(不是重写)。因为static方法是属于类的，子类无法覆盖父类的方法。
+        
+        * **父类子类相互转化**
+        ```java
+        class A{}
+        class B extends A{}
+
+        A a = new B(); // 多态
+        B b = (B)a; // 运行时，a指向的是B的实例对象，可以进行强转
+
+        A a2 = new A();
+        B b2 = (B)a2; // 运行时，a指向的时A的实例对象，无法强转成子类的对象
+        ```
 
 * 关键字
     * this
@@ -642,6 +654,7 @@
             * 局部内部类可以使用外部方法的局部变量，但是必须是final的
     * 编译后，内部类会有独立的*.class文件，文件名前面会自动附加：`外部类名$`
 
+
 # 对象的序列化
 [top](#catalog)
 * `内存中的Java对象 <--> 平台无关的二进制流` 之间转化，可以保存到磁盘上或通过网络传播
@@ -728,6 +741,11 @@
     // this.value = Arrays.copyOf(value, value.length);
     String s3 = new String(char[] a);
     String s4 = new String(char[] a, int startIndex, int count)
+
+    // 使用StringBuffer，StirngBuilder来创建String
+    StringBuffer sb = new StringBuffer("....");
+    sb.append("...");
+    String s5 = new String(sb);
     ```
 * 字符串的内存结构
     * 字面量的方式创建， 如：`String s = "AA";`
@@ -886,12 +904,13 @@
             * new String(char[] cs) 使用字符数组创建字符串
             * new String(char[] cs, int offset, int length) 用范围[offset, offset+length]的字符创建字符串
     * string与byte[]之间的转换
-        * string-->byte[] 编码
+        * string-->byte[] **编码**
             * byte[] getBytes() 使用平台默认的字符集将string编码为byte序列，并保存到byte数组中
             * byte[] getBytes(String charsetName) 使用指定字符集将string编码为byte序列，并保存到byte数组中
-        * byte[]-->string 解码(与编码时所使用的字符集必须一致，否则会出现乱码)
+        * byte[]-->string **解码** (与编码时所使用的字符集必须一致，否则会出现乱码)
             * new String(byte[]) 使用平台默认的字符集解码byte数组，并创建字符串
             * new String(byte[], charsetName) 使用指定字符集解码byte数组，并创建字符串
+    * static String valueOf(Object obj) 静态方法，返回：`return (obj == null) ? "null" : obj.toString();`
 * String的equals方法被重写过，是直接比较两个对象的内容
 
 
@@ -1046,26 +1065,54 @@
 * 扩容方式： 参考StringBuffer
 * 常用方法： 参考StringBuffer
 
-## 三种类型的异同
+## 三种类型的关系
 [top](#catalog)
-* 相同点
-	* 底层的存储都是char[]
-* 不同点
-	* String
-		* 不可变字符序列
-		* 使用效率最差
-		* 可以使用字面量来创建对象:`String a = "aaaa";`
-		* 作为参数传递时，如果改变形参不会影响字符串本身
-	* StringBuffer
-		* 可变字符序列, 初始容量为16，每次扩容为原来的2倍+1
-		* 线程安全，效率比StringBuilder低
-		* 必须通过构造器创建对象
-		* 作为参数传递时，如果改变形参会直接改变对象本身
-	* StringBuilder
-		* 可变字符序列
-		* 线程不安全，效率高
-        * 必须通过构造器创建对象
-		* 作为参数传递时，如果改变形参会直接改变对象本身
+* 三种类型的异同
+    * 相同点
+        * 底层的存储都是char[]
+    * 不同点
+        * String
+            * 不可变字符序列
+            * 使用效率最差
+            * 可以使用字面量来创建对象:`String a = "aaaa";`
+            * 作为参数传递时，如果改变形参不会影响字符串本身
+        * StringBuffer
+            * 可变字符序列, 初始容量为16，每次扩容为原来的2倍+1
+            * 线程安全，效率比StringBuilder低
+            * 必须通过构造器创建对象
+            * 作为参数传递时，如果改变形参会直接改变对象本身
+        * StringBuilder
+            * 可变字符序列
+            * 线程不安全，效率高
+            * 必须通过构造器创建对象
+            * 作为参数传递时，如果改变形参会直接改变对象本身
+* 三种类型的转化
+    * String --> StringBuffer, StringBuilder
+        * 通过构造器来创建对象
+            ```java
+            String str = "....";
+            StringBuffer sbf = new StringBuffer(str);
+            StringBuilder sbl = new StringBuilder(str);
+            ```
+    * StringBuffer, StringBuilder --> String
+        * 通过String的构造器
+            ```java
+            StringBuffer sbf = new StringBuffer("aaaaa");
+            StringBuilder sbl = new StringBuilder("bbbbb");
+
+            String str1 = new String(sbf);
+            String str2 = new String(sbl);
+            ```
+        * 通过toStirng()方法
+            ```java
+            StringBuffer sbf = new StringBuffer("aaaaa");
+            StringBuilder sbl = new StringBuilder("bbbbb");
+
+            String str1 = sbf.toString();
+            String str2 = sbl.toString();
+            ```
+
+
 
 # 包装类
 [top](#catalog)
@@ -2923,13 +2970,20 @@
 * 基本结构 ???????
 * java.lang.System类
 	* public static native long currentTimeMillis();
-		* 返回当前时间与1970年1月1日0时0分0秒之间以**毫秒为单位的时间差**(时间戳)
+		* 返回当前时间与1970年1月1日0时0分0秒之间的**毫秒数**(时间戳)
 * java.util.Date类
 	* 表示特定的时间，精确到毫秒
 	* java.sql.Date 也有一个Date类，是java.util.Date的子类：`public class Date extends java.util.Date`
 	* 构造器的使用：
-		* 无参构造器：`Date date1 = new Date();`
-
+		* 无参构造器：`new Date();`
+        * 通过毫秒数构造：`new Date(long date)`
+            ```java
+            long time = xxxxxxL;
+            Date date = new Date(time);
+            ```
+    * 常用方法
+        * toString():把Date对象转换为字符串，如：`Wed Sep 11 21:49:19 CST 2019`，即`星期 月 日 时间 时区 年`
+        * long getTime(): 返回Date对象到1970年1月1日0时0分0秒之间的**毫秒数**
 ## 日期时间api-JDK8之后
 [top](#catalog)
 
