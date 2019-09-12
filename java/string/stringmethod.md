@@ -31,6 +31,51 @@
 	public test(){
 		String a = getMaxString("aaaaacbdsdfer", "qqqqacbdeeee");
         System.out.println(a); // acbd
+		
+		//String a = getMaxString("aaaaacbdsdfer", null); //null
+	}
+	```
+* 查找两个字符串中的最大相同字串(查找多个)
+	```java
+	public static List<String> getMaxStringList(String str1, String str2){
+	    if (str1 != null && str2 != null){
+    		String maxStr = null;
+    		String minStr = null;
+    		if (str1.length() >= str1.length()){
+    		    maxStr = str1;
+    		    minStr = str2;
+    		} else {
+    		    maxStr = str2;
+    		    minStr = str1;
+    		}
+    		// 外层循环次数：删除0个字符~删除长度-100个字符
+    		int minLength = minStr.length();
+    		String temp = null;
+			List<String> result = new ArrayList();
+    		for(int i=0; i<minLength; i++){
+				// 当前字串检查完后，整体向右移动1个字符
+    			for (int x=0, y = minLength - i; y <= minLength; x++, y++){
+    				temp = minStr.substring(x, y);
+    				if (maxStr.contains(temp)){
+    					result.add(temp);
+    				}
+    			}
+				
+				// 如果result的长度不为0， 说明在当前长度已经搜索到多个最大相同字串，结束循环
+				if (result.size() != 0){
+					return result;
+				}
+    		}
+	    }	
+		return null;
+	}
+	
+	@Test
+	public test(){
+		List<String> a = getMaxStringList("aaaaaacbdsdfereeeee", "qqqqaacbdeeeee");
+        System.out.println(a); //[aacbd, eeeee]
+		
+		//List<String> a = getMaxStringList("aaaaacbdsdfereeeee", null); //null
 	}
 	```
 * 统计一个字符串在另一个字符串中出现的次数
