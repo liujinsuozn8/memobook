@@ -844,31 +844,32 @@
     * boolean startsWith(String prefix): 字符串是否以指定前缀开始
     * boolean startsWith(String prefix, int toffset): 从toffset开始是否以prefix开始
     * boolean contains(CharSequence s):是否包含指定char序列
-    * indexOf(String str): 返回指定字符串第一次出现的索引，未找到返回-1
-    * indexOf(String str, int fromIndex): 从fromIndex开始，str第一次出现的索引，未找到返回-1
-        ```java
-        //统计一个字符串在另一个字符串中出现的次数
-        public static int findCount(String str, String sub){
-            int subLength = sub.length();
-            int strLength = str.length();
-            int startIndex = 0;
-            int count = 0;
-            int si;
-            // 判断起始index范围 + 从起始index开始子字符串是否存在(如果不存在，则结束检索)
-            while ((startIndex < strLength-1) && (si = str.indexOf(sub, startIndex)) != -1){
-                count++;
-                startIndex = si + subLength;
-            }
-            return count;
-        }
-        
-        @Test
-        public test(){
-            String str = "abcfffabsdfabhfgaba"; // ab = 4
-            String sub = "ab";
-            int result = findCount(str, sub)
-        }
-        ```
+    * int indexOf(String str): 返回指定字符串第一次出现的索引，未找到返回-1
+    * int indexOf(String str, int fromIndex): 从fromIndex开始，str第一次出现的索引，未找到返回-1
+		* **如果fromIndex > str.length(), 不会引发异常, 返回-1**
+		* 统计一个字符串在另一个字符串中出现的次数
+			```java
+			public static int getCount(String str, String sub){
+				int subLength = sub.length();
+				int strLength = str.length();
+				int startIndex = 0;
+				int count = 0;
+				// 从startIndex开始子字符串是否存在(如果不存在，则结束检索)
+				while ((startIndex = str.indexOf(sub, startIndex)) != -1){
+					count++;
+					//找到一次后,在当前索引基础上向后移动sub的长度,得到新的起始位置
+					startIndex += subLength;
+				}
+				return count;
+			}
+			
+			@Test
+			public test(){
+				String str = "abcfffabsdfabhfgaba"; // ab = 4
+				String sub = "ab";
+				int result = findCount(str, sub)
+			}
+			```
     * int lastIndexOf(String str):从右开始，指定字符串第一次出现的索引
         * 和indexOf结果一样的情况：只包含一个str，不包含str
     * int lastIndexOf(String str, int fromIndex):从fromIndex反响查找，指定字符串第一次出现的索引
@@ -2972,6 +2973,7 @@
 	* public static native long currentTimeMillis();
 		* 返回当前时间与1970年1月1日0时0分0秒之间的**毫秒数**(时间戳)
 * java.util.Date类
+	* **该类不易国际化，大部分内容被废弃了**
 	* 表示特定的时间，精确到毫秒
 	* java.sql.Date 也有一个Date类，是java.util.Date的子类：`public class Date extends java.util.Date`
 	* 构造器的使用：
@@ -2984,6 +2986,84 @@
     * 常用方法
         * toString():把Date对象转换为字符串，如：`Wed Sep 11 21:49:19 CST 2019`，即`星期 月 日 时间 时区 年`
         * long getTime(): 返回Date对象到1970年1月1日0时0分0秒之间的**毫秒数**
+* java.text.SimpleDateFormat类
+	* 可进行Date类的格式化与解析，格式化和解析的方法与语言环境无关
+	* 两个操作
+		* 格式化 foramt：Date-->字符串
+			```java
+			Date date = new Date();
+			
+			// 空参构造器
+			SimpleDateFormat sdf1 = new SimpleDateFormat();
+			//9/12/19 2:53 AM
+			System.out.println(sdf1.format(date));
+			
+			// 指定格式化方法构造
+			SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+			//2019-09-12 02:53:02
+			System.out.println(sdf2.format(date));
+			```
+		* 解析 parse：字符串-->Date
+			* 解析时，如果日期字符串的格式与格式化字符不匹配，会引发异常:**java.text.javaParseException**
+			* 可以自由指定格式化字符串
+			```java
+			// 指定格式化方法构造
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+			// 时间字符串的格式需要与构造时使用的格式化字符串匹配
+			Date date = sdf.parse("2019-09-12 02:53:02");
+			System.out.println(date);
+			```
+* java.util.Calendar类
+	* 一个抽象基类，用于完成日期字段之间相互操作的功能
+	* 获取Calendar实例的方法
+		* Calendar.getInstance(),静态方法，返回一个`java.util.GregorianCalendar`类对象
+		* 使用子类`GregorianCalendar`的构造器
+	* **通过Calendar类获取的月份从0开始：0～11、获取的星期从周日开始：周日=1、周一=2、周六=7**
+	* 常用操作：
+		* public void set(int filed, int value) 设定某些信息
+			```java
+			Calendar calendar = Calendar.getInstance();
+			calendar.set(Calendar.DAY_OF_MONTH, 29);
+			int days = calendar.get(Calendar.DAY_OF_MONTH); //重新设定某月中的第几天
+			System.out.println(days); // 29
+			```
+		* public int get(int field) 获取某些信息
+			```java
+			Calendar calendar = Calendar.getInstance();
+			int days = calendar.get(Calendar.DAY_OF_MONTH);
+			System.out.println(days);
+			```
+		* public void add(int filed, int value) 对某个时间信息进行**加或减**
+			```java
+			Calendar calendar = Calendar.getInstance();
+			int days = calendar.get(Calendar.DAY_OF_MONTH);
+			System.out.println(days);
+			
+			//在当前日期的基础上增加4天
+			calendar.add(Calendar.DAY_OF_MONTH, 4);
+			int addDays = calendar.get(Calendar.DAY_OF_MONTH);
+			System.out.println(addDays);
+			
+			//在当前日期的基础上减少4天
+			calendar.add(Calendar.DAY_OF_MONTH, -4);
+			int minsDays = calendar.get(Calendar.DAY_OF_MONTH);
+			System.out.println(minsDays);
+			```
+		* public final Date getTime() 返回一个Date对象,时间为当前calendar类对象的时间
+			```java
+			Calendar calendar = Calendar.getInstance();
+			Date date = calendar.getTime();
+			System.out.println(date);
+			```
+		* public final void setTime(Date date) 使用Date对象，重新设定calendar的时间
+			```java
+			Date date = new Date();
+			System.out.println(date);
+			Calendar calendar = Calendar.getInstance();
+			System.out.println(calendar);
+			calendar.setTime(date);
+			System.out.println(calendar);
+			```
 ## 日期时间api-JDK8之后
 [top](#catalog)
 
