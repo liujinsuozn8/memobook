@@ -2980,11 +2980,11 @@
 		* 无参构造器：`new Date();`
         * 通过毫秒数构造：`new Date(long date)`
             ```java
-            long time = xxxxxxL;
+            long time = 1568298186983L;
             Date date = new Date(time);
             ```
     * 常用方法
-        * toString():把Date对象转换为字符串，如：`Wed Sep 11 21:49:19 CST 2019`，即`星期 月 日 时间 时区 年`
+        * toString():把Date对象转换为字符串，如：`Wed Sep 11 21:49:19 CST 2019`，即`星期-月-日-时间-时区-年`
         * long getTime(): 返回Date对象到1970年1月1日0时0分0秒之间的**毫秒数**
 * java.text.SimpleDateFormat类
 	* 可进行Date类的格式化与解析，格式化和解析的方法与语言环境无关
@@ -3068,31 +3068,113 @@
 [top](#catalog)
 * JDK1.8之前的问题
 	* 日期的值是可变的
-	* 使用Date构造指定日期时，年份是从1900开始，月份从0开始，创建时需要额外的计算
+	* 使用Date构造指定日期时，年份是从1970开始，月份从0开始，创建时需要额外的计算
 	* SimpleDateFormat的格式化处理只能操作Date对象，不能操作Calendar对象
 	* 都不能处理闰秒
 	* 可使用的几种日期对象**都不是线程安全的**
 * 新的api：java.time.API 来源于开源项目：Joda-Time。在JDK1.8之前的工程中可以通过配置MAVEN引入该项目来使用
 * 新的日期API
-	* java.time 包含值对象的基础包
+	* java.time 包含值对象的基础包 
+        * 通过值类型Istant提供机器视图，不提供处理人类意义上的时间单位
+        * **基于纳秒计算**
+
 	* java.time 提供哦你对不同的日历系统的访问
 	* java.time 格式化、解析时间和日期
 	* java.time 包括底层框架和扩展特性
 	* java.time 包含时区支持的类
-* LocalDate、LocalTime、LocalDateTime
-	* now() 静态方法，根据当前日期创建对象
-		```java
-		LocalDate localdate =LocalDate.now();
-        LocalTime localTime =LocalTime.now();
-        LocalDateTime localDateTime =LocalDateTime.now();
-		```
-	* of() 指定时间创建对象
-		```java
-		// 分别指定年月日时分秒 创建对象
-		LocalDateTime ldt = LocalDateTime.of(2011, 10, 6, 12, 10, 9);
-        System.out.println(ldt);
-		// jdk1.8之前可以使用SimpleDateFormat("yyyy-MM-dd HH：mm：ss")来创建
-		```
+* LocalDate, LocalTime, LocalDateTime（以LocalDateTime为例说明）
+    * 类的实例对象都是**不可变对象**
+    * 分别使用ISO-8601日历系统的日期、时间、日期和时间。提供了简单的本地日期或时间，并不包含当前的时间信息，也不包含与时区相关的信息
+    * 常用方法
+        * now() 静态方法，根据当前日期创建对象
+            ```java
+            LocalDate localdate =LocalDate.now();
+            LocalTime localTime =LocalTime.now();
+            LocalDateTime localDateTime =LocalDateTime.now();
+            ```
+        * of() 静态方向，指定时间创建对象(**不需要考虑偏移量的问题)**
+            ```java
+            // 分别指定年月日时分秒 创建对象
+            LocalDateTime ldt = LocalDateTime.of(2011, 10, 6, 12, 10, 9);
+            System.out.println(ldt);
+            // jdk1.8之前可以使用SimpleDateFormat("yyyy-MM-dd HH：mm：ss")来创建
+            ```
+        * getXXXX 取得某些值
+            * getDayMonth() 返回月份天数(1~31)
+            * getDayOfYear() 返回年份天数(1～366)
+            * getDayofWeek() 返回星期几(返回的时DayOfWeek枚举值)
+            * getMonth() 返回月份(Month的枚举值)
+            * getMonthValue() 返回月份数值1～12
+            * getYear() 返回年份
+            * getHour() 返回小时
+            * getMinute() 返回分钟
+            * getSecond() 返回秒
+        * withXXXX 设定某些值
+            * `public LocalDateTime withDayOfMonth(int dayOfMonth)` 设定月份天数，然后返回一个新的对象
+            * `public LocalDateTime withDayOfYear(int dayOfYear)` 设定年份天数，然后返回一个新的对象
+            * `public LocalDateTime withYear(int year)` 设定年份，然后返回一个新的对象
+                * 和Date对象不同，没有年份基准，可以设置年份为0或负数
+            * `public LocalDateTime withMonth(int month)` 设定月份，返回新对象
+            * `public LocalDateTime withHour(int hour)` 设定小时，返回新对象
+            * `public LocalDateTime withMinute(int minute)` 设定分钟，返回新对象
+            * `public LocalDateTime withSecond(int second)` 设定秒，返回新对象
+            * `public LocalDateTime withNano(int nanoOfSecond)` 设定毫秒，返回新对象
+        * plusXXXX 增加某些属性的值
+            * `public LocalDateTime plusYears(long years)` 增加年份，返回新对象
+            * `public LocalDateTime plusMonths(long months)` 增加月份，返回新对象
+            * `public LocalDateTime plusWeeks(long weeks)` 增加周，返回新对象
+            * `public LocalDateTime plusDays(long days)` 增加天，返回新对象
+            * `public LocalDateTime plusHours(long hours)` 增加小时，返回新对象
+            * `public LocalDateTime plusMinutes(long minutes)` 增加分钟，返回新对象
+            * `public LocalDateTime plusSeconds(long seconds)` 增加秒，返回新对象
+            * `public LocalDateTime plusNanos(long nanos)` 增加纳秒，返回新对象
+        * minusXXX 减少某些属性
+            * `public LocalDateTime minusYears(long years)` 减少年，返回新对象
+            * `public LocalDateTime minusMonths(long months)` 减少月，返回新对象
+            * `public LocalDateTime minusWeeks(long weeks)` 减少周，返回新对象
+            * `public LocalDateTime minusDays(long days)` 减少天，返回新对象
+            * `public LocalDateTime minusHours(long hours)` 减少小时，返回新对象
+            * `public LocalDateTime minusMinutes(long minutes)` 减少分钟，返回新对象
+            * `public LocalDateTime minusSeconds(long seconds)` 减少秒，返回新对象
+            * `public LocalDateTime minusNanos(long nanos)` 减少纳秒，返回新对象
+* 瞬时instant
+    * 精度可达纳秒级
+    * 时间线上的一个瞬时点，可能被用来记录应用程序中的事件时间，同时不需要如时区等任何上下文信息
+    * 面向机器的通用模型，是连续的。在此模型中时间线中的一个点表示为一个很大的数，有利于计算机处理
+    * 从1970年开始，以毫秒为单位？？？？
+    * 常用方法
+        * `public static Instant now()` 静态方法，默认返回<label style="color:red">UTC时区</label>的Instant类对象
+        * `public static Instant ofEpochMilli(long epochMilli)` 静态方法，返回在1970-01-01 00:00:00基础上增加毫秒数之后的Instant对象，类似于`Date(long date)`
+            ```java
+            Instant instant = Instant.ofEpochMilli(1568298186983L);
+            System.out.println(instant);
+            ```
+        * `public OffsetDateTime atOffset(ZoneOffset offset)` 在instant的基础上，通过偏移量来创建`OffsetDateTime`对象
+            ```java
+            Instant now = Instant.now();
+            System.out.println(now);
+
+            OffsetDateTime odt = now.atOffset(ZoneOffset.ofHours(8));
+            System.out.println(odt);
+            ```
+        * `public long toEpochMilli()` 返回至1970-01-01 00:00:00之间的毫秒数，类似与Date对象的getTime()
+            ```java
+            Instant now = Instant.now();
+            System.out.println(now);
+            
+            long l = now.toEpochMilli();
+            System.out.println(l);
+            ```
+* `java.time.format.DateTimeFormatter` 类
+    * 格式化、解析日期或时间
+    * 三种构造方法
+        * DateTimeFormatter.ISO_LOCAL_DATE_TIME
+    * 常用方法
+        * 格式化
+            ```java
+            ```
+        * 解析
+
 # 扩展
 [top](#catalog)
 * JavaBean
