@@ -3066,8 +3066,33 @@
 			```
 ## 日期时间api-JDK8之后
 [top](#catalog)
-
-
+* JDK1.8之前的问题
+	* 日期的值是可变的
+	* 使用Date构造指定日期时，年份是从1900开始，月份从0开始，创建时需要额外的计算
+	* SimpleDateFormat的格式化处理只能操作Date对象，不能操作Calendar对象
+	* 都不能处理闰秒
+	* 可使用的几种日期对象**都不是线程安全的**
+* 新的api：java.time.API 来源于开源项目：Joda-Time。在JDK1.8之前的工程中可以通过配置MAVEN引入该项目来使用
+* 新的日期API
+	* java.time 包含值对象的基础包
+	* java.time 提供哦你对不同的日历系统的访问
+	* java.time 格式化、解析时间和日期
+	* java.time 包括底层框架和扩展特性
+	* java.time 包含时区支持的类
+* LocalDate、LocalTime、LocalDateTime
+	* now() 静态方法，根据当前日期创建对象
+		```java
+		LocalDate localdate =LocalDate.now();
+        LocalTime localTime =LocalTime.now();
+        LocalDateTime localDateTime =LocalDateTime.now();
+		```
+	* of() 指定时间创建对象
+		```java
+		// 分别指定年月日时分秒 创建对象
+		LocalDateTime ldt = LocalDateTime.of(2011, 10, 6, 12, 10, 9);
+        System.out.println(ldt);
+		// jdk1.8之前可以使用SimpleDateFormat("yyyy-MM-dd HH：mm：ss")来创建
+		```
 # 扩展
 [top](#catalog)
 * JavaBean
