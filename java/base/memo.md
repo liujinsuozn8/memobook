@@ -122,7 +122,7 @@
         * 编译时类型：声明变量时的类型
         * 运行时类型：实际赋值给变量的类型
         * 以`=`为界：编译时，看左边；运行时，看右边
-* 各数据类型的默认初始化
+* <span id="var_default_init">各数据类型的默认初始化</span>
     
     |成员变量类型|初始值|
     |-|-|
@@ -624,12 +624,12 @@
 * new Obj() 时的整体执行顺序
     * 父类的静态代码块
     * 子类的静态代码块
-    * 成员变量默认初始化
+    * 成员变量默认初始化([各数据类型的默认初始化](#var_default_init))
     * 成员变量的显示初始化
     * 父类的非静态代码块
-    * 父类的构造器
+    * 父类的构造器，成员变量赋值
     * 子类的非静态代码块
-    * 子类的构造器
+    * 子类的构造器，成员变量赋值
 * 实例
     ```java
     public class Test {
@@ -645,6 +645,17 @@
             // public B(String b, String c)
             // public B(String b, String c) :test B
             A a = new B("test B", "test C");
+
+
+            // class A:first static black
+            // class B:first static black
+            // class A:first black, print b [class A:public String b]
+            // public A()
+            // class A:public String b
+            // class A:first black
+            // public B()
+            // class B:this is b
+            A a2 = new B();
         }
     }
 
@@ -806,8 +817,24 @@ public class CommandPara {
 * 一个类可以实现多个接口，接口也**可以继承其他接口**
 * 接口中所有方法被实现后，才能实例化
     * 如果实现类没有实现全部接口方法，该实现类只能被声明为abstract
+    * **接口中的方法、父接口中的方法都必须给出方法的实现**
+        ```java
+        interface MyInterface{
+            String s=“MyInterface”;
+            public void absM1();
+        }
+        
+        interface SubInterface extends MyInterface{
+            public void absM2();
+        }
+        
+        public class SubAdapter implements SubInterface{
+            public void absM1(){System.out.println(“absM1”);}
+            public void absM2(){System.out.println(“absM2”);}
+        }
+        ```
 * 接口与实现类之间存在多态性
-* 实现接口的匿名类对象
+* 创建实现接口的匿名类对象
     ```java
     InterfaceX x = new InterfaceX(){
         method01(...){...}
@@ -818,7 +845,7 @@ public class CommandPara {
 * 接口和父类中出现**同名属性**时，通过super.param来调用从父类中继承的属性，通过Interface.param来调用接口中的属性
 * java8以后可以为接口添加静态方法和默认方法
     * 可以通过接口直接调用静态方法
-* 默认方法的冲突
+* **默认方法的冲突**
     * 一个接口中定义了一个默认方法A， 另一个接口中也有同名同参数(无论是否default)的方法，此时会出现接口冲突
         * 解决方法：实现类必须覆盖接口中的同名同参数的方法
         * 若想调用某个接口中的冲突方法，可以：Interface.super.method()
