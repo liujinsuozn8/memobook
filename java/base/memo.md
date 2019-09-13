@@ -32,6 +32,9 @@
 - 日期时间api
 	- [日期时间api-JDK8之前](#日期时间api-JDK8之前)
 	- [日期时间api-JDK8之后](#日期时间api-JDK8之后)
+- [比较器](#比较器)
+- [System类](#system类)
+- [Math类](#math类)
 - [扩展](#扩展)
 
 # 基本流程：
@@ -3307,6 +3310,134 @@
 |java.time.ZoneId与java.util.TimeZone|Timezone.getTimeZone(id)|timeZone.toZoneId()|
 |java.time.format.DateTimeFormatter与java.text.DateFormat|formatter.toFormat()|无|
 
+# 比较器
+[top](#catalog)
+* 正常情况下java对象，只能进行`==`或`!=`比较，即比较两个对象的堆内存地址 
+* 实现对象排序的两种接口：
+    * 自然排序：java.lang.Comparable
+    * 定制排序：java.util.Comparator
+
+* 自然排序：java.lang.Comparable
+    * 实现该接口的对象集合可以通过`Arrays.sort`、`Collections,sort`进行自动排序
+    * **实现该接口的对象可以用作有效映射中的键或有序集合中的元素，无序指定比较器**
+    * 对类C的对象e1、e2，当且仅当`e1.compareTo(e2) == 0`与`e1.equals(e2)`的boolean值相同时，C的自然排序与equals一致。（自然排序与equals的结果最好一致）
+    * 重写compareTo(obj)的规则
+        * this > obj, return 正整数(升序)，负整数(降序)
+        * this < obj, return 负整数(降序)，正整数(升序)
+        * this = obj, return 0
+    * 实例
+        ```java
+        @Test
+        public void test1(){
+            A[] list = new A[4];
+            list[0] = new A(4, "aaa");
+            list[1] = new A(3, "aaa");
+            list[2] = new A(6, "aaa");
+            list[3] = new A(1, "aaa");
+            Arrays.sort(list);
+            System.out.println(Arrays.toString(list));
+        }
+
+        class A implements Comparable{
+            private int a;
+            private String b;
+
+            public A(int a, String b) {
+                this.a = a;
+                this.b = b;
+            }
+
+            @Override
+            public String toString() {
+                return "A{" +
+                        "a=" + a +
+                        ", b='" + b + '\'' +
+                        '}';
+            }
+
+            // 升序排列
+            @Override
+            public int compareTo(Object o) {
+                if (o instanceof A){
+                    A obj = (A)o;
+                    if (this.a > obj.a){
+                        return 1;
+                    } else if (this.a < obj.a) {
+                        return -1;
+                    } else {
+                        return 0;
+                    }
+                }
+                throw new RuntimeException("error type");
+            }
+        }
+        ```
+* 定制排序：java.util.Comparator
+    * 为什么需要定制排序
+        * 没有实现Comparable接口，且不方便修改代码
+        * 实现了Comparable接口，但实现的排序规则不适合当前的操作
+    * 重写compare(Object o1, Object o2) 的规则
+        * o1 > o2, return 正整数
+        * o1 < o2, reutrn 负整数
+        * o1 = o2, return 0
+    * 可以将Comparator作为参数传递给`Arrays.sort`、`Collections,sort`，来控制排序
+        ```java
+        Arrays.sort(list, new Comparator(){
+            @Override
+            public int compare(Object o1, Object o2){....}
+        })
+        ```
+* String、包装类等实现了Comparable接口，重写了compareTo(obj)方法，**默认都是从小到大排列**
+    * String： 按照字符串中的Unicode值来进行比较
+    * Character：按照字符的Unicode值来进行比较
+    * 数值及对应的包装类、BigInteger、BigDecimal：按照它们对应的数值大小进行比较
+    * Boolean：true > false
+    * Date、Time等：按时间大小排列
+
+# System类
+[top](#catalog)
+* 包含很多系统属性和系统的控制方法
+* 类的构造器时private的，无法创建对象，内部都是静态成员变量和静态方法
+* 静态成员变量：in、out、err 分别代表标准输入流(键盘输入)、标准输出流(显示器)、标准错误输出流(显示器)
+* 静态方法：
+    * `static native long currentTimeMillis()` 返回当前时间至`1970-1-1 00:00:00`之间的毫秒数
+    * `static void exit(int status)` 退出程序
+        * status=0 正常退出
+        * status!=0 异常退出
+        * 使用该方法可以在图形界面编程中实现程序的退出功能
+    * `static void gc()` 请求系统进行垃圾回收。系统是否立刻执行回收，取决于系统中垃圾回收算法的实现以及系统执行时的情况
+    * `static String getProperty(String key)` 获取系统中属性名为key的属性，系统中常见的属性：
+
+        |属性名|说明|
+        |-|-|
+        |java.version|java运行时环境版本|
+        |java.home|java安装目录|
+        |os.name|操作系统的名称|
+        |os.version|操作系统的版本|
+        |user.name|用户的账户名称|
+        |user.home|用户的主目录|
+        |user.dir|用户的当前工作目录|
+# Math类
+[top](#catalog)
+* java.lang.Math
+* 提供了一系列静态方法用于科学计算。**方法的参数和返回值类型一般为double型**
+* 使用时不需要实例化对象
+* 常用方法
+
+    |方法名|功能|
+    |-|-|
+    |abs|绝对值|
+    |acos,asin,atan,cos,sin,tan|三角函数|
+    |sqrt|平方根|
+    |pow(double a,doble b)|计算a的b次幂|
+    |log|自然对数|
+    |exp|e为底指数|
+    |max(double a,double b)|比较大小，返回大的|
+    |min(double a,double b)|比较大小，返回小的|
+    |random()|返回0.0到1.0的随机数|
+    |long round(double a)|double型数据a转换为long型(四舍五入)|
+    |toDegrees(double angrad)|弧度—>角度|
+    |toRadians(double angdeg)|角度—>弧度|
 
 # 扩展
 [top](#catalog)
