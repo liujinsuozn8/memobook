@@ -2,7 +2,11 @@
 - [基本流程](#基本流程)
 - [类文件](#import)
 - [变量](#变量)
-- [数据类型](#数据类型)
+- 数据类型
+    - [数据类型](#数据类型)
+    - [数据类型-基本类型的包装类](#数据类型-基本类型的包装类)
+    - [数据类型-BigInteger](#数据类型-biginteger)
+    - [数据类型-BigDecimal](#数据类型-bigdecimal)
 - [运算符](#运算符)
 - [数组](#数组)
 - [package](#package)
@@ -19,9 +23,7 @@
     - [字符串-string](#字符串-string)
     - [字符串-StringBuffer](#字符串-stringbuffer)
     - [字符串-StringBuilder](#字符串-stringbuilder)
-    - [三种类型的关系](#三种类型的关系)
-- [包装类](#包装类)
-- [三目运算符](#三目运算符)
+    - [字符串-三种类型的关系](#字符串-三种类型的关系)
 - [异常](#异常)
 - [集合](#集合)
 - [泛型](#泛型)
@@ -63,6 +65,7 @@
         * 形参
 
 # 数据类型
+## 数据类型
 [top](#catalog)
 * 越高级越抽象，越低级越专用
 * 基本类型
@@ -126,6 +129,53 @@
     |boolean|false|
     |引用类型|null|
 
+## 数据类型-基本类型的包装类
+[top](#catalog)
+* 八种基本数据类型定义相应的引用类型
+
+    |基本类型|包装类|父类|
+    |-|-|-|
+    |byte|Byte|Number|
+    |short|Short|Number|
+    |int|Integer|Number|
+    |long|Long|Number|
+    |float|Float|Number|
+    |double|Double|Number|
+    |char|Character|-|
+    |boolean|Boolean|-|
+* 包装类使基本数据类型变成了类
+* **包装类重写了toString**，使用System.out.println会输出具体的值
+* 装箱：基本数据类型--->包装类
+    * `int i = 500; Integer t = new Integer(i);`
+    * 通过字符串构造包装类对象：`Float f = new Float("3.45")`
+* 拆箱：包装类--->基本数据类型变量
+    * 调用包装类的：xxxValue()方法：`boolean b = bObj.booleanValue();`
+* jdk1.5 之后支持自动的拆箱和装箱
+* 字符串与基本数据类型的转换
+    * 字符串--->基本数据类型：
+        * 包装类的构造器：`int i = new Integer("12");` （使用包装类的构造器，再使用自动拆箱）
+        * 包装类的静态方法parseXXX：`int i = Integer.parseInt("12");`
+    * 基本数据类型--->字符串
+        * String.valueOf: `String str = String.valueOf(2.34f);`
+        * 直接连接空字符串：`String str = 5 + "";`
+
+## 数据类型-BigInteger
+[top](#catalog)
+* Integer能存储的最大整形数值为2^31-1，Long能存储的最大整形数值为2^63-1，无法表示更大的数
+* BigInteger可以表示任意精度的不可变整数
+* BigInteger提供了java的基本整数操作符的对应方法，并一共Math的所有相关方法
+* BigInteger还提供了：模算数、GCD计算、质数测试，素数生成、位操作以及体协其他操作
+* 构造器
+    * `BigInteger(String val)` 根据字符串构建BigInteger对象
+
+## 数据类型-BigDecimal
+[top](#catalog)
+* 精度比Float和Double更高
+* 支持任意精度的不可变的有符号十进制定点数
+* 构造器
+    * `BigDecimal(double val)`
+    * `BigDecimal(String val)`
+
 # 运算符
 [top](#catalog)
 * 算数运算符
@@ -151,6 +201,24 @@
     * &&，|| 短路与/或，左边错了就不计算右边了
     * ! 取反
     * ^ 异或，相同为假，不同为真
+
+* 三目运算符
+    * 运算符要保证`:`两边的数据类型相同，**否则会自动进行类型转换**
+        * 使用三目运算符的比较
+        ```java
+        //输出1.0（自动进行类型转换）
+        Object o1 = true ? new Integer(1) : new Double(2.0);
+
+        //输出1（无类型转换，直接赋值）
+        Object o2;
+        if (true)
+            o2 = new Integer(1);
+        else
+            o2 = new Double(2.0);
+
+        System.out.println(o2);
+        ```
+        * `Object o1 = true ? 1 : 2.0; `最终显示1.0
 
 # 数组
 [top](#catalog)
@@ -1069,7 +1137,7 @@
 * 扩容方式： 参考StringBuffer
 * 常用方法： 参考StringBuffer
 
-## 三种类型的关系
+## 字符串-三种类型的关系
 [top](#catalog)
 * 三种类型的异同
     * 相同点
@@ -1115,57 +1183,6 @@
             String str1 = sbf.toString();
             String str2 = sbl.toString();
             ```
-
-
-
-# 包装类
-[top](#catalog)
-* 八种基本数据类型定义相应的引用类型
-
-    |基本类型|包装类|父类|
-    |-|-|-|
-    |byte|Byte|Number|
-    |short|Short|Number|
-    |int|Integer|Number|
-    |long|Long|Number|
-    |float|Float|Number|
-    |double|Double|Number|
-    |char|Character|-|
-    |boolean|Boolean|-|
-* 包装类使基本数据类型变成了类
-* **包装类重写了toString**，使用System.out.println会输出具体的值
-* 装箱：基本数据类型--->包装类
-    * `int i = 500; Integer t = new Integer(i);`
-    * 通过字符串构造包装类对象：`Float f = new Float("3.45")`
-* 拆箱：包装类--->基本数据类型变量
-    * 调用包装类的：xxxValue()方法：`boolean b = bObj.booleanValue();`
-* jdk1.5 之后支持自动的拆箱和装箱
-* 字符串与基本数据类型的转换
-    * 字符串--->基本数据类型：
-        * 包装类的构造器：`int i = new Integer("12");` （使用包装类的构造器，再使用自动拆箱）
-        * 包装类的静态方法parseXXX：`int i = Integer.parseInt("12");`
-    * 基本数据类型--->字符串
-        * String.valueOf: `String str = String.valueOf(2.34f);`
-        * 直接连接空字符串：`String str = 5 + "";`
-
-# 三目运算符
-[top](#catalog)
-* 运算符要保证`:`两边的数据类型相同，会自动进行类型转换
-    * 使用三目运算符的比较
-    ```java
-    //输出1.0（自动进行类型转换）
-    Object o1 = true ? new Integer(1) : new Double(2.0);
-
-    //输出1（无类型转换，直接赋值）
-    Object o2;
-    if (true)
-        o2 = new Integer(1);
-    else
-        o2 = new Double(2.0);
-
-    System.out.println(o2);
-    ```
-    * `Object o1 = true ? 1 : 2.0; `最终显示1.0
     
 # 异常
 [top](#catalog)
