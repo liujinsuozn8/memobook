@@ -1,9 +1,10 @@
 <span id="catalog"></span>
 - [基本流程](#基本流程)
-- [类文件](#import)
+- [类文件](#类文件)
 - [变量](#变量)
 - 数据类型
     - [数据类型](#数据类型)
+    - [数据类型-基本类型的池](#数据类型-基本类型的池)
     - [数据类型-基本类型的包装类](#数据类型-基本类型的包装类)
     - [数据类型-BigInteger](#数据类型-biginteger)
     - [数据类型-BigDecimal](#数据类型-bigdecimal)
@@ -14,11 +15,17 @@
 - [参数传递机制](#参数传递机制)
 - [权限修饰符](#权限修饰符)
 - [内存解析](#内存解析)
-- [重载与重写](#重载与重写)
-- [类](#类)
+- 类
+    - [类-类的成员](#类-类的成员)
+    - [类-类的特性](#类-类的特性)
+    - [类-对象的创建](#类-对象的创建)
+    - [类-重载与重写](#类-重载与重写)
+    - [类-关键字](#类-关键字)
+    - [类-main方法](#类-main方法)
+    - [类-抽象类](#类-抽象类)
+    - [类-接口](#类-接口)
 - [对象的序列化](#对象的序列化)
 - [object](#object)
-- [基本类型的池](#基本类型的池)
 - 字符串
     - [字符串-string](#字符串-string)
     - [字符串-StringBuffer](#字符串-stringbuffer)
@@ -32,8 +39,8 @@
 - [io流](#io流)
 - [多线程](#多线程)
 - 日期时间api
-	- [日期时间api-JDK8之前](#日期时间api-JDK8之前)
-	- [日期时间api-JDK8之后](#日期时间api-JDK8之后)
+	- [日期时间api-JDK8之前](#日期时间api-jdk8之前)
+	- [日期时间api-JDK8之后](#日期时间api-jdk8之后)
 - [比较器](#比较器)
 - [System类](#system类)
 - [Math类](#math类)
@@ -128,6 +135,11 @@
     |char|0 或 '\u0000'|
     |boolean|false|
     |引用类型|null|
+
+
+## 数据类型-基本类型的池
+[top](#catalog)
+* 对于整形数据，范围-128～127的数都在**池中**，所以`Integet i = 1; Integet j = 1; i==j //true`
 
 ## 数据类型-基本类型的包装类
 [top](#catalog)
@@ -305,14 +317,10 @@
 * 方法区（method area）
     * 存储已被虚拟机加载的：类信息、常量、静态变量、`即时编译器编译后的代码` 等数据
 
-# 重载与重写
-[top](#catalog)
-* 对于重载的方法，编译器根据方法名和参数表，对同名的方法名做修饰，使这些方法名变得不一样。在编译期确定方法的调用地址（早绑定/静态绑定）
-* 多态是该方法在调用时确定的（晚绑定/动态绑定）
-
 # 类
+## 类-类的成员
 [top](#catalog)
-* 类的成员
+* 示例
     ```java
     class Person{
         //属性，或成员变量
@@ -348,283 +356,109 @@
         }
     }
     ```
-* 对象的创建
-    * 创建方式：`类名 对象名 = new 类名();`
-    * new出来的对象在堆中，指向该类对象的变量在栈中
-    * 对象如果没有任何引用，则对象会成为垃圾被回收
-        ```Java
-        // 创建对象
-        Person p = new Person();
-        // 消除类对象的引用，变成垃圾
-        p = null;
+* 构造器
+    * 基本特征：
+        * 与类名相同
+        * 无返回值
+        * 不能被static、final、synchronized、abstract、native修饰
+        * 不能有返回值
+    * 作用：创建对象，并初始化
+    * 语法：`权限修饰符 类名(参数列表){初始化语句;}`
+        ```java
+        public A{
+            private int x;
+            public A(){x = 1;}
+        }
         ```
-    * 对象被创建时，会读各种类型的成员变量进行初始化赋值变量的默认初始化赋值
-* 类的成员
-    * 属性
-        * 成员变量(类体内声明的变量)：
-            * 分类
-                * static修饰的`类变量`，**存储在方法区的静态域内**
-                * 实例变量，**存储在堆中**
-            * 可以使用private，public，static，final等权限修饰符修饰
-            * 都有默认初始化值
-        * 局部变量(方法体内声明的变量)：
-            * 包括：形参，方法局部变量，代码块局部变量
-            * **存储在栈中**
-            * 不能使用权限修饰符来修饰，**可以使用final修饰**
-            * 没有初始化值，必修显式赋值，才能使用(除了形参)
-        * 局部变量和成员变量的异同
-            * 不同点：局部变量(除形参以外)需要显示初始化
-            * 相同点：都有生命周期
-                
-        * 类属性的赋值
-            * 赋值的顺序
-                1. 默认初始化
-                2. 属性的显示初始化（int x=10;）
-                3. 构造器中的初始化
-                4. 通过**对象.属性**、**对象.方法**的方式赋值
-    * 方法
-        * java中的方法不能单独存在，**必须定义在类中**
-        * 没有返回值时，返回void，此时可以**不必使用return语句**。如果使用，可以用来结束方法
-        * 方法内部不能再定义方法
-        * 方法的重载(overload)
-            * 一个类中，允许存在一个以上的同名方法，**只要它们的参数个数或参数类型不同即可**
-            * **重载与返回值类型无关**，只看参数列表。调用时根据参数列表来区别
+    * 两种构造器
+        * 无参构造器（由系统默认提供）
+        * 显式定义的构造器（无参或有参）
+    * 每个类都默认至少有一个构造器，且**该默认构造器的修饰符与类的修饰符相同**
+    * 如果显式定义了构造器，则系统不再提供默认构造器
+    * 一个类可以有多个重载的构造器
+        ```java
+        public class Person{
+            public Person(String name, int age, Date d) {this(name,age);...} 
+            public Person(String name, int age) {...}
+            public Person(String name, Date d) {...}
+            public Person(){...}
+            }
+        ```
+    * **父类的构造器不可以被子类继承**
+    * 使用super调用父类的构造器
+        * super调用必须放在首行
+        * 子类所有的构造器默认都会访问父类中的**空参数**构造器
+        * 如果父类中**没有空参数构造器**，子类构造器必须通过this(参数列表)或super(参数列表)来指定本类/父类中的构造器，同时只能**二选一**，且**必须放在首行**
+        * 如果子类没有显示调用父类/子类构造器，且父类中有没有无参的构造器，则**编译出错**
+* 属性
+    * 成员变量(类体内声明的变量)：
+        * 分类
+            * static修饰的`类变量`，**存储在方法区的静态域内**
+            * 实例变量，**存储在堆中**
+        * 可以使用private，public，static，final等权限修饰符修饰
+        * 都有默认初始化值
+    * 局部变量(方法体内声明的变量)：
+        * 包括：形参，方法局部变量，代码块局部变量
+        * **存储在栈中**
+        * 不能使用权限修饰符来修饰，**可以使用final修饰**
+        * 没有初始化值，必修显式赋值，才能使用(除了形参)
+    * 局部变量和成员变量的异同
+        * 不同点：局部变量(除形参以外)需要显示初始化
+        * 相同点：都有生命周期
+            
+    * 类属性的赋值
+        * 赋值的顺序
+            1. 默认初始化
+            2. 属性的显示初始化（int x=10;）
+            3. 构造器中的初始化
+            4. 通过**对象.属性**、**对象.方法**的方式赋值
+* 方法
+    * java中的方法不能单独存在，**必须定义在类中**
+    * 没有返回值时，返回类型为void，此时可以**不使用return语句**。如果使用，可以用来结束方法
+    * 方法内部不能再定义方法
+    * 方法的重载(overload)
+        * 一个类中，允许存在一个以上的同名方法，**只要它们的参数个数或参数类型不同即可**
+        * **重载与返回值类型无关**，只看参数列表。调用时根据参数列表来区别
+        ```java
+        // 三个有效重载
+        int add(int x, int y){ return x+y;}
+        int add(int x, int y, int z){return x+y+z;}
+        double add(double x, double y){return x+y;}
+        ```
+        * 对于重载的方法，编译器根据方法名和参数表，对同名的方法名做修饰，使这些方法名变得不一样。在编译期确定方法的调用地址（早绑定/静态绑定）
+    * 可变个数形参：能和多个实参相匹配的形参
+        * `public void test(int a, String...books);`
+        * 声明格式：`方法名(参数的类型...参数名)`
+        * 参数的个数可以是：0、1、更多
+        * 实际与**参数使用数组**是相同的
+        * 可变形参，需要放在形参声明的最后
+        * 一个方法**最多只能声明一个可变个数形参**
+        * 可变形参与重载
             ```java
-            // 三个有效重载
-            int add(int x, int y){ return x+y;}
-            int add(int x, int y, int z){return x+y+z;}
-            double add(double x, double y){return x+y;}
-            ```
-            * 对于重载的方法，编译器根据方法名和参数表，对同名的方法名做修饰，使这些方法名变得不一样。在编译期确定方法的调用地址（早绑定/静态绑定）
-        * 可变个数形参：能和多个实参相匹配的形参
-            * `public static void test(int a, String...books);`
-            * 声明格式：`方法名(参数的类型...参数名)`
-            * 参数的个数可以是：0、1、更多
-            * 实际与**参数使用数组**是相同的
-            * 可变形参，需要放在形参声明的最后
-            * 一个方法，**最多只能声明一个可变个数形参**
-            * 可变形参与重载
-                ```java
-                class Overload{
-                    public void test(String[] msg){...}
-                    public void test1(String book){...}
-                    public void test1(String ... books){} 
-                    public static void main(String[] args){
-                        Overload o = new Overload();
-                        o.test1(); //调用方法2
-                        o.test1("aaa", "bbb");// 调用方法3
-                        o.test(new String[]{"aaa"});//调用方法1
-                    }
+            class Overload{
+                public void test(String[] msg){...}
+                public void test1(String book){...}
+                public void test1(String ... books){} 
+                public static void main(String[] args){
+                    Overload o = new Overload();
+                    o.test1(); //调用方法2
+                    o.test1("aaa", "bbb");// 调用方法3
+                    o.test(new String[]{"aaa"});//调用方法1
                 }
-                ```
-        * 方法参数的传递机制
-            * java只有一种参数传递方式：**值传递**（传入一个实参的副本）
-            * 基本类型传数据拷贝
-            * 引用类型传地址拷贝
-            * println？？？？？？
-                ```java
-                int[] arr = new int[10];
-                System.out.println(arr);//输出数组的地址
-
-                char[] arr1 = new char[10];
-                System.out.println(arr1); //输出10个特殊字符
-                ```
-
-    * 构造器
-        * 基本特征：
-            * 与类名相同
-            * 无返回值
-            * 不能被static、final、synchronized、abstract、native修饰
-            * 不能有返回值
-        * 作用：创建对象，并初始化
-        * 语法：`修饰符 类名(参数列表){初始化语句;}`
-            ```java
-            public A{
-                private int x;
-                public A(){x = 1;}
             }
             ```
-        * 两类构造器
-            * 无参构造器（由系统默认提供）
-            * 显式定义的构造器（无参或有参）
-        * 每个类都默认至少有一个构造器，且**该默认构造器的修饰符与类的修饰符相同**
-        * 如果显式定义了构造器，则系统不再提供默认构造器
-        * 一个类可以有多个重载的构造器
+    * 方法参数的传递机制
+        * java只有一种参数传递方式：**值传递**（传入一个实参的副本）
+        * 基本类型传数据拷贝
+        * 引用类型传地址拷贝
+        * println？？？？？？
             ```java
-            public class Person{
-                public Person(String name, int age, Date d) {this(name,age);...} 
-                public Person(String name, int age) {...}
-                public Person(String name, Date d) {...}
-                public Person(){...}
-                }
+            int[] arr = new int[10];
+            System.out.println(arr);//输出数组的地址
+
+            char[] arr1 = new char[10];
+            System.out.println(arr1); //输出10个特殊字符
             ```
-        * **父类的构造器不可以被子类继承**
-        * 使用super调用父类的构造器
-            * super调用必须放在首行
-            * 子类所有的构造器默认都会访问父类中的**空参数**构造器
-            * 如果父类中**没有空参数构造器**，子类构造器必须通过this(参数列表)或super(参数列表)来指定本类/父类中的构造器，同时只能**二选一**，且**必须放在首行**
-            * 如果子类没有显示调用父类/子类构造器，且父类中有没有无参的构造器，则**编译出错**
-
-* 类的特性：
-    * 封装、隐藏
-        * 将数据声明为private，再提供public方法：get、set来操作属性
-    * 继承
-        * 语法规则：`class Subclass extends SuperClass{ }`
-        * 子类不能直接访问父类中的private成员变量和方法（实际上private部分子类已经继承了，只是不能访问）
-        * java只支持单继承，不支持多重继承
-        * 子类不是父类的子集，而是扩展
-        * 子类对象的实例化过程![how_init_obj](./imgs/how_init_obj.png)
-    * 多态
-        * 多态性：父类的引用指向子类的对象（也可以应用在抽象类和接口上）
-            * 编译时类型(父类引用) != 执行时类型(子类的对象)
-            * 子类 可以当作 **特殊的父类**
-            * 父类引用指向子类对象可以看作：向上转型
-            * 使用时，父类引用**不能访问子类中添加的方法和属性**
-                * 因为属性和方法是编译时确定的，所以使用子类的方法/属性会导致编译错误
-            * 虚拟方法调用
-                * 父类方法被重写时，父类方法被称为**虚拟方法**，执行时，会动态调用子类对象中的这个方法（该方法的调用是在**运行时确定的**）（晚绑定/动态绑定）
-                ```java
-                //动态绑定的证明
-                class A{
-                    public void test(int x, int[] y){
-                        System.out.println("this is A");
-                    }
-                }
-                class B extends A{
-                    public void test(int x, int...y){
-                        System.out.println("this is B");
-                    }
-                    public void testB(){
-                        System.out.println("this is testB");
-                    }
-                }
-
-                public class FreeTest {
-                    @Test
-                    public void method01(){
-                        A a = new B();
-                        a.test(1, new int[]{2,3}); //this is B
-                        a.testB();//编译异常。如果是静态绑定，应该能编译通过
-                    }
-                }
-                ```
-        * 成员变量不具备多态型，使用实例对象本身的成员变量
-        ```java
-        class A{
-            int a = 16;
-
-            public void info(){
-                System.out.println(a);
-            }
-        }
-
-        class B extends A{
-            int a = 18;
-
-            public void info(){
-                System.out.println("this is B " + a);
-            }
-        }
-
-        @Test
-        public void testA(){
-            A a = new B();
-            a.info(); //this is B 18
-        }
-        ```
-        * **方法的重写(oriride)**
-            * 重写的要求
-                1. 子类的方法名(参数列表) = 父类的方法名(参数列表) 
-                2. 子类返回值类型 <= 父类返回值类型
-                    * 如果大于，则子类调用时不能明确返回值的类型，会导致编译失败
-                3. 子类中的权限 >= 父类中的权限
-                4. private方法**不能重写**
-                5. 子类中抛出的异常 <= 父类中抛出的异常
-            * 子类与父类中同名同参数的方法必须同时声明为非static的(即为重写)，或者同时声明为 static的(不是重写)。因为static方法是属于类的，子类无法覆盖父类的方法。
-        
-        * **父类子类相互转化**
-        ```java
-        class A{}
-        class B extends A{}
-
-        A a = new B(); // 多态
-        B b = (B)a; // 运行时，a指向的是B的实例对象，可以进行强转
-
-        A a2 = new A();
-        B b2 = (B)a2; // 运行时，a指向的时A的实例对象，无法强转成子类的对象
-        ```
-
-* 关键字
-    * this
-        * 在方法内部使用，表示该方法**所属对象**的引用
-        * 在构造器中使用，表示构造器**正在初始化的对象**
-        * this可以调用类的属性、方法、构造器
-        * 如果方法的**形参和成员变量同名时**，必须使用this来进行区分，如：`this.name = name`
-        * 使用this访问属性、方法时，如果在**本类中找不到时，会到父类中查找**
-        * 可以在某个构造器中通过**this(形参列表)**，来调用本类中的其他构造器 
-            * 不能在某个构造器中通过this来调用该构造器自身
-            * this(形参列表)必须在构造器的**首行**使用
-            * 每个构造器中，最多使用一次this(形参列表)
-        ```java
-        class Test{
-            private String name;
-            public Test(){
-                name="a";
-            }
-
-            public Test(String n){
-                this();//调用无参构造器
-                ....
-            }
-
-            public Test(String n, int age){
-                this(n);//待用Test(String n)
-                ...
-            }
-        }
-        ```
-
-    * super
-        * super可以访问**父类**中定义的**属性**
-        * super可以调用**父类**中定义的**成员方法**
-        * super可以在**子类构造器**中调用**父类的构造器**
-        * 子类、父类中出现同名的成员时，可以通过super来标识父类
-        * super的追溯**不限于直接父类**
-        * this代表本类对象的引用，super代表父类的**内存空间的标识**
-    * instanceof
-        * 检验x是否为类A的对象，返回true/false
-        * 使用方法：`x instanceof A`
-        * 要求x的类是A或A的子类，否则会产生编译错误
-
-    * static
-        * 使用范围：可以修饰：属性、方法、代码块、内部类
-        * 被static修饰后的特点
-            * 随着类的加载而加载
-            * 优先与对象而存在
-            * 修饰的成员被所有的实例共享
-            * 权限允许时，可以直接通过类进行调用，不用进行实例化
-        * static方法内部，只能访问static修饰的属性、方法，**不能访问非static的结构**
-        * static方法的内部，**不能有this，也不能有super**（因为不需要实例就可以使用，所以没有this和super）
-        * static修饰的方法**不能被重写**
-    * final
-        * final变量只能被赋值一次，即常量(常量名通常大写)
-            * 可以在构造器中给对象中的常量进行赋值
-        * final标记的方法不能被子类重写
-        * final标记的类不能被继承
-
-* main 方法
-    * 由java虚拟机调用，所以访问权限必须是public，且不需要创建对象，所以必须是static的
-    * main方法接受一个String类型的数组参数，该String数组保存了执行java命令是传递给运行的类的参数
-    ```java
-    // 输出命令参数：java CommandPara "xxx" "yyy" "zzz"
-    public class CommandPara {
-        public static void main(String[] args) {
-            for (int i = 0; i < args.length; i++) {      
-                System.out.println("args[" + i + "] = " + args[i]);
-            }
-        }
-    }
-    ```
 * 代码块
     * 用法：对java类或对象进行初始化
     * 只能被static修饰 
@@ -641,52 +475,6 @@
             * 除了调用非静态的结构外，还**可以调用静态的变量或方法**。
             * 多个非静态的代码块，从上到下的顺序依次执行。 
             * 每次创建对象的时候，都会执行一次。且先于构造器执行。
-    * new Obj() 时的整体执行顺序
-        * 父类的静态代码块
-        * 子类的静态代码块
-        * 父类的非静态代码块
-        * 父类的构造器
-        * 子类的非静态代码块
-        * 子类的构造器
-
-* abstract 抽象类
-    * abstract放在权限修饰符后面，如：`public abstract void method()`
-    * 有abstract修饰方法时，必须用abstract修饰类
-    * 抽象类不能实例化
-    * 若子类没有重写父类的**全部抽象方法**，则子类仍是抽象类
-    * 不能用abstract修饰变量、代码块、构造器;
-    * 不能用abstract修饰私有方法、静态方法、final的方法、final的类
-
-* interface 接口
-    * 接口是抽象方法和常量值的集合
-    * 特点
-        * 用interface定义
-        * 所有成员变量默认由**public static final** 修饰
-        * 所有成员方法默认由**public abstract**修饰
-        * 接口中没有构造器
-        * 接口可以多继承：`interface A extends B,C`，但是**不能继承抽象类**
-    * 语法：先写extends，再写interface
-    * 一个类可以实现多个接口，接口也**可以继承其他接口**
-    * 接口中所有方法被实现后，才能实例化
-        * 如果实现类没有实现全部接口方法，该实现类只能被声明为abstract
-    * 接口与实现类之间存在多态性
-    * 实现接口的匿名类对象
-    ```java
-    InterfaceX x = new InterfaceX(){
-        method01(...){...}
-        method02(...){...}
-        method03(...){...}
-    }
-    ```
-    * 接口和父类中出现**同名属性**时，通过super.param来调用从父类中继承的属性，通过Interface.param来调用接口中的属性
-    * java8以后可以为接口添加静态方法和默认方法
-        * 可以通过接口直接调用静态方法
-    * 默认方法的冲突
-        * 一个接口中定义了一个默认方法A， 另一个接口中也有同名同参数(无论是否default)的方法，此时会出现接口冲突
-            * 解决方法：实现类必须覆盖接口中的同名同参数的方法
-            * 若想调用某个接口中的冲突方法，可以：Interface.super.method()
-        * 一个接口中定义了一个默认方法A，父类中也定义了一个同名同参数的非抽象方法，此时不会出现冲突
-            * 使用时，遵循**类优先**的原则，接口中的方法会被忽略掉
 
 * 内部类
     * 内部类所在的类是外部类
@@ -725,6 +513,317 @@
             * 局部内部类可以使用外部方法的局部变量，但是必须是final的
     * 编译后，内部类会有独立的*.class文件，文件名前面会自动附加：`外部类名$`
 
+
+## 类-类的特性
+[top](#catalog)
+* 封装、隐藏
+    * 将数据声明为private，再提供public方法：get、set来操作属性
+* 继承
+    * 语法规则：`class Subclass extends SuperClass{ }`
+    * <label style="color:red">子类不能直接访问父类中的private成员变量和方法</label>（实际上private部分子类已经继承了，只是不能访问）
+    * java只支持单继承，不支持多重继承
+    * **子类不是父类的子集，而是扩展**
+* 多态
+    * 多态性：父类的引用指向子类的对象（也可以应用在抽象类和接口上）
+        * 编译时类型(父类引用) != 执行时类型(子类的对象)
+        * 子类 可以当作 **特殊的父类**
+        * 父类引用指向子类对象可以看作：向上转型
+        * 使用时，父类引用**不能访问子类中添加的方法和属性**
+            * 因为属性和方法是编译时确定的，所以使用子类的方法/属性会导致编译错误
+        * 虚拟方法调用
+            * 父类方法被重写时，父类中的方法被称为**虚拟方法**，可以理解为一个占位符，在执行时**动态调用子类对象中的这个方法**（该方法的调用是在**运行时确定的**）（晚绑定/动态绑定）
+            ```java
+            //动态绑定的证明
+            class A{
+                public void test(int x, int[] y){
+                    System.out.println("this is A");
+                }
+            }
+            class B extends A{
+                public void test(int x, int...y){
+                    System.out.println("this is B");
+                }
+                public void testB(){
+                    System.out.println("this is testB");
+                }
+            }
+
+            public class FreeTest {
+                @Test
+                public void method01(){
+                    A a = new B();
+                    a.test(1, new int[]{2,3}); //this is B
+                    a.testB();//编译异常。如果是静态绑定，应该能编译通过
+                }
+            }
+            ```
+    * 成员变量不具备多态性，使用的是实例对象本身的成员变量
+        ```java
+        class A{
+            int a = 16;
+            public void info(){
+                System.out.println(a);
+            }
+        }
+
+        class B extends A{
+            int a = 18;
+            int b = 33;
+            public void info(){
+                System.out.println("this is B " + a);
+                System.out.println(b);
+            }
+        }
+
+        @Test
+        public void testA(){
+            A a = new B();
+            //输出：
+            // this is B 18
+            // this is B 33
+            a.info(); 
+            // 直接使用a.b会出现编译异常
+            System.out.println(a.b);
+        }
+        ```
+    * **方法的重写(oriride)**
+        * 重写的要求
+            1. 子类的方法名(参数列表) = 父类的方法名(参数列表) 
+            2. 子类返回值类型 <= 父类返回值类型
+                * 如果大于，则子类调用时不能明确返回值的类型，会导致编译失败
+            3. 子类中的权限 >= 父类中的权限
+            4. private方法**不能重写**
+            5. 子类中抛出的异常 <= 父类中抛出的异常
+        * 子类与父类中同名同参数的方法必须同时声明为非static的(即为重写)，或者同时声明为 static的(不是重写)。因为static方法是属于类的，子类无法覆盖父类的方法。
+    
+    * **父类子类相互转化**
+    ```java
+    class A{}
+    class B extends A{}
+
+    A a = new B(); // 多态
+    B b = (B)a; // 运行时，a指向的是B的实例对象，可以进行强转
+
+    A a2 = new A();
+    B b2 = (B)a2; // 运行时，a指向的时A的实例对象，无法强转成子类的对象
+    ```
+
+## 类-对象的创建
+[top](#catalog)
+* 创建方式：`类名 对象名 = new 类名();`
+* new出来的对象在堆中，指向该类对象的变量在栈中
+* 对象如果没有任何引用，则对象会成为垃圾被回收
+    ```Java
+    // 创建对象
+    Person p = new Person();
+    // 消除类对象的引用，变成垃圾
+    p = null;
+    ```
+* 对象被创建时，会读各种类型的成员变量进行初始化赋值变量的默认初始化赋值
+* 子类对象的实例化过程![how_init_obj](./imgs/how_init_obj.png)
+* new Obj() 时的整体执行顺序
+    * 父类的静态代码块
+    * 子类的静态代码块
+    * 成员变量默认初始化
+    * 成员变量的显示初始化
+    * 父类的非静态代码块
+    * 父类的构造器
+    * 子类的非静态代码块
+    * 子类的构造器
+* 实例
+    ```java
+    public class Test {
+        @Test
+        public void test1(){
+            // class A:first static black
+            // class B:first static black
+            // class A:first black, print b [class A:public String b]
+            // public A(String b)
+            // class A:first black
+            // public B(String b)
+            // public B(String b) :test B
+            // public B(String b, String c)
+            // public B(String b, String c) :test B
+            A a = new B("test B", "test C");
+        }
+    }
+
+    class A {
+        public static String a = "class A:public static String a";
+        public String b = "class A:public String b";
+
+        static{
+            System.out.println("class A:first static black");
+        }
+
+        {
+            System.out.println("class A:first black, print b [" + b + "]");
+        }
+
+        public A() {
+            System.out.println("public A()");
+            System.out.println(b);
+        }
+
+        public A(String b) {
+            System.out.println("public A(String b)");
+            this.b = b;
+        }
+    }
+
+    class B extends A {
+        public String b = "class B:this is b";
+        public String c = "class B:this is c";
+
+        static{
+            System.out.println("class B:first static black");
+        }
+
+        {
+            System.out.println("class A:first black");
+        }
+
+        public B() {
+            System.out.println("public B()");
+            System.out.println(b);
+        }
+
+        public B(String b) {
+            super(b);
+            System.out.println("public B(String b)");
+            this.b = "public B(String b) :" + b;
+            System.out.println(this.b);
+        }
+
+        public B(String b, String c) {
+            this(b);
+            System.out.println("public B(String b, String c)");
+            this.b = "public B(String b, String c) :" + b;
+            this.c = c;
+            System.out.println(this.b);
+        }
+    }
+    ```
+
+## 类-重载与重写
+[top](#catalog)
+* 对于重载的方法，编译器根据方法名和参数表，对同名的方法名做修饰，使这些方法名变得不一样。在编译期确定方法的调用地址（早绑定/静态绑定）
+* 重写(多态)是该方法在调用时确定的（晚绑定/动态绑定）
+
+## 类-关键字
+[top](#catalog)
+* this
+    * 在方法内部使用，表示该方法**所属对象**的引用
+    * 在构造器中使用，表示构造器**正在初始化的对象**
+    * this可以调用类的属性、方法、构造器
+    * 如果方法的**形参和成员变量同名时**，必须使用this来进行区分，如：`this.name = name`
+    * 使用this访问属性、方法时，如果在**本类中找不到时，会到父类中查找**
+    * 可以在某个构造器中通过**this(形参列表)**，来调用本类中的其他构造器 
+        * 不能在某个构造器中通过this来调用该构造器自身
+        * this(形参列表)必须在构造器的**首行**使用
+        * 每个构造器中，最多使用一次this(形参列表)
+    ```java
+    class Test{
+        private String name;
+        public Test(){
+            name="a";
+        }
+
+        public Test(String n){
+            this();//调用无参构造器
+            ....
+        }
+
+        public Test(String n, int age){
+            this(n);//待用Test(String n)
+            ...
+        }
+    }
+    ```
+
+* super
+    * super可以访问**父类**中定义的**属性**
+    * super可以调用**父类**中定义的**成员方法**
+    * super可以在**子类构造器**中调用**父类的构造器**
+    * 子类、父类中出现同名的成员时，可以通过super来标识父类
+    * super的追溯**不限于直接父类**
+    * this代表本类对象的引用，super代表父类的**内存空间的标识**
+* instanceof
+    * 检验x是否为类A的对象，返回true/false
+    * 使用方法：`x instanceof A`
+    * 要求x的类是A或A的子类，否则会产生编译错误
+
+* static
+    * 使用范围：可以修饰：属性、方法、代码块、内部类
+    * 被static修饰后的特点
+        * 随着类的加载而加载
+        * 优先与对象而存在
+        * 修饰的成员被所有的实例共享
+        * 权限允许时，可以直接通过类进行调用，不用进行实例化
+    * static方法内部，只能访问static修饰的属性、方法，**不能访问非static的结构**
+    * static方法的内部，**不能有this，也不能有super**（因为不需要实例就可以使用，所以没有this和super）
+    * static修饰的方法**不能被重写**
+* final
+    * final变量只能被赋值一次，即常量(常量名通常大写)
+        * 可以在构造器中给对象中的常量进行赋值
+    * final标记的方法不能被子类重写
+    * final标记的类不能被继承
+
+## 类-main方法
+[top](#catalog)
+* 由java虚拟机调用，所以访问权限必须是public，且不需要创建对象，所以必须是static的
+* main方法接受一个String类型的数组参数，该String数组保存了执行java命令是传递给运行的类的参数
+```java
+// 输出命令参数：java CommandPara "xxx" "yyy" "zzz"
+public class CommandPara {
+    public static void main(String[] args) {
+        for (int i = 0; i < args.length; i++) {      
+            System.out.println("args[" + i + "] = " + args[i]);
+        }
+    }
+}
+```
+
+## 类-抽象类
+[top](#catalog)
+* abstract放在权限修饰符后面，如：`public abstract void method()`
+* 有abstract修饰方法时，必须用abstract修饰类
+* 抽象类不能实例化
+* 若子类没有重写父类的**全部抽象方法**，则子类仍是抽象类
+* 不能用abstract修饰变量、代码块、构造器;
+* 不能用abstract修饰私有方法、静态方法、final的方法、final的类
+
+## 类-接口
+[top](#catalog)
+* 接口是抽象方法和常量值的集合
+* 特点
+    * 用interface定义
+    * 所有成员变量默认由**public static final** 修饰
+    * 所有成员方法默认由**public abstract**修饰
+    * 接口中没有构造器
+    * 接口可以多继承：`interface A extends B,C`，但是**不能继承抽象类**
+* 语法：先写extends，再写interface
+* 一个类可以实现多个接口，接口也**可以继承其他接口**
+* 接口中所有方法被实现后，才能实例化
+    * 如果实现类没有实现全部接口方法，该实现类只能被声明为abstract
+* 接口与实现类之间存在多态性
+* 实现接口的匿名类对象
+    ```java
+    InterfaceX x = new InterfaceX(){
+        method01(...){...}
+        method02(...){...}
+        method03(...){...}
+    }
+    ```
+* 接口和父类中出现**同名属性**时，通过super.param来调用从父类中继承的属性，通过Interface.param来调用接口中的属性
+* java8以后可以为接口添加静态方法和默认方法
+    * 可以通过接口直接调用静态方法
+* 默认方法的冲突
+    * 一个接口中定义了一个默认方法A， 另一个接口中也有同名同参数(无论是否default)的方法，此时会出现接口冲突
+        * 解决方法：实现类必须覆盖接口中的同名同参数的方法
+        * 若想调用某个接口中的冲突方法，可以：Interface.super.method()
+    * 一个接口中定义了一个默认方法A，父类中也定义了一个同名同参数的非抽象方法，此时不会出现冲突
+        * 使用时，遵循**类优先**的原则，接口中的方法会被忽略掉
 
 # 对象的序列化
 [top](#catalog)
@@ -777,10 +876,6 @@
             * 每次的比较结果都相同
             * x.equal(null)，**永远都返回false**
             * x.equal(和x不同类型的对象)，**永远都返回false**
-
-# 基本类型的池
-[top](#catalog)
-* 对于整形数据，范围-128～127的数都在**池中**，所以`Integet i = 1; Integet j = 1; i==j //true`
 
 # 字符串
 ## 字符串-string
