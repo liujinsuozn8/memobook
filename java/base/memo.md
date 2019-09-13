@@ -3168,12 +3168,145 @@
 * `java.time.format.DateTimeFormatter` 类
     * 格式化、解析日期或时间
     * 三种构造方法
-        * DateTimeFormatter.ISO_LOCAL_DATE_TIME
+        * 预定义的标准模式
+            * DateTimeFormatter.ISO_LOCAL_DATE_TIME
+            * DateTimeFormatter.ISO_LOCAL_DATE
+            * DateTimeFormatter.ISO_LOCAL_TIME
+        * 本地化格式 (**都是静态方法**)
+            * `DateTimeFormatter.ofLocalizedDateTime(FormatStyle dateTimeStyle)`
+                * 适用于LocalDateTime
+                * 有效的FormStyle: LONG, MEDIUM, SHORT。使用FULL时会引发异常：`java.time.DateTimeException`
+            * `DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL)`
+                * 适用于LocalDate
+                * 有效的FormStyle: LONG, MEDIUM, SHORT, FULL
+            * `public static DateTimeFormatter ofLocalizedTime(FormatStyle timeStyle)`
+                * 适用于LocalTime
+                * 有效的FormStyle: LONG, MEDIUM, SHORT。使用FULL时会引发异常：`java.time.DateTimeException`
+        * 自定义格式
+            * `public static DateTimeFormatter ofPattern(String pattern)` 根据pattern的不同，处理的LocalXXXX对象也不同
+                * pattern的基本元素：yyyy、MM、dd、hh、mm、ss
+                * 格式化时，**pattern中有的元素在对象中都必须存在**才能正常执行，否则会引发异常：`java.time.temporal.UnsupportedTemporalTypeException`
+                    * 处理LocalDate对象时，不能包含hh、mm、ss
+                    * 处理LocalTime对象时，不能包含yyyy、MM、dd
+                    * 处理LocalDateTime时，所有元素都可以包含
+                * 解析字符串时，**pattern中有的元素在字符串中都必须存在，并且不能有多余的元素**，否则会引发异常：`java.time.format.DateTimeParseException`
     * 常用方法
-        * 格式化
-            ```java
-            ```
-        * 解析
+        * 格式化 `public String format(TemporalAccessor temporal)`
+            * 预定义标准格式
+                ```java
+                DateTimeFormatter dtf = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+                LocalDateTime now = LocalDateTime.now();
+                String format = dtf.format(now);
+                System.out.println(format);
+                ```
+            * 本地化格式 -- LocalDateTime
+                ```java
+                LocalDateTime now = LocalDateTime.now();
+                DateTimeFormatter dtf;
+                String format;
+                // 输出：2019年9月13日 上午07时55分42秒
+                dtf = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.LONG);
+                format = dtf.format(now);
+                System.out.println(format);
+
+                // 输出：19-9-13 上午7:55
+                dtf = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT);
+                format = dtf.format(now);
+                System.out.println(format);
+
+                // 输出：2019-9-13 7:55:42
+                dtf = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM);
+                format = dtf.format(now);
+                System.out.println(format);
+                ```
+            * 本地化格式 -- LocalDate
+                ```java
+                LocalDate now = LocalDate.now();
+                DateTimeFormatter dtf;
+                String format;
+
+                // 输出：2019年9月13日
+                dtf = DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG);
+                format = dtf.format(now);
+                System.out.println(format);
+
+                // 输出：19-9-13
+                dtf = DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT);
+                format = dtf.format(now);
+                System.out.println(format);
+
+                // 输出：2019-9-13
+                dtf = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM);
+                format = dtf.format(now);
+                System.out.println(format);
+
+                // 输出：2019年9月13日 星期五
+                dtf = DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL);
+                format = dtf.format(now);
+                System.out.println(format);
+                ```
+            * 本地化格式 -- LocalTime
+                ```java
+                LocalTime now = LocalTime.now();
+                DateTimeFormatter dtf;
+                String format;
+
+                // 输出：上午08时12分05秒
+                dtf = DateTimeFormatter.ofLocalizedTime(FormatStyle.LONG);
+                format = dtf.format(now);
+                System.out.println(format);
+
+                // 输出：上午8:12
+                dtf = DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT);
+                format = dtf.format(now);
+                System.out.println(format);
+
+                // 输出：8:12:05
+                dtf = DateTimeFormatter.ofLocalizedTime(FormatStyle.MEDIUM);
+                format = dtf.format(now);
+                System.out.println(format);
+                ```
+            * 自定义格式：
+                ```java
+                LocalDateTime now = LocalDateTime.now();
+                DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+                String format = dtf.format(now);
+                System.out.println(format);
+                ```
+        * 解析 `public TemporalAccessor parse(CharSequence text)`
+            * 预定义的标准模式
+                ```java
+                DateTimeFormatter dtf = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+                // 如果使用预定义标准模式，则解析时只能使用默认的字符串格式
+                TemporalAccessor parse = dtf.parse("2019-09-12T22:44:38.338");
+                System.out.println(parse);
+                ```
+            * 自定义格式
+                ```java
+                DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:ss");
+                TemporalAccessor parse = dtf.parse("2019-03-03 03:03:03");
+                System.out.println(parse);
+                ```
+* ZoneId:类中包含了所有的时区信息
+* ZonedDateTime:一个在ISO-8601日历系统时区的日期时间
+* Clock:使用时区提供对当前即时、日期、时间的访问时钟
+* Duration:计算两个时间间隔，适用与LocalTime、LocalDateTIme
+* Period:计算两个日期间隔，适用与LocalDate
+* TemporalAdjuster:时间校正器。
+* TemporalAdjusters:通过静态方法提供了常用的TemporalAdjuster实现
+* 新旧转换
+
+|类|新-->旧|旧-->新|
+|-|-|-|
+|java.time.Instant与java.util.Date|Date.from(instant)|date.toInstant()|
+|java.time.Instant与java.sql.Timestamp|Timestamp.from(instant)|timestamp.toInstant()|
+|java.time.ZonedDateTime与java.util.GregorianCalendar|GregorianCalendar.from(zonedDateTime)|cal.toZonedDateTime()|
+|java.time.LocalDate与java.sql.Time|Date.valueOf(localDate)|date.toLocalDate()|
+|java.time.LocalTime与java.sql.Time|Date.valueOf(localDate)|date.toLocalTime()|
+|java.time.LocalDateTime与java.sql.Timestamp|Timestamp.valueOf(localDateTime)|timestamp.toLocalDateTime()|
+|java.time.ZoneId与java.util.TimeZone|Timezone.getTimeZone(id)|timeZone.toZoneId()|
+|java.time.format.DateTimeFormatter与java.text.DateFormat|formatter.toFormat()|无|
+
 
 # 扩展
 [top](#catalog)
