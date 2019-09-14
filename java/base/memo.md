@@ -1664,7 +1664,7 @@ public class CommandPara {
 # 枚举类
 [top](#catalog)
 * 适用范围：类的对象只有有限个、且每个都是确定的
-* 当需要一组常量是，最好使用枚举类
+* 当需要一组常量时，最好使用枚举类
 * 若枚举只有一个对象，则可以作为一种单例模式的实现方式
 * 自定义枚举类
     ```java
@@ -1688,34 +1688,47 @@ public class CommandPara {
     ```
 * 使用**enum**关键字来定义枚举类
     * 可以理解为在自定义枚举类的基础上，简化了实例化对象的写法
+    * 使用enum定义的枚举类默认继承了java.lang.Enum类，**不能再继承其他类**
+    * 构造器只能使用private修饰
+        * 如果有构造器，则枚举对象的写法和创建实例对象相同，只是没有new，参数要遵循构造器的要求
+    * 多个枚举实例以`,`分割，并以`;`结束
+        ```java
+        public enum FormatStyle {
+            FULL,
+            LONG,
+            MEDIUM,
+            SHORT;
+        }
+        ```
     * 常用方法
-        * values
-        * valueOf
+        * values 返回枚举对象数组
+        * valueOf 把一个字符串转为对应的枚举类对象
         * toString 如果没有重写，则默认返回枚举常量名
-    * 枚举类实现接口
+    * 枚举类可以实现多个接口，如果要所有枚举对象使用相同的实现，则单独写实现方法；如果需要每个枚举对象有不同的实现，需要在每个枚举对象中写实现方法。
     ```java
     interface Info{
         void show();
     }
     enum Season implements Info{
         // 在每个枚举对象中分别实现show方法
-        // 如果有一个枚举对象进行了接口方法的实现，则其他的枚举对象都需要进行实现，否则会出现编译异常
+        // 如果有一个枚举对象进行了接口方法的实现，
+        // 则其他的枚举对象都需要进行实现，否则会出现编译异常
         SPRING("spring","spring"){
             public void show(){
                 System.out.println("this is spring");
             }
         },
-        SUMMER("summer","spring"){
+        SUMMER("summer","summer"){
             public void show(){
                 System.out.println("this is summer");
             }
         },
-        AUTUMN("autumn","spring"){
+        AUTUMN("autumn","autumn"){
             public void show(){
                 System.out.println("this is autumn");
             }
         },
-        WINTER("winter","spring"){
+        WINTER("winter","winter"){
             public void show(){
                 System.out.println("this is winter");
             }
@@ -1760,13 +1773,15 @@ public class CommandPara {
         // values
         Season[] seasons = Season.values();
         for (Season n : seasons){
-            System.out.println(n); // 调用每个实例化枚举对象的toString()
+            // 调用每个实例化枚举对象的toString()
+            System.out.println(n); 
         }
 
         // valueof(String name)
         String str = "SPRING";
         Season sea = Season.valueOf(str);
-        System.out.println(sea); //用字符串来匹配常量名，并得到枚举常量。未找到时会引发IllegalArgumentException
+        //用字符串来匹配常量名，并得到枚举常量。未找到时会引发IllegalArgumentException
+        System.out.println(sea); 
     }
     ```
     
