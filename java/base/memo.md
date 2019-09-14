@@ -1,84 +1,89 @@
 <span id="catalog"></span>
-- [基本流程](#基本流程)
-- [类文件](#类文件)
-- [变量](#变量)
-- 数据类型
-    - [数据类型](#数据类型)
-    - [数据类型-基本类型的池](#数据类型-基本类型的池)
-    - [数据类型-基本类型的包装类](#数据类型-基本类型的包装类)
-    - [数据类型-BigInteger](#数据类型-biginteger)
-    - [数据类型-BigDecimal](#数据类型-bigdecimal)
-- [运算符](#运算符)
-- [数组](#数组)
-- [package](#package)
-- [import](#import)
-- [参数传递机制](#参数传递机制)
-- [权限修饰符](#权限修饰符)
-- [内存解析](#内存解析)
-- 类
-    - [类-类的成员](#类-类的成员)
-    - [类-类的特性](#类-类的特性)
-    - [类-对象的创建](#类-对象的创建)
-    - [类-重载与重写](#类-重载与重写)
-    - [类-关键字](#类-关键字)
-    - [类-main方法](#类-main方法)
-    - [类-抽象类](#类-抽象类)
-    - [类-接口](#类-接口)
-- [对象的序列化](#对象的序列化)
-- [object](#object)
-- 字符串
-    - [字符串-string](#字符串-string)
-    - [字符串-StringBuffer](#字符串-stringbuffer)
-    - [字符串-StringBuilder](#字符串-stringbuilder)
-    - [字符串-三种类型的关系](#字符串-三种类型的关系)
-- [异常](#异常)
-- [集合](#集合)
-- [泛型](#泛型)
-- [枚举类](#枚举类)
-- [注解](#注解)
-- io
-    - [io-File类](#io-file类)
-    - [io-io流](#io-io流)
-    - [io-输入输出流基类](#io-输入输出流基类)
-    - [io-节点流](#io-节点流)
-    - [io-处理流-Buffered](#io-处理流-buffered)
-    - [io-转换流](#io-转换流)
-    - [io-标准输入输出流](#io-标准输入输出流)
-    - [io-打印流](#io-打印流)
-    - [io-数据流](#io-数据流)
-    - [io-对象流](#io-对象流)
-    - [io-随机存取文件流-RandomAccessFile](#io-随机存取文件流-randomaccessfile)
-    - [io-基本使用流程](#io-基本使用流程)
-- 多线程
-    - [多线程-基本概念](#多线程-基本概念)
-    - [多线程-Thread类](#多线程-thread类)
-    - [多线程-线程的4种创建与使用](#多线程-线程的4种创建与使用)
-    - [多线程-线程的同步](#多线程-线程的同步)
-    - [多线程-线程的通信](#多线程-线程的通信)
-    - [多线程-注意事项](#多线程-注意事项)
-    - [多线程-线程安全的懒汉式单例模式](#多线程-线程安全的懒汉式单例模式)
-- 日期时间api
-	- [日期时间api-JDK8之前](#日期时间api-jdk8之前)
-	- [日期时间api-JDK8之后](#日期时间api-jdk8之后)
-- [比较器](#比较器)
-- [System类](#system类)
-- [Math类](#math类)
+- 基础
+    - [基本流程](#基本流程)
+    - [类文件](#类文件)
+    - [变量](#变量)
+    - 数据类型
+        - [数据类型](#数据类型)
+        - [数据类型-基本类型的池](#数据类型-基本类型的池)
+        - [数据类型-基本类型的包装类](#数据类型-基本类型的包装类)
+        - [数据类型-BigInteger](#数据类型-biginteger)
+        - [数据类型-BigDecimal](#数据类型-bigdecimal)
+    - [运算符](#运算符)
+    - [数组](#数组)
+    - [package](#package)
+    - [import](#import)
+    - [内存解析](#内存解析)
+
+- OOP
+    - [参数传递机制](#参数传递机制)
+    - [权限修饰符](#权限修饰符)
+    - 类
+        - [类-类的成员](#类-类的成员)
+        - [类-类的特性](#类-类的特性)
+        - [类-对象的创建](#类-对象的创建)
+        - [类-重载与重写](#类-重载与重写)
+        - [类-关键字](#类-关键字)
+        - [类-main方法](#类-main方法)
+        - [类-抽象类](#类-抽象类)
+        - [类-接口](#类-接口)
+    - [对象的序列化](#对象的序列化)
+    - [object](#object)
+- 应用
+    - 字符串
+        - [字符串-string](#字符串-string)
+        - [字符串-StringBuffer](#字符串-stringbuffer)
+        - [字符串-StringBuilder](#字符串-stringbuilder)
+        - [字符串-三种类型的关系](#字符串-三种类型的关系)
+    - [异常](#异常)
+    - [集合](#集合)
+    - [泛型](#泛型)
+    - [枚举类](#枚举类)
+    - [注解](#注解)
+    - io
+        - [io-File类](#io-file类)
+        - [io-io流](#io-io流)
+        - [io-输入输出流基类](#io-输入输出流基类)
+        - [io-节点流](#io-节点流)
+        - [io-处理流-Buffered](#io-处理流-buffered)
+        - [io-转换流](#io-转换流)
+        - [io-标准输入输出流](#io-标准输入输出流)
+        - [io-打印流](#io-打印流)
+        - [io-数据流](#io-数据流)
+        - [io-对象流](#io-对象流)
+        - [io-随机存取文件流-RandomAccessFile](#io-随机存取文件流-randomaccessfile)
+        - [io-基本使用流程](#io-基本使用流程)
+    - 多线程
+        - [多线程-基本概念](#多线程-基本概念)
+        - [多线程-Thread类](#多线程-thread类)
+        - [多线程-线程的4种创建与使用](#多线程-线程的4种创建与使用)
+        - [多线程-线程的同步](#多线程-线程的同步)
+        - [多线程-线程的通信](#多线程-线程的通信)
+        - [多线程-注意事项](#多线程-注意事项)
+        - [多线程-线程安全的懒汉式单例模式](#多线程-线程安全的懒汉式单例模式)
+    - 日期时间api
+        - [日期时间api-JDK8之前](#日期时间api-jdk8之前)
+        - [日期时间api-JDK8之后](#日期时间api-jdk8之后)
+    - [比较器](#比较器)
+    - [System类](#system类)
+    - [Math类](#math类)
 - [扩展](#扩展)
 
-# 基本流程：
+# 基础
+## 基本流程：
 [top](#catalog)
 1. *.java文件（源文件）
 2. javac *.java --> 编译成*.class文件（字节码文件）
 3. java * --> 运行class文件
 
-# 类文件
+## 类文件
 [top](#catalog)
 * 如果*.java文件中有pubilc类，文件名应该和类名相同
 * 一个源文件中最多只有一个public类，其他类不限个数。如果源文件中包含一个public类，则文件名必须与public类名相同
 * 应用程序的执行入口是：main() 方法，固定格式
     * public static void main(String[] args){}
 
-# 变量
+## 变量
 [top](#catalog)
 * **内存**中的一个存储区域，区域内的数据类型不可变
 * 程序中最基本的存储单元，包含：变量类型，变量名，存储的值
@@ -90,8 +95,8 @@
     * 局部变量---方法体内
         * 形参
 
-# 数据类型
 ## 数据类型
+### 数据类型
 [top](#catalog)
 * 越高级越抽象，越低级越专用
 * 基本类型
@@ -156,11 +161,11 @@
     |引用类型|null|
 
 
-## 数据类型-基本类型的池
+### 数据类型-基本类型的池
 [top](#catalog)
 * 对于整形数据，范围-128～127的数都在**池中**，所以`Integet i = 1; Integet j = 1; i==j //true`
 
-## 数据类型-基本类型的包装类
+### 数据类型-基本类型的包装类
 [top](#catalog)
 * 八种基本数据类型定义相应的引用类型
 
@@ -190,7 +195,7 @@
         * String.valueOf: `String str = String.valueOf(2.34f);`
         * 直接连接空字符串：`String str = 5 + "";`
 
-## 数据类型-BigInteger
+### 数据类型-BigInteger
 [top](#catalog)
 * Integer能存储的最大整形数值为2^31-1，Long能存储的最大整形数值为2^63-1，无法表示更大的数
 * BigInteger可以表示任意精度的不可变整数
@@ -199,7 +204,7 @@
 * 构造器
     * `BigInteger(String val)` 根据字符串构建BigInteger对象
 
-## 数据类型-BigDecimal
+### 数据类型-BigDecimal
 [top](#catalog)
 * 精度比Float和Double更高
 * 支持任意精度的不可变的有符号十进制定点数
@@ -207,7 +212,7 @@
     * `BigDecimal(double val)`
     * `BigDecimal(String val)`
 
-# 运算符
+## 运算符
 [top](#catalog)
 * 算数运算符
     * 对负数取模时，忽略负号
@@ -251,7 +256,7 @@
         ```
         * `Object o1 = true ? 1 : 2.0; `最终显示1.0
 
-# 数组
+## 数组
 [top](#catalog)
 * 数组工具类：Arrays
 * 直接输出数组内容时，可以使用：`Arrays.toString(type[]);`
@@ -288,7 +293,7 @@
     * 数组变量在**栈内存**，各元素对象在**堆内存**
 * **可以创建长度为0的数组**：`type[] t = new type[0];`，用`Arrays.toString`输出时会输出`[]`。如果直接输出该数组，则控制台没有任何输出
 
-# package
+## package
 [top](#catalog)
 * package语句
     * java源文件的第一条语句，指明该文件中定义的类所在的包
@@ -299,7 +304,7 @@
     * 解决类命名冲突的问题
     * 控制访问权限
 
-# import
+## import
 [top](#catalog)
 * 如果导入的类或接口是java.lang包下的，或值当前包下的，可以省略import
 * import写在包声明和类声明之间
@@ -308,24 +313,8 @@
 * 如果在代码中使用不同包下的同名的类。那么就需要使用**类的全类名**的方式指明调用的是哪个类
 * **import static**组合，调用指定类或接口下的静态属性或方法
 
-# 参数传递机制
-[top](#catalog)
-* 规则：值传递
-    * 基本数据类型：值拷贝
-    * 引用数据类型：地址拷贝
-        * 对于String，在方法中对String类型的形参进行修改时，会在堆中开辟新的内存空间，并将新空间的地址重新赋予形参，这会导致，在方法中对字符串的修改，不会影响到实参。
-
-# 权限修饰符
-[top](#catalog)
-
-|修饰符|类内部|同包|不同包的子类|同一个工程|
-|-|-|-|-|-|
-|private|是|-|-|-|
-|缺省|是|是|-|-|
-|protected|是|是|是|-|
-|public|是|是|是|是|
-
-# 内存解析
+# OOP
+## 内存解析
 [top](#catalog)
 * 堆（heap）
     * 存在的目的：存放对象实例（对象实例，数组）（所有的对象实例都在该区被分配内存）
@@ -336,8 +325,25 @@
 * 方法区（method area）
     * 存储已被虚拟机加载的：类信息、常量、静态变量、`即时编译器编译后的代码` 等数据
 
-# 类
-## 类-类的成员
+## 参数传递机制
+[top](#catalog)
+* 规则：值传递
+    * 基本数据类型：值拷贝
+    * 引用数据类型：地址拷贝
+        * 对于String，在方法中对String类型的形参进行修改时，会在堆中开辟新的内存空间，并将新空间的地址重新赋予形参，这会导致，在方法中对字符串的修改，不会影响到实参。
+
+## 权限修饰符
+[top](#catalog)
+
+|修饰符|类内部|同包|不同包的子类|同一个工程|
+|-|-|-|-|-|
+|private|是|-|-|-|
+|缺省|是|是|-|-|
+|protected|是|是|是|-|
+|public|是|是|是|是|
+
+## 类
+### 类-类的成员
 [top](#catalog)
 * 示例
     ```java
@@ -533,7 +539,7 @@
     * 编译后，内部类会有独立的*.class文件，文件名前面会自动附加：`外部类名$`
 
 
-## 类-类的特性
+### 类-类的特性
 [top](#catalog)
 * 封装、隐藏
     * 将数据声明为private，再提供public方法：get、set来操作属性
@@ -627,7 +633,7 @@
     B b2 = (B)a2; // 运行时，a指向的时A的实例对象，无法强转成子类的对象
     ```
 
-## 类-对象的创建
+### 类-对象的创建
 [top](#catalog)
 * 创建方式：`类名 对象名 = new 类名();`
 * new出来的对象在堆中，指向该类对象的变量在栈中
@@ -735,12 +741,12 @@
     }
     ```
 
-## 类-重载与重写
+### 类-重载与重写
 [top](#catalog)
 * 对于重载的方法，编译器根据方法名和参数表，对同名的方法名做修饰，使这些方法名变得不一样。在编译期确定方法的调用地址（早绑定/静态绑定）
 * 重写(多态)是该方法在调用时确定的（晚绑定/动态绑定）
 
-## 类-关键字
+### 类-关键字
 [top](#catalog)
 * this
     * 在方法内部使用，表示该方法**所属对象**的引用
@@ -799,7 +805,7 @@
     * final标记的方法不能被子类重写
     * final标记的类不能被继承
 
-## 类-main方法
+### 类-main方法
 [top](#catalog)
 * 由java虚拟机调用，所以访问权限必须是public，且不需要创建对象，所以必须是static的
 * main方法接受一个String类型的数组参数，该String数组保存了执行java命令是传递给运行的类的参数
@@ -814,7 +820,7 @@ public class CommandPara {
 }
 ```
 
-## 类-抽象类
+### 类-抽象类
 [top](#catalog)
 * abstract放在权限修饰符后面，如：`public abstract void method()`
 * 有abstract修饰方法时，必须用abstract修饰类
@@ -823,7 +829,7 @@ public class CommandPara {
 * 不能用abstract修饰变量、代码块、构造器;
 * 不能用abstract修饰私有方法、静态方法、final的方法、final的类
 
-## 类-接口
+### 类-接口
 [top](#catalog)
 * 接口是抽象方法和常量值的集合
 * 特点
@@ -871,7 +877,7 @@ public class CommandPara {
     * 一个接口中定义了一个默认方法A，父类中也定义了一个同名同参数的非抽象方法，此时不会出现冲突
         * 使用时，遵循**类优先**的原则，接口中的方法会被忽略掉
 
-# 对象的序列化
+## 对象的序列化
 [top](#catalog)
 * `内存中的Java对象 <--> 平台无关的二进制流` 之间转化，可以保存到磁盘上或通过网络传播
 * 可以将任何实现了Serializable接口的对象转化为字节数据，使用器在保存和传输时可以被还原
@@ -888,7 +894,7 @@ public class CommandPara {
 * 对象流ObjectInputStream、ObjectOutputStream不能序列化static和transient修饰的成员变量
 
 
-# object
+## object
 [top](#catalog)
 * 未使用extends指定父类是，则默认父类为：`java.lang.Object`
 * 可以接收任何参数的方法
@@ -923,8 +929,9 @@ public class CommandPara {
             * x.equal(null)，**永远都返回false**
             * x.equal(和x不同类型的对象)，**永远都返回false**
 
-# 字符串
-## 字符串-string
+# 应用
+## 字符串
+### 字符串-string
 [top](#catalog)
 * 继承关系：
     ```java
@@ -1127,7 +1134,7 @@ public class CommandPara {
 * String的equals方法被重写过，是直接比较两个对象的内容
 
 
-## 字符串-StringBuffer
+### 字符串-StringBuffer
 [top](#catalog)
 * 可变字符序列，底层是char[]可变字符数组(在父类AbstractStringBuilder中)
 * 效率低，内部使用了线程安全的synchronized同步方法
@@ -1269,7 +1276,7 @@ public class CommandPara {
 	StringBuffer sb2 = new StringBuffer(null); //Exception：java.lang.NullPointerException
 	```
 
-## 字符串-StringBuilder
+### 字符串-StringBuilder
 [top](#catalog)
 * 可变字符序列，底层是char[]可变字符数组(在父类AbstractStringBuilder中)
 * 效率比StringBuffer高，线程不安全的
@@ -1278,7 +1285,7 @@ public class CommandPara {
 * 扩容方式： 参考StringBuffer
 * 常用方法： 参考StringBuffer
 
-## 字符串-三种类型的关系
+### 字符串-三种类型的关系
 [top](#catalog)
 * 三种类型的异同
     * 相同点
@@ -1325,7 +1332,7 @@ public class CommandPara {
             String str2 = sbl.toString();
             ```
     
-# 异常
+## 异常
 [top](#catalog)
 * 两种异常
     * Error：java虚拟机无法解决的严重问题，如JVM系统内部错误、资源耗尽等情况
@@ -1348,7 +1355,7 @@ public class CommandPara {
     * 自定义异常需要提供serialVersionUID
     * 自定义的异常**通过throw抛出**。
 
-# 集合
+## 集合
 [top](#catalog)
 * 数组的问题
     1. 长度固定
@@ -1554,7 +1561,7 @@ public class CommandPara {
     * 线程同步
         * synchronizedXxx()
 
-# 泛型
+## 泛型
 [top](#catalog)
 * 泛型的声明：`interface List<T>`, `class A<K,V>`
 * 泛型的实例化：在类名后面指定类型：List<String>
@@ -1673,7 +1680,7 @@ public class CommandPara {
             * `public <E> E method(E e){...}`
         * `<E>`标识一个泛型方法 
 
-# 枚举类
+## 枚举类
 [top](#catalog)
 * 适用范围：类的对象只有有限个、且每个都是确定的
 * 当需要一组常量时，最好使用枚举类
@@ -1797,7 +1804,7 @@ public class CommandPara {
     }
     ```
     
-# 注解
+## 注解
 [top](#catalog)
 * 从JDK5.0开始，增加了对元数据(MetaData)的支持，即注解Annotation
 * 注解可在编译、类加载、运行时被读取，执行相应的处理
@@ -1906,8 +1913,8 @@ public class CommandPara {
         * Doucmented定义的注解，Retention必须是RUNTIME
     * @Inherited 被修饰的注解将具有继承性，如果某个类使用了@Inherited修饰的注解，其子类自动具有该注解？？？？？？
 
-# io
-## io-File类
+## io
+### io-File类
 [top](#catalog)
 * java.io.File
 * 文件和文件路径的抽象表示形式，**与平台无关**
@@ -1929,7 +1936,7 @@ public class CommandPara {
     * 获取功能
         * public String getName() :获取名称
         * public String getPath() :获取路径
-        * public String getParent():获取上层文件目录路径。若无，返回null
+        * public String getParent():获取上层文件目录路径。如果没有，返回null
         * public String getAbsolutePath():获取绝对路径
         * public String getAbsoluteFile():获取绝对路径
         * public long length() :获取文件长度(即:字节数)。不能获取目录的长度。 
@@ -1954,7 +1961,7 @@ public class CommandPara {
     * 删除
         * public boolean delete() 直接删除文件/目录（只能删除空目录）
 
-## io-io流
+### io-io流
 [top](#catalog)
 * 用于处理设备之间的数据传输
 * java中，对数据的输入输出操作以流(stream)的方式进行
@@ -1994,7 +2001,7 @@ public class CommandPara {
             * FileReader,FileWriter
         * 处理流：不直接作用在数据源上，而是连接已有节点流或其他处理流，来提供更强大的读写功能
 
-## io-输入输出流基类
+### io-输入输出流基类
 [top](#catalog)
 * **读取的文件必须存在，写入的文件可以不存在(会自动创建)**
 * 输入流基类
@@ -2048,7 +2055,7 @@ public class CommandPara {
         * public void close() throws IOException 
             * 关闭此输出流并释放与该流关联的所有系统资源
 
-## io-节点流
+### io-节点流
 [top](#catalog)
 * 如果文件存在，直接输出会覆盖文件中的已有内容
     * 可以使用输出流构造器：FileOutputStream(path:file, append:true)，在文件的末尾添加内容
@@ -2226,7 +2233,7 @@ public class CommandPara {
     }
     ```
 
-## io-处理流-Buffered
+### io-处理流-Buffered
 [top](#catalog)
 * 提供数据的读写速度，使用这些流类时，会**创建一个内部缓冲区数组**，缺省使用**8192字节(8Kb)的缓冲区**
 * Buffered流需要套接在对应的节点流上
@@ -2330,7 +2337,7 @@ public class CommandPara {
     }
     ```
 
-## io-转换流
+### io-转换流
 [top](#catalog)
 * InputStreamReader 编码：InputStream --> Reader
 * OutputStreamWriter 解码：Writer --> OutputStream
@@ -2380,7 +2387,7 @@ public class CommandPara {
     }
     ```
 
-## io-标准输入输出流
+### io-标准输入输出流
 [top](#catalog)
 * 标准输入： System.in (从键盘输入)
     * 类型：InputStream
@@ -2398,7 +2405,7 @@ public class CommandPara {
     * public static void setIn(InputStream in)
     * public static void setOut(PrintStream out)
 
-## io-打印流
+### io-打印流
 [top](#catalog)
 * PrintStream  写入字节
 * PrintWrite 写入字符
@@ -2433,7 +2440,7 @@ public void method(){
 }
 ```
 
-## io-数据流
+### io-数据流
 [top](#catalog)
 * 用于读取和写出基本数据类型、String类的数据
 * DataInputStream
@@ -2464,7 +2471,7 @@ public void method(){
         * write(byte[] b)
 * 怎么写的就怎么读出来，各类型数据的顺序要相同
 
-## io-对象流
+### io-对象流
 [top](#catalog)
 * ObjectInputStream、ObjectOutputStream
     * 使用时需要套接InputStream、OutputStream及其子类
@@ -2541,7 +2548,7 @@ public void method(){
     }
     ```
     
-## io-随机存取文件流-RandomAccessFile
+### io-随机存取文件流-RandomAccessFile
 [top](#catalog)
 * 内部实现了DataInput、DataOutput两个接口，该类可读可写
     * 支持随机访问，程序可以直接跳到文件的任意地方来读写文件
@@ -2595,13 +2602,14 @@ public void method(){
         }
     }
     ```
-## io-基本使用流程
+
+### io-基本使用流程
 [top](#catalog)
 * 流程创建节点流，然后套接到处理流中。字节流用byte[]循环接收，字符流用char[]/String循环接受 
     * 转换流先套接到一个字节流，然后当作字符流用，套接到其他处理流中
 
-# 多线程
-## 多线程-基本概念
+## 多线程
+### 多线程-基本概念
 [top](#catalog)
 * 程序：完成特定任务，用某种语言编写的一组指令的集合---一段静态代码，静态对象
 * 进程：程序的一次执行过程/正在运行的一个程序。是动态的过程，有生命周期
@@ -2651,7 +2659,7 @@ public void method(){
         * 死亡：线程工作完成、或先层呢被提前强制终止、出现异常导致结束
     * 状态的切换![threadLeftCycle](./imgs/threadLeftCycle.png)
 
-## 多线程-Thread类
+### 多线程-Thread类
 [top](#catalog)
 * run()
     * 每个线程都通过run方法来操作，run()方法的主体称为线程体,**需要重写**
@@ -2685,7 +2693,7 @@ public void method(){
     * static void sleep(long millis) 阻塞当前线程的执行，参数：毫秒
     * boolean isAlive() 判断线程是否还活着
 
-## 多线程-线程的4种创建与使用
+### 多线程-线程的4种创建与使用
 [top](#catalog)
 * 创建方式1:继承Thread
     1. 创建一个继承与Thread类的子类
@@ -2830,7 +2838,7 @@ public void method(){
         }
         ```
 
-## 多线程-线程的同步
+### 多线程-线程的同步
 [top](#catalog)
 * 共享数据：多个线程共同操作的变量
     * 如`extends Thread`方式中的静态变量，`implements  Runnable`方式中类对象复用时用到的成员变量
@@ -2950,7 +2958,7 @@ public void method(){
             }
             ```
 
-## 多线程-线程的通信
+### 多线程-线程的通信
 [top](#catalog)
 * synchronized中使用的通信方法
     * wait():线程进入阻塞状态，释放锁，可以使用notify，notigyAll唤醒线程
@@ -3101,7 +3109,8 @@ public void method(){
         }
     }
     ```
-## 多线程-注意事项
+
+### 多线程-注意事项
 [top](#catalog)
 * 一个Thread类中，所有静态方法共用一把锁--**A.class**，所有非静态方法共用同一把锁--**this**
 * 能够释放锁的操作
@@ -3128,7 +3137,7 @@ public void method(){
     * 如果解决线程安全问题（三种多线程创建方法）
     * 是否有线程通信
 
-## 多线程-线程安全的懒汉式单例模式
+### 多线程-线程安全的懒汉式单例模式
 [top](#catalog)
 ```java
 class A {
@@ -3165,8 +3174,8 @@ class A {
 }
 ```
 
-# 日期时间api
-## 日期时间api-JDK8之前
+## 日期时间api
+### 日期时间api-JDK8之前
 [top](#catalog)
 * 基本结构 ???????
 * java.lang.System类
@@ -3264,7 +3273,8 @@ class A {
 			calendar.setTime(date);
 			System.out.println(calendar);
 			```
-## 日期时间api-JDK8之后
+
+### 日期时间api-JDK8之后
 [top](#catalog)
 * JDK1.8之前的问题
 	* 日期的值是可变的
@@ -3507,7 +3517,7 @@ class A {
 |java.time.ZoneId与java.util.TimeZone|Timezone.getTimeZone(id)|timeZone.toZoneId()|
 |java.time.format.DateTimeFormatter与java.text.DateFormat|formatter.toFormat()|无|
 
-# 比较器
+## 比较器
 [top](#catalog)
 * 正常情况下java对象，只能进行`==`或`!=`比较，即比较两个对象的堆内存地址 
 * 实现对象排序的两种接口：
@@ -3591,7 +3601,7 @@ class A {
     * Boolean：true > false
     * Date、Time等：按时间大小排列
 
-# System类
+## System类
 [top](#catalog)
 * 包含很多系统属性和系统的控制方法
 * 类的构造器时private的，无法创建对象，内部都是静态成员变量和静态方法
@@ -3614,7 +3624,8 @@ class A {
         |user.name|用户的账户名称|
         |user.home|用户的主目录|
         |user.dir|用户的当前工作目录|
-# Math类
+
+## Math类
 [top](#catalog)
 * java.lang.Math
 * 提供了一系列静态方法用于科学计算。**方法的参数和返回值类型一般为double型**
@@ -3636,6 +3647,9 @@ class A {
     |toDegrees(double angrad)|弧度—>角度|
     |toRadians(double angdeg)|角度—>弧度|
 
+## 反射
+### 反射-反射的机制
+
 # 扩展
 [top](#catalog)
 * JavaBean
@@ -3643,3 +3657,7 @@ class A {
         * 公共类
         * 有一个无参的公共构造器
         * 有属性，且有对应的get、set方法
+
+* NIO
+* 可重复注解
+* HashMap的底层实现
