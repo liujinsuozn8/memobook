@@ -73,6 +73,7 @@
         - [反射-类的加载](#反射-类的加载)
         - [反射-创建运行时类的对象](#反射-创建运行时类的对象)
         - [反射-获取运行时类的完整结构](#反射-获取运行时类的完整结构)
+        - [反射-调用运行时类的指定结构](#反射-调用运行时类的指定结构)
 - [扩展](#扩展)
 
 # 基础
@@ -3984,6 +3985,7 @@ class A {
 
     //@MyAnnotation(value="personclass")
     public class Person extends Creature<String> implements Comparable<String>, MyInterface{
+        public static int X=10;
         private String name;
         int age;
         public int id;
@@ -4019,6 +4021,19 @@ class A {
         @Override
         public void info() {
             System.out.println("this is a Person");
+        }
+
+        private static void showDesc(){
+            System.out.println("this is showDesc");
+        }
+
+        @Override
+        public String toString() {
+            return "Person{" +
+                    "name='" + name + '\'' +
+                    ", age=" + age +
+                    ", id=" + id +
+                    '}';
         }
     }
     ```
@@ -4131,16 +4146,20 @@ class A {
 
 * Class<?> getReturnType() 获取方法的返回值类型
 * Class<?>[] getParameterTypes() 获取方法的参数列表，使用是需要判断是否为NULL或者长度为0
+* int getModifiers() 获取当前目标的权限修饰符
+    * `Modifier.toString(modifiers)` 可以将返回的数值转换为权限修饰符(字符串)
+* Class<?>[] getExceptionTypes() 获取方法的参数列表，使用是需要判断是否为NULL或者长度为0
+
 #### 获取构造器
 * Constructor<?>[] getConstructors() 获取当前类的public构造器
 * Constructor<?>[] getDeclaredConstructors() 获取当前类的所有构造器
-#### 获取throws异常
-* Class<?>[] getExceptionTypes() 获取方法的参数列表，使用是需要判断是否为NULL或者长度为0
-#### 获取注解
-* getAnnotations() 获取当前目标的运行时注解(`@Retention(RetentionPolicy.RUNTIME`)
-#### 获取权限修饰符
+* Class<?>[] getParameterTypes() 获取方法的参数列表，使用是需要判断是否为NULL或者长度为0
 * int getModifiers() 获取当前目标的权限修饰符
     * `Modifier.toString(modifiers)` 可以将返回的数值转换为权限修饰符(字符串)
+* String getName() 获取方法名称
+
+#### 获取注解
+* getAnnotations() 获取当前目标的运行时注解(`@Retention(RetentionPolicy.RUNTIME`)
 
 #### 获取运行时类的父类
 * native Class<? super T> getSuperclass() 获取当前Class对象的父类
@@ -4172,6 +4191,137 @@ class A {
         }
         //输出：
         //java.lang.String
+    }
+    ```
+#### 获取运行时类的接口
+* Class<?>[] getInterfaces() 获取当前类的所有接口
+    ```java
+    @Test
+    public void test8(){
+        Class<Person> cls = Person.class;
+        //获取接口
+        Class[] interfaces = cls.getInterfaces();
+        for (Class i : interfaces) {
+            System.out.println(i.getName());
+        }
+
+        //获取父类的接口
+        Class<?>[] interfaces1 = cls.getSuperclass().getInterfaces();
+        for (Class<?> aClass : interfaces1) {
+            System.out.println(aClass.getName());
+        }
+
+        //输出
+        //java.lang.Comparable
+        //com.ljs.java1.MyInterface
+        //java.io.Serializable
+    }
+    ```
+
+#### 获取运行时类所在的包
+* Package getPackage()
+
+### 反射-调用运行时类的指定结构
+[top](#catalog)
+* `setAccessible(true)` 
+    * 当获取的目标对象的权限时private、default时，使操作目标可访问。
+    * 如果不使用该方法，可以取得private/default的对象，但时执行get/set/invoke等方法时会引发异常：java.lang.IllegalAccessException
+    * Method、Filed、Constructor对象都有该方法
+    * 设为`true`时，在使用时会取消java语言访问检查；`false`时会执行java语言访问检查
+
+* `Object get(Object obj)`/`void set(Object obj, Object value)`操作属性值
+    * 操作public属性（不常用，因为`getField()`只能获取到public属性）
+        ```java
+        @Test
+        public void test1() throws Exception{
+            Class<Person> cls = Person.class;
+            Person p = cls.newInstance();//创建运行时类的对象
+
+            //获取public属性
+            Field id = cls.getField("id");
+            // set(需要设定属性的对象, 属性值)
+            id.set(p, 1001);
+            // get(需要获取属性值的对象)
+            int pid = (int) id.get(p);
+            System.out.println(pid);
+        }
+        ```
+    * 操作指定属性
+        ```java
+        @Test
+        public void test2() throws Exception{
+            Class<Person> cls = Person.class;
+
+            Person p = cls.newInstance();
+
+            //获取指定变量名属性
+            Field name = cls.getDeclaredField("name");
+            //使当前变量是可用、可访问的
+            name.setAccessible(true);
+            // set(需要设定属性的对象, 属性值)
+            name.set(p, "testname");
+            // get(需要获取属性值的对象)
+            String pname = (String) name.get(p);
+            System.out.println(pname);// 输出：testname
+
+            //操作静态属性
+            Field fieldX = cls.getDeclaredField("X");
+            fieldX.setAccessible(true);
+            int staticX = (int) fieldX.get(Person.class);
+            //int staticX = (int) fieldX.get(null);// 静态变量时，对象可以为null
+            System.out.println(staticX); // 输出：10
+
+            fieldX.set(Person.class, 50);
+            staticX = (int) fieldX.get(Person.class);
+            //staticX = (int) fieldX.get(null);
+            System.out.println(staticX); // 输出：50
+        }
+        ```
+* `public Object invoke(Object obj, Object... args)`操作指定方法
+    * obj:方法的调用者。调用静态方法时，obj可以为Class对象或这null
+    * args:实参列表
+    * invoke的返回值就是方法的返回值
+        * 如果方法的返回类型为void，则invoke的返回值为null
+    * 实例
+        ```java
+        @Test
+        public void test3() throws Exception{
+            Class<Person> cls = Person.class;
+            // 调用成员方法
+            // 获取指定方法
+            // getDeclaredMethod(方法名, 参数列表)
+            Method show = cls.getDeclaredMethod("show", String.class);
+            show.setAccessible(true);
+
+            Person p = cls.newInstance();
+
+            // invoke(方法的调用者，实参列表)
+            Object showReturn = show.invoke(p, "testshow");
+            System.out.println(showReturn);
+
+            // 调用静态方法
+            Method showDesc = cls.getDeclaredMethod("showDesc");
+            showDesc.setAccessible(true);
+            // 调用静态方法时，invoke的调用对象使用Class对象和null都可以
+            Object returnShowDesc = showDesc.invoke(Person.class);
+            //Object returnShowDesc = showDesc.invoke(null);
+            System.out.println(returnShowDesc); // 输出：null
+        }
+        ```
+
+* 操作构造器
+    ```java
+    @Test
+    public void test4() throws Exception{
+        Class<Person> cls = Person.class;
+        // 获取构造器：private Person(String name)
+        Constructor<Person> con = cls.getDeclaredConstructor(String.class);
+        con.setAccessible(true);
+
+        //创建运行时类的对象
+        Person testCon = con.newInstance("testCon");
+        // 输出：Person{name='testCon', age=0, id=0}
+        System.out.println(testCon); 
     }
     ```
 
