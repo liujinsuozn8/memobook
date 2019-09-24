@@ -235,9 +235,231 @@
     * fmt.Scanf("%s %d...", &变量1, &变量2.....) 按照指定格式输入数据
 # 流程控制
 * if
-    * **{}**必须有，即使只有一行代码
+	* 条件表达式不需要括号（有也可以，最好不用）
+    * 单分支**{}**必须有，即使只有一行代码
         ```go
-        if 条件表达式 {
+        if 条件表达式 { //左括号必须在这里
             代码块
         }
         ```
+	* 双分支
+		```go
+		if 条件表达式 {
+			代码块
+		} else { //else不能换行
+			代码块
+		}
+		```
+	* 多分支
+		```go
+		if 条件表达式 {
+			代码块
+		} else if {
+			代码块
+		} else {
+			代码块
+		}
+		```
+	* 可以在if中定义变量
+		```go
+		if age:=20; age>18{
+			...
+		}
+		```
+* switch
+	* 匹配向后面**不需要加break**
+	* 基本语法
+		```go
+		switch 表达式x{
+			case 表达式1，表达式2，...:
+				代码块1
+			case 表达式3，表达式4，...:
+				代码块2
+			....
+			default:
+				代码块
+		}
+		```
+	* default部分不是必须的
+	* 表达式可以是：常量值，变量，一个返回值的函数
+	* case 和 switch 表达式的值的数据类型必须相同
+	* case中的表达式如果是**字面值，则不能重复**
+		```go
+		switch a {
+			case 5, 10, 11:
+				.....
+			case 5: //上一个case已经包含5，不能重复定义
+				..... 
+		}
+		```
+	* switch可以不带分支，类似于if-else分支
+		```go
+		var a = 10
+		switch {
+			case a == 10:
+				....
+			case a == 11:
+				....
+			default:
+				....
+		}
+		```
+	* switch 后可以声明/定义一个变量,以分号结束，但是不建议使用
+		```go
+		switch grade := 90; {
+			case xxx:
+				....
+			case yyy:
+				....
+		}
+		```
+	* switch 穿透： fallthrough
+		* 在case结束时使用fallthrough，会继续执行下一个case，并且是忽略匹配条件直接执行下一个case的代码块
+		* 默认只能穿透一层
+		* 实例
+			```go
+			// 输出
+			//this is 2
+			//this is 3
+			var a int = 10
+			switch a {
+				case 11:
+					fmt.Println("this is 1")
+				case 10:
+					fmt.Println("this is 2")
+					fallthrough
+				case 13:
+					fmt.Println("this is 3")
+				default:
+					fmt.Println("this is default")
+			}
+			```
+	* type-switch，判断某个interface变量中实际指向的变量类型
+		```go
+		var x = interface{}
+		var y = 10.0
+		var x=y
+		switch i:=x.(type){
+			case nil:
+				...
+			case int:
+				...
+			case float32:
+				...
+		}
+		```
+* for
+	* 基本语法
+		* 普通写法
+			```go
+			for 循环变量初始化; 循环条件; 循环变量迭代 {
+				循环语句
+			}
+			
+			for i := 1; i <= 10; i++ {
+				...
+			}
+			```
+		* 将变量初始化和变量迭代写到其他位置
+			```go
+			i := 1 //循环变量初始化
+			for 循环条件 { 
+				循环语句
+			}
+			```
+		* 无限循环，需要配合break来使用
+			```go
+			for {
+				//循环执行语句
+			}
+			```
+		* for-range 可以进行字符串和数组的遍历
+			* 对于普通的遍历方式：字符串遍历时， 是按照字节来遍历的。中文的utf8编码是3个字节，如果有字符串有中文，遍历会出现乱码，需要将字符串转换成`[]rune(字符串变量)`切片
+			* 对于for-range遍历方式，有中文也没关系
+			```go
+			// 普通的字符串遍历
+			var str = "abcde"
+			for i :=0; i<len(str); i++ {
+				 fmt.Printf("%c\n",str[i])
+			}
+			
+			// 包含中文
+			var str = "abcde中文"
+			str2 := []rune(str)
+			for i :=0; i<len(str2); i++ {
+				 fmt.Printf("%c\n",str2[i])
+			}
+			
+			// for-range遍历
+			for index, val := range str {
+				fmt.Printf("index=%d, val=%c\n", index, val)
+			}
+			```
+	* 实例：打印空心金字塔
+		```go
+		var total int = 6
+		for i:=1; i<=total; i++{
+			for k := 1; k <= total-i; k++{
+				fmt.Print(" ")
+			}
+			for j:=1; j <= 2*i -1; j++ {
+				if j==1 || j == 2*i -1 || i ==total {
+					fmt.Print("*")    
+				} else {
+					fmt.Print(" ")
+				}
+			}
+			fmt.Println()
+			
+		}
+		```
+* while和do...while
+	* go中没有while和do...while，可以使用for来实现
+	* while的实现
+		```go
+		循环变量初始化
+		for {
+			if 循环条件表达式{
+				break //跳出for
+			}
+			循环操作
+			循环变量迭代
+		}
+		```
+	* do...while的实现
+		```go
+		循环变量初始化
+		for {
+			循环操作
+			循环变量迭代
+			if 循环条件表达式{
+				break //跳出for
+			}
+		}
+		```
+* break
+	* `break` 默认跳出最近的for循环
+	* `break 标签名` 跳出标签对应的for循环
+* continue
+	* `continue` 默认结束本次循环，继续执行下一次循环
+	* `continue 标签名` 结束到标签对应的for循环，再执行下一次循环
+* goto
+	* 无条件转义到程序中的指定行
+	* 使用方法：
+		```go
+		goto label
+		...
+		label:statement
+		```
+* return
+	* 跳出方法或函数
+		* 在普通函数中，表示跳出该函数，不再执行return后面的代码
+		* 在main函数中，表示终止程序
+		
+		
+		
+* 生成随机数
+	```go
+	rand.Seed(time.Now().UnixNano())
+    n := rand.Intn(100)+1
+	```
