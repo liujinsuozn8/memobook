@@ -11,6 +11,8 @@
 	- [init函数](#init函数)
 	- [匿名函数](#匿名函数)
 	- [defer延时机制](#defer延时机制)
+    - [字符串常用的系统函数](#字符串常用的系统函数)
+    - [日期函数](#日期函数)
 - [包](#包)
 
 # 基本知识
@@ -644,9 +646,124 @@
 	```
 ## 字符串常用的系统函数
 [top](#catalog)
-	* `len(str)` 统计字符串的长度
-	* `r:=[]rune(str)` :字符串切片
-	* `` 字符串转整数
+* 统计字符串的长度:`len(str)`
+* 字符串切片:`r:=[]rune(str)`
+* 整数<-->字符串
+    * `n, err := strconv.Atoi("12")` 字符串转整数
+    * `str=strconv.Itoa(12345)` 整数转字符串
+* 字符串<--->byte数组
+    * `var bytes = []byte("hello")` 字符串转byte数组
+    * `str = stirng([]byte{97, 98, 99})` byte数组转字符串
+* 10进制转2、8、16进制，**返回对应的字符串**
+    * `strconv.FormatInt(123,2)`
+    * `strconv.FormatInt(123,16)`
+* 不区分大小写的字符串比较：`strings.EqualFold("abc", "ABC")`
+* 子串查找
+    * 返回子串在字符串中第一次出现的index，如果没有返回-1:`strings.Index("fsdabcd", "abc")`
+    * 返回子串在字符串最后一次出现的index:`strings.LastIndex("abcabcabcd", "abc")`
+    * 查找子串是否在指定字符串中:`strings.Contains(""seafood", "foo")`，返回bool
+    * 统计一个字符串中有几个指定的子串：`strings.Count("aaaxxx", "aa")`，返回int
+* 将指定的子串替换成另一个子串：`strings.Replace("ababababcccc", "ab", "x", n)` n是替换多少次，如果n=-1表示全部替换
+* 按照指定字符将字符串拆分成字符串数组：`strings.Split("hello, world, ok",",")`
+* 大小写转换：`strings.ToLower("Go")`,`strings.ToUpper("Go")`
+* 去掉字符
+    * 去掉字符串两边的空格：`strings.TrimSpace(" dfsf  ")`
+    * 去掉左侧的指定字符：`strings.TrimLeft("!!fsf!!", "!")`
+    * 去掉右侧的指定字符：`strings.TrimRight("!!fsf!!", "!")`
+* 判断字符串的开头：`strings.HasPrefix("abcdsef", "abcd")`
+* 判断字符串的结束：`strings.HasSuffix("abcdsef", "abcd")`
+* 格式化日期
+    * Printf 格式化输出
+    * Sprintf 返回一个格式化后的字符串
+## 日期函数
+[top](#catalog)
+* 需要导入time包
+* time.Time类型，用于表示时间
+* 获取当前时间：`now := time.Now()`
+* 获取日期的其他信息
+    * 年`now.Year()`
+    * 月`now.Month()`
+    * 天`now.Day()`
+    * 小时`now.Hour()`
+    * 分钟`now.Minute()`
+    * 秒`now.Second()`
+* 时间的常量
+    * `time.Nanosecond` 1纳秒
+    * `time.Microsecond` 微秒
+    * `time.Millisecond` 豪秒
+    * `time.Second` 秒
+    * `time.Minute` 分钟
+    * `time.Hour` 小时
+* `Time.Sleep(时间)` 暂停
+* `Time.Unix()` 从1970/01/01 00:00:00至今的秒数
+* `Time.UnixNano()` 从1970/01/01 00:00:00至今的纳秒数
+    * 如果纳秒单位的unix时间超出了int64的表示范围，结果是为定义的？？？
+
+## 内置函数
+[top](#catalog)
+* `len()` 
+    * 求stirng、array、slice、map、channel的长度
+* `new()`
+    * 用来分配内存，主要用来分配值类型
+    * 返回的结果是指针
+    * 实例
+        ```go
+        num := new(int)
+        *num = 100
+        ```
+* `make()`
+    * 用来给引用类型分配内存
+
+## 错误处理
+[top](#catalog)
+* 通过：defer、panic、recover来处理异常
+    * 程序抛出一个panic异常，然后在defer中通过recover来捕获异常，然后正常处理
+    * 实例
+        ```go
+        defer func() {
+            err := recover()
+            if err != nil {
+                fmt.Println("err=", err)
+            }
+        }()
+        num1 := 0
+        num2 := 100
+        num3 := num2 / num1
+        fmt.Println(num3)
+        ```
+* 自定义错误
+    * `errors.New("错误说明")` 返回一个error类型的值，表示一个错误
+    * panic(interface{}) 内置函数，接收任何值作为参数，可以接收error类型的变量，输出错误信息，并退出程序
+    * 实例
+        ```go
+        //输出：this is error
+        func main() {
+            // 增加defer后会拦截errors.New("this is error")中的信息
+            // 并且只输出：this is defer
+            // defer func() {
+            // 	err := recover()
+            // 	if err != nil {
+            // 		fmt.Println("this is defer")
+            // 	}
+            // }()
+            errortest()
+        }
+
+        func myerror() (err error) {
+            return errors.New("this is error")
+        }
+
+        func errortest() {
+            err := myerror()
+            if err != nil {
+                panic(err)
+            }
+            fmt.Println("this is errortest")
+        }
+        ```
+
+
+
 	
 # 包
 [top](#catalog)
