@@ -23,6 +23,12 @@
 - OOP
 	- [结构体](#结构体)
 	- [方法](#方法)
+    - [工厂模式](#工厂模式)
+    - 三大特性
+        - [封装](#封装)
+        - [继承](#继承)
+        - [接口](#接口)
+
 
 # 基本知识
 [top](#catalog)
@@ -531,6 +537,7 @@
 		* 跨包访问的标识符的首字母需要大写
 		* 同包下，不能有相同的函数名，也不能有相同的**全局变量名**，否则会包重复定义
 		* 如果要编译成一个可执行文件，需要将该包声明为main；如果写一个库，包名可以自定义
+    * `go run XXX.go` 执行该指令时，go文件的包必须是main package
 	* 引包：`import 包路径` 
 		* 引入时，从$GOPATH的src下开始
 		* 如果包名较长，可以给包取别名
@@ -1251,50 +1258,60 @@
 		
 	}
 	```
-* 使用结构体
-	* 创建结构体变量
-		1. 直接声明：`var a Student`
-		2. 使用`{}`创建，创建时可以指定字段的值
-			```go
-			type Student struct{
-				Name string
-				Age int
-			}
-			func main() {
-				var a = Student{Name:"aaa", Age:18}
-				fmt.Println(a) //{aaa 18}
-				
-				var b = Student{}
-				fmt.Println(b) //{ 0}
-			}
-			```
-		3. `var a *Student = new(Student)`，new返回一个指针
-			```go
-			type Student struct{
-				Name string
-				Age int
-			}
-			func main() {
-				var a *Student = new(Student)
-				(*a).Name = "aaa"
-				a.Age = 16 //底层自动调整为(*a).Age
-				fmt.Println(*a) //{aaa 16}
-			}
-			```
-		4. `var a *Student = &Student{...}`
-			```go
-			type Student struct{
-				Name string
-				Age int
-			}
-			func main() {
-				var a = Student{Name:"aaa", Age:18}
-				fmt.Println(a) //{aaa 18}
-				
-				var b = Student{}
-				fmt.Println(b) //{ 0}
-			}
-			```
+* 创建结构体变量
+    1. 直接声明：`var a Student`
+    2. 使用`{}`创建，创建时可以指定字段的值
+        ```go
+        type Student struct{
+            Name string
+            Age int
+        }
+        func main() {
+            var a = Student{Name:"aaa", Age:18}
+            fmt.Println(a) //{aaa 18}
+            
+            var b = Student{}
+            fmt.Println(b) //{ 0}
+        }
+        ```
+    3. `var a *Student = new(Student)`，new返回一个指针
+        ```go
+        type Student struct{
+            Name string
+            Age int
+        }
+        func main() {
+            var a *Student = new(Student)
+            (*a).Name = "aaa"
+            a.Age = 16 //底层自动调整为(*a).Age
+            fmt.Println(*a) //{aaa 16}
+        }
+        ```
+    4. `var a *Student = &Student{...}`
+        ```go
+        type Student struct{
+            Name string
+            Age int
+        }
+        func main() {
+            var a = Student{Name:"aaa", Age:18}
+            fmt.Println(a) //{aaa 18}
+            
+            var b = Student{}
+            fmt.Println(b) //{ 0}
+        }
+        ```
+    5. 直接按照位置设定个字段的值，数组类型必须和字段的类型相同
+        ```go
+        type Student struct{
+            Name string
+            Age int
+        }
+        func main() {
+            var a = Student{"aaa", 18}
+            fmt.Println(a) //{aaa 18}
+        }
+        ```
 			
 * 字段
 	* 字段是结构体的组成部分
@@ -1388,6 +1405,10 @@
 	```
 * 在字段上可以添加tag，tag可以通过反射机制获取，常见的使用场景是序列化和反序列化
 	```go
+    import (
+        "encoding/json"
+        "fmt"
+    )
 	type Student struct{
 		Name string `json:"name"`
 		Age int `json:"age"`
@@ -1395,12 +1416,15 @@
 		
 	func main() {
 		a := Student{Name:"aaa", Age:16}
-		fmt.Println(a)
+		fmt.Println(a) //{aaa 16}
 		jsonStr, err := json.Marshal(a)
 		if err != nil {
 			fmt.Println("this is err")
-		}
-		fmt.Println(string(jsonStr))
+        }
+
+        //{"name":"aaa","age":16}
+        //解析时用的时tag
+		fmt.Println(string(jsonStr)) 
 	}
 	```
 	
@@ -1428,14 +1452,238 @@
 	* `func (a A) test(){}` 中的p是调用方法的A结构体变量，p是这个变量的副本
 * 方法的调用和传参原理
 	* 调用和传参机制和函数基本相同
-	* 方法调用时，会将调用方法的变量**当作实参也传递个方法
+	* 方法调用时，会将调用方法的对象也**当作实参传递给方法**
+    * 因为结构体是值类型，调用对象作为参数传递时，会给方法传递对象的值拷贝
+    * 如果调用方法的对象是值类型，则进行值拷贝；如果对象时引用类型，则进行地址拷贝
+        * **具体是值拷贝还是地址拷贝，主要看和方法绑定的类型:(s Student)值绑定，(s *Student)地址绑定**
+    * 在方法中如果需要修改结构体变量的值，可以通过结构体指针的方式来处理
+* 访问权限和函数相同，首字母小些只能在本包访问；首字母大写，可以在本包和其他包使用
+* 如果一个类型实现了`String()`，使用`fmt.Println`默认会调用这个变量的`String()`
+    ```go
+    type Student struct {
+        Name string
+        Age  int
+    }
 
-	
+    func (s *Student) String() string {
+        str := fmt.Sprintf("Name=%v Age=%v", s.Name, s.Age)
+        return str
+    }
+
+    func main() {
+        a := Student{Name: "dfs", Age: 18}
+        // 调用时需要使用指针
+        fmt.Println(&a) // Name=dfs Age=18
+
+        //如果是func (s Student) String() string {
+        //可以直接使用：fmt.Println(a)
+    }
+    ```
+## 工厂模式
+[top](#catalog)
+* go的结构体没有构造函数，可以使用工厂模式来解决这个问题
+* 如果包中的结构体首字母小写，则不能直接使用可以使用工厂模式解决
+* 实例
+    ```go
+    //model.go
+    package model
+
+    type student struct {
+        Name string
+        Age  int
+    }
+
+    func NewStudent(name string, age int) *student {
+        return &student{Name: "ddd", Age: 22}
+    }
+    ```
+    ```go
+    //main.go
+    package main
+
+    import (
+        "fmt"
+        "study/model"
+    )
+
+    func main() {
+        // a := otherpkg.Student{Name: "aaa", Age: 20}
+        a := model.NewStudent("aaa", 20)
+        fmt.Println(*a)
+    }
+
+    ```
+
+## 三大特性
+### 封装
+[top](#catalog)
+* 将结构体、字段的首字母小些
+* 在结构体所在包内提供一个工厂函数，且首字母大写，通过该函数来构造结构体对象
+* 添加get/set方法来对属性赋值
+### 继承
+[top](#catalog)
+* 继承的方法，结构体中需要复用的部分使用**嵌套匿名结构体**
+    ```go
+    type Goods struct {
+        Name string
+        Price int
+    }
+    type Book struct {
+        Goods //嵌套匿名结构体
+        Writer string
+    }
+    ```
+* 字段或方法的查找方法
+    1. 结构体内部查找
+    2. 如果在1中未找到，则在匿名结构体中查找
+    3. 如果在多个匿名结构体中有同名的字段或方法，需要通过匿名结构体来区分，如:`对象.匿名结构体X.字段名`
+    4. 如果没找到则异常
+* 创建时，也可以直接指定各个匿名结构体字段的值
+* 匿名字段也可以使用基本数据类型，但是**每个基本数据类型的匿名字段只能有1个，如果有多个则必须指定字段名**
+    ```go
+    type A struct{
+        int
+        n int
+    }
+    ```
+* 如果一个struct中**嵌套了多个匿名结构体，则相当于实现了多重继承**
+* 实例
+    ```go
+    type Goods struct {
+        Name  string
+        Price float64
+    }
+    type Brand struct {
+        Name    string
+        Address string
+    }
+
+    type TV struct {
+        Goods
+        Brand
+    }
+
+    type TV2 struct {
+        *Goods
+        *Brand
+    }
+
+    func main() {
+        tv := TV{Goods{Name: "tvGoodName", Price: 111}, Brand{Name: "tvBrandName", Address: "tvBrandAddr"}}
+        //{{tvGoodName 111} {tvBrandName tvBrandAddr}}
+        fmt.Println(tv)
+
+        var tv2 TV
+        tv2.Goods.Name = "tv2GoodName"
+        tv2.Price = 222
+        tv2.Brand.Name = "tv2BrandName"
+        tv2.Address = "tv2BrandAddr"
+        //{{tv2GoodName 222} {tv2BrandName tv2BrandAddr}}
+        fmt.Println(tv2)
+
+        tv3 := TV2{
+            &Goods{Name: "tv3GoodName", Price: 444},
+            &Brand{Name: "tv3BrandName", Address: "tv3BrandAddr"},
+        }
+        //{tv3GoodName 444} {tv3BrandName tv3BrandAddr}
+        fmt.Println(*tv3.Goods, *tv3.Brand)
+    }
+    ```
+### 接口
+[top](#catalog)
+* go中的多态特性通过接口来实现
+* 基本语法
+    ```go
+    type 接口名 interface{
+        method1(参数列表) (返回值列表)
+        method2(参数列表) (返回值列表)
+        ...
+    }
+
+    func (t 自定义类型)method1(参数列表) (返回值列表){...}
+    func (t 自定义类型)method2(参数列表) (返回值列表){...}
+    ```
+    ```go
+    type Usb interface {
+        Start()
+        Stop()
+    }
+
+    type Phone struct{}
+
+    func (p Phone) Start() {
+        fmt.Println("Phone is start")
+    }
+    func (p Phone) Stop() {
+        fmt.Println("Phone is stop")
+    }
+
+    type Camera struct{}
+
+    func (p Camera) Start() {
+        fmt.Println("Camera is start")
+    }
+    func (p Camera) Stop() {
+        fmt.Println("Camera is stop")
+    }
+
+    type Computer struct{}
+
+    func (c Computer) Work(u Usb) {
+        u.Start()
+        u.Stop()
+    }
+
+    func main() {
+        comp := Computer{}
+
+        phone := Phone{}
+        comp.Work(phone)
+
+        camera := Camera{}
+        comp.Work(camera)
+
+        //接口直接指向实现了该接口的对象
+        var usb Usb = camera
+        comp.Work(usb)
+    }
+    ```
+* interface类型**默认是一个指针(引用类型)**，如果**interface没有初始化就使用**，将会**输出nil**
+* interface 类型可以定义一组方法，但是**不需要实现**
+* **interface中不能包含任何变量**
+* 只要实现了接口中的方法，就相当于实现了实现了这个接口
+    * 多继承：如果也实现了其他接口的方法，则默认实现了这些接口，即实现了多继承
+* <label style="color:red">空接口:</label>`interface{}`
+    * 空接口内没有任何方法
+    * 所有类型都实现了空接口
+    * **可以把任何一个变量赋值个空接口**
+        ```go
+        ```
+* 接口不能实例化对象，但是**可以指向一个实现了该接口的自定义类型变量**
+* **只要是自定义数据类型，就可以实现接口，不限于结构体**
+    ```go
+    type Integer int
+    
+    type Interface interface {
+        Run()
+    }
+
+    func (i Integer) Run() {
+        fmt.Println(i)
+    }
+    func main(){
+        var integer Integer = 10
+        var interf Interface = integer
+        interf.Run()
+    }
+    ```
+
 #？？？？
 * make()默认创建的容量是多少
 * append()如何对切片进行扩容
 	
 
+[top](#catalog)
 [top](#catalog)
 [top](#catalog)
 [top](#catalog)
