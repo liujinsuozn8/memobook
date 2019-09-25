@@ -20,6 +20,9 @@
 - [切片](#切片)
 - [map](#map)
 - [排序和查找](#排序和查找)
+- OOP
+	- [结构体](#结构体)
+	- [方法](#方法)
 
 # 基本知识
 [top](#catalog)
@@ -1225,12 +1228,214 @@
 	}
 	```
 
+# OOP
+* go没有类，go的struct与其他语言的类有相同的地位，即go用struct来实现OOP的特性
+* go的面向对象编程去掉了：继承、方法重载、构造函数、析构函数、隐藏的this指针等等
+
+## 结构体
+[top](#catalog)
+* 结构体是自定义的数据类型
+* 声明结构体
+	```go
+	type 自定义结构体名 struct{
+		字段1 type
+		字段2 type
+		字段3 type
+		...
+	}
+	
+	type Student struct{
+		Name, add string //如果类型相同可以同时定义
+		Age int
+		Score float32
+		
+	}
+	```
+* 使用结构体
+	* 创建结构体变量
+		1. 直接声明：`var a Student`
+		2. 使用`{}`创建，创建时可以指定字段的值
+			```go
+			type Student struct{
+				Name string
+				Age int
+			}
+			func main() {
+				var a = Student{Name:"aaa", Age:18}
+				fmt.Println(a) //{aaa 18}
+				
+				var b = Student{}
+				fmt.Println(b) //{ 0}
+			}
+			```
+		3. `var a *Student = new(Student)`，new返回一个指针
+			```go
+			type Student struct{
+				Name string
+				Age int
+			}
+			func main() {
+				var a *Student = new(Student)
+				(*a).Name = "aaa"
+				a.Age = 16 //底层自动调整为(*a).Age
+				fmt.Println(*a) //{aaa 16}
+			}
+			```
+		4. `var a *Student = &Student{...}`
+			```go
+			type Student struct{
+				Name string
+				Age int
+			}
+			func main() {
+				var a = Student{Name:"aaa", Age:18}
+				fmt.Println(a) //{aaa 18}
+				
+				var b = Student{}
+				fmt.Println(b) //{ 0}
+			}
+			```
+			
+* 字段
+	* 字段是结构体的组成部分
+	* 字段可以是：基本数据类型，数组，引用类型
+	* 创建结构体变量后，如果没有给字段赋值，则字段使用默认的0值(数值=0，string=""，bool=false，引用=nil{指针，slice，map等，表示未分配空间})
+	* 对于引用类型的字段，使用前一定要分配空间(如使用make())
+* <label style="color:red">使用字段时的隐藏处理</label>
+	* go底层做了一个简化，即可以使用`结构体对象.字段`，也可以使用`结构体指针.字段`
+	* `a.Name`，对于这样的使用方法，底层会进行修改该：`(*a).Name`，即自动加上取值运算
+	* 对于结构体变量指针，直接使用该对象时，仍然需要使用取值处理：`*a`
+* **结构体是值类型，用结构体对象进行赋值时，默认使用值拷贝，不会互相影响**
+	```go
+	type Student struct{
+		Name string
+		Age int
+	}
+	func main() {
+		var a Student
+		a.Name = "aaa"
+		a.Age = 16
+		fmt.Println(a) //{aaa 16}
+		
+		b := a
+		b.Name = "bbb" //b是值拷贝，修改b的字段不会影响a
+		fmt.Println(a) //{aaa 16}
+		fmt.Println(b) //{bbb 16}
+	}
+	```
+* 结构体在内存中的结构类似于数组,内部的字段顺序排列且连续
+	```go
+	type Point struct{
+		x int
+		y int
+	}
+	type Rect struct{
+		leftUp, rightDown Point
+	}
+	type Rect2 struct{
+		leftUp, rightDown *Point
+	}
+	func main() {
+		r1 := Rect{Point{1,2}, Point{3,4}}
+		//0xc21000a020,0xc21000a028,0xc21000a030,0xc21000a038  结构体字段占用的内存空间是连续的，结构体整体上也是连续的
+		fmt.Printf("%p,%p,%p,%p\n", &r1.leftUp.x, &r1.leftUp.y, &r1.rightDown.x, &r1.rightDown.y)
+		//0xc21000a020,0xc21000a030 
+		fmt.Printf("%p,%p\n", &r1.leftUp, &r1.rightDown)
+		
+		r2 := Rect2{&Point{1,2}, &Point{3,4}}
+		//0xc21001e160,0xc21001e168,0xc21001e170,0xc21001e178
+		fmt.Printf("%p,%p,%p,%p\n", &r2.leftUp.x, &r2.leftUp.y, &r2.rightDown.x, &r2.rightDown.y)
+		//0xc21001e150,0xc21001e158 如果结构体中的字段是指针，指针指向的内存空间不一定连续，但是保存指针的内存空间一定是连续的
+		fmt.Printf("%p,%p\n", &r2.leftUp, &r2.rightDown)
+	}
+	```	
+* 结构体作为自定义类型，和其他类型进行转换时，必须要有相同的字段，包括字段的名字、个数、类型
+	```go
+	type A struct{
+		Num int
+	}
+	type B struct{
+		Num int
+	}
+	func main() {
+		var a = A{Num:2}
+		var b B
+		b = B(a)
+		fmt.Println(a) //{2}
+		fmt.Printf("%T\n", a) //main.A
+		fmt.Println(b) //{2}
+		fmt.Printf("%T\n", b) //main.B
+	}
+	```
+* 如果对结构体(或其他数据类型)，使用type进行重定义，go会认为是新的类型，但是**新类型和旧类型之间可以进行强转**
+	```go
+	type A struct{
+		Num int
+	}
+
+	type X A
+	func main() {
+		var a = A{Num:2}
+		var b X
+		b = X(a)
+		fmt.Println(b)
+		
+		var c A
+		var d = X{Num:3}
+		c = A(d)
+		fmt.Println(c)
+	}
+	```
+* 在字段上可以添加tag，tag可以通过反射机制获取，常见的使用场景是序列化和反序列化
+	```go
+	type Student struct{
+		Name string `json:"name"`
+		Age int `json:"age"`
+	}
+		
+	func main() {
+		a := Student{Name:"aaa", Age:16}
+		fmt.Println(a)
+		jsonStr, err := json.Marshal(a)
+		if err != nil {
+			fmt.Println("this is err")
+		}
+		fmt.Println(string(jsonStr))
+	}
+	```
+	
+## 方法
+[top](#catalog)
+* 在go中，**方法是和指定数据类型绑定的**，因此自定义类型可以有方法，不仅仅是struct
+* 方法的声明和调用
+	```go
+	type A struct{
+		Num int
+	}
+	
+	// (a A) 表示A结构体和方法的绑定
+	func (a A) test(){ //表示A结构体有一方法，方法名为test
+		fmt.Printf(a.Num) // 在方法中调用结构体对象的字段
+	}
+	
+	func main() {
+		a := A{Num:123}
+		a.test() //输出：123
+	}
+	```
+	* test 方法和 A结构体绑定
+	* test()只能通过A的对象来调用
+	* `func (a A) test(){}` 中的p是调用方法的A结构体变量，p是这个变量的副本
+* 方法的调用和传参原理
+	* 调用和传参机制和函数基本相同
+	* 方法调用时，会将调用方法的变量**当作实参也传递个方法
+
 	
 #？？？？
 * make()默认创建的容量是多少
 * append()如何对切片进行扩容
 	
-[top](#catalog)
+
 [top](#catalog)
 [top](#catalog)
 [top](#catalog)
