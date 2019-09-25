@@ -14,8 +14,12 @@
 	- [defer延时机制](#defer延时机制)
     - [字符串常用的系统函数](#字符串常用的系统函数)
     - [日期函数](#日期函数)
-- [数组](#数组)
+- 数组
+	- [数组](#数组)
+	- [二维数组](#二维数组)
 - [切片](#切片)
+- [map](#map)
+- [排序和查找](#排序和查找)
 
 # 基本知识
 [top](#catalog)
@@ -833,6 +837,7 @@
         ```
 
 # 数组
+## 数组
 [top](#catalog)
 * **数组是值类型**
 * 定义一个数组：`var 数组名 [长度]数据类型`
@@ -878,6 +883,35 @@
     * 数组作为韩素参数时，使用**值传递**，会进行值拷贝，数组间不会互相影响
     * 如果想在其他函数中修改原来的数组，可以使用引用传递--指针
     * **传递数组参数时，数组的长度必须相同**
+* 使用数组的指针时需要用括号括起来:`(*arr)[index]`
+
+## 二维数组
+[top](#catalog)
+* 声明二维数组：`var 数组名 [维度1][维度2]数据类型`
+	```go
+	//声明二维数组
+	var arr [4][6]int
+	```
+* 直接初始化： **二维数组的第二个维度不能省略**
+	* `var 数组名 [维度1][维度2]数据类型 = [维度1][维度2]数据类型{{...},{....},,,,,}`
+	* `var 数组名 [维度1][维度2]数据类型 = [...]][维度2]数据类型{{...},{....},,,,,}`
+	* `var 数组名 = [维度1][维度2]数据类型{{...},{....},,,,,}`
+	* `var 数组名 = [...][维度2]数据类型{{...},{....},,,,,}`
+	```go
+	var a [3][2]int = [3][2]int{{1,2}, {3,4}, {5,6}}
+	```
+* 内存中的形式
+	* 第二维度存储的是具体的元素
+	* 第一维度存储的是指向第二维度的指针
+* for-range遍历
+	```go
+	var a [3][2]int = [3][2]int{{1,2}, {3,4}, {5,6}}
+    for i, row := range a{
+        for j, v := range row{
+            fmt.Printf("a[%d][%d]=%d\n", i, j, v)
+        }
+    }
+	```
 
 # 切片
 [top](#catalog)
@@ -917,7 +951,9 @@
     * 1和2的区别
         * 1是直接引用数组，该数组事先存在，且在程序中可以操作
         * 2是由make创建切片，同时创建一个数组，底层由make维护，无法直接使用
-    * **切片定义完后，不能使用，因为本身是空的，徐哟引用到一个数组，或者使用make来创建**
+    * **切片定义完后，不能使用，因为本身是空的，需要引用到一个数组，或者使用make来创建,或者通过`append`添加也可以**
+		* 定义后的切片虽然是空的：`[]`,但是不是`nil`
+		* 通过make创建后，所有的元素都是默认值
     * **切片可以继续切片，但是指向的数据空间是相同的，修改时会影响所有的切片**
         ```go
         var a [5]int = [5]int{1, 2, 3, 4, 5}
@@ -1005,10 +1041,199 @@
         ```
     * string是不可变的，所以不能通过切片来修改字符串
 
-[top](#catalog)
-[top](#catalog)
-    
 
+# map
+[top](#catalog)
+* 基本语法：`var map 变量名 map[keytype]valuetype`
+* map中的数据默认是无序的
+* key的类型：bool、数字、string、指针、channel，以及包含这几个类型的接口、结构体、数组
+	* 通常key为int、string
+	* 不能使用slice、map、function，因为这些类型无法使用`==`来判断
+* value的类型，与key基本相同
+	* 通常使用：数字，string，map，**struct**
+* map声明不会分配内存，需要使用`make(map类型，size)`初始化，分配内存后才能使用
+	* make初始创建的map取决于size，但是产生的map长度为0；如果省略size，会自动分配一个小的起始大小
+* 使用实例
+	* 声明，分配内存，赋值 
+		```go
+		var a map[string]string
+		a = make(map[string]string, 10)
+		a["a"] = "aaa"
+		a["b"] = "bbb"
+		a["c"] = "ccc"
+		```
+	* 通过make创建对象，再赋值
+		```go
+		a := make(map[string]string, 10)
+		a["a"] = "aaa"
+		a["b"] = "bbb"
+		a["c"] = "ccc"
+		fmt.Println(a)
+		```
+	* 直接创建对象并初始化
+		```go
+		a := map[string]string{
+			"a":"aaa",
+			"b":"bbb",
+			"c":"ccc",
+		}
+		fmt.Println(a)
+		```
+* **map的容量满了后，会自动扩容，即map可以动态增长**
+* map是引用类型，如果作为函数参数，在函数中修改map会直接影响原来的map
+* map基本操作
+	* 更新/添加：`a[key] = value`，如果key存在，是更新；如果不存在，是添加
+	* 删除:`delete(map, "key")`
+		* 如果key存在，就删除key-value；如果key不存在，则不操作，也不报错
+		* 如果map是nil则不操作，也不报错
+	* 清空map：go没有清空map的方法，可以
+		* 遍历key，逐个删除
+		* `map=make(...)` 创建一个新的对象，让原来的对象成为垃圾，被gc回收
+	* 查找：`val, has ：= a["key"]`，`val：= a["key"]`
+		* 返回value和一个bool值，bool值表示key是否存在。
+		* 如果bool是false，则val是空值
+		* 如果直接赋值给一个变量，则只返回value
+		* 如果valuetype是string，判断时不能用nil，如果是引用类型可以使用nil比较
+* map遍历
+	* 因为map内部是无序的,所以每次遍历的结果可能不一样
+	* for-range遍历
+		```go
+		a := map[string]string{
+			"a":"aaa",
+			"b":"bbb",
+			"c":"ccc",
+		}
+		
+		for k,v := range a{
+			fmt.Printf("a[%v]=%v\n", k, v)
+		}
+		```
+* 获取map长度：`len(map对象)`
+	* 长度等于实际有效的key-value个数,不等于make分配的size
+* map切片
+	* slice of map,**使用map切片后,map个数就可以动态变化**
+	* 可以理解为数据类型是map的动态数组
+	* 实例
+		```go
+		var a []map[string]string
+		a = make([]map[string]string, 5) //先构造切片的内存空间,
+		
+		if a[0] == nil{
+			//因为map是引用类型,所以make底层的数组中保存的是map的地址,实际使用每个map元素时,需要给map构造内存空间,让指针指向该内存空间
+			a[0] = make(map[string]string, 2)
+			a[0]["name"] = "aaa"
+			a[0]["age"] = "555"
+		}
+		
+		if a[1] == nil{
+			a[1] = make(map[string]string, 2)
+			a[1]["name"] = "bbb"
+			a[1]["age"] = "334"
+		}
+		
+		fmt.Println(a)
+		
+		b := map[string]string{
+			"name":"ccc",
+			"age":"666",
+		}
+		a = append(a, b) // 向切片中添加map对象
+		
+		fmt.Println(a)
+		```
+* map排序
+	* go中没有直接给map排序的方法
+	* 一般的map排序流程: 获取key-->将key排序-->遍历有序key来访问map对象
+		```go
+		a := map[int]int{
+			10:11,
+			9:43,
+			30:54,
+			25:33,
+		}
+		
+		var keys []int
+		for k,_ :=range a{
+			keys = append(keys, k)
+		}
+		fmt.Println(keys)
+		sort.Ints(keys)
+		fmt.Println(keys)
+		
+		for _, k := range keys{
+			fmt.Printf("a[%d]=%d\n", k, a[k])
+		}
+		```
+		
+# 排序和查找
+## 排序
+[top](#catalog)
+* 内部排序:将数据加载到内存中进行排序
+	* 包括:交换式排序法,选择式排序法,插入式排序法
+* 外部排序法:数据量过大,无法全部加载到内存中,需要借助外部存储进行排序
+	* 包括:合并排序法,直接合并排序法
+* 冒泡排序
+	```go
+	func main() {
+		var a = [...]int{55,33,77,11,22,33,44}
+		fmt.Println(a)
+		method(&a)
+		fmt.Println(a)
+	}
+
+	func method(arr *[7]int) {
+		var temp int
+		for i :=0; i<7-1; i++{ // 比较到最后会剩下第一个位置不需要比较,所以整体的循环次数是:数组长度-1
+			for j := 0; j<7-1-i; j++{ //每次从index=0开始比较, 将最后一个位置空出来,这样有空间进行交换
+				if (*arr)[j] > (*arr)[j+1]{
+					temp = (*arr)[j]
+					(*arr)[j] = (*arr)[j+1]
+					(*arr)[j+1] = temp
+				}
+			}
+		}
+	}
+	```
+## 查找
+[top](#catalog)
+* go中常用的两种查找
+	* 顺序查找
+	* 二分查找(需要数组有序)
+* 二分查找
+	```go
+	func main() {
+		var a = [...]int{1,2,3,4,5,6}
+		halfFind(&a, 0, len(a)-1, 6)
+	}
+
+	func halfFind(arr *[6]int, start int, end int, val int){
+		if (start > end){
+			fmt.Println("can not find")
+			return
+		}
+		
+		var middle = (start + end) / 2
+		
+		if (val < (*arr)[middle]){
+			halfFind(arr, start, middle-1, val)
+		} else if (val > (*arr)[middle]){
+			halfFind(arr, middle+1, end, val)
+		} else{
+			fmt.Println("find, index=", middle)
+			return
+		}
+	}
+	```
+
+	
+#？？？？
+* make()默认创建的容量是多少
+* append()如何对切片进行扩容
+	
+[top](#catalog)
+[top](#catalog)
+[top](#catalog)
+[top](#catalog)
 
 * 生成随机数
 	```go
