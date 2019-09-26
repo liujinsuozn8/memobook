@@ -28,7 +28,7 @@
         - [封装](#封装)
         - [继承](#继承)
         - [接口](#接口)
-
+		- [多态](#多态)
 
 # 基本知识
 [top](#catalog)
@@ -265,6 +265,7 @@
     * || 短路或，第一个条件为true，不会判断第二个
 * 赋值运算符
     * =
+		* 交换同类型的值： `a, b = b, a`
     * `+=`,`-=`,`*=`,`/=`,`%=`,`<<=`,`>>=`,`&=`,`^=`,`|=`
 * 位运算符
     * &
@@ -611,7 +612,7 @@
 		func 函数名(args...类型) (返回值列表){
 		}
 		
-		func method(args...int)s
+		func method(args...int)
 		```
 		* args是一个slice切片，通过args[index]可以访问各个值
 		* 可变参数必须放在形参类表的最后
@@ -870,13 +871,14 @@
 	fmt.Printf("%p\n", &a[2]) //0xc000092010
 	fmt.Printf("%p\n", &a[3]) //0xc000092018
     ```
-* 四种初始化数组的方式
-    1. `var a [3]int = [3]int{1,2,3}`
-    2. `var a = [3]int{1,2,3}`
-    3. `var a = [...]int{1,2,3}`
-    4. `var a = [...]int{1:1,0:2,2:3}`，`var a = [3]int{1:1,0:2,2:3}`
+* 初始化数组的方式
+	1. `var a [3]int`， 数组中的值为默认值
+    2. `var a [3]int = [3]int{1,2,3}`
+    3. `var a = [3]int{1,2,3}`
+    4. `var a = [...]int{1,2,3}`
+    5. `var a = [...]int{1:1,0:2,2:3}`，`var a = [3]int{1:1,0:2,2:3}`
         * 初始化时指定位置
-    5. 类型推导：`a := [...]int{1:1,0:2,2:3}`
+    6. 类型推导：`a := [...]int{1:1,0:2,2:3}`
 * 数组遍历
     * `for i := 0; i<len(a); i++{}`
     * for-range
@@ -1101,7 +1103,7 @@
 		* `map=make(...)` 创建一个新的对象，让原来的对象成为垃圾，被gc回收
 	* 查找：`val, has ：= a["key"]`，`val：= a["key"]`
 		* 返回value和一个bool值，bool值表示key是否存在。
-		* 如果bool是false，则val是空值
+		* 如果bool是false，则val是空值；
 		* 如果直接赋值给一个变量，则只返回value
 		* 如果valuetype是string，判断时不能用nil，如果是引用类型可以使用nil比较
 * map遍历
@@ -1517,7 +1519,7 @@
 ## 三大特性
 ### 封装
 [top](#catalog)
-* 将结构体、字段的首字母小些
+* 将结构体、字段的首字母小写
 * 在结构体所在包内提供一个工厂函数，且首字母大写，通过该函数来构造结构体对象
 * 添加get/set方法来对属性赋值
 ### 继承
@@ -1637,6 +1639,9 @@
     func main() {
         comp := Computer{}
 
+		// 如果绑定方法和类型时使用指针：func (p &Phone) Stop()
+		// 应该声明一个对象指针：phone := &Phone{}
+		// 因为和方法绑定的是结构体指针
         phone := Phone{}
         comp.Work(phone)
 
@@ -1651,15 +1656,66 @@
 * interface类型**默认是一个指针(引用类型)**，如果**interface没有初始化就使用**，将会**输出nil**
 * interface 类型可以定义一组方法，但是**不需要实现**
 * **interface中不能包含任何变量**
-* 只要实现了接口中的方法，就相当于实现了实现了这个接口
-    * 多继承：如果也实现了其他接口的方法，则默认实现了这些接口，即实现了多继承
+* 只要实现了接口中的方法，就相当于实现了这个接口，一个自定义类型可以实现多个接口
+	```go
+	type AInterface interface{
+		methodA()
+	}
+	type BInterface interface{
+		methodB()
+	}
+	type Test struct{
+	}
+
+	func (t Test) methodA() {
+		fmt.Println("this is Test MethodA")
+	}
+
+	func (t Test) methodB() {
+		fmt.Println("this is Test MethodB")
+	}
+		
+	func main() {
+		a := Test{}
+		var aif AInterface = a
+		var bif BInterface = a
+		
+		aif.methodA()
+		bif.methodB()
+	}
+	```
+* 接口A中可以继承多个别的接口B、C，即在接口A中嵌套其他接口B、C。实现的时候，ABC中的方法都必须实现
+	* 接口继承的时候，接口中的**方法名不能重复(只看方法名，不看参数列表和返回值列表)**
+		```go
+		type A interface{
+			Method01()
+			Method02()
+		}
+
+		type B interface{
+			Method01()
+			Method03()
+		}
+
+		type C interface {
+			A
+			B
+		}
+		```
 * <label style="color:red">空接口:</label>`interface{}`
     * 空接口内没有任何方法
     * 所有类型都实现了空接口
     * **可以把任何一个变量赋值个空接口**
         ```go
+		type A interface{}
+		
+		func main() {
+			obj := Object{}
+			var a A = obj
+		}
         ```
 * 接口不能实例化对象，但是**可以指向一个实现了该接口的自定义类型变量**
+	* 指向实现接口的对象后，只能调用该接口内的方法，不能调用其他的方法和字段
 * **只要是自定义数据类型，就可以实现接口，不限于结构体**
     ```go
     type Integer int
@@ -1677,6 +1733,147 @@
         interf.Run()
     }
     ```
+* 实例：结构体切片排序
+	```go
+	type Person struct{
+		Name string
+		Age int
+	}
+
+	type PList []Person
+
+	func (pl PList) Len() int{
+		return len(pl)
+	}
+	
+	//按从小到大排序
+	func (pl PList) Less(i, j int) bool {
+		return pl[i].Age < pl[j].Age
+	}
+
+	func (pl PList) Swap(i, j int) {
+		pl[i], pl[j] = pl[j], pl[i]
+	}
+
+	func main() {
+		var intslice = []int{3,2,5,1,4}
+		fmt.Println(intslice) //[3 2 5 1 4]
+		sort.Ints(intslice)
+		fmt.Println(intslice) //[1 2 3 4 5]
+		
+		var pl = PList{
+			Person{Name:"a", Age:16},
+			Person{Name:"b", Age:10},
+			Person{Name:"c", Age:18},
+			Person{Name:"d", Age:9},
+		}
+		
+		fmt.Println(pl) //[{a 16} {b 10} {c 18} {d 9}]
+		sort.Sort(pl)
+		fmt.Println(pl) //[{d 9} {b 10} {a 16} {c 18}]
+	}
+	```
+* 继承与接口：继承用于解决了代码的复用性和可维护性；接口用于设计规范，让自定义类去实现这些方法
+	
+### 多态
+* go 的多态通过接口实现
+    ```go
+    type Usb interface {
+        Start()
+        Stop()
+    }
+
+    type Phone struct{}
+
+    func (p Phone) Start() {
+        fmt.Println("Phone is start")
+    }
+    func (p Phone) Stop() {
+        fmt.Println("Phone is stop")
+    }
+
+    type Camera struct{}
+
+    func (p Camera) Start() {
+        fmt.Println("Camera is start")
+    }
+    func (p Camera) Stop() {
+        fmt.Println("Camera is stop")
+    }
+
+    type Computer struct{}
+
+	//参数()u Usb)会根据传入的实参，来判断对象的类型
+    func (c Computer) Work(u Usb) {
+        u.Start()
+        u.Stop()
+    }
+
+    func main() {
+        comp := Computer{}
+		
+        phone := Phone{}
+        comp.Work(phone)
+
+        camera := Camera{}
+        comp.Work(camera)
+
+        var usb Usb = camera
+        comp.Work(usb)
+    }
+    ```
+* 多态的两种形式
+	* 多态参数
+	* 多态数组:数组中可以存放实现了接口方法的结构体对象
+		```go
+		var usblist [3]Usb
+		usblist[0] = Camera{}
+		usblist[1] = Camera{}
+		usblist[2] = Phone{}
+		```
+* 类型断言
+	* 接口是一般类型，不知道具体类型。如果需要转换成具体类型，就需要使用类型断言
+	* 使用方法：`新对象 = 接口对象.(数据类型)`
+		* 如果类型不匹配，会报panic。使用类型断言时，需要确保接口对象指向的是断言的数据类型
+			```go
+			type A struct{
+				x int
+				y int
+			}
+
+			func main(){
+				var a interface{}
+				b := A{x:1,y:2}
+				a = b
+				var c A
+				c = a.(A)
+				fmt.Println(c)
+			}
+			```
+		* 带检测的类型断言:异常时返回false
+			```go
+			var a interface{}
+			var b float64 = 11
+			a = b
+			// var c float64
+			c, ok := a.(float64)
+			if ok {
+				fmt.Println(c)
+			} else{
+				fmt.Println("error")
+			}
+			```
+* 判断参数类型：`x.(type)`,需要配合switch使用
+	```go
+	switch x.(type){
+		case int：
+			...
+		case float:
+			...
+		...
+	}
+	```
+		
 
 #？？？？
 * make()默认创建的容量是多少
