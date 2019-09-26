@@ -29,6 +29,7 @@
         - [继承](#继承)
         - [接口](#接口)
 		- [多态](#多态)
+- [文件操作](#文件操作)
 
 # 基本知识
 [top](#catalog)
@@ -809,6 +810,7 @@
             err := recover()
             if err != nil {
                 fmt.Println("err=", err)
+                return
             }
         }()
         num1 := 0
@@ -1873,11 +1875,158 @@
 		...
 	}
 	```
-		
+
+# 文件操作
+* os.File 封装了所有文件相关操作，File是一个结构体
+* 打开和关闭文件
+    * 打开文件(os包)：`func Open(name string)(file *File, err error)`
+        * 返回一个File的指针/句柄
+    * 关闭文件：`func (f *File) Close()error`
+    * 实例：
+        ```go
+        func main() {
+            var p string = "./a.txt"
+            f, err := os.Open(p)
+            if err != nil {
+                fmt.Println("this is open error = ", err)
+            }
+            defer func() {
+                err := f.Close()
+                if err != nil {
+                    fmt.Println("this is close error = ", err)
+                }
+            }()
+
+            fmt.Printf("file= %v\n", f)
+        }
+        ```
+* 文件读取
+    * 通过`bufio.NewReader(f)`来读取文件的每一行内容
+        ```go
+        func main() {
+            var p string = "./a.txt"
+            f, err := os.Open(p)
+            if err != nil {
+                fmt.Println("this is open error = ", err)
+                return
+            }
+            defer func() {
+                err := f.Close()
+                if err != nil {
+                    fmt.Println("this is close error = ", err)
+                }
+            }()
+
+            //创建缓冲区
+            const (
+                defaultBufSize = 4096 //默认的缓冲区为 4096
+            )
+
+            // 创建一个带缓冲的*Reader
+            reader := bufio.NewReader(f)
+            for {
+                str, err := reader.ReadString('\n') //读到换行符就结束
+                if err == io.EOF {
+                    break
+                }
+                fmt.Print(str)
+            }
+        }
+        ```
+    * 使用`ioutil.ReadFile(路径)`来将文件一次性读取到内存中，适用于文件不大的情况。返回的是字节数组`[]byte`
+        * 只是读取，没有Open文件，也不需要Close，这两个操作都在该方法的内部
+        ```go
+        func main() {
+            var p string = "/Users/liujinsuo/gosys/others/a.txt"
+            content, err := ioutil.ReadFile(p)
+            if err != nil {
+                fmt.Println("this is error ", err)
+                return
+            }
+            fmt.Println(string(content))
+        }
+        ```
+* 写文件
+    * `os.OpenFile`函数
+        * `func OpenFile(name string, flag int, perm FileMode)(file *File, err error)`
+            * flag 文件打开模式(可以组合)
+
+                |id|权限|
+                |-|-|
+                |os.O_RDONLY|只读模式打开文件|
+                |os.O_WRONLY|只写模式打开文件|
+                |os.O_RDWR|读写模式打开文件|
+                |os.O_APPEND|写操作是将数据附加到文件尾部|
+                |os.O_CREATE|如果不存在则创建一个新文件|
+                |os.O_EXCL|和O_CREATE配合使用，文件必须不存在|
+                |os.O_SYNC|打开文件用于同步IO|
+                |os.O_TRUNC|如果可能，打开是清空文件|
+            
+            * perm 权限控制(linux)
+                * r=4、w=2、x=1
+        * 一个更一般文件打开函数，使用指定的选项、模式打开文件
+        * 如果操作成功返回一个可以操作的IO对象；如果异常，返回`*PathError`
+    * `bufio.NewWriter(f)`创建带缓存的*Writer
+        ```go
+        func main() {
+            var p string = "./a.txt"
+            f, err := os.OpenFile(p, os.O_WRONLY|os.O_CREATE, 0666)
+            if err != nil {
+                fmt.Println("this is error ", err)
+                return
+            }
+            defer f.Close()
+            str := "aaaaaaaa\n"
+            //使用带缓存的*Writer
+            writer := bufio.NewWriter(f)
+            for i := 0; i < 5; i++ {
+                writer.WriteString(str)// 写入缓存
+            }
+            //将缓冲中的数据写入文件
+            writer.Flush()
+        }
+        ```
+    * `ioutil.WriterFile` 直接将数据写入文件，**文件必须存在**
+        ```go
+        func main() {
+            var p1 string = "./a.txt"
+            var p2 string = "./b.txt"
+            data, err := ioutil.ReadFile(p1)
+            if err != nil {
+                fmt.Println("this is read err ", err)
+                return
+            }
+
+            err = ioutil.WriteFile(p2, data, 0666)
+            if err != nil {
+                fmt.Println("this is writer err ", err)
+                return
+            }
+        }
+        ``` 
+* 拷贝文件 io包：`func Copy(dst Writer, src Reader)(written int64, err error)`
+* 判断文件是否存在
+    * `os.Stat()` 根据函数返回的错误值进行判断
+        * nil，文件/目录**存在**
+        * 对错误类型使用`os.IsNotExist()`判读为true，则文件/目录不存在
+        * 如果返回的错误为其他类型，则不确定文件是否存在
+        ```go
+        func PathExist(path string) (bool, error) {
+            _, err := os.Stat(path)
+            if err == nil {
+                return true, nil
+            } else if os.IsNotExist(err) {
+                return false, nil
+            }
+
+            return false, err
+        }
+        ```
 
 #？？？？
 * make()默认创建的容量是多少
 * append()如何对切片进行扩容
+* string的底层
 	
 
 [top](#catalog)
