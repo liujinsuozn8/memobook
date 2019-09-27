@@ -30,6 +30,9 @@
         - [接口](#接口)
 		- [多态](#多态)
 - [文件操作](#文件操作)
+- [命令行参数解析](#命令行参数解析)
+- [json](#json)
+- [单元测试](#单元测试)
 
 # 基本知识
 [top](#catalog)
@@ -99,14 +102,14 @@
 
 
 # 数据类型
-[top](#catalog)
 ## 值类型和引用类型
+[top](#catalog)
 * 值类型(变量存储的是值)
     * 基本数据类型：int系列，float系列，bool，string
     * 复杂/派生类型：数组、结构体struct
     * **变量直接存储值，内存通常在栈中分配**
 * 引用类型：指针、slice切片、管道channel、interface接口
-    * **变量存储一个地址，内存通常在堆上分配。没有任何变量引用地址是，这个地址将变成垃圾有GC回收**
+    * **变量存储一个地址，内存通常在堆上分配。没有任何变量引用地址时，这个地址将变成垃圾有GC回收**
 
 ## 基本数据类型
 [top](#catalog)
@@ -780,10 +783,19 @@
     * `time.Second` 秒
     * `time.Minute` 分钟
     * `time.Hour` 小时
-* `Time.Sleep(时间)` 暂停
+* `time.Sleep(时间)` 暂停
 * `Time.Unix()` 从1970/01/01 00:00:00至今的秒数
 * `Time.UnixNano()` 从1970/01/01 00:00:00至今的纳秒数
     * 如果纳秒单位的unix时间超出了int64的表示范围，结果是为定义的？？？
+* 计算时间差
+	```go
+	func main(){
+		a := time.Now().Unix()
+		time.Sleep(time.Second*10) 暂停10秒
+		b := time.Now().Unix()
+		fmt.Println(b-a) //输出10
+	}
+	```
 
 ## 内置函数
 [top](#catalog)
@@ -2004,7 +2016,38 @@
             }
         }
         ``` 
-* 拷贝文件 io包：`func Copy(dst Writer, src Reader)(written int64, err error)`
+* 拷贝文件(二进制流数据) io包：`func Copy(dst Writer, src Reader)(written int64, err error)`
+	```go
+	func main(){
+		var p1 = `...`
+		var p2 = `...`
+		_, err := CopyFile(p2, p1)
+		if err != nil{
+			fmt.Println("this is copy error", err)
+		}
+	}
+	func CopyBiFile(dst string, src string)(written int64, err error){
+		sf, err := os.Open(src)
+		if err != nil {
+			fmt.Println("this is src open err", err)
+			return
+		}
+		defer sf.Close()
+		
+		sfr := bufio.NewReader(sf)
+		
+		df, err := os.OpenFile(dst, os.O_WRONLY|os.O_CREATE, 0666)
+		if err != nil {
+			fmt.Println("this is dst open err", err)
+			return
+		}
+		defer df.Close()
+		
+		dfw := bufio.NewWriter(df)
+		
+		return io.Copy(dfw, sfr)
+	}
+	```
 * 判断文件是否存在
     * `os.Stat()` 根据函数返回的错误值进行判断
         * nil，文件/目录**存在**
@@ -2023,6 +2066,189 @@
         }
         ```
 
+# 命令行参数解析
+	* 原生方式：`os.Args`用来存储所有的命令行参数，是一个**string切片**
+		```go
+		func main(){
+			fmt.Println(len(os.Args))
+			
+			for _,v := range os.Args{
+				fmt.Println(v)
+			}
+		}
+		```
+	* flag包解析命令行参数
+		* 使用`flag.XxxxVar(数据指针， flag名， 默认值， 提示信息)`，将参数绑定到变量
+		```go
+		go run main.go -u xxxx -p xxxx -h xxxx -port xxxx
+		func main(){
+			var user string
+			var pwd string
+			var host string
+			var port int
+			
+			flag.StringVar(&user, "u", "", "user name,default is null")
+			flag.StringVar(&pwd, "p", "", "pwd name,default is null")
+			flag.StringVar(&host, "h", "localhost", "host,default is localhost")
+			flag.IntVar(&port, "port", 8888, "port default is 8888")
+			
+			flag.Parse()
+			fmt.Println(user)
+			fmt.Println(pwd)
+			fmt.Println(host)
+			fmt.Println(port)
+		}
+		```
+		
+# json
+* json序列化:`json.Marshal(a)`，在序列化结构体时需要传递结构体指针：`json.Marshal(&a)`
+* json反序列化：`json.Unmarshal([]byte(序列化字符串)， &绑定转换对象)`
+	* 反序列化时，只需要声明绑定对象的类型，不需要make来分配空间，Unmarshal内已经封装了make操作
+
+# 单元测试
+* go的轻量级测试框架：testing
+* 测试用例文件名必须以：`_test.go`结尾
+* 测试用例函数必须以**Test**开头，一般是Test+被测试函数名
+* `TestXXXX(t *testing.T)`，测试方法的形参必须是：t *testing.T
+* 测试指令：`go test -v`
+	* 测试单个文件时，需要指定文件:`go test -v XXXX.go`
+	* 测试单个方法：
+* 出现错误时，可以使用`t.Fatalf`来**格式化输出错误信息，并推出程序**
+* `t.Logf`可以用来输出相应的日志
+
+# goroutine和channel
+## goroutine
+* 一个进程下可以有多个线程，且至少有一个线程
+* Go主线程：Go的主线程可以理解成进程(也直接被称为线程)； 一个Go线程上，可以启动**多个协程**
+	* <label style="color:red">如果主线程退出了，即使协程还没有执行完，也会退出</label>
+		* 如果在主线程中启动了过多的协程，而主线程提前结束，会导致一部分协程终止、执行的结果不正确
+	* **主线程是一个物理线程，直接作用在CPU上，是重量级的，非常耗费CPU资源**
+	* **协程**从线程开启，是轻量级的线程，**是逻辑态的，对资源的消耗比较小**
+	
+* Go协程的特点
+	* 有独立的栈空间
+	* 共享程序堆空间
+	* 调度由用户控制
+	* **协程是轻量级的线程(编译器会进行优化)**
+	* go可以开启上万个协程，其他语言的并发机制是基于线程的，开启过多的线程，资源耗费大
+* goroutine实例
+	```go
+	//执行流程
+	//1.主线程启动
+	//2.go test()开启协程
+	//3.主线程、协程同时执行(几乎是同时，但是实际上会有资源的竞争)
+	//4.主线程结束
+	// 每隔1秒输出：test() hello
+	func test(){
+		for i := 1; i<=10; i++{
+			fmt.Println("test() hello" ,i)
+			time.Sleep(time.Second)
+		}
+	}
+
+	// 每隔1秒输出：main() hello
+	func main(){
+		go test() //开启了一个协程
+		
+		for i := 1; i<=10; i++{
+			fmt.Println("main() hello" ,i)
+			time.Sleep(time.Second)
+		}
+	}
+	```
+* goroutine的调度模型
+	* MPG模型
+		* M:操作系统的主线程(是物理线程)
+		* P:协程执行需要的上下文(运行时的资源或操作状态)
+		* G:协程
+* 设置GoLang运行的cpu数
+	* `runtime.NumCPU()`，返回本地的逻辑CPU数
+	* `runtime.GOMAXPROCS()`，设置可同时执行的最大CPU数
+		* Go1.8之后，默认让程序运行在多个核上，可以不用设置
+		* Go1.8之前，需要手动设置，来高效利用CPU
+	```go
+	func main(){
+		num := runtime.NumCPU()
+		fmt.Println(num)
+		runtime.GOMAXPROCS(num-1)
+		fmt.Println("end")
+	}
+	```
+
+## channel
+* 使用goroutine计算1-200每个数的阶乘
+	```go
+	var (
+		result=make(map[int]int, 10)
+	)
+	
+	func test(n int){
+		res := 1
+		for i:=1; i<=n; i++{
+			res *= i
+		}
+		result[n] = res
+	}
+
+	func main(){
+		for i:=1; i<=200; i++{
+			go test(i)
+		}
+
+		time.Sleep(time.Second * 10)
+		for i,v := range result{
+			fmt.Printf("result[%d]=%d\n", i, v)
+		}
+	}
+	```
+* 如果只使用goroutine
+	1. 肯能会产生数据竞争(数据安全问题)
+	2. 需要等待所有的协程停止，但是无法准确的预估停止时间
+* goroutine通信-全局变量的互斥锁，使用前加锁、使用后解锁
+	* 互斥锁的问题
+		1. 无法确定等待时间
+		2. 通过加锁同步来实现通讯，不利于多个协程对全局变量的读写操作(需要分析在哪些位置加锁)
+	```go
+	var (
+		result=make(map[int]int, 10)
+		lock sync.Mutex //声明互斥锁
+	)
+
+	func test(n int){
+		res := 1
+		for i:=1; i<=n; i++{
+			res += i
+		}
+		lock.Lock()
+		result[n] = res
+		lock.Unlock()
+	}
+
+	func main(){
+		for i:=1; i<=200; i++{
+			go test(i)
+		}
+
+		time.Sleep(time.Second * 10)
+		
+		lock.Lock()
+		for i,v := range result{
+			fmt.Printf("result[%d]=%d\n", i, v)
+		}
+		lock.Unlock()
+	}
+	```
+* goroutine通信-channel
+	* channel的本质是一个队列，数据是先进先出
+	* channel本身是线程安全的，多goroutine操作同一个channel时不会发生数据竞争
+	* channel是有类型的，一个string的channel只能存储string类型的数据
+		* 存放各种类型的数据，可以声明为：`interface{}`，一般不推荐这样使用
+
+* channel是引用类型
+* channel**必须初始化才能写入数据(make后才能使用)**
+* channel定义/声明：`var 变量名 chan 数据类型`，如：`var intChan chan int`声明了一个存放int数据的管道
+	
+	
 #？？？？
 * make()默认创建的容量是多少
 * append()如何对切片进行扩容
