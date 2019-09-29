@@ -39,6 +39,7 @@
 	- [channel](#channel)
 - [反射](#反射)
 - [tcp编程](#tcp编程)
+- [操作redis](#操作redis)
 
 # 基本知识
 [top](#catalog)
@@ -2704,6 +2705,58 @@
 			// fmt.Println("client con = ", conn)
 		}
 		```
+
+# 操作redis
+[top](#catalog)
+ * 连接redis
+	```go
+	import (
+		"fmt"
+
+		"github.com/garyburd/redigo/redis"
+	)
+
+	func main() {
+		// 连接redis
+		conn, err := redis.Dial("tcp", "127.0.0.1:6379")
+		if err != nil {
+			fmt.Println("conn error = ", err)
+			return
+		}
+		defer conn.Close()
+		fmt.Println("conn succ = ", conn)
+	}
+	```
+* get/set接口
+	```go
+	func main() {
+		// 链接redis
+		conn, err := redis.Dial("tcp", "127.0.0.1:6379")
+		if err != nil {
+			fmt.Println("conn error = ", err)
+			return
+		}
+		defer conn.Close()
+
+		// fmt.Println("conn succ = ", conn)
+		_, err = conn.Do("Set", "name", "tom")
+		if err != nil {
+			fmt.Println("set error = ", err)
+			return
+		}
+		fmt.Println("set success")
+
+		// 获取value并转换为string
+		r, err := redis.String(conn.Do("Get", "name"))
+		if err != nil {
+			fmt.Println("get error = ", err)
+			return
+		}
+		// 返回结果是interface{}
+		// nameStr := r.(string)
+		fmt.Println("get name = ", r)
+	}
+	```
 
 #？？？？
 * make()默认创建的容量是多少
