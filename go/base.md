@@ -33,6 +33,12 @@
 - [命令行参数解析](#命令行参数解析)
 - [json](#json)
 - [单元测试](#单元测试)
+- goroutine和channel
+	- [goroutine](#goroutine)
+	- [goroutine通信问题](#goroutine通信问题)
+	- [channel](#channel)
+- [反射](#反射)
+- [tcp编程](#tcp编程)
 
 # 基本知识
 [top](#catalog)
@@ -88,6 +94,35 @@
         var b int = 45 //初始化
         b = 60 //赋值
         ```
+* 常量
+	* 使用const修饰
+	* 常量在定义时必须初始化
+	* 常量不能修改
+	* 常量只能修饰bool、数值类型、string类型
+	* 语法`const 常量名 [type] = value`
+	* `const a = 9/3`可以，`const a = 其他变量/3`不可以，`const a = 函数()`不可以
+	* 声明多个常量
+		```go
+		const (
+			a=1
+			b=2
+		)
+		```
+		```go
+		const (
+			a = iota //表示给a赋值为0，b=a+1，c=b+1
+			b //1
+			c //2
+			d //3
+		)
+		```
+		```go
+		const (
+			a    = iota //0
+			b    = iota //1
+			c, d = iota, iota //2, 2
+		)
+		```
 * 标识符
     * 对变量、方法、函数等命名时使用的字符序列
     * 组成：26英文字母、0-9，_
@@ -906,7 +941,7 @@
 * 有长度的是数组：`var a [4]int`，没有长度的是切片：`var a []int`
 * 数组创建后如果没有赋值，则使用默认值
 * go的数组是**值类型**
-    * 数组作为韩素参数时，使用**值传递**，会进行值拷贝，数组间不会互相影响
+    * 数组作为函数参数时，使用**值传递**，会进行值拷贝，数组间不会互相影响
     * 如果想在其他函数中修改原来的数组，可以使用引用传递--指针
     * **传递数组参数时，数组的长度必须相同**
 * 使用数组的指针时需要用括号括起来:`(*arr)[index]`
@@ -1077,7 +1112,7 @@
 	* 不能使用slice、map、function，因为这些类型无法使用`==`来判断
 * value的类型，与key基本相同
 	* 通常使用：数字，string，map，**struct**
-* map声明不会分配内存，需要使用`make(map类型，size)`初始化，分配内存后才能使用
+* <label style="color:red">map声明不会分配内存，需要使用`make(map类型，size)`初始化，分配内存后才能使用</label>
 	* make初始创建的map取决于size，但是产生的map长度为0；如果省略size，会自动分配一个小的起始大小
 * 使用实例
 	* 声明，分配内存，赋值 
@@ -2067,45 +2102,48 @@
         ```
 
 # 命令行参数解析
-	* 原生方式：`os.Args`用来存储所有的命令行参数，是一个**string切片**
-		```go
-		func main(){
-			fmt.Println(len(os.Args))
-			
-			for _,v := range os.Args{
-				fmt.Println(v)
-			}
-		}
-		```
-	* flag包解析命令行参数
-		* 使用`flag.XxxxVar(数据指针， flag名， 默认值， 提示信息)`，将参数绑定到变量
-		```go
-		go run main.go -u xxxx -p xxxx -h xxxx -port xxxx
-		func main(){
-			var user string
-			var pwd string
-			var host string
-			var port int
-			
-			flag.StringVar(&user, "u", "", "user name,default is null")
-			flag.StringVar(&pwd, "p", "", "pwd name,default is null")
-			flag.StringVar(&host, "h", "localhost", "host,default is localhost")
-			flag.IntVar(&port, "port", 8888, "port default is 8888")
-			
-			flag.Parse()
-			fmt.Println(user)
-			fmt.Println(pwd)
-			fmt.Println(host)
-			fmt.Println(port)
-		}
-		```
+[top](#catalog)
+* 原生方式：`os.Args`用来存储所有的命令行参数，是一个**string切片**
+	```go
+	func main(){
+		fmt.Println(len(os.Args))
 		
+		for _,v := range os.Args{
+			fmt.Println(v)
+		}
+	}
+	```
+* flag包解析命令行参数
+	* 使用`flag.XxxxVar(数据指针， flag名， 默认值， 提示信息)`，将参数绑定到变量
+	```go
+	go run main.go -u xxxx -p xxxx -h xxxx -port xxxx
+	func main(){
+		var user string
+		var pwd string
+		var host string
+		var port int
+		
+		flag.StringVar(&user, "u", "", "user name,default is null")
+		flag.StringVar(&pwd, "p", "", "pwd name,default is null")
+		flag.StringVar(&host, "h", "localhost", "host,default is localhost")
+		flag.IntVar(&port, "port", 8888, "port default is 8888")
+		
+		flag.Parse()
+		fmt.Println(user)
+		fmt.Println(pwd)
+		fmt.Println(host)
+		fmt.Println(port)
+	}
+	```
+	
 # json
+[top](#catalog)
 * json序列化:`json.Marshal(a)`，在序列化结构体时需要传递结构体指针：`json.Marshal(&a)`
 * json反序列化：`json.Unmarshal([]byte(序列化字符串)， &绑定转换对象)`
 	* 反序列化时，只需要声明绑定对象的类型，不需要make来分配空间，Unmarshal内已经封装了make操作
 
 # 单元测试
+[top](#catalog)
 * go的轻量级测试框架：testing
 * 测试用例文件名必须以：`_test.go`结尾
 * 测试用例函数必须以**Test**开头，一般是Test+被测试函数名
@@ -2118,6 +2156,7 @@
 
 # goroutine和channel
 ## goroutine
+[top](#catalog)
 * 一个进程下可以有多个线程，且至少有一个线程
 * Go主线程：Go的主线程可以理解成进程(也直接被称为线程)； 一个Go线程上，可以启动**多个协程**
 	* <label style="color:red">如果主线程退出了，即使协程还没有执行完，也会退出</label>
@@ -2175,7 +2214,8 @@
 	}
 	```
 
-## channel
+## goroutine通信问题
+[top](#catalog)
 * 使用goroutine计算1-200每个数的阶乘
 	```go
 	var (
@@ -2244,16 +2284,434 @@
 	* channel是有类型的，一个string的channel只能存储string类型的数据
 		* 存放各种类型的数据，可以声明为：`interface{}`，一般不推荐这样使用
 
+# channel
 * channel是引用类型
+* channel中只能放指定类型的数据
 * channel**必须初始化才能写入数据(make后才能使用)**
+* 数据放满后，就不能再放数据了，会引发deadlock异常
+* 在没有使用goroutine的情况下，如果channel的数据取完了，再取，就会报deadlock
 * channel定义/声明：`var 变量名 chan 数据类型`，如：`var intChan chan int`声明了一个存放int数据的管道
+* `变量名 = <- 管道`，`变量名 := <- 管道`，从管道中取数据
+	* `<- 管道` 也可以只取数据，取出的数据直接丢弃
+* `管道 <- 变量名`，向管道中写入数据
+* channel 基本使用实例
+	```go
+	func main() {
+		//创建一个可以存放3个int数据的管道
+		var intChan chan int
+		intChan = make(chan int, 3)
+		fmt.Println(intChan)
+
+		//向管道写入数据
+		intChan <- 10
+		num := 111
+		intChan <- num
+
+		//管道的长度和容量cap
+		fmt.Println(len(intChan)) //2
+		fmt.Println(cap(intChan)) //3
+
+		//写入数据时不能超过管道的容量
+		intChan <- 50
+		// intChan <- 51 //all goroutines are asleep - deadlock!
+
+		//从管道中取数据
+		var num2 int
+		num2 = <-intChan
+		fmt.Println(num2) // 10
+
+		num3 := <-intChan
+		num4 := <-intChan
+		fmt.Println(num3) //111
+		fmt.Println(num4) //50
+
+		// num5 := <-intChan //fatal error: all goroutines are asleep - deadlock
+	}
+	```
+* channel的关闭
+	* 使用内置函数close可以关闭channel，
+	* channel关闭后，不能再向channel写数据，但是**可以从channel中读取数据**
+	* 关闭后，取数据是可以进行检查：`v, ok := <- channel`，`ok==true`表示正常获取数据
+	```go
+	func main() {
+		intChan := make(chan int, 3)
+		intChan <- 10
+		intChan <- 11
+		close(intChan)
+		//intChan <- 13 //panic: send on closed channel
+
+		n1 := <-intChan
+		fmt.Println(n1) //10
+	}
+	```
+
+* channel的遍历，主要使用for-range
+	* 遍历时，如果channel未关闭，会阻塞，（没有goroutine时，会引发deadlock错误）
+		* 没有结束标识，读到channel为空时，还要进行读取，引发了deadlock错误
+	* 遍历时，如果channel已关闭，会正常遍历数据。
+	```go
+	func main() {
+		intChan := make(chan int, 100)
+		//向管道输入100个数据
+		for i := 0; i < 100; i++ {
+			intChan <- i
+		}
+
+		//遍历
+		close(intChan)
+		for v := range intChan {
+			fmt.Println(v)
+		}
+	}
+	```
+* 实例：读写管道然后退出
+	```go
+	func writeDate(intChan chan int) {
+		for i := 1; i <= 50; i++ {
+			intChan <- i
+			fmt.Println("write:", i)
+
+		}
+		close(intChan)
+	}
+
+	func readData(intChan chan int, exitChan chan bool) {
+		for {
+			v, ok := <-intChan
+			if !ok {
+				break
+			}
+			fmt.Println("read:", v)
+		}
+
+		exitChan <- true
+		close(exitChan)
+	}
+
+	func main() {
+		intChan := make(chan int, 50) //引用类型，在各goroutine中共享
+		exitChan := make(chan bool, 1)
+
+		go writeDate(intChan)
+		go readData(intChan, exitChan)
+
+		for {
+			_, ok := <-exitChan
+			if !ok {
+				break
+			}
+		}
+	}
+	```
+* 阻塞
+	* 如果只有程序向channel写数据，而没有程序从channel中读数据，当channel的容量满了，再写数据会引发deadlock异常，即**阻塞**
+	* 如果写管道和读管道的频率不一致，不会阻塞，底层会控制读写频率
 	
+* 实例：取素数
+	```go
+	func putNum(intChan chan int) {
+		for i := 1; i <= 80; i++ {
+			intChan <- i
+		}
+
+		//放完数据后，关闭管道
+		close(intChan)
+	}
+
+	func primeNum(intChan chan int, primeChan chan int, exitChan chan bool) {
+		var num int
+		var flag bool
+		var ok bool
+		for {
+			//time.Sleep(time.Millisecond * 10)
+			num, ok = <-intChan
+			if !ok {
+				break
+			}
+
+			flag = true
+			//判读素数
+			for i := 2; i < num; i++ {
+				if num%i == 0 {
+					flag = false
+					break
+				}
+			}
+
+			if flag {
+				//将数据保存到管道
+				primeChan <- num
+			}
+		}
+
+		fmt.Println("goroutine exit")
+		//有可能其他goroutine还在处理
+		//或者当前协程速度过快，intChan中还没有放入数据，导致协程终止
+		//向退出管道写入标识
+		exitChan <- true
+	}
+
+	func main() {
+		//产生数据的管道
+		intChan := make(chan int, 1000)
+		// 保存素数结果的管道
+		primeChan := make(chan int, 2000)
+		// 标识协程退出的管道
+		exitChan := make(chan bool, 4)
+
+		//启动协程，向intchan中放入1-8000
+		go putNum(intChan)
+
+		//开启4各协程，从intchan取出数据，并判断是否为素数
+		//如果是素数则保存到primechan中
+		for i := 0; i < 4; i++ {
+			go primeNum(intChan, primeChan, exitChan)
+		}
+
+		//使用匿名函数启动该协程，来判断其他协程是否完成
+		go func() {
+			for i := 0; i < 4; i++ {
+				<-exitChan
+			}
+			//4个协程都完成后，将素数管道关闭
+			close(primeChan)
+		}()
+
+		//遍历素数管道
+		for {
+			res, ok := <-primeChan
+			if !ok {
+				break
+			}
+			fmt.Println("素数：", res)
+		}
+
+		fmt.Println("main end")
+	}
+	```
+
+* channel可以声明为只读，或只写；默认情况下管道是可读可写的
+	* 只读管道
+		```go
+		var ch2 <-chan int
+		num2 := <-ch2
+		```
+	* 只写管道
+		```go
+		var ch chan<- int
+		ch = make(chan int, 3)
+		```
+	* 可以用在方法的参数中，来防止误操作
+	* 只读只写不代表管道的类型，只代表管道的属性，类型都是管道
+* 使用select来解决阻塞
+	```go
+	func main() {
+		intChan := make(chan int, 10)
+		for i := 0; i < 10; i++ {
+			intChan <- i
+		}
+
+		stringChan := make(chan string, 5)
+		for i := 0; i < 5; i++ {
+			stringChan <- fmt.Sprintf("%d", i)
+		}
+
+		//label:
+		for {
+			select {
+			case v := <-intChan: //如果管道一直没有关闭，不会一值阻塞而deadlock
+				fmt.Println("intChan", v)
+			case v := <-stringChan:
+				fmt.Println("stringChan", v)
+			default:
+				fmt.Println("default")
+				return //直接退出，在协程中是退出协程
+				//break //break只能退出select 无法退出for
+				//break label //不建议使用
+			}
+		}
+	}
+	```
+
+* 使用recover，解决协程中出现的panic
+	* 如果一个协程中出现的panic，如果没有捕获，就会造成程序崩溃
+	* 使用recover捕获panic，是主线程不受影响可以继续运行
+	```go
+	func sayhello() {
+		for i := 0; i < 10; i++ {
+			time.Sleep(time.Second)
+			fmt.Println("hello,world")
+		}
+	}
+
+	func test() {
+		defer func() {
+			//捕获异常
+			err := recover()
+			if err != nil {
+				fmt.Println("test is err")
+			}
+		}()
+		var mymap map[int]string
+		mymap[0] = "golang"
+	}
+	func main() {
+		go sayhello()
+		go test()
+
+		for i := 0; i < 10; i++ {
+			fmt.Println("this is main", i)
+			time.Sleep(time.Second)
+		}
+	}
+	```
+
+# 反射
+* 反射可以在运行时动态获取变量的各种信息，如变量的类型，类别
+	* 对于结构体变量，可以获得结构体的字段和方法
+* 通过反射可以修改变量的值，带用关联的方法
+* 使用反射，需要`import "reflect"`
+* 重要函数
+	* `reflect.TypeOf(变量名)`，获取变量的类型，返回`reflect.Type`类型
+	* `reflect.ValueOf(变量名)`，获取变量的值，返回`reflect.Value`类型，一个结构体
+		* `reflect.Value`是一个结构体类型。通过`reflect.Value`，可以获取变量的很多信息
+* 变量、`interface{}`、`reflect.Value`可以互相转换，**以`interface{}`为中介进行转换**
+	* `interface{}`-->`reflect.Value`
+		```go
+		rVal := reflect.ValueOf(b)
+		```
+	* `reflect.Value`-->`interface{}`
+		```go
+		iVal := rVal.Interface()
+		```
+	* `interface{}`-->变量，使用类型断言
+		```go
+		v := iVal.(类型)
+		```
+* `reflect.Value.kind`，获取变量的类别，返回一个常量
+	* Type和Kind的区别
+		* Type和Kind可能相同，也可能不相同
+			* `var a int` Type、Kind都是int
+			* `var a Student` Type是Student，Kind是struct
+* 使用反射来获取变量值：`reflect.ValueOf(x).XXX()`，使用时要求数据类型必须匹配，否则会引发异常
+* 通过反射来修改变量的值
+	* 需要使用对象的指针
+	* 修改值时需要使用：`reflect.ValueOf(a).Elem()`来获取对象(等同于使用：`*指针变量`取得目标值)
+	* 使用`reflect.ValueOf(a).Elem().SetXXX()`来修改变量的值
+		* 如果变量不是指针或者未使用`Elem()`，会引发异常：`reflect.Value.SetXXX using unaddressable value`
+* 处理Struct
+	* 判断kind是否为结构体：`if reflect.ValueOf(x).Kind() == reflect.Struct`
+	* `reflect.ValueOf(x).NumField()`获取结构体有几个字段
+	* 遍历字段:
+		* 通过索引获取字段：`reflect.ValueOf(x).Field(i)`，返回的结果仍然是：`reflect.Value`
+		* 获取标签：`reflect.TypeOf(x).Field(i).Tag.Get(标签的key)`
+			* Field 返回的是StructField(结构体)
+			* 如果某个字段没有标签，则`Get()`的返回值为`""`
+		```go
+		val := reflect.ValueOf(x)
+		for i:=0; i<.NumField(); i++{
+			val.Field(i) // 
+		}
+		```
+	* 调用方法
+		* `reflect.ValueOf(x).NumMethod()`获取结构体有几个方法
+		* `reflect.ValueOf(x).Method(index)`通过索引获取某个方法
+			* 按照函数的名排序
+		* `reflect.ValueOf(x).Method(index).Call(参数列表)`调用某个方法方法
+			* 参数必须是`reflect.Value`类型的变量
+			* `Call()`的返回值是`[]reflect.Value`切片
+
+# tcp编程
+* 简单服务器/客户端实例
+	* 服务器监听8888端口
+	* 可以和多个客户端创建链接
+	* 链接成功后，客户端可以发送数据，并显示在终端上
 	
+	* server.go
+		```go
+		func process(conn net.Conn) {
+			//循环接收客户端发送的数据
+			defer conn.Close()
+
+			for {
+				// 创建一个新的切片
+				buf := make([]byte, 1024)
+				// 等待客户端通过conn发送信息
+				// 如果客户端没有write[发送]，那么协程就阻塞在这里
+				fmt.Println("server wait client info, ", conn.RemoteAddr().String())
+				n, err := conn.Read(buf)
+				// if err != nil {
+				// 	fmt.Println("server read err= ", err)
+				// 	return
+				// }
+				if err == io.EOF {
+					fmt.Println("host exit")
+					return
+				}
+				// 显示客户端发送的内容到服务器的终端
+				fmt.Println(string(buf[:n]))
+			}
+		}
+
+		func main() {
+			fmt.Println("server start listen")
+			//监听本地8888端口
+			listen, err := net.Listen("tcp", "127.0.0.1:8888")
+			if err != nil {
+				fmt.Println("listen err:", err)
+				return
+			}
+			defer listen.Close() //延时关闭
+
+			//主线程负责：循环等待客户端连接
+			//协程负责和客户端交互
+			for {
+				fmt.Println("server:wait Accept")
+				conn, err := listen.Accept()
+				if err != nil {
+					fmt.Println("accpet() err=", err)
+				} else {
+					fmt.Println("accept() sub con = ", conn)
+					fmt.Println("conn ip = ", conn.RemoteAddr().String())
+				}
+				go process(conn)
+			}
+		}
+
+		```
+	* client.go
+		```go
+		func main() {
+			conn, err := net.Dial("tcp", "127.0.0.1:8888")
+			if err != nil {
+				fmt.Println("client dial err = ", err)
+				return
+			}
+
+			//功能1:客户端可以发送单行数据，然后退出
+			//获取输入
+			reader := bufio.NewReader(os.Stdin)
+			str, err := reader.ReadString('\n')
+			if err != nil {
+				fmt.Println("readString err = ", err)
+			}
+			//向服务器发送数据
+			n, err := conn.Write([]byte(str))
+			if err != nil {
+				fmt.Println("conn.Write err=", err)
+			}
+			fmt.Println("client send byte count = ", n)
+			// fmt.Println("client con = ", conn)
+		}
+		```
+
 #？？？？
 * make()默认创建的容量是多少
 * append()如何对切片进行扩容
 * string的底层
-	
+* 声明后，需要分配空间才能使用的类型
+	* map ，make()分配空间
+	* slice	
 
 [top](#catalog)
 [top](#catalog)
