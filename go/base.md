@@ -570,6 +570,7 @@
 	* 区分相同名字的函数、变量等标识符
 	* 项目管理
 	* 控制函数、变量的作用域
+* import包时，如果不想使用包中的任何程序实体，只需要执行包的init操作，可以使用`_`来重命名：`import _ "xxx/yyy/zzz"`
 * 使用方法
 	* 打包：`package 包名`
 		* 打包指令需要在文件的第一行
@@ -1294,6 +1295,10 @@
 ## 结构体
 [top](#catalog)
 * 结构体是自定义的数据类型
+* `struct{}`代表**空结构体类型**
+	* 空结构体类型的变量是不占用没存的
+	* 所有该类型的变量都拥有相同的内存地址
+	* 可以用作传递信号的通道的元素
 * 声明结构体
 	```go
 	type 自定义结构体名 struct{
@@ -2755,6 +2760,104 @@
 		// 返回结果是interface{}
 		// nameStr := r.(string)
 		fmt.Println("get name = ", r)
+	}
+	```
+* Hget/Hset
+	```go
+	func main() {
+		// 链接redis
+		conn, err := redis.Dial("tcp", "127.0.0.1:6379")
+		if err != nil {
+			fmt.Println("conn error = ", err)
+			return
+		}
+		defer conn.Close()
+
+		_, err = conn.Do("Hset", "user1", "name", "tom", "age", 16)
+		if err != nil {
+			fmt.Println("set error = ", err)
+			return
+		}
+		fmt.Println("set success")
+
+		r1, err := redis.String(conn.Do("HGet", "user1", "name"))
+		if err != nil {
+			fmt.Println("hset err = ", err)
+			return
+		}
+
+		r2, err := redis.Int(conn.Do("HGet", "user1", "age"))
+		if err != nil {
+			fmt.Println("hset err = ", err)
+			return
+		}
+
+		fmt.Println("r1 = ", r1)
+		fmt.Println("r2 = ", r2)
+	}
+	```
+* HMset/HMget
+	```go
+	func main() {
+		// 链接redis
+		conn, err := redis.Dial("tcp", "127.0.0.1:6379")
+		if err != nil {
+			fmt.Println("conn error = ", err)
+			return
+		}
+		defer conn.Close()
+
+		_, err = conn.Do("HMset", "user1", "name", "tom", "age", 16)
+		if err != nil {
+			fmt.Println("set error = ", err)
+			return
+		}
+		fmt.Println("set success")
+
+		r, err := redis.Strings(conn.Do("HMGet", "user1", "name", "age"))
+		if err != nil {
+			fmt.Println("hset err = ", err)
+			return
+		}
+
+		fmt.Println(r)
+	}
+	```
+* redis连接池
+	```go
+	var pool *redis.Pool
+
+	func init() {
+		pool = &redis.Pool{
+			MaxIdle:     8,
+			MaxActive:   0,
+			IdleTimeout: 100,
+			Dial: func() (redis.Conn, error) {
+				return redis.Dial("tcp", "localhost:6379")
+			},
+		}
+	}
+
+	func main() {
+		// 从pool中取出一个链接
+		conn := pool.Get()
+		defer conn.Close()
+
+		//从pool中取出链接时，必须保证连接池打开状态
+		pool.Close()
+		conn = pool.Get() //redigo: get on closed pool
+
+		_, err := conn.Do("Set", "name2", "hhhhh")
+		if err != nil {
+			fmt.Println("conn.Do err = ", err)
+			return
+		}
+
+		r, err := redis.String(conn.Do("Get", "name2"))
+		if err != nil {
+			fmt.Println("con.Do err=", err)
+		}
+		fmt.Println("r=", r)
 	}
 	```
 
