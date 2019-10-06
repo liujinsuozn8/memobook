@@ -771,7 +771,7 @@
 * Go的channel相当于一个类型安全的通用型管道
 * 基本概念
     * channel指通道类型，也可以指代传递某种类型的值的通道
-    * channel是引用类型，在初始化之前是nil
+    * channel本身是引用类型，在初始化之前是nil
     * 声明：`var 变量名 chan 数据类型`，设别名：`type 别名 chan 数据类型`
         * 直接这样声明，声明了一个双向通道类型
         * 单向声明：
@@ -795,7 +795,9 @@
         * 如果管道为空，该操作会使当前G被阻塞，即使G进入Gwaiting状态，直到管道中有新元素
         * 如果进行接收操作之前或过程中**通道被关闭了**，该操作会立即结束，**变量elem会被赋予该元素类型的零值**
         * 也可以使用`elem, ok := <- Chan`
-            * 当接收操作因通道关闭而结束是，该值为false(操作失败)，否则为true
+            * 当接收操作因通道关闭而结束时，该值为false(操作失败)，否则为true
+            * ok仅表示能否正常取出值
+            * 通道为空且为关闭时，也会阻塞
     * 发送元素：`通道表达式 <- 元素表达式`
         * 在两个表达式的求值完成之前，发送操作一定会被阻塞
         * 如果管道满了，发送操作会被阻塞
@@ -825,7 +827,7 @@
                 fmt.Println(n)
             }
             ```
-    * Happens before，缓冲通道的规则
+    * Happens before
         * 发送操作会使通道复制被发送的元素。如果通道的缓冲空间已满无法立即复制，会阻塞进行发送操作的G
             * 复制的目标地址有两种
                 * 如果通道为空、且有接收G在等待元素(可能有多个接收G)，目标地址会是**最早等待的那个接收G的内存地址**
@@ -835,80 +837,472 @@
         * 如果发生阻塞，阻塞结束后，都是**最先**发送/接收的G会被唤醒
     * Go运行时系统每次只会唤醒一个G
     * 经由通道传递的值至少会被复制一次(接收G阻塞时发送G发送值，发送值会跳过缓冲队列，直接复制给接收G)，至多两次(发送+接收)
+    * 值类型元素传递副本，更新不会有副作用；引用类型元素传递地址的拷贝，更新会产生副作用
 
-```go
-var strChan = make(chan string, 3)
+        ```go
+        var strChan = make(chan string, 3)
 
-func main() {
-	syncChan1 := make(chan struct{}, 1)
-	syncChan2 := make(chan struct{}, 2)
+        func main() {
+            syncChan1 := make(chan struct{}, 1)
+            syncChan2 := make(chan struct{}, 2)
 
-	go func() {
-		<-syncChan1 //阻塞当前G
-		fmt.Println("Received a sync signal and wait a second...[receiver]")
-		time.Sleep(time.Second)
-		for {
-			if elem, ok := <-strChan; ok {
-				fmt.Println("Received:", elem, "[receiver]")
-			} else {
-				break
-			}
-		}
+            go func() {
+                <-syncChan1 //阻塞当前G
+                fmt.Println("Received a sync signal and wait a second...[receiver]")
+                time.Sleep(time.Second)
+                for {
+                    if elem, ok := <-strChan; ok {
+                        fmt.Println("Received:", elem, "[receiver]")
+                    } else {
+                        break
+                    }
+                }
 
-		fmt.Println("stopped.[reveiver]")
-		syncChan2 <- struct{}{} //发送结束信号
-	}()
+                fmt.Println("stopped.[reveiver]")
+                syncChan2 <- struct{}{} //发送结束信号
+            }()
 
-	go func() {
-		for _, elem := range []string{"a", "b", "c", "d"} {
-			strChan <- elem
-			fmt.Println("Sent:", elem, "[sender]")
-			if elem == "c" {
-				syncChan1 <- struct{}{} //通知接收G开始执行
-				fmt.Println("sent a sync singal. [sender]")
-			}
-		}
+            go func() {
+                for _, elem := range []string{"a", "b", "c", "d"} {
+                    strChan <- elem
+                    fmt.Println("Sent:", elem, "[sender]")
+                    if elem == "c" {
+                        syncChan1 <- struct{}{} //通知接收G开始执行
+                        fmt.Println("sent a sync singal. [sender]")
+                    }
+                }
 
-		fmt.Println("wait 2 seconds...[sender]")
-		time.Sleep(time.Second * 2)
-		close(strChan)          //关闭管道
-		syncChan2 <- struct{}{} //发送结束信号
-	}()
+                fmt.Println("wait 2 seconds...[sender]")
+                time.Sleep(time.Second * 2)
+                close(strChan)          //关闭管道
+                syncChan2 <- struct{}{} //发送结束信号
+            }()
 
-	<-syncChan2
-	<-syncChan2 //控制主goroutine
-}
-```
+            <-syncChan2
+            <-syncChan2 //控制主goroutine
+        }
+        ```
 
-```go
-var mapChan = make(chan map[string]int, 1)
+        ```go
+        var mapChan = make(chan map[string]int, 1)
 
-func main() {
-	syncChan := make(chan struct{}, 2)
-	go func() {
-		for {
-			if elem, ok := <-mapChan; ok {
-				elem["count"]++
-			} else {
-				break
-			}
-		}
-		fmt.Println("Stopped.[receiver]")
-		syncChan <- struct{}{}
-	}()
+        func main() {
+            syncChan := make(chan struct{}, 2)
+            go func() {
+                for {
+                    if elem, ok := <-mapChan; ok {
+                        elem["count"]++
+                    } else {
+                        break
+                    }
+                }
+                fmt.Println("Stopped.[receiver]")
+                syncChan <- struct{}{}
+            }()
 
-	go func() {
-		countMap := make(map[string]int)
-		for i := 0; i < 5; i++ {
-			mapChan <- countMap
-			// time.Sleep(time.Millisecond)
-			fmt.Println("index :", i, ", map : ", countMap)
-		}
+            go func() {
+                countMap := make(map[string]int)
+                for i := 0; i < 5; i++ {
+                    mapChan <- countMap
+                    // time.Sleep(time.Millisecond)
+                    fmt.Println("index :", i, ", map : ", countMap)
+                }
 
-		close(mapChan)
-		syncChan <- struct{}{}
-	}()
-	<-syncChan
-	<-syncChan
-}
-```
+                close(mapChan)
+                syncChan <- struct{}{}
+            }()
+            <-syncChan
+            <-syncChan
+        }
+        ```
+
+    * 如果传递的值不是简单的值类型/引用类型，而是符合的类型，如果结构体包含切片等等，需要检查变量的变化
+        ```go
+        type Counter struct {
+            count int
+        }
+
+        var mapChan = make(chan map[string]Counter, 1)
+
+        func main() {
+            syncChan := make(chan struct{}, 2)
+            go func() {
+                for {
+                    if elem, ok := <-mapChan; ok {
+                        counter := elem["count"] //在此处取值时产生了值拷贝？？？
+                        counter.count++
+                    } else {
+                        break
+                    }
+                }
+                fmt.Println("Stopped.[receiver]")
+                syncChan <- struct{}{}
+            }()
+
+            go func() {
+                countMap := map[string]Counter{
+                    "count": Counter{},
+                }
+                for i := 0; i < 5; i++ {
+                    mapChan <- countMap
+                    time.Sleep(time.Second)
+                    //输出的都是：map[count:{0}]
+                    fmt.Println("index :", i, ", map : ", countMap)
+                }
+
+                close(mapChan)
+                syncChan <- struct{}{}
+            }()
+            <-syncChan
+            <-syncChan
+        }
+        ```
+
+        ```go
+        type Counter struct {
+            count int
+        }
+
+        func (c *Counter) String() string {
+            return fmt.Sprintf("%d", c.count)
+        }
+
+        var mapChan = make(chan map[string]*Counter, 1)
+
+        func main() {
+            syncChan := make(chan struct{}, 2)
+            go func() {
+                for {
+                    if elem, ok := <-mapChan; ok {
+                        counter := elem["count"]
+                        counter.count++
+                    } else {
+                        break
+                    }
+                }
+                fmt.Println("Stopped.[receiver]")
+                syncChan <- struct{}{}
+            }()
+
+            go func() {
+                countMap := map[string]*Counter{
+                    "count": &Counter{},
+                }
+                for i := 0; i < 5; i++ {
+                    mapChan <- countMap
+                    time.Sleep(time.Second)
+                    //将会按顺序输出1-5
+                    fmt.Println("index :", i, ", map : ", countMap)
+                }
+
+                close(mapChan)
+                syncChan <- struct{}{}
+            }()
+            <-syncChan
+            <-syncChan
+        }
+        ```
+    * 关闭通道
+        * 使用close函数关闭管道
+            * 如果传入的管道变量=nil，会引发运行时panic
+        * 试图向一个已关闭的管道发送元素，会引发运行时panic
+        * 不应该在接收端关闭管道
+        * 如果管道中仍然有元素，可以用接收表达式取出，并且可以用：`elem, ok := <- Chan`来判断通道是否已经关闭，已无元素可取
+        * 一个通道只能关闭一次，重复关闭会引起运行时panic
+    * 获取长度：`len(通道)`，获取当前通道中的元素个数
+    * 获取容量：`cap(通道)`，获取通道可容纳的最大元素个数
+        * 通道的容量在初始化后就不能改变
+        * 可以通过容量来判断缓冲/非缓冲管道
+            * 缓冲管道!=0
+            * 非缓冲管道=0
+* 单向channel
+    * 分为：发送通道，接收通道
+    * 通过单向管道来约束程序对通道的使用方式
+        * **单向管道是一个强约束**
+        * 可以将双向管道作为单向管道参数传递给函数，函数会自动进行转换为单向管道：`func test(c chan<- int)`
+            * 在函数内部只能使用发送功能，使用错误会**造成编译错误**
+            * 在函数外部不存在对该管道的功能
+    * **go不允许程序关闭接收通道**
+    * 双向通道可以转换为单向通道，但是单向通道不能转换为双向通道，**i会产生编译错误**，因为<label style="color:red">数据传递的方向本身也是数据类型的一部分</label>
+    * 将一个双向通道转换为单向通道
+        ```go
+        ch := make(chan int, 1)
+        //先转换为interface，再做类型断言
+        interface{}(ch).(<-chan int)
+        interface{}(ch).(chan<- int)
+        ```
+* for和channel
+    * 使用range子句可以持续地从一个通道接收元素值
+        * range子句的迭代目标不能是一个发送通道，否则会造成编译错误
+        * 如果通道中没有元素，会阻塞当前G。阻塞位置是range子语句
+    * for语句会不断的尝试从通道中接收元素，直到通道关闭
+        * 通道关闭时，如果通道还有元素，for语句可以继续取完
+        * 通道关闭时，如果通道没有元素，for语句会立即结束
+* select语句
+    * 语法
+        ```go
+        select{
+            case 发送/接收语句:
+                ...
+            case 发送/接收语句:
+                ...
+            default:
+                ...
+        }
+        ```
+    * 每个case分支后面只能是针对某个通道的发送语句或接收语句
+        * 语句中表达式求值的顺序：**从左到右，自上而下**
+    * default语句可以放在任何位置上，但是无论放在哪，都遵循先case最后执行defalut的规则
+    * 执行select上，运行时系统会自上而下的判断每个case中的发送/接收操作是否可以立即进行
+        * 立即进行指当前G不会因此操作而被阻塞
+        * 判断时需要用到通道的具体特性：缓冲/非缓冲、判断那一刻的具体情况等
+    * 如果所有的case都不满足，并且**没有default时，当前G会被一直阻塞，直到至少有一个case中的操作可以立即进行**
+        * 如果在主G中select出现阻塞会导致死锁
+    * 当有一个case被选中时，运行是系统就会执行该case，并忽略其他case。如果多个case满足条件，运行时系统会通过一个伪随机算法选中一个case
+        ```go
+        //每次的输出都不同，因为运行时系统使用了伪随机算法选择
+        func main() {
+            chanCap := 5
+            intChan := make(chan int, chanCap)
+            for i := 0; i < chanCap; i++ {
+                select {
+                case intChan <- 1:
+                case intChan <- 2:
+                case intChan <- 3:
+                }
+            }
+
+            close(intChan)
+            for n := range intChan {
+                fmt.Println(n)
+            }
+        }
+        ```
+    * 可以与for连用
+    
+* 非缓冲channel
+    * 只能同步的传递元素
+    * happens before
+        * 向非缓冲channel发送元素值的操作会被阻塞，直到至少有一个针对该通道的接收操作
+            * 接收操作会先得到元素的副本
+            * 然后唤醒发送G
+        * 从非缓冲channel接收元素值的操作会被阻塞，直到至少有一个针对该通道的发送G为止
+            * 发送操作直接将元素发送给接收G
+            * 然后唤醒接收G
+    * 同步的特性
+        * 发送元素的速度与慢的那一方持平
+            ```go
+            func main() {
+                sendingInterval := time.Second
+                receptionInterval := time.Second * 2
+                intChan := make(chan int, 0)
+                // 发送
+                go func() {
+                    var ts0, ts1 int64
+                    for i := 1; i < 5; i++ {
+                        intChan <- i //发送后会被阻塞
+                        ts1 = time.Now().Unix()
+                        if ts0 == 0 {
+                            fmt.Println("sent:", i)
+                        } else {
+                            fmt.Printf("sent:%d, interval:%d\n", i, ts1-ts0)
+                        }
+                        ts0 = time.Now().Unix()
+                        time.Sleep(sendingInterval)
+                    }
+                    close(intChan)
+                }()
+
+                var ts0, ts1 int64
+                // 接收
+            Loop:
+                for {
+                    select {
+                    case v, ok := <-intChan:
+                        if !ok {
+                            break Loop
+                        }
+                        ts1 = time.Now().Unix()
+                        if ts0 == 0 {
+                            fmt.Println("received:", v)
+                        } else {
+                            fmt.Printf("received:%d, interval:%d\n", v, ts1-ts0)
+                        }
+
+                        ts0 = time.Now().Unix()
+                        time.Sleep(receptionInterval) // 最终的发送速度与慢的持平
+                    }
+                }
+                fmt.Println("end")
+            }
+            ```
+* time和channel
+    * time的一部分API是用通道辅助实现的
+    
+    * 定时器
+        * Timer结构体会被当作定时器使用
+        * Timer构建函数
+            * `time.NewTimer(time.Duration)`
+                * `time.Duration`表示从定时器被初始化的那一刻起，距离到期时间需要多少纳秒(ns)，**相对到期时间**
+                    * 创建到期时间3小时36分的定时器：`timer := time.NewTimer(3*time.Hour + 36*time.Minute)`
+                * 返回类型：`*time.Timer`
+            * `time.AfterFunc(time.Duration, func)`
+                * 定时器到期后，不会向通知通道C发送元素，会启动新的goroutine来执行`func`
+                * 无论该定时器是否被重置，以及被重置都少次，到期后都会执行`func`
+        * `*time.Timer`的两个方法
+            * `Reset`，重置定时器，即定时器是可复用的
+                * 无论返回结果是什么，定时器都会被重置
+            * `Stop`，停止定时器
+            * 方法返回false=该定时器已到期/已被停止(如已经停止后调用Stop)，true=该定时器刚刚由于方法的调用而被停止(如正在运行时调用Stop)
+        * 对外通知定时器到期的途径：`time.C chan time.Time` 缓冲接收通道
+            * **该通道的容量是1**
+            * C本身是双向通道，复制时自动转换称接收通道
+            * 定时器内部也持有该通道，但是没有转换
+            * 定时器到期时，定时器会它的通知通达发送一个元素值。该元素代表了该定时器的绝对到期时间
+            * 如果在定时器在到期之前，使用Stop()并返回true
+                * C字段无法再缓冲任何值
+                * 关闭后如果试图从C字段中获取值，则会永远阻塞当前G
+                    * <label style="color:red">重置定时器之前一定不能再次对C字段执行接收操作</label>
+            * 如果定时器到期了，并且通道中的元素没有被取出，则C将会一直缓冲该元素
+                * 在定时器被重置后，也会持续缓冲
+                * 由于C的总容量是1，如过没有取出，会影响重置后定时器再次发送通知
+                    * 再次发送不会造成阻塞，但是后面的值会被直接丢掉
+                    * 为了保证复用定时器，必须确保旧的通知被接收
+                * **到期停止，可以从C中接收值；到期前停止，无法从C接收值，并且会造成永久阻塞**
+            * 使用方法：
+                ```go
+                func main() {
+                    timer := time.NewTimer(2 * time.Second)
+                    fmt.Println("present time : ", time.Now())
+                    ex := <-timer.C //该操作会一直阻塞，直到定时器到期
+                    fmt.Println("ex time : ", ex)
+                    //输出false，因为定时器已经过期
+                    fmt.Println("stop time : ", timer.Stop())
+                }
+                ```
+            * 实现对接收操作的超时设定
+                * `time.After(超时时间)`
+                    * 该方法会新建一个定时器，并将它的C作为结果返回
+                * `time.NewTimer(超时时间).C`
+                ```go
+                func main() {
+                    intChan := make(chan int, 1)
+                    go func() {
+                        time.Sleep(time.Second)
+                        intChan <- 1
+                    }()
+
+                    select {
+                    case e := <-intChan:
+                        fmt.Println("received : ", e)
+                    case <-time.NewTimer(time.Millisecond * 500).C:
+                        fmt.Println("timeout")
+                    }
+                }
+                ```
+        * 定时器的复用
+            ```go
+            func main() {
+                intChan := make(chan int, 1)
+                go func() {
+                    for i := 0; i < 5; i++ {
+                        time.Sleep(time.Second)
+                        intChan <- 1
+                    }
+                    close(intChan)
+                }()
+
+                timeout := time.Millisecond * 500
+                var timer *time.Timer
+
+                for {
+                    if timer == nil {
+                        timer = time.NewTimer(timeout)
+                    } else {
+                        timer.Reset(timeout)
+                    }
+                    select {
+                    case e, ok := <-intChan:
+                        if !ok {
+                            fmt.Println("end")
+                            return
+                        }
+                        fmt.Println("received : ", e)
+                    case <-timer.C:
+                        fmt.Println("timeout")
+                    }
+                }
+            }
+
+            ```
+    * 断续器
+        * `time.Ticker`
+            * 断续器的静态结构，包含的字段与`time.Timer`相同，但是行为不同
+        * 断续器会在到期之后，立刻进入下一个周期并等待再次到期，无限循环直到被停止
+        * 传递到期通知的途径`C`字段
+            * 每隔一个相对到期时间，断续器就会向系统到发送一个代表当次绝对到期时间的元素值
+            * C的容量是1
+            * 如果断续器发现通道中的通知元素未接收，就会取消当次的发送操作
+        * 创建断续器：`time.NewTicker(time.Duration)`
+            * 返回类型：`*time.Ticker`
+                * 该类型只有一个方法：`Stop()`，停止断续器
+                    * <label style="color:red">但是为了避免接收通道的异常，该方法不会关闭通道，所以接收通道会处于阻塞状态</label>
+        * 如果断续器被停止了，就不会再向通道发送任何通知元素。
+        * 如果断续器被停止了，并且C中已经有元素了，那么该值会一直存在，直到被接收
+        * 实例：触发定时任务
+            * **https://www.jianshu.com/p/2f51c66a6c43**
+            ```go
+            func main() {
+                intChan := make(chan int, 1)
+                ticker := time.NewTicker(time.Second)
+                go func() {
+                    for _ = range ticker.C {
+                        select { //运行时系统将会随机选择一个值发送到通道中
+                        case intChan <- 1:
+                        case intChan <- 2:
+                        case intChan <- 3:
+                        }
+                    }
+                    //该句不会打印，即使使用Stop()
+                    fmt.Println("end. sender")
+                }()
+
+                var sum int
+                for e := range intChan {
+                    fmt.Println("received: ", e)
+                    sum += e
+                    if sum > 10 {
+                        fmt.Println("Got: ", sum)
+                        break
+                    }
+                }
+                fmt.Println("end. receiver")
+            }
+            ```
+
+# 载荷发生器
+* 载荷数量：可以是HTTP请求数量，也可以是API调用的次数
+    * 每秒发送的载荷数量--每秒载荷量
+* 重要的参数：**每秒载荷量、负载持续时间、处理超时时间**
+    * 参数用途
+        1. 在给定运行环境下最多能被多少个用户同时使用
+            * QPS(Query Per Second) 每秒查询量
+                * 针对的是对服务器上数据的读取操作
+            * TPS(Transactions Per Second) 每秒事务处理量
+                * 针对的是对服务器上数据的写入或修改操作
+            * 连个指标的含义都是在1s内可以正常响应请求的数量的平均值
+        2. 系统资源的消耗
+            * 平均无故障时间：软件在持续接收一定量的载荷情况下，能够无差错的运行多久
+            * 负载持续时间：持续发送载荷的时间
+        3. 评判软件正确性的标准
+            * 处理超时时间(超时时间)：从向软件发出请求到接收到软件返回的响应的最大耗时
+                * 超过这个最大时间，会被认为是不可接受的，当次处理被认定为无效的处理
+* 输出的结果
+    * 3大内容
+        * 请求(载荷)和响应的内容
+            * 可以检查响应内容的正确性
+        * 响应的状态
+            * 反映出处理此请求过程中的绝大多数问题
+        * 请求处理耗时
+    * 载荷发生器的输出是按照响应的到达顺序排列的一个结果列表
+        * 每秒载荷处理量，一定会小于或等于预先设定的每秒载荷量
