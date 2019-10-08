@@ -1307,11 +1307,188 @@
     * 载荷发生器的输出是按照响应的到达顺序排列的一个结果列表
         * 每秒载荷处理量，一定会小于或等于预先设定的每秒载荷量
 
-* 存储
-    * 方法名：`Store+数据类型`
-* 交换
-    * 方法名：`Swap+数据类型`
-    * 直接设置新值，并返回旧值
+# 同步
+## 锁
+* 互斥锁(互斥量)(`sync.Locker`接口实现)
+	* **内部同步机制：信号量**
+	* 由`sync.Mutex`表示
+		* 两个指针方法
+			* `Lock()` 锁定当前互斥量
+			* `Unlock()` 解锁当前互斥量
+		* 零值就是可使用的互斥锁实例
+		* 零值表示：未锁定
+	* 声明：`var mutex sync.Mutex`
+	* 惯用方法：
+		```go
+		var mutex sync.Mutex
+		mutex.Lock()
+		defer mutex.Unluck()
+		```
+	* 对一个互斥锁的锁定和解锁操作应该成对出现
+	* 如果试图锁定一个已锁定的互斥锁，则该goroutine将被阻塞，直到该互斥锁被解锁
+		```go
+		func main(){
+			var mutex sync.Mutex
+			fmt.Println("Lock the lock. main")
+			mutex.Lock()
+			fmt.Println("the lock is locked. main")
+			for i:=0; i<3;i++{
+				go func(i int){
+					fmt.Println("lock the lock. g", i)
+					mutex.Lock()
+					fmt.Println("the lock is locked. g", i)
+				}(i)
+			}
+			
+			time.Sleep(time.Second)
+			fmt.Println("Unlock the lock.main")
+			mutex.Unlock()
+			fmt.Println("the lock is unlocked .main")
+			time.Sleep(time.Second)
+		}
+		```
+	* 如果试图锁定一个未锁定的互斥锁，将会引发一个运行时panic，并且不可恢复
+		```go
+		func main(){
+			defer func(){
+				fmt.Println("recover err")
+				if p := recover(); p != nil{
+					fmt.Println("recovered the panic :", p)
+				}
+			}()
+			var mutex sync.Mutex
+			fmt.Println("lock 1")
+			mutex.Lock()
+			fmt.Println("locked 1")
+			fmt.Println("unlock 1")
+			mutex.Unlock()
+			fmt.Println("unlocked 1")
+			fmt.Println("unlock 2")
+			mutex.Unlock()
+			fmt.Println("unlocked 2")
+		}
+		```
+	* 互斥锁变量的作用域应该尽量小
+	* 互斥锁变量可以作为结构体中的字段，以便在多个方法中使用
+* 读写锁(`sync.Locker`接口实现)
+	* **内部同步机制：信号量**
+	* 针对读写操作的互斥锁
+	* 读写锁遵循的规则
+		* 多个写操作之间是互斥的
+		* 写操作与读操作之间是互斥的
+		* 多个读操作之间不是互斥的
+	* 由`sync.RWMutex`结构体表示
+		* 零值就是可用的读写锁实例
+		* 写部分
+			* `func (*RWMutex) Lock()`
+			* `func (*RWMutex) Unlock()`
+				* 写解锁会试图唤醒**所有**因试图进行**读锁定**而被阻塞的goroutine
+		* 读部分
+			* `func (*RWMutex) RLock()`
+			* `func (*RWMutex) RUnlock()`
+				* 读解锁只会在**无任何读锁定的情况下**，试图唤醒**一个**因试图进行**写锁定**而被阻塞的goroutine
+		* 指针方法 `RLocker()`
+			* 返回一个实现了`sync.Locker`接口的值
+				* 内含方法：`Lock()`,`Unlock()`
+			* 返回值表示：读写锁中的读锁，在使用时可以将读锁(`sync.Locker`)和写锁`sync.RWMutex`分开使用
+			
+	* 对一个未进行读锁定/写锁定的读写锁进行读解锁/写解锁，会引发一个运行时panic
+	* 无论是写操作还是读操作，都应该尽快解锁
+		* 尤其是读解锁，因为读写锁上没有获取读锁定数量的方法，如果不及时进行读解锁，会导致执行写锁定的goroutine一直处于阻塞状态
+			```go
+			func main(){
+				var rwm sync.RWMutex
+				for i:=0; i<3;i++{
+					go func(i int){
+						fmt.Println("try to lock for reading... i=", i)
+						rwm.RLock()
+						fmt.Println("locked for reading... i=", i)
+						time.Sleep(time.Second * 2)
+						fmt.Println("try to unlock for reading... i=", i)
+						rwm.RUnlock()
+						fmt.Println("locked for reading... i=", i)
+					}(i)
+				}
+				
+				time.Sleep(time.Millisecond * 100)
+				fmt.Println("try to lock for writing... main")
+				rwm.Lock() //写锁定会一直阻塞，知道，三个goroutine都执行完读解锁
+				fmt.Println("Locked for writing")
+			}
+			```
+## 条件变量
+* 由`sync.Cond`类型代表条件变量
+	* 3个方法
+		* Wait() 等待通知
+			* 该方法会自动将与该条件变量有关联的那个锁进行解锁，并使其所在的goroutine阻塞
+			* 接受到通知时，方法所在的goroutine会被唤醒，并且该方法会立即尝试锁定该锁
+		* Signal() 单发通知
+			* 发送通知，唤醒因为此条件变量而阻塞的goroutine
+			* 通知的目标只有一个
+		* Broadcast() 广播通知
+			* 发送通知，唤醒因为此条件变量而阻塞的goroutine
+			* 通知的目标为所有
+* `func NewCond(l Locker) *Cond` 创建可用的条件变量
+	* 参数是`sync.Locker`类型，具体的参数可以是一个互斥锁，或读写锁
+
+## 原子操作
+* 原子操作:执行过程不能被中断的操作，执行过程中CPU不会再去执行其他针对该值的操作，无论其他操作是否为原子操作
+* go的原子操作包含在：`sync/atomic`	包中提供了对原子操作的支持
+* 可以操作的6种简单类型：
+	* int32
+	* int64
+	* uint32
+	* uint64
+	* uintptr
+	* unsafe.Pointer
+* **原子操作需要变量的指针，因为原子操作函数需要知道被操作值在内存中存放的位置，以便施加CPU指令**
+	* 对于不能取址的变量，是无法执行原子操作的
+* 5中原子操作：
+	1. 增或减
+		* 方法：`Add+数据类型`
+		* 传给方法的值，会自动转换成指定类型
+		* 正数增加、负数减少
+		* 减少无符号类型：uint32、uint64
+			* `NN`：代笔一个负整数,使用方法：`atomic.AddUint32(&ui32, ^uint32(-NN-1))`
+			* `NN`：代笔一个正整数,使用方法：`atomic.AddUint32(&ui32, ^uint32(NN-1))`
+			* 减1：AddUint32(&x, ^uint32(0))
+		* 不存在：`atomic.AddPointer`,因为`unsafe.Pointer`类型的值无法被加减
+	2. 比较并交换(CAS Compare And Swap)
+		* 方法：`CompareAndSwap+数据类型(变量指针，old， new) (swqpped bool)`
+		* 结果表示：是否进行了交换，也可以理解为变量是否等于old
+		* 相当于： 
+			```go
+			if 变量==old {
+				变量=new
+				return true
+			} else {
+				return false
+			}
+			```
+		* CAS的优势：
+			* 可以在不创建互斥量和不形成临界区的情况下，完成并发安全的值替换操作
+			* 可以减少同步对程序性能的损耗
+		* CAS的劣势：
+			* 被操作值频繁变更的情况下，CAS操作并不容易成功，有时需要利用for循环来多次尝试。**类似于自旋锁的自旋行为**
+		* CAS操作不会让goroutine阻塞，但可能会使流程的执行暂时停滞。不过这种停止大都极其短暂
+		* **如果想要并发安全的更新一些类型的值，应该优先选择CAS
+	3. 载入
+		* 方法：`Load+数据类型(变量指针) (swqpped bool)`
+		* 修改变量时，载入和CAS可以一起使用，防止执行期间CPU对变量指针的读写操作带来的影响(防止被)
+			```go
+			var value int32
+			v := atomic.LoadInt32(&value)
+			if atomic.CompareAndSwapInt32(&value, v, (v+10)){
+				...
+			}
+			```
+	4. 存储
+		* 方法：`Store+数据类型(变量指针)`
+		* 在原子地存储某个值的过程中，任何CPU都不会进行针对同一个值读写操作
+		* 如果将对某个变量的写操作都改为原子操作，就绝对不会出现针对此值的读操作因并发操作，而读到修改了一半的值的情况
+	5. 交换
+		* 方法名：`Swap+数据类型`
+		* 直接设置新值，并返回旧值
 * 原子值
     * 原子值类型：`sync/atomic.Value`
         * 用于存储需要原子读写的值
@@ -1348,12 +1525,12 @@
             }
             ```
 
-### 只会执行一次
+## 只会执行一次
 * `var once sync.Once`
 * `once.Do(func(){fmt.Println("...")})`
     * 只有第一次调用时是有效的
 
-### WaitGroup
+## WaitGroup
 * 一般用于协调多个goroutine的运行
 * `sync.WaitGroup`结构体，并发安全、开箱即用
     * 3个方法
@@ -1366,7 +1543,7 @@
     * 可以进行复用
     * 不应该复制该类型对象
 
-### 临时对象池
+## 临时对象池
 * `sync.Pool`
     * 可以将该类型看作存放临时值的容器
     * 该容器是自动伸缩的、高效的、并发安全的
