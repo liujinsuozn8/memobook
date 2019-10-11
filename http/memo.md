@@ -76,7 +76,7 @@
 
         * 响应头信息
             * 多个key:value
-                * contente-length:主体长度
+                * content-length:主体长度
         * 空行
         * 响应主体(可以没有)
     * 实例
@@ -128,12 +128,120 @@
                 ```
     * 可以通过仿造Referer来反防盗链
 
-* HTTP协议缓存空寂
+* HTTP协议缓存控制
     * 在网络上有一些缓存服务器，另外浏览器自身也有缓存功能
-    * 如图片的缓存
-        * 图片的下载过程
-            1. 第一次请求时，是200
-            2. 之后再请求时，是304 Not Modified 未修改状态
-        * 原理
-            * 当第一次访问是，图片会正常下载，返回200
+		* 如图片的缓存
+			* 图片的下载过程
+				1. 第一次请求时，是200
+				2. 之后再请求时，是304 Not Modified 未修改状态
+			* 原理
+				* 当第一次访问时，图片会正常下载，返回200
+				* 基于一个前提：图片不会经常改动，服务器在返回200的同时，还会返回该图片的签名(Etag)(在响应头中)
+				* 当浏览器再次访问该图片时，去服务器校验签名
+				* 如果图片签名没有变化，直接使用缓存中的图片，以此来减轻服务器的负担
+			* 关于第一次请求的响应头信息
+				* `Etag`:图片的签名
+				* `Last-Modified: 上次修改的具体时间`
+			* 关于再次请求的请求头
+				* `If-Modified-Since: Thu, 10 Oct 2019 22:22:32 GMT`，表示在该时间点之后，如果图片修改过，则重新请求
+					* 对应于响应头的`Etag`
+				* `If-None-Match: "56d9db4bfa8961083f8afbc3796ebf18"`，如果图片的Etag值和服务器中的不匹配则重新请求
+					* 对应于响应头的`Last-Modified`
+	* 如果网站比较大，有N台缓存服务器，那么这N台缓存服务器如何缓存主服务器上文件？
+		* 需要解决的问题
+			* 是否需要缓存
+			* 缓存多久
+		* 缓存服务器和主服务器之间使用一些协议来约定问题的解决方法
+			* 使用的协议：http协议，**用头信息`cache-control`来控制**
+			* 具体用法
+				* 在主服务，：打开apache的扩展expires模块：`mod_expires`，利用该扩展来控制图片、css、html等资源的缓存生命周期
+				* `.htaccess`文件的用法
+					```php
+					ExpiresActive On
+					ExpiresDefault "<base> [plus] {<num><type>}*"
+					ExpiresByType type/encoding "<base> [plus] {<num> <type>}*"
+					```
+					* ExpiresDefault:设置默认的缓存参数
+					* ExpiresByType:按照文件类型来设计不同的缓存参数
+					* type/encoding：资源类型/资源的具体内容
+						* 如图片：`imamg/jpeg`
+					* base:基于哪个时间点来计算缓存有效期
+						* Access/now:基于请求响应的那一瞬间
+							* 例如:从此瞬间开始到1个月之内的时间有效
+						* modification:基于被请求文件的最后修改日期来计算
+							* 例如:从最后的修改日期到1周之内的时间有效
+					* [plus] {<num> <type>}
+						* num：缓存时间的大小
+						* type：缓存的时间单位
+				* 示例，图片缓存设定
+					```php
+					ExpiresActive On
+					ExpiresByType imamg/jpeg "base plus 30 days" //缓存30天
+					```
+					* 设定结果最终会反映到响应头信息中：`Date`、`Expires`，这两者的时间差上
+	* 设置某些资源不允许使用缓存
+		* 如，个人信息不允许缓存服务器缓存，必须到主服务器去请求
+		* 利用apach的head模块：`headers_module`
+			```php
+			<FilesMatch "\.(gif)$"> // 过滤文件
+			header set Cache-control:"no-store, must-revalidate"
+			</FilesMatch>
+			```
+		* `control-cache: no-store, must-revalidate;`，表示不允许缓存，必须去服务器验证
 
+* HTTP与内容压缩
+	* `content-type:gzip`
+	* 原理
+		* 为了加快数据在网络中的传递速度，服务器会对**主体信息**进行压缩
+			* 常见的压缩方法：gzip、deflate、compress、sdch(来源于google chrome)
+		* 服务器返回的是压缩内容
+		* 客户端接收到压缩内容，再解压缩，再渲染页面
+		* `contente-length`，此时表示压缩后的长度
+	* 在apache启动压缩功能
+		* 开启gzip模块，或deflate模块：`deflate_module`
+		* 在conf文件中，写入配置信息
+			```php
+			<ifmodule mod_deflate.c>
+			DeflateCompressionLevel 6 // 表示压缩的级别，1-9，推荐为6
+			AddOutputFilterByType DEFLATE text/plain //指定压缩文本文件
+			AddOutputFilterByType DEFLATE text/html //指定压缩html文件
+			AddOutputFilterByType DEFLATE text/xml //指定压缩xml文件
+			</ifmodule>
+			```
+	* 为什么需要指定文件类型来压缩
+		* 压缩本身是需要消耗cpu资源的。压缩的级别越高消耗的cpu资源也越高
+		* 图片、视频的压缩效果不好
+		* 一般压缩文本格式
+			* text/plain
+			* text/html
+			* text/xml
+			* text/css
+			* text/javascript
+			* application/xhtml+xml
+			* application/xml
+			* application/rss+xml
+			* application/atom_xml
+			* application/x-javascript
+			* application/x-httpd-php
+			* image/svg+xml
+	* 服务器如何知道浏览器支持zip
+		* 客户端运行发送一个`Accept-Encoding`头信息、与服务端协商
+	* 在爬虫里可以不添加`Accept-Encoding`信息，这样从服务端返回的是源码
+
+* HTTP协议与持久连接+分块传输-->反向ajax
+	* 反向ajax，也称comet、server push、服务器推技术
+	* 应用范围：网页聊天服务器，google mail
+	* 分块传输的原理
+		```php
+		123H\r\n`
+		将长度为123H的内容传输给客户端\r\n
+		....
+		41H\r\n
+		将长度为41H的内容传输给客户端\r\n
+		0\r\n (此时表示内容发送完毕)
+		```
+	* 原理：
+		* HTTP协议的特点，先连接再断开
+			* 服务器会响应：`content-length`，当收到指定length长度的内容时，就断开了
+		* 在HTTP 1.1协议中，允许不写`content-length`，例如无法确定发送的内容长度
+			* 这种情况需要一个特殊的`content-type:chunked`
