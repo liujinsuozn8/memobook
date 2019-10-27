@@ -119,7 +119,7 @@
                     * 如果没有.ssh文件夹
                         * ssh localhost
                     * 拷贝公钥
-                        * ssh-copy-id myhd003/myhd004 
+                        * ssh-copy-id 目标主机名 
             * 在003中生成密钥
                 * 为什么要配置免密连接
                     * resourcemanager 需要和其他的节点进行通讯
