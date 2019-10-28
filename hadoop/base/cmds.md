@@ -38,8 +38,8 @@
     * 刷新ResourceManager：`yarn rmadmin -refreshNodes`
     * 集群再平衡:`sbin/start-blancer.sh`
 * 节点间的递归数据复制：`bin/hadoop distcp hdfs://主机名1:9000/.... hdfs://主机名2:9000/....`
-* HDR文件:
-    * 小文件转换HDR文件：`hadoop archive -archiveName xxx.har -p 打包目录 未存在的存储目录`
-    * 解压HDR文件：`hadoop fs -cp har:///路径/xx.har/* 解压路径`
-    * 查看HDR文件中的内容：`* hadoop fs -ls -R har:///路径/xx.har`
+* HAR文件:
+    * 小文件转换HAR文件：`hadoop archive -archiveName xxx.har -p 打包目录 未存在的存储目录`
+    * 解压HAR文件到HDFS第二名某个目录：`hadoop fs -cp har:///路径/xx.har/* 解压路径`
+    * 查看HAR文件中的内容：`* hadoop fs -ls -R har:///路径/xx.har`
                     

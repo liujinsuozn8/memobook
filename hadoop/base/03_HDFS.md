@@ -245,6 +245,8 @@
             6. 生成新的fsinmag.chkpoint
             7. 将新的fsinmag.chkpoint拷贝到NN中，重新命名成fsImage
             8. 内存中的内容=Edits002+FsImage
+    * 2NN合并fsImage+edits时需要和NN相同的内存，所以2NN和NN尽量分布在不同的节点上
+
 * FsImage和Edits解析
     * fsImage:HDFS文件系统元数据的一个**永久性检查点**，其中包含HDFS文件系统的所有目录和文件inode的序列化信息
         * fsimage中不记录DataNode，在集群启动后要求DataNode上报数据快信息，并且间隔一段时间再次上报
@@ -485,14 +487,46 @@
     3. 回收站
         * 开启回收站功能，可以将删除的文件在不超时的情况下，恢复原数据，防止误删、备份的作用
         * 默认是关闭的，因为Hadoop的数据多用于存储与分析
-        * 开启回收站
-            * fs.trash.interval=0，表示禁用回收站；其他值表示文件的保留时间
+        * 开启回收站的设置
+            * fs.trash.interval=0，表示禁用回收站(**默认值**)；其他值表示文件的保留时间
             * fs.trash.checkpoint.interval=0，检查回收站的间隔时间。如果为0，则该设置和fs.trash.interval的参数值相等
             * 要求：fs.trash.checkpoint.interval <= fs.trash.interval
-        * 启动后会生成文件夹：/user/用户名/.Trash
+            * 配置core-site.xml
+                ```
+                <property>
+                    <name>fs.trash.interval</name>
+                    <value>1</value>
+                </property>
+                ```
+        * 查看回收站
+            * 执行删除后会在HDFS上生成文件夹：/user/用户名/.Trash
+        * 修改访问垃圾回收站的用户名称
+            * 进入垃圾回收站用户名称，默认是dr.who，可以通过配置来修改用户
+            * 配置core-site.xml
+                ```
+                <property>
+                    <name>hadoop.http.staticuser.user</name>
+                    <value>userid</value>
+                </property>
+                ```
+
         * 恢复数据：直接使用hadoop fs mv 来将回收站中的数据移动到别的目录下
         * 清空回收站
             * hadoop fs -expunge
             * 清空的操作只是将所有文件打了一个包，仍然是时间到了之后自动删除
     4. 快照管理
-        * 相当于对目录做一个备份。并不会立即复制所有文件，而是指向同一个文件。当写入发生时，才会产生新文件
+        * **相当于对目录做一个备份。并不会立即复制所有文件**，而是指向同一个文件。当写入发生时，才会产生新文件，来记录文件的增减
+        * 操作指令
+            * 开启指定目录的快照功能:`hdfs dfsadmin -allowSnapshot 路径`
+            * 禁用目录的快照功能(默认是禁用):`hdfs dfsadmin -disallowSnapshot 路径`
+            * 对目录创建快照:`hdfs dfs -createSnapshot 路径`
+                * 默认使用当前的系统时间作为该快照的名称
+            * 指定名称创建快照:`hfs dfs -createSnapshot 路径 名称`
+            * 重命名快照:`hfs dfs -renameSnapshot 路径 旧名称 新名称`
+            * 列处当前用户所有可快照目录:`hdfs lsSnapshottableDir`
+            * 比较两个快照目录的不同之处:`hdfs snapshotDiff 路径1 路径2`
+                * 使用`.`代表当前路径
+            * 删除快照：`hdfs dfs -deleteSnapshot <path> <snapshotName >`
+        * 创建快照之后，会在目录下增加一个隐藏目录：`./.snapshot/`
+            * 该目录下的文件内容同样可以进行拷贝等操作，来进行目录的恢复
+            
