@@ -1,9 +1,15 @@
 <span id="catalog"></span>
 - [基本使用](#基本使用)
 - [hadoop序列化](#hadoop序列化)
-- [MR框架原理](#MR框架原理o)
+- [MR框架原理](#MR框架原理)
+    - [InputFormat数据输入](#inputformat数据输入)
+        - [切片与MapTask并行度决定机制](#切片与maptask并行度决定机制)
+        - [Job提交流程](#job提交流程)
+        - [切片源码解析](#切片源码解析)
+        - [FileInputFormat切片机制](#fileinputformat切片机制)
 
 # 基本使用
+[top](#catalog)
 * MapReduce定义
     * 一个分布式运算程序的编程框架，是开发基于Hadoop的**数据分析应用**的核心框架
     * 核心功能：将**业务逻辑代码**和**自带默认组件**做和成一个完整的**分布式运算程序**，并发的运行在Hadoop集群上
@@ -170,6 +176,7 @@
     * 执行：`hadoop jar jar包路径 driver类的主类名 集群上的输入数据路径 集群上未存在的输出数据路径`
 
 # hadoop序列化
+[top](#catalog)
 * 为什么不用java的序列化
     * java的Serializable是一个重量级的序列化框架
     * 一个对象被序列化后，会附带很多额外的信息：校验信息，header，继承体系等，不便于在网络中高效传输
@@ -190,22 +197,121 @@
         7. 如果需要自定义的bean放在key中传输，还需要实现Comparable接口，因为MapReduce框架中的Shuffle过程要求key必须能排序
     
 # MR框架原理
-# InputFormat 数据输入
-* 切片与MapTask并行度决定机制
-    * MapTask的并行度决定Map阶段的任务处理并发度，会影响到整个Job的处理速度
-        * 如1G数据，启动8个MapTask，每个处理128M数据；1K数据就不能启动8个MapTask
-    * MapTask并行度决定机制
-        * 数据块：Block是HDFS物理上把数据分成一块一块
-        * 数据切片：数据切片只是在逻辑上对输入进行分片，不会对磁盘数据做切片存储
-            * 如将数据划分为0~128，把0～64的数据放到一个集合中进行处理，65～128放到另一个集合中
-        * 实例：处理300M的数据
-            1. 按照100M来对数据进行切片，会跨节点导致产生IO传输消耗
-            ![MP_100MData_Cut.png](./imgs/MP_100MData_Cut.png)
-            2. 按照128M来对数据进行切片，不会产生IO传输消耗，效率是最高的
-            ![MP_300MData_Cut.png](./imgs/MP_300MData_Cut.png)
-        * 机制
-            1. 一个Job的Map阶段的并行度由客户端在提交Job时的**切片数决定**
-            2. 每一个切片分配一个MapTask并行实例处理
-            3. **默认情况下，切片大小=BlockSize**
-            4. 切片时不考虑数据集整体，而是逐个针对每一个文件单独切片
-                * 即多个文件的情况，每个文件单独切片，不考虑整体
+## InputFormat数据输入
+### 切片与MapTask并行度决定机制
+[top](#catalog)
+* MapTask的并行度决定Map阶段的任务处理并发度，会影响到整个Job的处理速度
+    * 如1G数据，启动8个MapTask，每个处理128M数据；1K数据就不能启动8个MapTask
+* MapTask并行度决定机制
+    * 数据块：Block是HDFS物理上把数据分成一块一块
+    * 数据切片：数据切片只是在逻辑上对输入进行分片，不会对磁盘数据做切片存储
+        * 如将数据划分为0~128，把0～64的数据放到一个集合中进行处理，65～128放到另一个集合中
+    * 实例：处理300M的数据
+        1. 按照100M来对数据进行切片，会跨节点导致产生IO传输消耗
+        ![MP_100MData_Cut.png](./imgs/MP_100MData_Cut.png)
+        2. 按照128M来对数据进行切片，不会产生IO传输消耗，效率是最高的
+        ![MP_300MData_Cut.png](./imgs/MP_300MData_Cut.png)
+    * 机制
+        1. 一个Job的Map阶段的并行度由客户端在提交Job时的**切片数决定**
+        2. 每一个切片分配一个MapTask并行实例处理
+        3. **默认情况下，切片大小=BlockSize**
+        4. 切片时不考虑数据集整体，而是逐个针对每一个文件单独切片
+            * 即多个文件的情况，每个文件单独切片，不考虑整体
+
+### Job提交流程
+[top](#catalog)
+* job提交流程：![MR_Submit_Job_Flow.png](./imgs/MR_Submit_Job_Flow.png)
+* 最终需要提交的信息
+    1. 切片信息
+    2. xml配置
+    3. jar包
+
+### 切片源码解析
+[top](#catalog)
+* 主要参考类：`org.apache.hadoop.mapreduce.lib.input.FileInputFormat.class`
+* 本地运行时，默认数据块大小为32M；在yarn集群上使用128M
+    * yarn中，hadoop1.x使用64M，hadoop2.x使用128M
+* 切片流程：
+    1. 找到数据存储的目录
+    2. 开始遍历目录下的每一个文件
+    3. 对于每一个文件进行切片
+        * 获取当前文件大小
+        * 计算适用于该文件的切片大小
+            * 默认情况下=块大小
+        * 进行切片
+            * 0-splitSize，splitSize-2*splitSize,....
+            * **每次必须判断切完剩下的部分是否大于切片的1.1倍，如果不大于则不切分**
+        * 将切片信息写到一个切片规划文件中
+        * 切片处理在`public List<InputSplit> getSplits(JobCOntext job)`中完成
+            * InputSplit只记录的切片的元数据信息：起始位置、长度、所在的节点列表等
+    4. 提交切片规划文件到yarn，**yarn上的MrAppMaster就可以根据切片规划文件计算MapTask个数**
+* 代码分析
+    1. 切片大小的计算()
+        ```java
+        public List<InputSplit> getSplits(JobCOntext job) throws IOException{
+            ...
+            if (this.isSplitable(job, path)){
+                // 获取块大小
+                long blockSize = file.getBlockSize(); //本地=32，yarn=128
+                // 计算适用于当前文件的切片大小
+                long splitSize = this.computeSplitSize(blockSize, minSize, maxSize);
+            }
+        }
+        protected long computeSplitSize(long blockSize, long minSize, long maxSize){
+            return Math.max(minSize, Math.min(maxSize, blockSize))
+        }
+        // 先计算：最大值和块大小的小值，再计算和最小值中的大值
+        // minSize=1，maxSize=9223372036854775807
+        // 默认情况下=块大小
+        ```
+    2. 判断是否对数据文件进行切片
+        ```java
+        public List<InputSplit> getSplits(JobCOntext job) throws IOException{
+            ...
+            // 即数据文件的长度必须是切片大小的1.1倍以上时才进行切片
+            // 一边且一般与切片大小进行比较
+            for(bytesRemaining = length; (double)bytesREmaining/(double)splitSize > 1.1D; bytesRemaining -= splitSize){
+                blkIndex = this.getBlockIndex(blkLocations, length - bytesRemaining);
+                splits.add(this.makeSplit(path, length - bytesRemaining, splitSize, blkLocations[blkIndex].getHosts(), blkLocations[blkIndex].getCachedHosts()));
+            }
+        }
+        ```
+        * 例如在yarn集群上，一个**129M的文件分为2个block存储，切片时只有1个切片(因为129/128<1.1)**
+
+### FileInputFormat切片机制
+[top](#catalog)
+* 切片机制
+    1. 简单的按照文件的内容长度进行切片
+    2. 切片大小，默认等于Block
+        * 本地=32M，yarn=128M，老版本yarn=64M
+    3. 每个文件单独切片，切片时不考虑数据集整体
+
+* FileInputFormat切片大小的参数配置
+    * 计算公式：`Math.max(minSize, Math.min(maxSize, blockSize))`
+        * mapreduce.input.fileinputformat.split.minsize=1
+        * mapreduce.input.fileinputformat.split.maxsize=Long.MAXValue
+    * 切片大小设置
+        * 让切片变小：设置`maxSize<blockSize`
+            * Math.min(maxSize, blockSize) = maxSize
+            * Math.max(minSize, maxSize) = maxSize
+        * 让切片变大：设置`minSize>blockSize`
+            * Math.min(maxSize, blockSize) = blockSize
+            * Math.max(minSize, blockSize) = minSize
+    * 获取切片信息API
+        ```java
+        // 获取切片信息API
+        String name = inputSplit.getPath().getName();
+        // 根据文件类型获取切片信息
+        FileSplit inputSplit = (FileSplit) context.getInputSplit();
+        ```
+
+### CombineTextInputFormat切片机制
+* 应用
+    * 默认的切片机制是对每个文件进行切片，无论文件多小，都单独切片交给一个MapTask。**如果存在大量小文件，会产生大量MapTask，降低处理效率**
+    * CombineTextInputFormat用于处理小文件，可以将多个小文件从**逻辑上规划到一个切片中，将多个小文件交给一个MapTask处理
+* 虚拟存储切片最大值设置
+    ```java
+    CombineTextInputFormat.setMaxInputSplitSize(job,4194304) //4M
+    ```
+    * 需要根据实际小文件的大小情况来设置具体的值
+* 切片机制 ![MR_CombineTextInputFormat.png](./imgs/MR_CombineTextInputFormat.png)
