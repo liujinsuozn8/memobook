@@ -206,8 +206,8 @@
 [top](#catalog)
 * Integer能存储的最大整形数值为2^31-1，Long能存储的最大整形数值为2^63-1，无法表示更大的数
 * BigInteger可以表示任意精度的不可变整数
-* BigInteger提供了java的基本整数操作符的对应方法，并一共Math的所有相关方法
-* BigInteger还提供了：模算数、GCD计算、质数测试，素数生成、位操作以及体协其他操作
+* BigInteger提供了java的基本整数操作符的对应方法，并提供Math的所有相关方法
+* BigInteger还提供了：模算数、GCD计算、质数测试，素数生成、位操作以及其他操作
 * 构造器
     * `BigInteger(String val)` 根据字符串构建BigInteger对象
 
@@ -229,7 +229,7 @@
         * -5%2 =-1
     * s=s+2 与 s+=2
         * 前者计算后，和左边变量的类型精度进行比较，左边精度低于右边时，编译器报错，需要执行强制转换
-        * 后者计算时，右边的类型强制转换为左边的类型，然后直接操作左边变量内存中的值，计算的方式时**位操作**，计算效率比左边快
+        * 后者计算时，右边的类型强制转换为左边的类型，然后直接操作左边变量内存中的值，计算的方式是**位操作**，计算效率比左边快
     * n *= m++; 先做`*=`，再做`++`
     * int n=10; n+= (n++) + (++n)  ???
         1. ++10 --> 11
@@ -237,7 +237,7 @@
         3. 11++ --> 12
 * 比较运算符
     * ==, !=, <, >, <=, >=
-    * instanceof 价差是否是类的对象。如： "Hello" instanceof String
+    * instanceof 检查是否是类的对象。如： "Hello" instanceof String
 
 * 逻辑运算符
     * &，|，逻辑与/或，无论对错，符号两边的表达式都进行计算
@@ -313,10 +313,9 @@
 
 ## import
 [top](#catalog)
-* 如果导入的类或接口是java.lang包下的，或值当前包下的，可以省略import
+* 导入当前包下、`java.lang`下的内容时，可以省略import
 * import写在包声明和类声明之间
 * `.*`的方式可以导入包下的所有内容
-* 导入当前包下、`java.lang`下的内容时，可以省略import
 * 如果在代码中使用不同包下的同名的类。那么就需要使用**类的全类名**的方式指明调用的是哪个类
 * **import static**组合，调用指定类或接口下的静态属性或方法
 
@@ -463,6 +462,23 @@
         * 声明格式：`方法名(参数的类型...参数名)`
         * 参数的个数可以是：0、1、更多
         * 实际与**参数使用数组**是相同的
+        * 可变参数也可以使用一个数组来代替,且只能使用一个数组
+            ```java
+            class test  
+            {
+                public static void main(String[] args){
+                    test t = new test();
+                    t.test01("a", new String[]{"b","c","d"});
+                }
+                
+                public void test01(String a, String ...b){
+                    System.out.println(a); // a
+                    for (String n : b){ // b c d
+                        System.out.println(n);
+                    }
+                }
+            }
+            ```
         * 可变形参，需要放在形参声明的最后
         * 一个方法**最多只能声明一个可变个数形参**
         * 可变形参与重载
@@ -562,6 +578,7 @@
         * 父类引用指向子类对象可以看作：向上转型
         * 使用时，父类引用**不能访问子类中添加的方法和属性**
             * 因为属性和方法是编译时确定的，所以使用子类的方法/属性会导致编译错误
+            * 即父类引用不能直接引用子类方法和属性,但是可以在子类的方法中自行调用子类中添加的方法和属性
         * 虚拟方法调用
             * 父类方法被重写时，父类中的方法被称为**虚拟方法**，可以理解为一个占位符，在执行时**动态调用子类对象中的这个方法**（该方法的调用是在**运行时确定的**）（晚绑定/动态绑定）
             ```java
@@ -626,19 +643,21 @@
             3. 子类中的权限 >= 父类中的权限
             4. private方法**不能重写**
             5. 子类中抛出的异常 <= 父类中抛出的异常
-        * 子类与父类中同名同参数的方法必须同时声明为非static的(即为重写)，或者同时声明为 static的(不是重写)。因为static方法是属于类的，子类无法覆盖父类的方法。
+        * 子类与父类中同名同参数的方法必须同时声明为非static的(即为重写)，或者同时声明为 static的(不是重写)。因为static方法是属于类的，子类无法覆盖父类的static方法。
     
     * **父类子类相互转化**
-    ```java
-    class A{}
-    class B extends A{}
+        * 转化的前提是：**使用的父类对象是子类对象的引用**，即使用的对象本身是子类对象
+        * 如果使用的对象本身是父类对象，则不能进行转化
+        ```java
+        class A{}
+        class B extends A{}
 
-    A a = new B(); // 多态
-    B b = (B)a; // 运行时，a指向的是B的实例对象，可以进行强转
+        A a = new B(); // 多态
+        B b = (B)a; // 运行时，a指向的是B的实例对象，可以进行强转
 
-    A a2 = new A();
-    B b2 = (B)a2; // 运行时，a指向的时A的实例对象，无法强转成子类的对象
-    ```
+        A a2 = new A();
+        B b2 = (B)a2; // 运行时，a指向的时A的实例对象，无法强转成子类的对象
+        ```
 
 ### 类-对象的创建
 [top](#catalog)
@@ -651,7 +670,7 @@
     // 消除类对象的引用，变成垃圾
     p = null;
     ```
-* 对象被创建时，会读各种类型的成员变量进行初始化赋值变量的默认初始化赋值
+* 对象被创建时，会对各种类型的成员变量进行初始化赋值，使用变量的默认值作为初始化值
 * 子类对象的实例化过程![how_init_obj](./imgs/how_init_obj.png)
 * new Obj() 时的整体执行顺序
     * 父类的静态代码块
@@ -800,7 +819,7 @@
     * 使用范围：可以修饰：属性、方法、代码块、内部类
     * 被static修饰后的特点
         * 随着类的加载而加载
-        * 优先与对象而存在
+        * 优先于对象而存在
         * 修饰的成员被所有的实例共享
         * 权限允许时，可以直接通过类进行调用，不用进行实例化
     * static方法内部，只能访问static修饰的属性、方法，**不能访问非static的结构**
@@ -852,7 +871,7 @@ public class CommandPara {
     * **接口中的方法、父接口中的方法都必须给出方法的实现**
         ```java
         interface MyInterface{
-            String s=“MyInterface”;
+            String s="MyInterface";
             public void absM1();
         }
         
@@ -897,13 +916,13 @@ public class CommandPara {
         * 序列化时，用serialVersionUID验证版本的一致性
         * 反序列化时，jvm将字节流中的serialVersionUID与本地对应实体类的serialVersionUID进行比较，**如果相同则一致，进行反序列化；不一致，则引发InvalidCastException**
     * 如果没有显示定义该常量，它的只是运行时根据类内部细节自动生成的，**如果类的实例变量发生变化，则serialVersionUID会变化**
-* 如果类的成员变量**不是基本数据类型或String，而是其他引用类型，则该类型必须时可序列化的**，否则无法序列化
+* 如果类的成员变量**不是基本数据类型或String，而是其他引用类型，则该类型必须是可序列化的**，否则无法序列化
 * 对象流ObjectInputStream、ObjectOutputStream不能序列化static和transient修饰的成员变量
 
 
 ## object
 [top](#catalog)
-* 未使用extends指定父类是，则默认父类为：`java.lang.Object`
+* 未使用extends指定父类时，则默认父类为：`java.lang.Object`
 * 可以接收任何参数的方法
     ```java
     method(Object obj){...}
@@ -975,16 +994,16 @@ public class CommandPara {
     ```
 * 字符串的内存结构
     * 字面量的方式创建， 如：`String s = "AA";`
-        * 字符串会存储在**方法区的字符串常量池(元空间)**中
+        * 字符串会存储在** 方法区的字符串常量池(元空间) **中
         * String对象会指向字符串常量池中的某一个
-        * 如果初始化String时，常量中已经有了同样的数据，则不会开辟新的空间来创建数据，而是直接指向已有的数据
+        * 如果初始化String时，常量池中已经有了同样的数据，则不会开辟新的空间来创建数据，而是直接指向已有的数据
     * new实例对象的方式创建：`String s = new String("AA")`
         * new创建的对象，会在堆空间中开辟内存，然后堆内存中的数据再**指向字符串常量池**中的数据
     * 拼接式创建：`String s2 = s1 + "aa";`,`String s2 = "bb" + "aa";`
         * 常量和常量的**拼接结果在字符串常量池**，且常量池中不会存在相同内容的常量
         * 只要有一个是变量，字符串对象就在堆中
-            * **<label style="color:red">如果变量使用final修饰，即常量时，字符串对象仍然在字符串常量池中</label>**
-        * 如果拼接的结果调用intern(), 返回值就在常量池中
+            * **<label style="color:red">如果变量使用final修饰，即常量时，字符串对象仍然在字符串常量池中</label>**
+        * 如果拼接的结果调用`intern()`方法, 返回值就在常量池中
         * 拼接式创建字符串的比较
             ```java
             String s1 = "aa";
@@ -1098,12 +1117,12 @@ public class CommandPara {
 			```
     * int lastIndexOf(String str):从右开始，指定字符串第一次出现的索引
         * 和indexOf结果一样的情况：只包含一个str，不包含str
-    * int lastIndexOf(String str, int fromIndex):从fromIndex反响查找，指定字符串第一次出现的索引
+    * int lastIndexOf(String str, int fromIndex):从fromIndex反向查找，指定字符串第一次出现的索引
     * String replace(char oldChar, char newChar):用newChar替换oldChar，返回一个新字符串
     * String replace(CharSequence target, CharSequence replacement):用replacement替换target，返回一个新字符串
     * String repalceAll(String regex, String replacement):使用replacement替换所有匹配正则表达式的子字符串
     * String repalceFirst(String regex, String replacement):使用replacement替换匹配正则表达式的第一个子字符串
-    * boolean matches(String regex): 检查字符串是否匹配郑培表达式regex
+    * boolean matches(String regex): 检查字符串是否匹配正则表达式regex
     * String[] split(String regex):根据正则表达式拆分字符串
         ``` java
         String st2 = "werw|vdgd|fg|hg";
@@ -1205,7 +1224,7 @@ public class CommandPara {
     }
 	```
 * 常用方法
-	* **增** synchronized StringBuffer append(type obj)
+	* **增** `synchronized StringBuffer append(type obj)`
 		* 进行字符串拼接，参数类型可以是基本数据类型、Object、字符串、StringBuffer等
 		* return this , 直接修改对象本身
 		* 支持链式调用
@@ -1243,33 +1262,33 @@ public class CommandPara {
 					return this;
 				}
 				```
-	* **删** synchronized StringBuffer delete(int start, int end)
+	* **删** `synchronized StringBuffer delete(int start, int end)`
 		* 删除范围[start, end)的字符
 		* return this , 直接修改对象本身
 		* 支持链式调用
-	* **改** synchronized StringBuffer replace(int start, int end, String str)
+	* **改** `synchronized StringBuffer replace(int start, int end, String str)`
 		* 把范围[start, end)的字符替换为str中的字符
 			* 可以理解为:先删除[start, end)范围的数据，再从start开始插入str，[end,字符串结束]的字符全部移动到str后边
 			* 如果替换的过程中容量不足，则自动扩容
 		* return this , 直接修改对象本身
 		* 支持链式调用
-	* **增** synchronized StringBuffer insert(int offset, String str)
+	* **增** `synchronized StringBuffer insert(int offset, String str)`
 		* 从offset位置开始，插入str
 		* return this , 直接修改对象本身
 		* 支持链式调用
-	* synchronized StringBuffer reverse(): 
+	* `synchronized StringBuffer reverse()`: 
 		* 翻转字符串
 		* return this , 直接修改对象本身
 		* 支持链式调用
-	* **查** indexOf
+	* **查** `indexOf`
 		* int indexOf(String str) 返回str第一次出现的索引
 		* synchronized int indexOf(String str, int fromIndex) 从fromIndex开始，返回str第一次出现的索引
-	* substring
+	* `substring`
 		* synchronized **String** substring(int start) 返回范围[start, 结束]的**字符串**
 		* synchronized **String** substring(int start, int end) 返回范围[start, end)的**字符串**
-	* **查** synchronized char charAt(int index) 返回index处的字符
-	* synchronized void setCharAt(int index, char ch) 将index处的字符替换为ch
-	* synchronized String toString() 将内部的char[]转换为String
+	* **查** `synchronized char charAt(int index)` 返回index处的字符
+	* `synchronized void setCharAt(int index, char ch)` 将index处的字符替换为ch
+	* `synchronized String toString()` 将内部的char[]转换为String
 * 注意，可以使用append添加null，不可以使用null来构造StringBuffer对象：
 	```java
 	String str = null;
@@ -1385,7 +1404,7 @@ public class CommandPara {
         * next()
             * 使用next之前必须调用hasNext进行检测，如果不调用，且下一条记录无效，会引发NoSuchElementException异常
         * remove()
-            * 如果 未调用next() 或 next()后已经调用过remove，再次调用remove会引发IllegalStateException
+            * 如果 未调用过next() 或 next()后已经调用过remove，再次调用remove会引发IllegalStateException
     * 集中遍历方法
         ```java
         Iterator iterator = coll.iterator();
@@ -1403,7 +1422,7 @@ public class CommandPara {
 
 * Collection接口（父类接口，jdk不直接提供该接口的任何直接实现）
     * 接口继承树 ![collection_class](./imgs/collection_class.png)
-    * **不指定范型时，* 可以存储null**
+    * **不指定范型时，可以存储null**
     * 接口方法
         * 添加
             * add(Object obj)
