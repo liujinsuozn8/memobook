@@ -3552,7 +3552,7 @@ class A {
 
 * 自然排序：java.lang.Comparable
     * 实现该接口的对象集合可以通过`Arrays.sort`、`Collections,sort`进行自动排序
-    * **实现该接口的对象可以用作有效映射中的键或有序集合中的元素，无序指定比较器**
+    * **实现该接口的对象可以用作有效映射中的键或有序集合中的元素，无需指定比较器**
     * 对类C的对象e1、e2，当且仅当`e1.compareTo(e2) == 0`与`e1.equals(e2)`的boolean值相同时，C的自然排序与equals一致。（自然排序与equals的结果最好一致）
     * 重写compareTo(obj)的规则
         * this > obj, return 正整数(升序)，负整数(降序)

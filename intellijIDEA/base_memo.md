@@ -81,7 +81,8 @@
     * 切换代码文字的大小写=ctrl + shift + U
     * 创建get/set，构造器 = alt+ insert
     * 复制一行代码 = ctrl + D
-
+    * 查看接口的实现类= ctrl + alt + B
+    * 查找某个类：ctrl+alt+shift+n
 * 模版
     * 配置一些常用代码字母缩写，输入简写时可以使用
     * 不可修改预定以设置：settings-->Editor-->General-->Postfix Completion
