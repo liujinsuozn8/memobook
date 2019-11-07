@@ -479,6 +479,22 @@
 			}
 			```
 		* for-range 可以进行字符串和数组的遍历
+			* for-range 的两种形式
+				```java
+				a := []int{2,4,6,8}
+
+				// 循环时只用index
+				// 如果不使用index，可以使用：for _ := range a {
+				for i := range a {
+					fmt.Println(i) // 只输出index，即：0 1 2 3
+				}
+
+				// 循环时使用index和value
+				for i, v := range a {
+					fmt.Println(i, v) // 分别输出index和value
+				}
+				```
+
 			* 对于普通的遍历方式：字符串遍历时， 是按照字节来遍历的。中文的utf8编码是3个字节，如果有字符串有中文，遍历会出现乱码，需要将字符串转换成`[]rune(字符串变量)`切片
 			* 对于for-range遍历方式，有中文也没关系
 			```go
