@@ -6,6 +6,7 @@
         - [基本数据类型](#基本数据类型)
         - [其他数据类型](#其他数据类型)
             - [String类型](#string类型)
+            - [Slice类型](#slice类型)
     - [语句和表达式](#语句和表达式)
     - [函数](#函数)
     - [控制流](#控制流)
@@ -256,6 +257,33 @@
     |1|e|
     |2|s|
     |3|t|
+
+#### Slice类型
+[top](#catalog)
+* slice类型没有所有权
+* slice运行引用集合中一段连续的元素序列，而不用引用这个集合
+* 通过slice来关联原始数据和索引
+* 语法1：`&变量名[start..end]`，表示从start开始，但不包含end的range
+* 语法2：`&变量名[start..=end]`，表示从start开始，到end的range
+* 在slice的数据结构中存储了：slice的开始位置和长度
+* 字符串slice
+    * 字符串slice是String中一部分值的引用
+        ```rust
+        let s = String::from("hello world");
+        let hello = &s[0..5]; //对String的部分引用
+        ```
+    ```rust
+    fn first_word(s: &String) -> usize {
+        let bytes = s.as_bytes();
+        for (i,&item) in bytes.iter().enumerate(){
+            if item == b' ' {
+                return i;
+            }
+        }
+
+        return s.len();
+    }
+    ```
 
 ## 语句和表达式
 [top](#catalog)
@@ -543,7 +571,86 @@
     ```
 
 ## 引用与借用
+* 引用没有所有权
+* (不可变)引用
+    * 使用`&变量名`表示该变量的引用
+    * 通过引用可以使用变量的值，但是不获取其所有权
+        ```rust
+        fn main() {
+            let s1 = String::from("hello");
 
+            let len = calculate_length(&s1);//创建s1的引用
+
+            println!("The length of '{}' is {}.", s1, len);
+        }
+
+        fn calculate_length(s: &String) -> usize {
+            s.len()
+        }//因为s只是一个引用，没有变量的所有权，所以离开作用域时什么也不会发生
+        //离开后，将引用的变量归还
+
+        ```
+    * 类似于指向变量的指针，但只是指向，不能修改指向的值，**因为没有所有权
+* 借用
+    * 将引用作为函数参数称为**借用**
+    * 无法通过借用来修改原始变量，这会导致编译异常---引用不可变
+
+* 可变引用
+    * 使用`&mut 变量名` 来表示可变引用
+        ```rust
+        fn main() {
+            let mut s = String::from("hello");
+
+            change(&mut s);
+            println!("{}", s)
+        }
+
+        fn change(some_string: &mut String) {
+            some_string.push_str(", world");
+        }
+        ```
+    * 可变引用的限制
+        * 特定作用域中的特定数据**有且只有一个可变引用**
+        * 通过限制来防止数据竞争(主要防止以下三种行为)
+            * 两个或更多指针同时访问同一数据
+            * 没有同步数据访问的机制
+            * 至少有一个指针被用来写入数据
+        * 可以通过多个作用域来拥有多个可变引用
+            ```rust
+            let mut s = String::from("hello");
+
+            {
+                let r1 = &mut s;
+
+            } // r1 在这里离开了作用域，所以我们完全可以创建一个新的引用
+
+            let r2 = &mut s;
+            ```
+
+* 可变和不可变引用
+    * 在一个作用域中：**要么只有一个可变引用，要么只能有多个不可变引用**
+    * 引用的作用域从声明的地方开始一直持续到**最后一次使用为止**，在最后一次使用之后可以继续声明可变引用
+        ```rust
+        let mut s = String::from("hello");
+
+        let r1 = &s; // 没问题
+        let r2 = &s; // 没问题
+        println!("{} and {}", r1, r2);
+        // 此位置之后 r1 和 r2 不再使用
+
+        let r3 = &mut s; // 没问题
+        println!("{}", r3);
+        ```
+* 悬垂引用
+    * 编译器会防止悬垂指针
+        ```rust
+        fn dangle() -> &String { // dangle 返回一个字符串的引用
+
+            let s = String::from("hello"); // s 是一个新字符串
+
+            &s // 返回字符串 s 的引用
+        } // 这里 s 离开作用域并被丢弃。其内存被释放。会产生编译异常
+        ```
 
 # 标准库提供的类型
 ## Range
