@@ -1,3 +1,4 @@
+### 内容整理整理自：https://kaisery.github.io/trpl-zh-cn/
 <span id="catalog"></span>
 - [基本使用](#基本使用)
 - [常见编程概念](#常见编程概念)
@@ -12,6 +13,34 @@
     - [控制流](#控制流)
 - [所有权](#所有权)
     - [为什么需要所有权](#为什么需要所有权)
+    - [引用与借用](#引用与借用)
+- 结构体
+    - [基本使用](#基本使用)
+        - [结构体的使用](#结构体的使用)
+        - [元祖结构体](#元祖结构体)
+        - [类单元结构体](#类单元结构体)
+    - [结构体的方法](#结构体的方法)
+    - [结构体的关联函数](#结构体的关联函数)
+    - [多个impl块](#多个impl块)
+- 枚举和模式匹配
+    - [枚举](#枚举)
+        - [基本使用](#基本使用)
+        - [标准库的枚举Option](#标准库的枚举option)
+    - [模式匹配](#模式匹配)
+        - [match控制流运算符](#match控制流运算符)
+        - [iflet简单控制流](#iflet简单控制流)
+- 模块系统
+    - [包和crate](#包和crate)
+    - [定义模块来控制作用域与私有性](#定义模块来控制作用域与私有性)
+    - [通过路径来引用模块树中的项](#通过路径来引用模块树中的项)
+    - [使用use关键字将名称引入作用域](#使用use关键字将名称引入作用域)
+    - [分割模块](#分割模块)
+- [常见集合](#常见集合)
+    - [Vector](#vector)
+    - [字符串](#字符串)
+    - [hashmap](#hashmap)
+- [错误处理](#错误处理)
+
 
 # 基本使用
 [top](#catalog)
@@ -49,6 +78,15 @@
             [dependencies]
             //在下面添加工程依赖
             ```
+    * 创建库crate
+        * 创建指令：`cargo new --lib lib名`
+        * 生成的结果
+            ```
+            项目名
+            |--- Cargo.toml
+            |--- src
+                |--- lib.rs
+            ```
     * 编译、运行项目
         * 编译指令:`cargo build`
             * 在工程目录下执行该指令
@@ -64,6 +102,7 @@
     * 发布项目(release)
         * `cargo build --release`
             * 该指令视为了构建最终程序，编译速度比较慢
+
 * Rust和Cargo的指令在各系统中都相同
 
 * 编译与运行相互独立
@@ -260,30 +299,70 @@
 
 #### Slice类型
 [top](#catalog)
+* slice本身是一个不可变引用
 * slice类型没有所有权
 * slice运行引用集合中一段连续的元素序列，而不用引用这个集合
 * 通过slice来关联原始数据和索引
-* 语法1：`&变量名[start..end]`，表示从start开始，但不包含end的range
-* 语法2：`&变量名[start..=end]`，表示从start开始，到end的range
-* 在slice的数据结构中存储了：slice的开始位置和长度
+* 语法1：`&变量名/引用名[start..end]`，表示从start开始，但不包含end的range
+* 语法2：`&变量名/引用名[start..=end]`，表示从start开始，到end的range
+* 语法3--从0开始：`&变量名/引用名[..end]`
+* 语法4--直到结束：`&变量名/引用名[start..]`
+* 语法5--获取整体：`&变量名/引用名[..]`
+* 在slice的数据结构中存储了：开始位置的**引用**和长度
 * 字符串slice
+    * 字符串slice的类型声明：`&str`
     * 字符串slice是String中一部分值的引用
         ```rust
         let s = String::from("hello world");
-        let hello = &s[0..5]; //对String的部分引用
+
+        let hello = &s[0..=4];
+        let world = &s[6..=10]; //对String的部分引用
         ```
+    * slice的结构示例：![slice_struct.png](./imgs/slice_struct.png)
+    * **字符串slice的索引必须位于有效的UTF-8字符边界内，如果尝试从一个多字节字符的中间位置创建字符串slice，程序会因错误而退出**
+    * 通过字符串slice来返回第一个单词
     ```rust
-    fn first_word(s: &String) -> usize {
+    fn first_word(s: &String) -> &str {
         let bytes = s.as_bytes();
         for (i,&item) in bytes.iter().enumerate(){
             if item == b' ' {
-                return i;
+                return &s[0..i];
             }
         }
 
-        return s.len();
+        return &s[..];
     }
     ```
+    * 字符串字面值就是slice，类型就是`&str`，所以字符串字面值是不可变的，他是一个指向二进制程序特定位置的slice
+        * **因为字面量本身就是字符串slice，所以可以直接作为字符串slice类型的函数参数**
+    * 字符串slice作为函数参数
+        ```rust
+        fn first_word(s &str) -> &str{...}
+        fn main() {
+            let my_string = String::from("hello world");
+
+            // first_word 中传入 `String` 的 slice
+            let word = first_word(&my_string[..]);
+
+            let my_string_literal = "hello world";
+
+            // first_word 中传入字符串字面值的 slice
+            let word = first_word(&my_string_literal[..]);
+
+            // 因为字符串字面值就是字符串 slice，
+            // 这样写也可以，即不使用 slice 语法！
+            let word = first_word(my_string_literal);
+        }
+        ```
+* 其他类型的slice
+    * 数组的slice，与字符串slice相似，类型是`&[数值类型]`
+        * 内部存储指向的第一个元素的引用和slice的长度
+        ```rust
+        let a = [1, 2, 3, 4, 5];
+
+        let slice = &a[1..3];
+        ```
+    
 
 ## 语句和表达式
 [top](#catalog)
@@ -315,6 +394,7 @@
     * 多个返回值，使用元祖：`fn 函数名(参数1: 类型, 参数2: 类型,....) -> (返回值类型1, 返回值类型2,....)`
 
 * 函数的返回值等同于**函数体的最后一个表达式的值**
+    * 所以返回值可以变成某种类型的**转移**
 * 使用`return`指定返回值
 * 大部分函数**隐式的返回最后的表达式**
     ```rust
@@ -422,7 +502,7 @@
         * 栈的操作非常快，因为数据存储的位置总是在栈顶，不需要寻找数据存储的位置
         * 另一个提升栈速度的属性是：**栈中的所有数据都必须占用已知且固定的大小**
     * 堆
-        * 在**编译时**大小未知或大小可能变化的数据，应该存在堆上
+        * **在编译时大小未知或大小可能变化的数据，应该存在堆上**
         * 堆是缺乏组织的
         * **在堆上分配内存(简称分配)**:操作系统在堆的某处找到一块足够大的空位，并标记为**已使用**，并**返回一个表示该地址的指针**
             * 简单来说：向堆中放入数据时，需要**请求一定大小的空间**
@@ -571,6 +651,7 @@
     ```
 
 ## 引用与借用
+[top](#catalog)
 * 引用没有所有权
 * (不可变)引用
     * 使用`&变量名`表示该变量的引用
@@ -590,7 +671,7 @@
         //离开后，将引用的变量归还
 
         ```
-    * 类似于指向变量的指针，但只是指向，不能修改指向的值，**因为没有所有权
+    * 类似于指向变量的指针，但只是指向，不能修改指向的值，**因为没有所有权**
 * 借用
     * 将引用作为函数参数称为**借用**
     * 无法通过借用来修改原始变量，这会导致编译异常---引用不可变
@@ -642,7 +723,7 @@
         println!("{}", r3);
         ```
 * 悬垂引用
-    * 编译器会防止悬垂指针
+    * **编译器会确保数据不会在其引用之前离开作用域**，防止了悬垂引用
         ```rust
         fn dangle() -> &String { // dangle 返回一个字符串的引用
 
@@ -652,5 +733,975 @@
         } // 这里 s 离开作用域并被丢弃。其内存被释放。会产生编译异常
         ```
 
+# 结构体
+## 结构体的使用
+### 基本使用
+[top](#catalog)
+* 定义结构体：
+    ```rust
+    struct User {
+        username: String,
+        email: String,
+        sign_in_count: u64,
+        active: bool,
+    } //结构体定义后没有';'
+    ```
+* 创建结构体
+    ```rust
+    let user1 = User {
+        email: String::from("someone@example.com"),
+        username: String::from("someusername123"),
+        active: true,
+        sign_in_count: 1,
+    };
+    ```
+* 如果要修改结构体，则必须是可变的结构体
+    ```rust
+    let mut user1 = User {
+        email: String::from("someone@example.com"),
+        username: String::from("someusername123"),
+        active: true,
+        sign_in_count: 1,
+    };
+
+    user.email = String::from("xxxx");
+    ```
+    * Rust不支持某个字段被标记为可变
+    * 参数名和字段名相同时，可以直接使用**字段初始化间简写法**
+        ```rust
+        fn build_user(email: String, username: String) -> User {
+            User {
+                email, //不需要写成  email:email
+                username,
+                active: true,
+                sign_in_count: 1,
+            }
+        }
+        ```
+    * 结构体更新语法：通过一个结构体实例来创建另一个实例
+        ```rust
+        let mut user1 = User {
+            email: String::from("someone@example.com"),
+            username: String::from("someusername123"),
+            active: true,
+            sign_in_count: 1,
+        };
+
+        // 只有email和username是新的值，剩余的值来自user1中的实例字段
+        let user2 = User {
+            email: String::from("another@example.com"),
+            username: String::from("anotherusername567"),
+            ..user1
+        };
+        ```
+
+### 元祖结构体
+[top](#catalog)
+* 类似于元组，元祖结构体没有字段，只有类型
+    * black和origin内部的值相同，但是数据类型不同
+    ```rust
+    //定义元祖结构体
+    struct Color(i32, i32, i32); //元祖结构体的定义后需要添加';'
+    struct Point(i32, i32, i32);
+
+    //使用
+    let black = Color(0, 0, 0);
+    let origin = Point(0, 0, 0);
+    ```
+* 使用方法和访问方法与元素相同
+    * 使用`.index`来访问元素
+    * 可以进行解构
+
+### 类单元结构体
+* 类单元结构体没有任何字段，类似于`()`，即unit类型
+* 用于在某个类型上实现trait，但不需要在类型中存储数据
+
+## 结构体的方法
+[top](#catalog)
+* 方法被定义才结构体的上下文中：`impl 结构体名{...}`
+* 方法的第一个参数总是self，代表调用该方法的结构体实例
+    * 只使用实例的字段：`&self`
+    * 需要修改实例字段：`&mut self`
+    * 很少直接使用`self`来获取实例的所有权
+        * 通常用在将self转换为其他实例，同时防止在转换之后再使用原始的实例
+* 实例：计算面积
+    ```rust
+    #[derive(Debug)]
+    struct Rectangle{
+        width:u32,
+        height:u32,
+    }
+
+    impl Rectangle {
+        fn area(&self) -> u32 {
+            return self.width * self.height;
+        }
+
+    }
+
+    fn main(){
+        let rect1 = Rectangle{
+            width:30,
+            height:50,
+        };
+
+        println!("arear = {}", rect1.area());
+
+        println!("{:#?}", rect1);
+    }
+    ```
+* 调用的机制
+    * Rust使用**自动引用和解引用**来完成方法调用
+    * Rust会自动为实例添加`&`,`&mut`,`*`，使实例对象与方法签名相匹配
+        * 在给出明确的对象和方法名的前提下，Rust可以明确的计算出方法对对象的调用方式：`&self`,`&mut self`,`self`
+    * 两种等价的写法
+        ```rust
+        p1.distance(&p2);
+        (&p1).distance(&p2);
+        ```
+
+## 结构体的关联函数
+[top](#catalog)
+* 关联函数：在impl块中定义，但不以self作为参数的函数
+* **关联函数最终位于结构体的命名空间中，但是调用是不会依赖于某个具体的实例对象**
+* 关联函数虽然与结构体关联了，但仍然是函数不是方法
+* 关联函数不作用于某个结构体的实例
+* **关联函数经常同于结构体的构造函数**
+* 关联函数的使用方法：`结构体::关联函数(参数列表);`
+    * `::`语法用于关联函数和某块创建的命名空间
+
+## 多个impl块
+[top](#catalog)
+* 多个方法可以写在一个impl块中，也可以分散在多个impl块中
+* 范型和trait ？？？？？
+
+# 枚举和模式匹配
+## 枚举
+### 基本使用
+[top](#catalog)
+* 定义枚举
+    * V4,V6被称为**枚举成员**
+    * 定义后，IpAddrKind成为一个可以在代码中使用的**自定义数据类型**
+        ```rust
+        enum IpAddrKind {
+            V4,
+            V6,
+        }
+        ```
+* 枚举成员
+    * 枚举成员位于其标识符的命名空间中，并使用`;;`分隔
+        ```rust
+        let four = IpAddrKind::V4;
+        let six = IpAddrKind::V6;
+        ```
+    * 枚举成员都是相同的，都是所属的枚举类型
+        * `V4,V6`的类型都是`IpAddrKind`
+        * 可以使用枚举类型作为函数参数来接收任意枚举成员
+            ```rust
+            fn route(ip_type: IpAddrKind) { }
+
+            // 调用时，可以使用任何一个枚举成员
+            route(IpAddrKind::V4);
+            route(IpAddrKind::V6);
+            ```
+    * 将数据与枚举成员关联，以此来替代结构体
+        ```rust
+        //struct IpAddr{
+        //    kind:IpAddrKind,
+        //    address:String,
+        //}
+
+        //替代结构体
+        enum IpAddr {
+            V4(String),
+            V6(String),
+        }
+
+        let home = IpAddr:V4(String::from("...."))
+        let loopback = IpAddr:V6(String::from("...."))
+        ```
+    * 枚举成员的关联数据可以是任意类型，包括基本数据类型、结构体、其他枚举等等
+        ```rust
+        enum Message {
+            Quit, //没有关联数据
+            Move { x: i32, y: i32 }, //包含一个匿名结构体
+            Write(String), //包含一个字符串的元祖
+            ChangeColor(i32, i32, i32), //包含3个i32的元祖
+        }
+        ```
+* impl
+    * 使用方法和结构体相同
+        ```rust
+        enum Message {
+            Quit,
+            Move { x: i32, y: i32 },
+            Write(String),
+            ChangeColor(i32, i32, i32),
+        }
+
+        impl Message {
+            fn call(&self) {
+                ...
+            }
+        }
+
+        let m = Message::Write(String::from("hello"));
+        m.call();
+        ```
+
+### 标准库的枚举Option
+[top](#catalog)
+* Option的定义
+    ```rust
+    enum Option<T> {
+        Some(T),
+        None,
+    }
+    ```
+* 无需`Option<T>`前缀，可以直接使用`Some`和`None`
+* T意味着Some可以包含任意类型的数据
+    ```rust
+    let some_number = Some(5);
+    let some_string = Some("a string");
+
+    let absent_number: Option<i32> = None;
+    ```
+* 只要一个值不是`Option<T>`类型，**就可以安全的认定它的值不为空** 
+* 在对`Option<T>`进行T的运算之前必须将其转换为T
+    * 通过这种方式可以防止：假设某个值不为空，但实际为空
+    * 如果可能拥有一个会为空的值，必须显示的将其放入对应类型的`Option<T>`中，在使用时，如果这个值不是`Option<T>`，就**可以安全的认定它的值不为空(为空)？？？？？**
+
+## 模式匹配
+### match控制流运算符
+[top](#catalog)
+* **模式可由：字面量、变量、通配符和许多其他内容构成**
+* **Rust的匹配是穷尽的(exhaustive)，必须穷举到最后的可能行来使代码有效**
+* match的能力来源于以下两点，它确保了所有可能的情况都能得到处理
+    1. 模式的表现力
+    2. 编译器检查
+* match类似于`switch...case`
+* 基本使用方法：
+    ```rust
+    enum Coin {
+        Penny,
+        Nickel,
+        Dime,
+        Quarter,
+    }
+
+    fn value_in_cents(coin: Coin) -> u32 {
+        match coin {
+            Coin::Penny => {
+                println!("Lucky penny!");
+                1
+            }, //如果需要运行多行代码，需要使用大括号
+            Coin::Nickel => 5,
+            Coin::Dime => 10,
+            Coin::Quarter => 25,
+        }
+    }
+    ```
+* 绑定值的模式
+    ```rust
+    #[derive(Debug)] // 这样可以可以立刻看到州的名称
+    enum UsState {
+        Alabama,
+        Alaska,
+        // --snip--
+    }
+
+    enum Coin {
+        Penny,
+        Nickel,
+        Dime,
+        Quarter(UsState),
+    }
+
+        
+    fn value_in_cents(coin: Coin) -> u32 {
+        match coin {
+            Coin::Penny => 1,
+            Coin::Nickel => 5,
+            Coin::Dime => 10,
+            Coin::Quarter(state) => { //state 绑定了UsState类型的值
+                match state{
+                    UsState::Alabama => 200,
+                    UsState::Alaska => 300,
+                }
+        }
+    }
+
+    fn main(){
+        let a = value_in_cents(Coin::Quarter(UsState::Alabama));
+        println!("{}",a); //输出 200
+    }
+    ```
+
+* 匹配`Option<T>`
+    * 基本使用
+        ```rust
+        fn plus_one(x: Option<i32>) -> Option<i32> {
+            match x {
+                None => None,
+                Some(i) => Some(i + 1), //i将会绑定数据5
+            }
+        }
+
+        fn main(){
+            let five = Some(5);
+            let six = plus_one(five);
+            let none = plus_one(None);
+
+            println!("{:?}", five); //Some(5)
+            println!("{:?}", six); //Some(6)
+            println!("{:?}", none); //None
+        }
+        ```
+    * 如果`Option<T>`匹配忽略的`None`，会产生编译异常
+        ```rust
+        fn plus_one(x: Option<i32>) -> Option<i32> {
+            match x {
+                Some(i) => Some(i + 1),//模式必须穷举到所有的可能性
+            }
+        }
+        ```
+* `_`通配符
+    * 用于不想列出所有可能值的场景
+    * 通过将`_`放在其他分支后，`_`将会匹配所有之前没有指定的值
+        ```rust
+        let some_u8_value = 0u8;
+        match some_u8_value {
+            1 => println!("one"),
+            3 => println!("three"),
+            5 => println!("five"),
+            7 => println!("seven"),
+            _ => (),
+        }
+        ```
+    * `()`是unit值，所以在`_`的情况下什么也不会发生，即不做任何处理
+
+### iflet简单控制流
+[top](#catalog)
+* 通过`if let`简单的结合if和let，来处理只匹配一个模式的值而忽略其他模式的情况
+    * match的写法:通过通配符`_`，来满足match的穷尽性
+        ```rust
+        let some_u8_value = Some(0u8);
+        match some_u8_value {
+            Some(3) => println!("three"),
+            _ => (),
+        }
+        ```
+    * `if let`的写法
+        ```rust
+        if let Some(3) = some_u8_value {
+            println!("three");
+        }
+        ```
+* `if let`的工作方式
+    * 通过**等号**分隔一个模式和一个表达式
+        * 表达式对应match
+        * 模式对应一个分支
+* `else`表示和`_`一样的处理
+    ```rust
+    let mut count = 0;
+    if let Coin::Quarter(state) = coin {
+        println!("State quarter from {:?}!", state);
+    } else {
+        count += 1;
+    }
+    ```
+
+# 模块系统
+## 包和crate
+[top](#catalog)
+* crate
+    * crate是一个二进制项或者库
+    * crate root是一个源文件，Rust编译器以它为起始点，并构成crate的根模块
+    * 一个crate会将一个作用域内的相关功能分组到一起，使该功能可以在多个项目之间共享
+    
+* 包
+    * 包是提供一系列功能的一个或者多个crate
+    * 一个包会包含有**一个Cargo.toml文件**，来表明如何去构建这些crate
+    * 包的规则
+        * 一个包必须包含一个crate库或不包含crate库，不能拥有多个
+        * 一个包必须包含一到多个crate(库或者二进制项)
+
+* `main.rs`和`lib.rs`
+    * 基本认识
+        * `src/main.rs`是二进制crate，与包同名
+        * `src/lib.rs`是库crate，与包同名
+    * `src/main.rs`和`src/lib.rs`都是crate的根
+        * 这两个文件的内容都是从一个名为crate的模块作为根的crate模块结构
+    * 如果只包含一个`src/main.rs`，则它只含有一个**和包同名的二进制crate**
+    * 如果同时包含`src/main.rs`和`src/lib.rs`，则它有两个crate：一个库create和二进制crate
+    
+* 将文件放在`src/bin`目录下，一个包可以享有多个二进制crate，即每个文件都是一个分离出来的二进制crate
+* crate根文件将由Cargo传递给rustc来实际构建库或者二进制项目
+
+## 定义模块来控制作用域与私有性
+[top](#catalog)
+* 模块
+    * 模块可以将一个crate中的代码进行分组，来提高可读性与重用性
+    * 模块可以控制项的私有性，即public/private/内部实现？？？
+    * 通过`mod`关键字来创建模块，模块可以嵌套
+        ```rust
+        //src/lib.rs
+        mod front_of_house {
+            mod hosting {
+                fn add_to_waitlist() {}
+
+                fn seat_at_table() {}
+            }
+
+            mod serving {
+                fn take_order() {}
+
+                fn server_order() {}
+
+                fn take_payment() {}
+            }
+        }
+        ```
+    * 多个模块构成模块树结构，类似于文件系统的目录树
+        ```xml
+        crate
+        └── front_of_house
+            ├── hosting
+            │   ├── add_to_waitlist
+            │   └── seat_at_table
+            └── serving
+                ├── take_order
+                ├── serve_order
+                └── take_payment
+        ```
+
+## 通过路径来引用模块树中的项
+[top](#catalog)
+* 调用模块树中的一个函数，需要知道它的路径
+* 路径的两种形式
+    * 绝对路径：从crate根开始，以crate名或者字面值crate开头
+        * 从crate根开始类似于shell系统的从`/`开始
+    * 相对路径：从当前模块开始，以`self`,`super`，或者当前模块的标识符开头
+* 路径都要后跟一个或多个`::`分隔的标识符
+* Rust中默认所有项：函数、方法、结构体、枚举、模块、常量，**都是私有的**
+* Rust默认隐藏内部实现细节
+    * 父模块中的项不能使用子模块的私有项，子模块可以使用父模块中的项(不限于pub)
+    * 可以使用`pub`来创建公共项，将子模块的内部部分暴露给上级模块
+    ```rust
+    mod front_of_house {
+        pub mod hosting {
+            pub fn add_to_waitlist() {}
+        }
+    }
+
+    pub fn eat_at_restaurant() {
+        // Absolute path
+        crate::front_of_house::hosting::add_to_waitlist();
+
+        // Relative path
+        front_of_house::hosting::add_to_waitlist();
+    }
+    ```
+
+* 使用super起始的相对路径
+    * super类似与super类似与文件系统中以`..`开头的语法
+    * 通过super可以进入当前模块的父模块
+        ```rust
+        fn serve_order() {}
+
+        mod back_of_house {
+            fn fix_incorrect_order() {
+                cook_order();
+                super::serve_order(); //使用super进入crate
+            }
+
+            fn cook_order() {}
+        }
+        ```
+* 创建公有的结构体和枚举
+    * 可以使用`pub`创建共有结构体，但是其字段仍是私有的，需要更具使用情况在字段上添加`pub`
+        ```rust
+        mod back_of_house {
+            pub struct Breakfast {
+                pub toast: String,
+                seasonal_fruit: String,
+            }
+
+            impl Breakfast {
+                pub fn summer(toast: &str) -> Breakfast {
+                    Breakfast {
+                        toast: String::from(toast),
+                        seasonal_fruit: String::from("peaches"),
+                    }
+                }
+            }
+        }
+
+        pub fn eat_at_restaurant() {
+            let mut meal = back_of_house::Breakfast::summer("Rye");
+            meal.toast = String::from("Wheat");
+            println!("I'd like {} toast please", meal.toast);
+        }
+        ```
+    * 可以使用`pub`创建共有枚举，所有的枚举成员默认为公有成员
+
+## 使用use关键字将名称引入作用域
+[top](#catalog)
+* 使用use将绝对路径下的模块引入作用域
+    * **通过use引入作用域的路径也会检查私有性**
+    * 不直接将函数引入作用域：`use crate::front_of_house::hosting::add_to_waitlist;`，是为了
+        * **清晰的表明函数不是在本地定义的**
+        * 使完整路径的重复度最小化
+        ```rust
+        mod front_of_house {
+            pub mod hosting {
+                pub fn add_to_waitlist() {}
+            }
+        }
+
+        //使hosting成为作用域中的有效名称
+        use crate::front_of_house::hosting;
+
+        pub fn eat_at_restaurant() {
+            hosting::add_to_waitlist();
+            hosting::add_to_waitlist();
+            hosting::add_to_waitlist();
+        }
+        ```
+* 使用use将相对路径下的模块引入作用域
+    ```rust
+    mod front_of_house {
+        pub mod hosting {
+            pub fn add_to_waitlist() {}
+        }
+    }
+
+    //引入相对路径
+    use front_of_house::hosting;
+
+    pub fn eat_at_restaurant() {
+        hosting::add_to_waitlist();
+        hosting::add_to_waitlist();
+        hosting::add_to_waitlist();
+    }
+    ```
+* 使用use引入结构体、枚举、其他项是，习惯是指定它们的完整路径
+    ```rust
+    // 引入HashMap结构体
+    use std::collections::HashMap;
+
+    fn main() {
+        let mut map = HashMap::new();
+        map.insert(1, 2);
+    }
+    ```
+* 引入两个来组不同父模块名称相同的项
+    ```rust
+    use std::fmt;
+    use std::io;
+
+    fn function1() -> fmt::Result {
+        // --snip--
+    }
+
+    fn function2() -> io::Result<()> {
+        // --snip--
+    }
+    ```
+* 使用as给项重命名
+    ```rust
+    use std::fmt::Result;
+    use std::io::Result as IoResult;
+
+    fn function1() -> Result {
+        // --snip--
+    }
+
+    fn function2() -> IoResult<()> {
+        // --snip--
+    }
+    ```
+* 使用`pub use`重导出名称？？？？？？
+    * 使用`use`引入名称后，在新作用域中的可用名称是私有的
+    * 通过`pub use`使名称可引入任何代码的作用域中
+    ```rust
+    mod front_of_house {
+        pub mod hosting {
+            pub fn add_to_waitlist() {}
+        }
+    }
+
+    pub use crate::front_of_house::hosting;
+
+    pub fn eat_at_restaurant() {
+        hosting::add_to_waitlist();
+        hosting::add_to_waitlist();
+        hosting::add_to_waitlist();
+    }
+    ```
+
+* 使用外部包
+    * 在`Cargo.toml`的`dependencies`下添加依赖
+        * 依赖名="版本号"
+    * 使用：`use 依赖名::项名称;`
+    * 标准库也属于外部crate，不需要向`Cargo.toml`添加`dependencies`，直接通过`use`来引用
+        ```rust
+        // 通过路径来引用标准库
+        use std::collections::HashMap;
+        ```
+* 嵌套路径来消除大量的use行
+    * 引入很多定义与相同包或相同模块的项时，为每一项单独列处一行会占用源码很大的空间
+    * 嵌套路径：指定路径的相同部分，在`{}`中添加不同的路径部分
+        ```rust
+        use std::cmp::Ordering;
+        use std::io;
+
+        //嵌套路径
+        use std::{cmp::Ordering, io};
+        ```
+    * 组合两个共享子路径
+        ```rust
+        use std::io;
+        use std::io::Write;
+
+        //self表示 std::io
+        use std::io::{self, Write};
+        ```
+
+* 通过glob运算符将所有的公有定义引入作用域
+    * 使用glob运算符L`*`，将一个路径下**所有公有项**引入作用域
+        ```rust
+        use std::collections::*;
+        ```
+    * 使用glob运算符会导致无法推到作用域中有什么名称、它们是在何处定义的
+    * glob常用与测试模块tests中，有时也用于**prelude模式**？？？
+
+## 分割模块
+[top](#catalog)
+* `mod`声明了模块，Rust会在与模块同路径同名的文件中查找模块的代码
+* `mod 模块名;`，模块名后不添加代码块，使用分号，Rust会在另一个与模块同名的文件中加载模块的内容
+* 模块分割后对use不会有任何影响
+    ```rust
+    // src/front_of_house/hosting.rs
+    pub fn add_to_waitlist() {}
+
+    // src/front_of_house.rs
+    pub mod hosting;
+
+    // src/lib.rs
+    mod front_of_house;
+
+    pub use crate::front_of_house::hosting;
+
+    pub fn eat_at_restaurant() {
+        hosting::add_to_waitlist();
+        hosting::add_to_waitlist();
+        hosting::add_to_waitlist();
+    }
+    ```
+    ```xml
+    src
+    |--- lib.rs
+    |--- front_of_house.rs
+    |--- front_of_house
+            |--- hosting.rs
+    ```
+
+# 常见集合
+[top](#catalog)
+* 集合指向的数据是存储在堆上的
+    * 这意味着数据的数量不必在编译时就已知
+    * 数据的数量可以随着程序的运行增长或缩小
+## Vector
+[top](#catalog)
+* `Vec<T>`，也被成为vector
+* vector会在内存中彼此相邻的排列所有的值
+* vector只能存储相同类型的值
+* vector是用泛型实现的
+* 创建vector
+    * 使用new根据泛型创建vector。如果没有指定泛型，则会根据插入的数据进行类型推断
+        ```rust
+        let v: Vec<i32> = Vec::new();
+        ```
+    * 使用宏更具初始值创建vector，自动推断类型
+        ```rust
+        let v = vec![1, ,2, 3]; //创建了一个Vec<i32>
+        ```
+* 修改vector
+    * 使用push向vector添加元素，但是vec本身必须是可变变量
+    ```rust
+    let mut v = Vec::new();
+    v.push(5);
+    v.push(6);
+    v.push(7);
+    ```
+* 修改vector时，如果没有足够的空间时，将会请求分配新内存并将数据拷贝到新内存中
+* 清除vector时，也会清除其内部元素
+* 读取vector
+    * 使用`&`和`[]`返回一个引用
+        * 越界时，会产生panic
+        * 引用存在时，不能进行`push`操作，会与所有权系统规则想被
+    * 使用`get(index)`返回一个Option<&T>
+        * 越界时，会返回None
+    ```rust
+    let v = vec![1, 2, 3, 4, 5];
+
+    let third: &i32 = &v[2];
+    println!("The third element is {}", third);
+
+    match v.get(2) {
+        Some(third) => println!("The third element is {}", third),
+        None => println!("There is no third element."),
+    }
+    ```
+* 遍历
+    * 遍历每个元素的不可变引用
+        ```rust
+        let v = vec![100, 32, 57];
+        for i in &v {
+            println!("{}", i);
+        }
+        ```
+    * 遍历每个元素的可变引用，并对元素进行修改
+        * 修改之前必须使用解引用运算符
+        ```rust
+        let mut v = vec![100, 32, 57];
+        for i in &mut v {
+            *i += 50; //修改之前必须使用解引用运算符
+        }
+        ```
+
+* 使用枚举来存储多种类型
+    * 通过枚举，在vector中保存不同类型的值
+        ```rust
+        enum SpreadsheetCell {
+            Int(i32),
+            Float(f64),
+            Text(String),
+        }
+
+        let row = vec![
+            SpreadsheetCell::Int(3),
+            SpreadsheetCell::Text(String::from("blue")),
+            SpreadsheetCell::Float(10.12),
+        ];
+        ```
+## 字符串
+[top](#catalog)
+* 创建空字符串：`let mut s = String::new();`
+* 使用`to_string()`创建字符串，可用于任何实现了Display trait的类型，字符串也实现了Display
+    ```rust
+    let data = "initial contents";
+
+    let s = data.to_string();
+
+    // 该方法也可直接用于字符串字面值：
+    let s = "initial contents".to_string();
+    ```
+* 使用`String::from("...")`从字面值创建字符串
+* 更新字符串
+    * String的大小可以增长
+    * 使用`push_str(&str)`来附加字符串
+        ```rust
+        let mut s1 = String::from("foo");
+        let s2 = "bar";
+        s1.push_str(s2);
+        println!("s2 is {}", s2) // bar
+        ```
+    * 使用`push`来附加字符
+        ```rust
+        let mut s = String::from("lo");
+        s.push('l'); // s="lol"
+        ```
+    * 可以使用`+`运算符来拼接String
+        ```rust
+        let s1 = String::from("Hello, ");
+        let s2 = String::from("world!");
+        let s3 = s1 + &s2; // 注意 s1 被移动了，不能继续使用
+        ```
+        * `+`的函数签名：`fn add(self, s: &str) -> String {`
+            * `&s2`是`&String`类型的，参数s是`&str`类型的，`&String`可以被强转成`&str`
+                * Rust使用了**解引用强制多态**的技术来完成强转
+                * 最终add没有获取参数的所有权
+            * 第一个参数self，获取了s1的所有权，所以s1被移动到了add中，调用之后，无法再使用s1
+            * 执行后返回拼接结果的所有权
+            * 实际上并没有生成很多数据的拷贝，所以这个实现比拷贝要更高效
+        * 连续多个`+`会比较笨重，应该使用`format!`宏
+    * 可以使用`format!`宏来拼接String
+        * `format!`和`println!`的工作原理相同
+        * 会返回一个String
+        * **不会获取任何参数的所有权**
+        ```rust
+        let s1 = String::from("tic");
+        let s2 = String::from("tac");
+        let s3 = String::from("toe");
+
+        //tic-tac-toe
+        let s = format!("{}-{}-{}", s1, s2, s3);
+        ```
+* 字符串的内部表现
+    * String是一个`Vec<u8>`的封装
+        * `len=4`表示存储字符串的`Vec`的长度是四个**字节**
+            * 每一个字面的UTF-8编码都占用**1个字节**
+            ```rust
+            let len = String::from("Hola").len(); //len=4
+            ```
+        * `len=24`，每个Unicode标量值需要两个字节存储，所以**一个字符串字节值的索引并不总是对应一个有效的Unicode标量值
+            ```rust
+            let len = String::from("Здравствуйте").len();
+            ```
+    * Rust内部提供了三种理解字符串的方式：字节、标量值、字形簇
+* 索引字符串
+    * Rust的字符串不支持索引
+    * 原因：索引操作预期总是需要常数时间O(1)，但是String不能保证这样的性能
+        * Rust不得不检查从字符串的开头位置到索引位置的内容来确定有多少又在哦的字符
+    * 直接索引时，返回类型是不明确的：字节值、字符、字形簇、字符串slice
+    * 通过字符串slice来索引
+        ```rust
+        let hello = "Здравствуйте";
+        let s = &hello[0..4];
+        //&hello[0..1]运行时会产生panic，因为2个字节是一个有效字符，不能分割
+        ```
+* 遍历字符串
+    * 使用`chars()`返回字符串中的每个Unicode标量值
+        ```rust
+        for c in "नमस्ते".chars() {
+            println!("{}", c);
+        }
+        ```
+    * 使用`bytes()`来返回每一个原始字节
+        ```rust
+        for b in "नमस्ते".bytes() {
+            println!("{}", b);
+        }
+        ```
+    * 标准库没有提供获取字形簇的功能
+
+## hashmap
+[top](#catalog)
+* `HashMap<K, V>`类型存储了一个K类型对应一个值类型V的映射
+    * 内部通过hash函数来实现映射
+* hashmap没有被prelude自动引用，需要手动引入`use std::collections::HashMap;`
+* hashmap是同质的，所有键的类型必须相同，值也必须都是相同类型
+* 创建一个空的HashMap，使用insert添加元素
+    ```rust
+    use std::collections::HashMap;
+
+    let mut scores = HashMap::new();
+
+    scores.insert(String::from("Blue"), 10);
+    scores.insert(String::from("Yellow"), 50);
+    ```
+* 使用一个元祖的vector的`collect()`方法，其中每个元祖包含一个键值对
+    * 必须指定类型`HashMap<_, _>`，key和value的类型可以使用`_`，Rust可以自动推断
+    ```rust
+    use std::collections::HashMap;
+
+    let teams  = vec![String::from("Blue"), String::from("Yellow")];
+    let initial_scores = vec![10, 50];
+
+    let scores: HashMap<_, _> = teams.iter().zip(initial_scores.iter()).collect();
+    ```
+* hashmap和所有权
+    * 对于`i32`这种实现了`Copy`trait的类型，其值可以拷贝到hashmap中
+    * 对于String这样拥有所有权的值，**其值将被移动，hashmap会成为这些值的所有者**
+        * 如果将值的引用插入hashmap，这些值本身将不会移动到hashmap，但是**这些引用指向的值必须至少在hashmap有效时也是有效的**
+        ```rust
+        use std::collections::HashMap;
+
+        let field_name = String::from("Favorite color");
+        let field_value = String::from("Blue");
+
+        let mut map = HashMap::new();
+        map.insert(field_name, field_value);
+        // 这里 field_name 和 field_value 不再有效，再使用会产生编译异常
+        ```
+* 访问hashmap中的值
+    * 通过` get<Q: ?Sized>(&self, k: &Q) -> Option<&V>`来从hashmap中获取值
+        ```rust
+        use std::collections::HashMap;
+
+        let mut scores = HashMap::new();
+
+        scores.insert(String::from("Blue"), 10);
+        scores.insert(String::from("Yellow"), 50);
+
+        let team_name = String::from("Blue");
+        let score = scores.get(&team_name);
+
+        println!("{}",score.unwrap());
+        ```
+* for循环遍历map
+    ```rust
+    use std::collections::HashMap;
+
+    let mut scores = HashMap::new();
+
+    scores.insert(String::from("Blue"), 10);
+    scores.insert(String::from("Yellow"), 50);
+
+    for (key, value) in &scores {
+        println!("{}: {}", key, value);
+    }
+    ```
+* 更新hashmap
+    * 直接覆盖一个值，重复对一个key使用insert会对值进行覆盖
+        ```rust
+        use std::collections::HashMap;
+
+        let mut scores = HashMap::new();
+
+        scores.insert(String::from("Blue"), 10);
+        scores.insert(String::from("Blue"), 25);
+
+        println!("{:?}", scores);
+        ```
+    * 只在键没有对应值是插入
+        * `entry()`，获取要检查的键，返回一个枚举：`Entry`
+            * `Entry`代表了可能存在也可能不存在
+            * `or_insert`会返回值的一个引用
+            * `Entry`的`or_insert`方法在键对应的值存在时，返回这个值的Entry；如果不存在，则将参数作为新值插入如并返回修改过的Entry
+            ```rust
+            use std::collections::HashMap;
+
+            let mut scores = HashMap::new();
+            scores.insert(String::from("Blue"), 10);
+
+            scores.entry(String::from("Yellow")).or_insert(50);
+            scores.entry(String::from("Blue")).or_insert(50);
+
+            println!("{:?}", scores);
+            ```
+        * 根据就值更新一个值
+            ```rust
+            use std::collections::HashMap;
+
+            let text = "hello world wonderful world";
+
+            let mut map = HashMap::new();
+
+            for word in text.split_whitespace() {
+                let count = map.entry(word).or_insert(0); //如果没有key就添加0
+                *count += 1; //先解引用，在+1
+            } //每次循环结束时，count这个引用会在此离开作用用
+
+            println!("{:?}", map);
+            ```
+
+* hash函数
+    * hashmap默认使用一种密码学安全的hash函数，可以抵抗拒绝服务攻击，然是不是最快的算法
+    * 可以手动指定一个不同的hasher来切换成其他函数
+    * hasher是一个实现了`BuildHasher`trait的类型
+
+# 错误处理
+[top](#catalog)
+
 # 标准库提供的类型
 ## Range
+
+* println!()
+    * `{}`:使用Display输出格式
+    * `{:?}`:使用Debug的输出格式，需要有注解`#[derive(Debug)]`
+    * `{:#?}`:使用Debug的输出格式，输出的形式比`{:?}`更易读，需要有注解`#[derive(Debug)]`
+    
+    
