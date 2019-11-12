@@ -45,6 +45,9 @@
     - [是否需要使用panic](#是否需要使用panic)
     - [是否需要使用panic](#是否需要使用panic)
 - [泛型&trait&生命周期](#泛型&trait&生命周期)
+    - [泛型](#泛型)
+    - [trait定义共享的行为](#trait定义共享的行为)
+    - [生命周期与引用有效性](#生命周期与引用有效性)
 
 # 基本使用
 [top](#catalog)
@@ -2036,6 +2039,318 @@
             println!("p3.x = {}, p3.y = {}", p3.x, p3.y);
         }
         ```
+* 泛型代码的生成
+    * Rust通过在编译时进行泛型代码的**单态化**来保证效率
+        * 单态化：通过填充编译时使用的具体类型，将**通用代码转换为特定代码**
+        * 编译器会找到所有范型代码被调用的位置，使用泛型代码**针对具体类型生成代码**
+            ```rust
+            let integer = Some(5); //范型定义展开并替换为：Option_i32
+            let float = Some(5.0); //范型定义展开并替换为：Option_f64
+            ``` 
+        * 展开结果
+            * Rust会为每一个实例编译器特定类型的代码
+            * 展开后，在使用泛型时**没有运行开销，执行效率和单个代码相同**
+            ```rust
+            enum Option_i32 {
+                Some(i32),
+                None,
+            }
+
+            enum Option_f64 {
+                Some(f64),
+                None,
+            }
+
+            fn main() {
+                let integer = Option_i32::Some(5);
+                let float = Option_f64::Some(5.0);
+            }
+            ```
+        * 单态是Rust泛型代码在运行时及其高效的原因
+
+## trait定义共享的行为
+[top](#catalog)
+* 类似于接口，但是：
+    * trait中可以有默认实现
+* trait的声明
+    ```rust
+    pub trait Summary {
+        fn summarize(&self) -> String; //方法声明后必须要根';'
+    }
+    ```
+* trait的实现:`impl trait名 for 结构体名`
+    ```rust
+    pub struct NewsArticle {
+        pub headline: String,
+        pub location: String,
+        pub author: String,
+        pub content: String,
+    }
+
+    impl Summary for NewsArticle {
+        fn summarize(&self) -> String {
+            format!("{}, by {} ({})", self.headline, self.author, self.location)
+        }
+    }
+
+    pub struct Tweet {
+        pub username: String,
+        pub content: String,
+        pub reply: bool,
+        pub retweet: bool,
+    }
+
+    impl Summary for Tweet {
+        fn summarize(&self) -> String {
+            format!("{}: {}", self.username, self.content)
+        }
+    }
+    ```
+* trait的使用和方法的使用相同
+    ```rust
+    let tweet = Tweet {
+        username: String::from("horse_ebooks"),
+        content: String::from("of course, as you probably already know, people"),
+        reply: false,
+        retweet: false,
+    };
+
+    println!("1 new tweet: {}", tweet.summarize());
+    ```
+* 孤儿规则
+    * 只有当**trait**或者**要实现trait的类型**位于crate的本地作用域时，才可以为该类型实现trait
+    * 不能为外部类型实现外部trait
+
+* 默认实现
+    * 基本使用
+        ```rust
+        pub trait Summary {
+            fn summarize(&self) -> String { //为每个实现类型提供一个默认的字符串
+                String::from("(Read more...)")
+            }
+        }
+        ```
+    * 类型如何使用trait的默认实现? 为类型指定一个空的`impl`块：`impl trait名 for 结构体名 {}`
+        ```rust
+        pub trait Summary {
+            fn summarize(&self) -> String {
+                String::from("(Read more...)")
+            }
+        }
+
+        pub struct NewsArticle {
+            pub headline: String,
+            pub location: String,
+            pub author: String,
+            pub content: String,
+        }
+
+        impl Summary for NewsArticle{}
+
+        fn main(){
+            let article = NewsArticle {
+                headline: String::from("Penguins win the Stanley Cup Championship!"),
+                location: String::from("Pittsburgh, PA, USA"),
+                author: String::from("Iceburgh"),
+                content: String::from("The Pittsburgh Penguins once again are the best
+            hockey team in the NHL."),
+            };
+
+            println!("New article available! {}", article.summarize());
+        }
+        ```
+    * **默认实现允许调用相同trait中的其他方法，即使这些方法没有默认实现**
+        * 通过这种调用的方式，trait可以提供很多的功能，而只需要实现指定的一小部分内容
+        ```rust
+        pub trait Summary {
+            fn summarize_author(&self) -> String;
+
+            fn summarize(&self) -> String {
+                format!("(Read more from {}...)", self.summarize_author())
+            }
+        }
+
+        pub struct Tweet {
+            pub username: String,
+            pub content: String,
+            pub reply: bool,
+            pub retweet: bool,
+        }
+
+        impl Summary for Tweet {
+            fn summarize_author(&self) -> String {
+                format!("@{}", self.username)
+            }
+        }
+        ```
+
+* trait 作为参数
+    * 基本使用：在参数类型中声明：`impl trait名`，即参数是一个**实现**了某个trait的类型
+    ```rust
+    pub fn notify(item: impl Summary) {
+        println!("Breaking news! {}", item.summarize());
+    }
+    ```
+
+    * trait Bounds，即`impl trait名`形式，一种语法糖
+        * 类似于下面的实现
+            ```rust
+            pub fn notify<T: Summary>(item: T) {
+                println!("Breaking news! {}", item.summarize());
+            }
+            ```
+        * `trait Bounds`与泛型参数声明在一起，即`<T: Summary>`
+            * T的`trait Bounds`，可以传递任何实现了Summary trait的类型
+        * 使用的情况
+            * 两个任意实现了指定trait的参数
+                ```rust
+                pub fn notify(item1: impl Summary, item2: impl Summary) {
+                ```
+            * 强制实现trait的类型是同一个类型
+                * item1，item2的类型必须相同
+                ```rust
+                pub fn notify<T: Summary>(item1: T, item2: T) {
+                ```
+        * `+`:令参数必须实现多个指定的trait
+            * `impl trait名`
+                ```rust
+                pub fn notify(item: impl Summary + Display) {
+                ```
+            * trait Bounds
+                ```rust
+                pub fn notify<T: Summary + Display>(item: T) {
+                ```
+        * 通过`where`指定trait，简化代码
+            * 通过where来防止 trait Bounds过长
+                ```rust
+                //原始写法
+                fn some_function<T: Display + Clone, U: Clone + Debug>(t: T, u: U) -> i32 {
+
+                //where写法
+                fn some_function<T, U>(t: T, u: U) -> i32
+                    where T: Display + Clone,
+                        U: Clone + Debug
+                {
+                ```            
+
+* 返回trait
+    * 使用`impl trait名`作为返回值，返回某个实现了trait类型的实例
+        * 但是使用`impl trait名`作为返回值时，方法中不能有两种返回的类型，会产生编译异常
+        ```rust
+        fn returns_summarizable() -> impl Summary {
+            Tweet {
+                username: String::from("horse_ebooks"),
+                content: String::from("of course, as you probably already know, people"),
+                reply: false,
+                retweet: false,
+            }
+        }
+        ```
+* 通过trait Bounds有条件的实现方法：blanket implementations
+    * 基本实例
+        * 只有同时实现了`Display + PartialOrd`的类型，在作为Pair的泛型时，Pair才拥有`cmp_display`方法
+        ```rust
+        use std::fmt::Display;
+
+        struct Pair<T> {
+            x: T,
+            y: T,
+        }
+
+        impl<T> Pair<T> {
+            fn new(x: T, y: T) -> Self {
+                Self {
+                    x,
+                    y,
+                }
+            }
+        }
+
+        impl<T: Display + PartialOrd> Pair<T> {
+            fn cmp_display(&self) {
+                if self.x >= self.y {
+                    println!("The largest member is x = {}", self.x);
+                } else {
+                    println!("The largest member is y = {}", self.y);
+                }
+            }
+        }
+        ```
+    * 有条件的实现trait
+        * 对于任何实现了Display的类型自动实现ToString trait
+        ```rust
+        impl<T: Display> ToString for T {
+            // --snip--
+        }
+        ```
+
+## 生命周期与引用有效性
+* Rust的每一个引用都有其声明周期，即引用保持有效的作用域
+* 大部分时候生命周期是隐含并可以推断的
+* 当引用的生命周期以一些不同方式相关联是，Rust需要我们使用泛型声明周期参数来著名它们的关系，来确保运行时实际使用的引用是绝对有效的
+* 生命周期避免了悬垂引用
+    * 生命周期的主要目标是避免悬垂引用，悬垂引用会导致引用了非预期的数据
+* 借用检查器
+    * Rust编译器使用借用检查器来比较作用域，确保所有的借用都是有效的
+        * 带有借用检查器的注释
+            * `'a`,`'b`分别表示r和x的**生命周期注解**，`'b`小于`'a`
+            * Rust比较量个生命周期的大小，发现r拥有`'a`，但是引用了一个`'b`
+            * 编译器拒绝编译，因为：`'b`小于`'a`，**被引用对象比它的引用者的存在时间更短**
+            ```rust
+                    {
+                let r;                // ---------+-- 'a
+                                    //          |
+                {                     //          |
+                    let x = 5;        // -+-- 'b  |
+                    r = &x;           //  |       |
+                }                     // -+       |
+                                    //          |
+                println!("r: {}", r); //          |
+            }                         // ---------+
+            ```
+* 函数中的泛型生命周期
+    * 无法识别返回值的生命周期
+        ```rust
+        fn main() {
+            let string1 = String::from("abcd");
+            let string2 = "xyz";
+
+            let result = longest(string1.as_str(), string2);
+            println!("The longest string is {}", result);
+        }
+
+        // Rust并不清楚将要返回的引用是指向x或y
+        // 无法直观的确定【返回的引用】的具体声明周期，借用检查器也无法确定
+        //因为不知道x、y的生命周期是如何与返回值的生命周期相关联的
+        fn longest(x: &str, y: &str) -> &str {
+            if x.len() > y.len() {
+                x
+            } else {
+                y
+            }
+        }
+        ```
+* 生命周期注解语法
+    * 生命周期注解并不改变任何引用的生命周期的长短
+    * 生命周期注解描述了**引用生命周期的相互关系**，而不影响其生命周期
+    * 当指定了泛型生命周期后，函数也能接收任何生命周期的引用
+    * 生命周期参数：
+        * 以`'`开头，通常全是小写
+        * 大多数人默认使用：`'a`
+        * 参数注解位于引用符号`&`之后，注解后使用` `空格来与类型分开
+        * 实例 
+            ```rust
+            &i32        // 引用
+            &'a i32     // 带有显式生命周期的引用
+            &'a mut i32 // 带有显式生命周期的可变引用
+            ```
+        * 多个生命周期注解的意义
+            * 引用多个生命周期参数**必须与这些参数存在的一样久**
+                ```rust
+                fn longest<'a>(x: &'a str, y: &'a str) 
+                ```
+            * 
+
 
 # 标准库提供的类型
 ## Range
