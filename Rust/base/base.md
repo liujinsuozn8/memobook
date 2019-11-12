@@ -40,7 +40,11 @@
     - [字符串](#字符串)
     - [hashmap](#hashmap)
 - [错误处理](#错误处理)
-
+    - [painc和不可恢复错误](#painc和不可恢复错误)
+    - [Result与可恢复错误](#result与可恢复错误)
+    - [是否需要使用panic](#是否需要使用panic)
+    - [是否需要使用panic](#是否需要使用panic)
+- [泛型&trait&生命周期](#泛型&trait&生命周期)
 
 # 基本使用
 [top](#catalog)
@@ -102,6 +106,7 @@
     * 发布项目(release)
         * `cargo build --release`
             * 该指令视为了构建最终程序，编译速度比较慢
+    * 当不使用`--release`参数运行`cargo build`或`cargo run`时debug表示会默认启动
 
 * Rust和Cargo的指令在各系统中都相同
 
@@ -395,7 +400,7 @@
 
 * 函数的返回值等同于**函数体的最后一个表达式的值**
     * 所以返回值可以变成某种类型的**转移**
-* 使用`return`指定返回值
+* 使用`return`指定返回值，**可以从函数中提前返回**
 * 大部分函数**隐式的返回最后的表达式**
     ```rust
     fn five() -> i32{
@@ -1695,6 +1700,217 @@
 
 # 错误处理
 [top](#catalog)
+## painc和不可恢复错误
+* **如果代码panic就没有恢复的可能了**
+* 当出现panic时的两种选择
+    * **程序默认会开始展开(unwinding)**,
+        * 展开：Rust会回溯栈并清理它遇到的每一个函数的数据，不过这个回溯、清理的过程有很多工作
+    * 直接**终止(abort)**
+        * 直接终止将会：**不清理数据就退出程序**。程序所使用的内存需要由操作系统来清理。
+* 如果需要项目的**最终二进制文件越小越好**，panic时通过`Cargo.toml`的`[profile]`部分增加`panic='abort'`，将展开切换为终止
+* 如果需要在release模式中panic时直接终止，可以在`Cargo.toml`中添加配置
+    ```xml
+    [profile.release]
+    panic='abort'
+    ```
+* backtrace
+    * backtrace是一个执行到目前位置所有被调用的函数的列表
+    * 阅读backtrace的关键是从头开始读知道发现自己编写的文件，这就是问题的发源地
+        * 总是下方的代码调用上方的代码
+* 可以将环境变量`RUST_BACKTRACE`设为任何不是`0`的值来查看backtrace
+
+## Result与可恢复错误
+[top](#catalog)
+* Result
+    * Result枚举和其成员默认被倒入到了`prelude`中
+    * T、E是泛型类型参数
+    * T代表成功时返回的OK成员中的数据的类型
+    * E代表失败时返回的Err成员中的错误的类型
+    ```rust
+    enum Result<T, E> {
+        Ok(T),
+        Err(E),
+    }
+    ```
+* 实例：打开文件
+    * `File::open`会返回一个`Result`，Result表示：
+        * 方法的调用可能会成功并返回一个可以进行读写的**文件具柄**
+        * 方法的调用也可能会失败，如文件不存在，或者没有文件的访问权限
+    * 最终方法通过`Result`来告知使用者，执行结果是成功还是失败，并同时提供文件句柄或者错误信息
+
+    ```rust
+    use std::fs::File;
+
+    fn main() {
+        let f = File::open("hello.txt");
+
+        let f = match f {
+            Ok(file) => file,
+            Err(error) => {
+                panic!("There was a problem opening the file: {:?}", error)
+            },
+        };
+    }
+    ```
+* `ErrorKind`匹配不同的错误
+    ```rust
+    use std::fs::File;
+    use std::io::ErrorKind;
+
+    fn main() {
+        let f = File::open("hello.txt");
+
+        let f = match f {
+            Ok(file) => file,
+            Err(error) => match error.kind() {
+                ErrorKind::NotFound => match File::create("hello.txt") {
+                    Ok(fc) => fc,
+                    Err(e) => panic!("Tried to create file but there was a problem: {:?}", e),
+                },
+                other_error => panic!("There was a problem opening the file: {:?}", other_error),
+            },
+        };
+    }
+    ```
+
+* 失败是panic的简写：`unwrap`和`expect`
+    * `match`在处理的时候比较冗长，`Result<T,E>`类型定义了很多辅助方法来处理各种情况
+    * 辅助方法`unwrap`
+        * 如果是`Ok`则返回Ok中的值，如果是Err，则会调用`panic!`
+        * 类似于
+            ```rust
+            let f = File::open("hello.txt");
+            match f {
+            Ok(file) => file,
+            Err(error) => {
+                panic!("There was a problem opening the file: {:?}", error)
+            },
+            ```
+        * 实例
+            ```rust
+            let f = File::open("hello.txt").unwrap();
+            ```
+        * 内部实现
+            ```rust
+            #[inline]
+            #[stable(feature = "rust1", since = "1.0.0")]
+            pub fn unwrap(self) -> T {
+                match self {
+                    Ok(t) => t,
+                    Err(e) => unwrap_failed("called `Result::unwrap()` on an `Err` value", &e),
+                }
+            }
+            ```
+    * 辅助方法`expect`
+        * 使用方法和与`unwrap`的方式相同：返回文件句柄或调用`panic!`
+        * expect用来参数将会作为掉用`panic!`参数，出现异常时，更容易根据错误信息来定位
+        * 实例
+            ```rust
+            use std::fs::File;
+
+            fn main() {
+                let f = File::open("hello.txt").expect("Failed to open hello.txt");
+            }
+            ```
+* 传播错误
+    * 可以不在函数中处理错误，而是将选择权让给调用者
+    * 实例
+        ```rust
+        use std::io;
+        use std::io::Read;
+        use std::fs::File;
+
+        fn read_username_from_file() -> Result<String, io::Error> {
+            let f = File::open("hello.txt");
+
+            let mut f = match f {
+                Ok(file) => file,
+                Err(e) => return Err(e), //如果出现异常则立刻返回异常
+            };
+
+            let mut s = String::new(); //创建一个可变的空字符串
+
+            // 函数中的最后一个表达式
+            match f.read_to_string(&mut s) { //从文件中读取内容
+                Ok(_) => Ok(s),
+                Err(e) => Err(e), //如果出现异常则将异常返回
+            }
+        }
+        ```
+    * 传播错误的简写：`?`
+        * `?`会向调用者返回错误的函数
+        * 如果`Result`的值是`Ok`，这个表达式将会返回`Ok`中的值而程序将继续执行；如果是`Err`，则将作为整个函数的返回值
+        * `?`所使用的错误值被传递给了`from`函数
+            * 该函数定义于标准库的`From`trait，用来将错误从一种类型转换为另一种类型
+            * 当`?`调用`from`时，**收到的错误类型被转换为当前函数返回的类型**
+            * 只要错误类型都实现了`from`函数来定义如何将其转换为返回的错误类型，`?`会自动处理这些转换
+        * 实例的改造
+            ```rust
+            fn read_username_from_file() -> Result<String, io::Error> {
+                let mut f = File::open("hello.txt")?;
+                let mut s = String::new();
+                f.read_to_string(&mut s)?;
+                Ok(s)
+            }
+            ```
+        * `?`后可再接链式调用
+            ```rust
+            use std::io;
+            use std::io::Read;
+            use std::fs::File;
+
+            fn read_username_from_file() -> Result<String, io::Error> {
+                let mut s = String::new();
+
+                File::open("hello.txt")?.read_to_string(&mut s)?;
+
+                Ok(s)
+            }
+            ```
+        * `?`只能被用于返回值为：`Result`的函数
+            * 原因：`?`的工作方式于`match`相同
+            * 如果在不返回`Result`的函数中，当调用其它返回Result的函数时，需要使用`match`或`Result`的方法之一来处理，不能用`?`将潜在的错误传播给代码的调用方
+        * 在`main()`中使用`?`
+            * 返回值类型是`()`
+            * 在编译时会产生编译异常
+                ```rust
+                use std::fs::File;
+
+                fn main() {
+                    let f = File::open("hello.txt")?;
+                }
+                ```
+            * 可以给`main()`添加`Result`返回值
+                * `Box<dyn Error>`是trait对象，可以理解为**任何类型的错误**
+                ```rust
+                use std::error::Error;
+                use std::fs::File;
+
+                fn main() -> Result<(), Box<dyn Error>> {
+                    let f = File::open("hello.txt")?;
+
+                    Ok(())
+                }
+                ```
+* 读取文件更加简洁的方式
+    ```rust
+    use std::io;
+    use std::fs;
+
+    fn read_username_from_file() -> Result<String, io::Error> {
+        fs::read_to_string("hello.txt")
+    }
+    ```
+
+## 是否需要使用panic
+[top](#catalog
+* 如果代码panic就无法恢复了
+* 返回`Result`是定义可能会失败的函数的一个好的默认选择
+* 示例、代码原型和测试都非常适合panic
+* 能够确保不会出现`Err`，如硬编码
+
+# 泛型&trait&生命周期
+
 
 # 标准库提供的类型
 ## Range
