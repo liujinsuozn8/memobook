@@ -1910,7 +1910,132 @@
 * 能够确保不会出现`Err`，如硬编码
 
 # 泛型&trait&生命周期
+## 泛型
+* 在函数中定义泛型: 
+    * 当在函数签名中使用一个类型参数时，必须在使用它之前就声明它
+    * 类型参数声明位于函数名称与参数列表中间的尖括号`<>`中
+    ```rust
+    // 当前代码会出现异常
+    // 因为比较方法不能使用于所有类型的T
+    // 需要实现trait [std::cmp::PartialOrd]
+    fn largest<T>(list: &[T]) -> T {
+        let mut largest = list[0];
 
+        for &item in list.iter() {
+            if item > largest {
+                largest = item;
+            }
+        }
+
+        largest
+    }
+    ```
+* 在结构体中使用泛型
+    * 必须在结构体名后的`<>`内声明泛型参数的名称
+    * 基本实例
+        * 在`Point { x: 5, y: 10 }`中，将5赋值给x时，就告诉了编译器`T`是整型的
+        ```rust
+        struct Point<T> {
+            x: T,
+            y: T,
+        }
+
+        fn main() {
+            let integer = Point { x: 5, y: 10 };
+            let float = Point { x: 1.0, y: 4.0 };
+            //let wont_work = Point { x: 5, y: 4.0 }; // x和y的类型不同会引发编译异常
+        }
+        ```
+    * 在结构体中使用多个泛型
+        ```rust
+        struct Point<T, U> {
+            x: T,
+            y: U,
+        }
+
+        fn main() {
+            let both_integer = Point { x: 5, y: 10 };
+            let both_float = Point { x: 1.0, y: 4.0 };
+            let integer_and_float = Point { x: 5, y: 4.0 };
+        }
+        ```
+* 在枚举中使用泛型
+    ```rust
+    // 一个泛型
+    enum Option<T> {
+        Some(T),
+        None,
+    }
+
+    // 多个泛型
+    enum Result<T, E> {
+        Ok(T),
+        Err(E),
+    }
+    ```
+
+* 在方法中使用泛型
+    * 需要在`impl`后声明泛型`<T>`，使编译器能够识别出`Point<T>`中的`<T>`是泛型
+        * 这里使用的`T`应该和结构体声明时所使用的泛型名称和数量相同
+        ```rust
+        struct Point<T> {
+            x: T,
+            y: T,
+        }
+
+        impl<T> Point<T> {
+            fn x(&self) -> &T {
+                &self.x
+            }
+        }
+
+        fn main() {
+            let p = Point { x: 5, y: 10 };
+
+            println!("p.x = {}", p.x());
+        }
+        ```
+    * 为一个拥有泛型的结构体声明一个具体类型的方法
+        ```rust
+        struct Point<T> {
+            x: T,
+            y: T,
+        }
+
+        impl Point<f32> {
+            fn distance_from_origin(&self) -> f32 {
+                (self.x.powi(2) + self.y.powi(2)).sqrt()
+            }
+        }
+        ```
+
+    * 方法中使用的泛型可以和结构体定义中的不同
+        ```rust
+        struct Point<T, U> {
+            x: T,
+            y: U,
+        }
+
+        // impl后的泛型应该与结构体定义相同
+        impl<T, U> Point<T, U> {
+            //方法中可以使用结构体定义之外的泛型声明
+            fn mixup<V, W>(self, other: Point<V, W>) -> Point<T, W> {
+                Point {
+                    x: self.x, //T
+                    y: other.y, //W
+                }
+            } //执行后原始的结构体对象失效
+        }
+
+        fn main() {
+            let p1 = Point { x: 5, y: 10.4 };
+            let p2 = Point { x: "Hello", y: 'c'};
+
+            let p3 = p1.mixup(p2);
+
+            println!("p3.x = {}, p3.y = {}", p3.x, p3.y);
+        }
+        ```
 
 # 标准库提供的类型
 ## Range
