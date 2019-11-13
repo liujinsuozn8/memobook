@@ -1725,7 +1725,7 @@
 ## Result与可恢复错误
 [top](#catalog)
 * Result
-    * Result枚举和其成员默认被倒入到了`prelude`中
+    * Result枚举和其成员默认被导入到了`prelude`中
     * T、E是泛型类型参数
     * T代表成功时返回的OK成员中的数据的类型
     * E代表失败时返回的Err成员中的错误的类型
@@ -1739,7 +1739,7 @@
     * `File::open`会返回一个`Result`，Result表示：
         * 方法的调用可能会成功并返回一个可以进行读写的**文件具柄**
         * 方法的调用也可能会失败，如文件不存在，或者没有文件的访问权限
-    * 最终方法通过`Result`来告知使用者，执行结果是成功还是失败，并同时提供文件句柄或者错误信息
+    * 最终，方法通过`Result`来告知使用者，执行结果是成功还是失败，并同时提供文件句柄或者错误信息
 
     ```rust
     use std::fs::File;
@@ -1776,7 +1776,7 @@
     }
     ```
 
-* 失败是panic的简写：`unwrap`和`expect`
+* 失败时panic的简写：`unwrap`和`expect`
     * `match`在处理的时候比较冗长，`Result<T,E>`类型定义了很多辅助方法来处理各种情况
     * 辅助方法`unwrap`
         * 如果是`Ok`则返回Ok中的值，如果是Err，则会调用`panic!`
@@ -1842,7 +1842,8 @@
         ```
     * 传播错误的简写：`?`
         * `?`会向调用者返回错误的函数
-        * 如果`Result`的值是`Ok`，这个表达式将会返回`Ok`中的值而程序将继续执行；如果是`Err`，则将作为整个函数的返回值
+            * 如果`Result`的值是`Ok`，这个表达式将会返回`Ok`中的值而程序将继续执行
+            * **如果是`Err`，则将作为整个函数的返回值返回，并将错误传播给调用者**
         * `?`所使用的错误值被传递给了`from`函数
             * 该函数定义于标准库的`From`trait，用来将错误从一种类型转换为另一种类型
             * 当`?`调用`from`时，**收到的错误类型被转换为当前函数返回的类型**
@@ -1906,7 +1907,7 @@
     ```
 
 ## 是否需要使用panic
-[top](#catalog
+[top](#catalog)
 * 如果代码panic就无法恢复了
 * 返回`Result`是定义可能会失败的函数的一个好的默认选择
 * 示例、代码原型和测试都非常适合panic
@@ -2344,13 +2345,155 @@
             &'a i32     // 带有显式生命周期的引用
             &'a mut i32 // 带有显式生命周期的可变引用
             ```
-        * 多个生命周期注解的意义
-            * 引用多个生命周期参数**必须与这些参数存在的一样久**
-                ```rust
-                fn longest<'a>(x: &'a str, y: &'a str) 
-                ```
-            * 
+* 函数签名中的生命周期注解
+    * 函数签名中指定的生命周期参数表示：**指出任何不遵守这个协议的传入值都将被借用检查器拒绝**
+        * `longest`函数并不需要知道 x 和 y 具体会存在多久，而只需要知道有某个可以被`'a`替代的作用域将会满足这个签名
+            ```rust
+            fn longest<'a>(x: &'a str, y: &'a str) -> &'a str {
+                if x.len() > y.len() {
+                    x
+                } else {
+                    y
+                }
+            }
+            ```
+    * 多个生命周期注解的意义
+        * 引用多个生命周期参数**必须与这些参数存在的一样久**
+            ```rust
+            fn longest<'a>(x: &'a str, y: &'a str) 
+            ```
+    * 生命周期注解只会出现在函数签名中，而不会存在于函数体中的任何代码
+    * 为什么需要生命周期注解
+        * Rust只能独立分析函数内部的代码
+        * Rust无法分析引用和函数返回的引用的生命周期
+    * `fn longest<'a>(x: &'a str, y: &'a str) `中的`'a`具体是什么：
+        * `'a`替代的是x和y中**重叠的那部分生命周期**
+        * `'a`总是等于生命周期较小的那一个
+    * 函数的调用
+        ```rust
+        fn main() {
+            let string1 = String::from("long string is long");
 
+            {
+                let string2 = String::from("xyz");
+                let result = longest(string1.as_str(), string2.as_str());
+                println!("The longest string is {}", result);
+            }// 到该作用域结束时，string1、string2的引用，和result都是有效的
+        }
+        ```
+    * 无效的调用
+        ```rust
+        fn main() {
+            let string1 = String::from("long string is long");
+            let result;
+            {
+                let string2 = String::from("xyz");
+                result = longest(string1.as_str(), string2.as_str());
+            }
+            //在此，string2已经离开了作用域，result中会产生无效的调用
+            //所以会产生编译异常
+            println!("The longest string is {}", result);
+        }
+        ```
+
+    * 函数签名中的生命周期语法的目的
+        * 将函数的多个参数与返回值的生命周期进行关联
+        * 当参数与返回值形成了某种关联，Rust就有了足够的信息来:
+            * 允许内存安全的操作
+            * 防止产生悬垂引用
+            * 防止违反内存安全的行为
+
+* 结构体中的生命周期注解
+    * 包含引用的结构体
+        * 这个注解表示:`ImportantExcerpt`的实例不能比`part`存在的更久
+        ```rust
+        struct ImportantExcerpt<'a> {
+            part: &'a str,
+        }
+
+        fn main() {
+            let novel = String::from("Call me Ishmael. Some years ago...");
+            let first_sentence = novel.split('.')
+                .next()
+                .expect("Could not find a '.'");
+            let i = ImportantExcerpt { part: first_sentence };
+        }
+        ```
+
+* **输入声明周期:**函数或方法的参数的生命周期
+* **输出生命周期:**函数或方法的返回值的生命周期
+
+* 生命周期省略规则
+    * 该规则是一系列特定的场景，编译器会考虑，并无需指定生命周期注解
+    * Rust不会对模糊的生命周期关系进行推断，如果有，会产生一个编译异常
+
+* 编译器判断使用生命周期省略的**三条规则**
+    * 三条规则
+        1. 每一个引用的参数都有自己的生命周期参数
+            * 即编译器会默认按照参数的顺序，来给每个引用添加**不同的**生命周期参数
+                * 一个参数的转化
+                    ```rust
+                    
+                    fn first_word(s: &str) -> &str {
+                    fn first_word<'a>(s: &'a str) -> &str {
+                    ```
+                * 两个参数的转化
+                    ```rust
+                    fn longest(x: &str, y: &str) -> &str {
+                    fn longest<'a, 'b>(x: &'a str, y: &'b str) -> &str {
+                    ```
+        2. 如果只有一个输入生命周期参数，那么它被赋予所有输出生命周期参数
+        3. 如果方法有多个输入生命周期参数，不过其中之一因为方法的缘故为`&self`或`&mut self`，那么`self`的生命周期被赋给所有输出生命周期参数。
+            * 该规则值能适用于**方法签名**
+    * 三条规则在编译时的转化
+        * 转化实例1
+            ```rust
+            //原始方法签名
+            fn first_word(s: &str) -> &str {
+
+            //应用第一条规则
+            fn first_word<'a>(s: &'a str) -> &str {
+            
+            //应用第二条规则
+            fn first_word<'a>(s: &'a str) -> &'a str {
+            ```
+        * 转化实例2
+            ```rust
+            //原始方法签名
+            fn longest(x: &str, y: &str) -> &str {
+
+            //应用第一条规则
+            fn longest<'a, 'b>(x: &'a str, y: &'b str) -> &str {
+
+            //无法应用第二条，没有self也不能应用第三条
+            //Rust编译器不会主动的推断生命周期注解，会引发编译异常
+            ```
+
+* 方法中的生命周期注解
+    * `impl`和类型名之后的生命周期注解是必须的，因为**这些生命周期是结构体的一部分**
+        ```rust
+        impl<'a> ImportantExcerpt<'a> {
+            fn level(&self) -> i32 {
+                3
+            }
+        }
+        ```
+    * `impl`中的引用可以与结构体中的引用关联，也可以是独立的
+    * 使用第三条规则的场景
+        ```rust
+        struct ImportantExcerpt<'a> {
+            part: &'a str,
+        }
+
+        // 应用第一条规则 &self, announcement被添加生命周期参数
+        // 应用第三条规则，返回值被赋予self的生命周期
+        impl<'a> ImportantExcerpt<'a> {
+        fn announce_and_return_part(&self, announcement: &str) -> &str {
+                println!("Attention please: {}", announcement);
+                self.part
+            }
+        }
+        ```
 
 # 标准库提供的类型
 ## Range
