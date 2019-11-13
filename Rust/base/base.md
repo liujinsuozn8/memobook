@@ -48,6 +48,10 @@
     - [泛型](#泛型)
     - [trait定义共享的行为](#trait定义共享的行为)
     - [生命周期与引用有效性](#生命周期与引用有效性)
+- [测试]
+    - [编写测试](#编写测试)
+    - [运行测试](#运行测试)
+    - [测试的组织结构](#测试的组织结构)
 
 # 基本使用
 [top](#catalog)
@@ -110,6 +114,9 @@
         * `cargo build --release`
             * 该指令视为了构建最终程序，编译速度比较慢
     * 当不使用`--release`参数运行`cargo build`或`cargo run`时debug表示会默认启动
+    * 测试项目
+        * `cargo test` 
+            * Rust会构建一个测试执行程序来调用标记了`test`属性的函数，并报告每一个测试是通过还是失败
 
 * Rust和Cargo的指令在各系统中都相同
 
@@ -1189,7 +1196,7 @@
 * 路径的两种形式
     * 绝对路径：从crate根开始，以crate名或者字面值crate开头
         * 从crate根开始类似于shell系统的从`/`开始
-    * 相对路径：从当前模块开始，以`self`,`super`，或者当前模块的标识符开头
+    * 相对路径：从当前模块开始，以`self`,`* *`，或者当前模块的标识符开头
 * 路径都要后跟一个或多个`::`分隔的标识符
 * Rust中默认所有项：函数、方法、结构体、枚举、模块、常量，**都是私有的**
 * Rust默认隐藏内部实现细节
@@ -1211,16 +1218,16 @@
     }
     ```
 
-* 使用super起始的相对路径
-    * super类似与super类似与文件系统中以`..`开头的语法
-    * 通过super可以进入当前模块的父模块
+* 使用* *起始的相对路径
+    * * *类似与* *类似与文件系统中以`..`开头的语法
+    * 通过* *可以进入当前模块的父模块
         ```rust
         fn serve_order() {}
 
         mod back_of_house {
             fn fix_incorrect_order() {
                 cook_order();
-                super::serve_order(); //使用super进入crate
+                * *::serve_order(); //使用* *进入crate
             }
 
             fn cook_order() {}
@@ -2495,9 +2502,232 @@
         }
         ```
 
+* 静态生命周期
+    * 一种特殊的生命周期：`'static`
+    * 这种生命周期存活与整个程序期间
+    * 所有的字符串字面值都拥有`'static`生命周期
+        * 可以在类型中标出：`let s: &'static str = "..."`
+        * 字符串的文本会被直接存储在程序的二进制文件中，而这个文件总是可用的，所以所有的字符串字面值都是`'static`的
+    * 大部分情况，手动创建的静态生命周期有两种可能：
+        * 在尝试创建一个悬垂引用
+        * 可用的生命周期不匹配
+
+* 结合泛型类型参数、trait Bounds 和 生命周期
+    ```rust
+    use std::fmt::Display;
+
+    fn longest_with_an_announcement<'a, T>(x: &'a str, y: &'a str, ann: T) -> &'a str
+        where T: Display
+    {
+        println!("Announcement! {}", ann);
+        if x.len() > y.len() {
+            x
+        } else {
+            y
+        }
+    }
+    ```
+
+# 测试
+## 编写测试
+[top](#catalog)
+* 测试函数
+    * Rust的测试是一个带有`test`属性注解的函数
+    * `cargo new xxx --lib`生成的测试函数
+        * `fn`上的`#[test]`这个属性表明这是一个测试函数
+            * 因为在测试模块中可以有非测试方法，所以需要`#[test]`来标注哪些测试方法
+        * 断言宏`assert_eq!`,
+        ```rust
+        #[cfg(test)]
+        mod tests {
+            #[test]
+            fn it_works() {
+                assert_eq!(2 + 2, 4);
+            }
+        }
+        ```
+* 使用`assert!`宏来检查结果
+    * `assert!`由标准库提供
+        * 需要向`assert!`提供一个bool值，true通过，false失败
+    * `assert_eq!`测试相等
+        * 比较的值必须实现：`PartialEq`和`Debug`trait
+            * PartialEq用于判断相等
+            * Debug负责在断言失败是打印它们的值
+    * `assert_ne!`测试不相等
+        * 比较的值必须实现：`PartialEq`和`Debug`trait
+
+* 自定义失败信息
+    * 任何在`assert!`的一个必需参数和`assert_eq!`和`assert_ne!`的两个必需参数之后指定的参数都会传递给`format!`宏
+    * 自定义的信息中可以包含带占位符的格式字符串
+        ```rust
+        pub fn greeting(name: &str) -> String {
+            format!("Hello {}!", name)
+        }
+
+        #[cfg(test)]
+        mod tests {
+            use * *::*;
+
+            #[test]
+            fn greeting_contains_name() {
+                let result = greeting("Carol");
+                assert!(
+                    result.contains("Carol"),
+                    "Greeting did not contain name, value was `{}`", result
+                );
+            }
+        }
+        ```
+    
+* 使用should_panic来检查panic
+    * `#[should_panic]`属性：测试方法应该产生panic，如果没有panic则测试失败
+    * `#[should_panic]`属性应该在`#[test]`之后
+    * 通过增加expected参数，**确保错误信息中包含提供的文本**，`#[should_panic(expected = "错误信息")]`
+        ```rust
+        pub struct Guess {
+            value: i32,
+        }
+
+        impl Guess {
+            pub fn new(value: i32) -> Guess {
+                if value < 1 {
+                    panic!("Guess value must be greater than or equal to 1, got {}.",
+                        value);
+                } else if value > 100 {
+                    panic!("Guess value must be less than or equal to 100, got {}.",
+                        value);
+                }
+
+                Guess {
+                    value
+                }
+            }
+        }
+
+        #[cfg(test)]
+        mod tests {
+            use * *::*;
+
+            #[test]
+            #[should_panic(expected = "Guess value must be less than or equal to 100")]
+            fn greater_than_100() {
+                Guess::new(200);
+            }
+        }
+        ```
+
+* 将`Result<T, E>`用于测试
+    * 
+    ```rust
+    #[cfg(test)]
+    mod tests {
+        #[test]
+        fn it_works() -> Result<(), String> {
+            if 2 + 2 == 4 {
+                Ok(())
+            } else {
+                Err(String::from("two plus two does not equal four"))
+            }
+        }
+    }
+    ```
+
+## 运行测试
+[top](#catalog)
+* `cargo test`在测试模式下会：编译代码，并运行生成的**测试二进制文件**
+* 如何控制运行
+    * 将一部分命令参数传递个`cargo test`，而另一部分传递给生成的测试二进制文件
+    * 为了分隔这两种参数，需要先列出`cargo test`的参数，再使用`--`分隔，最后是传递给测试二进制文件的参数
+* 并行或连续的运行测试
+    * 当运行多个测试是，Rust默认使用线程来并行运行
+    * 因为测试是同时运行的，**应该确保测试不能相互依赖，或依赖任何共享的状态，包括依赖共享的唤醒，如当前工作目录或者环境变量**
+    * 控制测试线程的数量的参数:`--test-threads`
+        * 设为1时则不使用并行机制：`cargo test -- --test-threads`
+            * 存在共享状态是，测试不会有干扰
+* 显示函数输出
+    * 默认Rust的测试库会拦截打印到标准输出的内容，如不会看到`println!`输出的内容
+        * 如果测试失败了，则会看到所有的标准输出和其他错误
+    * `--nocapture`来禁用测试库的拦截行为：`cargo test -- --nocapture`
+* 通过指定名字来运行部分测试
+    * 执行后会在`filtered out`处显示过滤的测试方法
+    * `cargo test xxx`
+        * 如果`xxx`是某个测试函数的全名，则只会执行这一个测试方法
+        * 如果`xxx`是多个测试函数的部分名称，则会运行这些测试函数
+        * 测试所在某块也是测试名称的一部分，所以可以通过**模块名来运行一个模块中的所有测试**
+* 忽略某些测试
+    * 通过在方法上添加`[ignore]`属性来忽视某些测试方法，执行`cargo test`是会将这些方法忽略
+    * `cargo test -- --ignore`来只执行那些有`[ignore]`属性的测试方法
+
+## 测试的组织结构
+[top](#catalog)
+* 可以根据测试的两个主要分类来考虑问题：单元测试与集成测试
+    * 单元测试更小更集中，在隔离的环境中一次测试一个模块，或者测试私有接口
+    * 集成测试对于库来说完全是外部的
+* 单元测试
+    * 单元测试与它们要测试的代码共同存放在src目录下相同的文件中
+        * 规范：每个文件中创建包含测试函数的`tests`某块，并使用`#[cfg(test)]`标注模块
+    * 测试模块和`#[cfg(test)]`
+        * `#[cfg(test)]`告诉Rust
+            * 只在执行`cargo test`时才编译和运行测试代码    
+                * 需要编译的包括：`#[test]`标注的函数，测试模块中可能存在的帮助函数
+            * 执行`cargo build`时则不编译，在构建库的时候可以节省编译时间
+    * 测试私有函数
+        * 
+        ```rust
+        pub fn add_two(a: i32) -> i32 {
+            internal_adder(a, 2)
+        }
+
+        fn internal_adder(a: i32, b: i32) -> i32 {
+            a + b
+        }
+
+        #[cfg(test)]
+        mod tests {
+            //在这里子模块可以导入父模块的全部内容，可以对私有函数进行测试
+            use super::*;
+
+            #[test]
+            fn internal() {
+                assert_eq!(4, internal_adder(2, 2));
+            }
+        }
+        ```
+
+* 集成测试
+    * 测试时，只能待用一部分库中的公有API
+    * 为了创建集成测试，需要在**项目根目录**创建一个`tests`目录，与`src`同级
+    * tests目录
+        * Cargo知道如何去寻找这个目录中的集成测试文件，并且只会在运行`cargo test`时编译该目录中的文件
+        * 可以在该目录下创建任意多的测试文件，**Cargo会将每个文件当作单独的crate来编译**
+            * 应该将每个测试文件当作其自身的crate环境
+        * 需要在每个测试文件的开头添加crate的引用`use ....;`
+        * 测试文件中不需要标注`#[cfg(test)]`
+    * 指定测试部分
+        1. `cargo test xxx`通过`xxx`指定测试函数的名称来运行特定集成测试
+        2. `cargo test --test tests目录下的文件名称`，通过指定文件名来运行某个特定集成测试文件中的所有测试
+    * 集成测试中的子模块
+        * 子模块不应该放在文件中，应该单独创建一个目录来存放，否则测试结果中就会有测试结果
+            ```rust
+            use adder;
+
+            mod common;
+
+            #[test]
+            fn it_adds_two() {
+                common::setup();
+                assert_eq!(4, adder::add_two(2));
+            }
+            ```
+    * 二进制crate的集成测试
+        * 如果只有`main.rs`，没有`lib.rs`，则不可能在`tests`目录创建集成测试并使用`extern crate`导入`main.rs`中定义的函数
+            * 因为**只有库crate才会向其他crate暴露可供调用的函数**
+            * 二进制crate只是单独运行
+
+
 # 标准库提供的类型
 ## Range
-
+## 可派生trait
 * println!()
     * `{}`:使用Display输出格式
     * `{:?}`:使用Debug的输出格式，需要有注解`#[derive(Debug)]`
