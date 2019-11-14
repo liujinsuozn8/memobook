@@ -48,10 +48,12 @@
     - [泛型](#泛型)
     - [trait定义共享的行为](#trait定义共享的行为)
     - [生命周期与引用有效性](#生命周期与引用有效性)
-- [测试]
+- 测试
     - [编写测试](#编写测试)
     - [运行测试](#运行测试)
     - [测试的组织结构](#测试的组织结构)
+- 构建命令行程序
+    - [](#)
 
 # 基本使用
 [top](#catalog)
@@ -2636,10 +2638,10 @@
 [top](#catalog)
 * `cargo test`在测试模式下会：编译代码，并运行生成的**测试二进制文件**
 * 如何控制运行
-    * 将一部分命令参数传递个`cargo test`，而另一部分传递给生成的测试二进制文件
+    * 将一部分命令参数传递给`cargo test`，而另一部分传递给生成的测试二进制文件
     * 为了分隔这两种参数，需要先列出`cargo test`的参数，再使用`--`分隔，最后是传递给测试二进制文件的参数
 * 并行或连续的运行测试
-    * 当运行多个测试是，Rust默认使用线程来并行运行
+    * 当运行多个测试时，Rust默认使用多线程来并行运行
     * 因为测试是同时运行的，**应该确保测试不能相互依赖，或依赖任何共享的状态，包括依赖共享的唤醒，如当前工作目录或者环境变量**
     * 控制测试线程的数量的参数:`--test-threads`
         * 设为1时则不使用并行机制：`cargo test -- --test-threads`
@@ -2724,10 +2726,234 @@
             * 因为**只有库crate才会向其他crate暴露可供调用的函数**
             * 二进制crate只是单独运行
 
+# 构建命令行程序
+* 基本程序
+    ```rust
+    use std::env;
+    use std::fs;
+
+    fn main() {
+        //接收命令行参数
+        let args: Vec<String> = env::args().collect();
+        println!("{:?}",args);
+        //将参数保存到变量
+        let query = &args[1];
+        let filename = &args[2];
+
+        println!("searching for {}", query);
+        println!("in file {}", filename);
+
+        //读取文件
+        let contents = fs::read_to_string(filename)
+            .expect("Something went wrong redaing the file");
+
+        println!("With text:\n{}", contents);
+    }
+    ```
+* 二进制项目的分离
+    1. 将程序拆分成`main.rs`和`lib.rs`并将程序的逻辑放入 lib.rs 中
+    2. 当命令行解析逻辑比较小时，可以保留在`main.rs`中
+    3. 当命令行解析开始变得复杂时，也同样将其从`main.rs`提取到`lib.rs`中
+    4. 经过这些过程之后保留在`main`函数中的责任应该被限制为：
+        * 使用参数值调用命令行解析逻辑
+        * 设置任何其他的配置
+        * 调用`lib.rs`中的`run`函数
+        * 如果`run`返回错误，则处理这个错误
+* 基本流程
+    * 实现基本功能
+    * 分包
+    * 测试
+
+* 基本构成
+    * main.rs
+        ```rust
+        use std::env;
+        use std::process;
+
+        use minigrep;
+        use minigrep::Config;
+
+
+        fn main() {
+            //接收命令行参数
+            let args: Vec<String> = env::args().collect();
+            println!("{:?}",args);
+
+            let config = Config::new(&args).unwrap_or_else(|err|{
+                println!("Problem parsing arguments: {}", err);
+                process::exit(1);
+            });
+
+            if let Err(e) =minigrep::run(config){
+                println!("Application err: {}", e);
+                process::exit(1);
+            }
+        }
+        ```
+    * lib.rs
+        ```rust
+        use std::fs;
+        use std::error::Error;
+
+        pub struct Config{
+            query:String,
+            filename:String,
+        }
+
+        impl Config{
+            pub fn new(args: &[String]) -> Result<Config, &'static str> {
+                //检查参数数量
+                if args.len() < 3 {
+                    return Err("not enougth arguments");
+                }
+
+                let query = args[1].clone();
+                let filename = args[2].clone();
+
+                Ok(Config{query, filename})
+            }
+
+        }
+
+        pub fn run(config: Config) -> Result<(), Box<dyn Error>>{
+            //读取文件(进行异常传播)
+            let contents = fs::read_to_string(config.filename)?;
+
+            for line in search(&config.query,&contents){
+                println!("{}", line);
+            }
+
+            Ok(())
+        }
+
+
+        fn search<'a> (query: &str, contents: &'a str) -> Vec<&'a str>{
+            let mut results = Vec::new();
+            for line in contents.lines(){
+                if line.contains(query){
+                    results.push(line);
+                }
+            }
+
+            results
+        }
+
+        // 测试方法
+        #[cfg(test)]
+        mod tests{
+            use super::*;
+
+            #[test]
+            fn one_result(){
+                let query = "duct";
+                let contents = "\
+        Rust:
+        safe, fast, productive.
+        Pick three.";
+
+                assert_eq!(
+                    vec!["safe, fast, productive."],
+                    search(query, contents)
+                );
+            }
+        }
+        ```
+* 处理环境变量
+    * 大小写敏感处理
+        * 测试部分
+            ```rust
+            #[cfg(test)]
+            mod tests {
+                use super::*;
+
+                #[test]
+                fn case_sensitive() {
+                    let query = "duct";
+                    let contents = "\
+            Rust:
+            safe, fast, productive.
+            Pick three.
+            Duct tape.";
+
+                    assert_eq!(
+                        vec!["safe, fast, productive."],
+                        search(query, contents)
+                    );
+                }
+
+                #[test]
+                fn case_insensitive() {
+                    let query = "rUsT";
+                    let contents = "\
+            Rust:
+            safe, fast, productive.
+            Pick three.
+            Trust me.";
+
+                    assert_eq!(
+                        vec!["Rust:", "Trust me."],
+                        search_case_insensitive(query, contents)
+                    );
+                }
+            }
+            ```
+        * 处理函数
+            ```rust
+            fn search_case_insensitive<'a>(query: &str, contents: &'a str)->Vec<&'a str>{
+                let query = query.to_lowercase();
+                let mut results = Vec::new();
+
+                for line in contents.lines(){
+                    if line.to_lowercase().contains(&query){
+                        results.push(line);
+                    }
+                }
+
+                results
+            }
+            ```
+        * 在`run`中调用
+            ```rust
+            pub struct Config {
+                pub query: String,
+                pub filename: String,
+                pub case_sensitive: bool,
+            }
+            ```
+            ```rust
+            pub fn run(config: Config) -> Result<(), Box<dyn Error>>{
+                //读取文件(进行异常传播)
+                let contents = fs::read_to_string(config.filename)?;
+
+                let results = if config.case_sensitive {
+                    search(&config.query,&contents)
+                } else {
+                    search_case_insensitive(&config.query,&contents)
+                };
+
+                for line in results{
+                    println!("{}", line);
+                }
+
+                Ok(())
+            }
+            ```
+
 
 # 标准库提供的类型
 ## Range
 ## 可派生trait
+## 读取参数值
+* `std::env::args`
+    * 该函数会返回一个命令行参数的**迭代器(iterator)**
+    * 第一个参数为二进制文件的路径
+* 迭代器
+    * 迭代器生成一系列的值
+    * 可以在迭代器上调用`collect`方法将其转换为一个集合，比如包含所有迭代器产生元素的`vector`
+
+* `Box<dyn Error>`
+    * dyn(dynamic):无需指定具体将会返回的值的类型。这提供了在不同的错误场景可能有不同类型的错误返回值的灵活性
+
 * println!()
     * `{}`:使用Display输出格式
     * `{:?}`:使用Debug的输出格式，需要有注解`#[derive(Debug)]`
