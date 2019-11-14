@@ -52,8 +52,8 @@
     - [编写测试](#编写测试)
     - [运行测试](#运行测试)
     - [测试的组织结构](#测试的组织结构)
-- 构建命令行程序
-    - [](#)
+- [构建命令行程序](#构建命令行程序)
+- 迭代器与闭包
 
 # 基本使用
 [top](#catalog)
@@ -2727,6 +2727,7 @@
             * 二进制crate只是单独运行
 
 # 构建命令行程序
+[top](#catalog)
 * 基本程序
     ```rust
     use std::env;
@@ -2939,6 +2940,155 @@
             }
             ```
 
+# 迭代器与闭包
+## 闭包
+* 闭包是：可以保存变量或作为参数传递给其他函数的匿名函数
+* 闭包的目的：一个位置定义代码并储存代码，然后在不同的上下文中执行闭包运算
+* 使用闭包创建行为的抽象
+    * 创建语法：
+        * 单行
+            ```rust
+            let xxx =|闭包参数1, 闭包参数2,...| ...;
+            ```
+        * 多行
+            ```rust
+            let xxx =|闭包参数1, 闭包参数2,...|{
+                ...
+            };
+            ```
+    * 闭包的调用
+        ```rust
+        fn generate_workout(intensity: u32, random_number: u32) {
+            //创建闭包
+            let expensive_closure = |num| {
+                println!("calculating slowly...");
+                thread::sleep(Duration::from_secs(2));
+                num
+            };
+
+            if intensity < 25 {
+                println!(
+                    "Today, do {} pushups!",
+                    expensive_closure(intensity)//使用闭包
+                );
+                println!(
+                    "Next, do {} situps!",
+                    expensive_closure(intensity)
+                );
+            } else {
+                if random_number == 3 {
+                    println!("Take a break today! Remember to stay hydrated!");
+                } else {
+                    println!(
+                        "Today, run for {} minutes!",
+                        expensive_closure(intensity)
+                    );
+                }
+            }
+        }
+        ````
+* 闭包类型推断和注解
+    * 闭包不要求和`fn`函数一样在参数和返回值上注明类型
+        * 函数中需要类型注解是因为他们是暴露给用户的显示接口的一部分
+        * 闭包不会作为暴露给外部的接口
+        * 闭包会存储在变量中并被使用，不用命名他们或暴露给库的用户调用
+    * 闭包一般很短，用于相对任意的且场景较小的上下文中
+        * 在这些有限制的上下文中，编译器能够推断参数和返回值的类型
+    * 可以手动添加类型注解
+        ```rust
+        let expensive_closure = |num: u32| -> u32 {
+            println!("calculating slowly...");
+            thread::sleep(Duration::from_secs(2));
+            num
+        };
+        ```
+    * 闭包定义会为每个参数和返回值推断一个具体类型
+        * 第一次使用String作为参数时，编译器会尝试推断该闭包的参数和返回值都是String
+            * 此时String类型已经被锁定进闭包内部
+        * 第二次再使用i32作为参数时，编译器会对同一个闭包使用不同类型的推断，引发编译异常
+        ```rust
+        let example_closure = |x| x;
+
+        let s = example_closure(String::from("hello"));
+        let n = example_closure(5);//产生编译异常
+        ```
+
+* 使用带有泛型和`Fn`trait的闭包
+    * 防止重复调用，可以创建一个存放闭包和调用闭包结果的结构体
+        * 该结构体只会在需要结果时执行闭包，并缓存结果值
+    
+    * 为了定义使用闭包的**结构体，枚举，函数参数**，需要使用范型和trait bound
+        * 每个闭包实例都有自己独特的匿名类型
+            * 即两个闭包的签名相同，两者的类型仍然可以认为是不同的
+    * `Fn`trait由标准库提供
+        * 所有闭包都实现了trait：`Fn`,`FnMut`,`FnOnce`**中的一个**
+            * **如果不需要补货环境中的值，则可以使用实现了`Fn`trait的函数而不是闭包
+        * 为了满足`Fn`trait，需要增加参数和返回值的类型
+            ```rust
+            struct Cacher<T>
+                where T: Fn(u32) -> u32
+            {
+                calculation: T, //一个闭包字段
+                value: Option<u32>, //在闭包执行之前，该字段将是None
+            }
+            ```
+        * 方法的实现
+            ```rust
+            impl<T> Cacher<T>
+                where T: Fn(u32) -> u32
+            {
+                fn new(calculation: T) -> Cacher<T> {
+                    Cacher {
+                        calculation,
+                        value: None,
+                    }
+                }
+
+                fn value(&mut self, arg: u32) -> u32 {
+                    match self.value {
+                        Some(v) => v,
+                        None => {
+                            let v = (self.calculation)(arg);
+                            self.value = Some(v);
+                            v
+                        },
+                    }
+                }
+            }
+            ```
+* 闭包会捕获其环境
+    * 闭包周围的作用域被成为其环境
+    * 闭包可以捕获其环境并访问被定义的作用域的变量
+        ```rust
+        fn main() {
+            let x = 4;
+
+            let equal_to_x = |z| z == x; //使用哦那个了环境中的变量x
+
+            let y = 4;
+
+            assert!(equal_to_x(y));
+        }
+        ```
+    * 闭包会在闭包体中保存环境中的值，以供使用
+        * 这会使用内存，并产生额外的开销
+    * 闭包可以通过三种方式捕获环境，三种方式直接对应函数的三种获取参数的方式
+        1. `FnOnce`---获取所有权
+            * 由于所有闭包都可以被调用至少一次，所以所有闭包都实现了`FnOnce`
+            * FnOnce会消费从周围作用域捕获的变量
+            * 为了消费捕获到的变量，闭包**必须获取变量的所有权**，并在**定义闭包时将其移动进闭包**
+            * Once部分代表：闭包不能多次获取相同变量的所有权，**只能被调用一次**
+        2. `FnMut`---获取可变借用，**可以改变其环境**
+            * 没有移动变量所有权，但是通过引用修改了变量值的闭包，实现了`FnMut`
+        3. `Fn`---不可变借用
+            * 不需要对捕获的变量进行可变访问的闭包则实现了`Fn`
+    * 如果希望**强制闭包获取环境值的所有权可以在参数列表钱使用`move`关键字**
+        * 该方法在将闭包传递给新线程，来将数据移动到新线程中最为实用
+        ```rust
+        let x = vec![1, 2, 3];
+        let equal_to_x = move |z| z == x;
+        ```
+## 迭代器
 
 # 标准库提供的类型
 ## Range
