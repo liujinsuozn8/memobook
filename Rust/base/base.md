@@ -35,9 +35,11 @@
     - [通过路径来引用模块树中的项](#通过路径来引用模块树中的项)
     - [使用use关键字将名称引入作用域](#使用use关键字将名称引入作用域)
     - [分割模块](#分割模块)
+    - [采用发布配置来自定义构建](#采用发布配置来自定义构建)
 - [常见集合](#常见集合)
     - [Vector](#vector)
     - [字符串](#字符串)
+        * dev
     - [hashmap](#hashmap)
 - [错误处理](#错误处理)
     - [painc和不可恢复错误](#painc和不可恢复错误)
@@ -54,6 +56,9 @@
     - [测试的组织结构](#测试的组织结构)
 - [构建命令行程序](#构建命令行程序)
 - 迭代器与闭包
+    - [闭包](#闭包)
+    - [迭代器](#迭代器)
+    - [循环与迭代器的性能比较](#循环与迭代器的性能比较)
 
 # 基本使用
 [top](#catalog)
@@ -1424,6 +1429,14 @@
             |--- hosting.rs
     ```
 
+## 采用发布配置来自定义构建
+[top](#catalog)
+* Cargo的两种主要配置
+    * 执行`cargo build`时采用的`dev`配置
+        * dev
+    * 执行`cargo build --release`时采用的`release`配置
+
+
 # 常见集合
 [top](#catalog)
 * 集合指向的数据是存储在堆上的
@@ -1452,7 +1465,7 @@
     v.push(6);
     v.push(7);
     ```
-* 修改vector时，如果没有足够的空间时，将会请求分配新内存并将数据拷贝到新内存中
+    * 修改vector时，如果没有足够的空间时，将会请求分配新内存并将数据拷贝到新内存中
 * 清除vector时，也会清除其内部元素
 * 读取vector
     * 使用`&`和`[]`返回一个引用
@@ -1924,6 +1937,7 @@
 
 # 泛型&trait&生命周期
 ## 泛型
+[top](#catalog)
 * 在函数中定义泛型: 
     * 当在函数签名中使用一个类型参数时，必须在使用它之前就声明它
     * 类型参数声明位于函数名称与参数列表中间的尖括号`<>`中
@@ -2820,7 +2834,7 @@
             //读取文件(进行异常传播)
             let contents = fs::read_to_string(config.filename)?;
 
-            for line in search(&config.query,&contents){
+            for line in search(&config.query, &contents){
                 println!("{}", line);
             }
 
@@ -2940,8 +2954,49 @@
             }
             ```
 
+* 使用迭代器进行改造
+    ```rust
+    fn main() {
+        //接收命令行参数
+        let config = Config::new(env::args()).unwrap_or_else(|err|{
+            println!("Problem parsing arguments: {}", err);
+            process::exit(1);
+        });
+
+        if let Err(e) =minigrep::run(config){
+            println!("Application err: {}", e);
+            process::exit(1);
+        }
+    }
+
+    impl Config {
+        pub fn new(mut args: std::env::Args) -> Result<Config, &'static str> {
+            args.next();
+
+            let query = match args.next() {
+                Some(arg) => arg,
+                None => return Err("Didn't get a query string"),
+            };
+
+            let filename = match args.next() {
+                Some(arg) => arg,
+                None => return Err("Didn't get a file name"),
+            };
+
+            Ok(Config { query, filename })
+        }
+    }
+
+    pub fn search<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
+        contents.lines()
+            .filter(|line| line.contains(query))
+            .collect()
+    }
+    ```
+
 # 迭代器与闭包
 ## 闭包
+[top](#catalog)
 * 闭包是：可以保存变量或作为参数传递给其他函数的匿名函数
 * 闭包的目的：一个位置定义代码并储存代码，然后在不同的上下文中执行闭包运算
 * 使用闭包创建行为的抽象
@@ -3022,7 +3077,7 @@
             * 即两个闭包的签名相同，两者的类型仍然可以认为是不同的
     * `Fn`trait由标准库提供
         * 所有闭包都实现了trait：`Fn`,`FnMut`,`FnOnce`**中的一个**
-            * **如果不需要补货环境中的值，则可以使用实现了`Fn`trait的函数而不是闭包
+            * **如果不需要捕获环境中的值，则可以使用实现了`Fn`trait的函数而不是闭包**
         * 为了满足`Fn`trait，需要增加参数和返回值的类型
             ```rust
             struct Cacher<T>
@@ -3063,7 +3118,7 @@
         fn main() {
             let x = 4;
 
-            let equal_to_x = |z| z == x; //使用哦那个了环境中的变量x
+            let equal_to_x = |z| z == x; //使用周围环境中的变量x
 
             let y = 4;
 
@@ -3082,13 +3137,171 @@
             * 没有移动变量所有权，但是通过引用修改了变量值的闭包，实现了`FnMut`
         3. `Fn`---不可变借用
             * 不需要对捕获的变量进行可变访问的闭包则实现了`Fn`
-    * 如果希望**强制闭包获取环境值的所有权可以在参数列表钱使用`move`关键字**
+    * 如果希望**强制闭包获取环境值的所有权可以在参数列表前使用`move`关键字**
         * 该方法在将闭包传递给新线程，来将数据移动到新线程中最为实用
         ```rust
         let x = vec![1, 2, 3];
         let equal_to_x = move |z| z == x;
         ```
 ## 迭代器
+[top](#catalog)
+* 迭代器负责遍历序列中的每一项和决定序列何时结束
+* Rust中的迭代器是惰性的，即只创建而不调用是没有效果的
+    ```rust
+    let v1 = vec![1, 2, 3];
+    let v1_iter = v1.iter();    
+    ```
+
+* `Iterator`trait和`next`方法
+    * `Iterator`trait位于标准库
+    * `Iterator`的定义
+        * 实现`Iterator`trait要求同时定义一个`Item`类型
+        * `Item`类型被用作`next`方法的返回值类型
+        * `next`是`Iterator`的实现类型必须实现的方法
+        * **每次调用`next`都会消费迭代器中的一个项**
+        * `iter`方法会生成一个**不可变引用的迭代器**
+        * `iter_mut`方法会生成一个**可变引用的迭代器**
+        * `into_iter`方法会返回一个**拥有所有权的迭代器**
+        ```rust
+        trait Iterator {
+            type Item;
+
+            fn next(&mut self) -> Option<Self::Item>;
+
+            // 此处省略了方法的默认实现
+        }
+        ```
+    * 迭代器都实现了`Iterator`trait
+    * 实现`Iterator`trait来创建自定义迭代器
+        ```rust
+        struct Counter {
+            count: u32,
+        }
+
+        impl Counter {
+            fn new() -> Counter {
+                Counter { count: 0 }
+            }
+        }
+
+        impl Iterator for Counter {
+            type Item = u32;
+
+            fn next(&mut self) -> Option<Self::Item> {
+                self.count += 1;
+
+                if self.count < 6 {
+                    Some(self.count)
+                } else {
+                    None
+                }
+            }
+        }
+
+        // next测试
+        #[test]
+        fn calling_next_directly() {
+            let mut counter = Counter::new();
+
+            assert_eq!(counter.next(), Some(1));
+            assert_eq!(counter.next(), Some(2));
+            assert_eq!(counter.next(), Some(3));
+            assert_eq!(counter.next(), Some(4));
+            assert_eq!(counter.next(), Some(5));
+            assert_eq!(counter.next(), None);
+        }
+
+        // 测试标准库的默认实现
+        #[test]
+        fn using_other_iterator_trait_methods() {
+            let sum: u32 = Counter::new().zip(Counter::new().skip(1))
+                                        .map(|(a, b)| a * b)
+                                        .filter(|x| x % 3 == 0)
+                                        .sum();
+            assert_eq!(18, sum);
+        }
+        ```
+
+* 消费迭代器的方法
+    * 主动调用`next`方法的方法被称为：**消费适配器**
+        * `sum()`
+            * 该方法获取迭代器的所有权，并反复调用`next`来遍历迭代器
+            * 每次调用会进行求和，最后返回一个总和
+            ```rust
+            #[test]
+            fn iterator_sum() {
+                let v1 = vec![1, 2, 3];
+
+                let v1_iter = v1.iter();
+
+                let total: i32 = v1_iter.sum();
+                // 之后不允许再使用v1_iter，因为sum已经获取了它的所有权
+                assert_eq!(total, 6);
+            }
+            ```
+    * **迭代器适配器**：将当前迭代器转换为不同类型的迭代器
+        * 可以链式调用多个迭代器适配器
+        * 所有的迭代器都是**惰性的**，必须调用一个消费适配器方法，以便获取迭代器适配器调用的结果
+        * `map(闭包)`，使用闭包调用每个元素来生成新的迭代器
+            ```rust
+            let v1: Vec<i32> = vec![1, 2, 3];
+
+            // 必须使用消费适配器：collect来获取迭代器中的项，否则会
+            let v2: Vec<_> = v1.iter().map(|x| x + 1).collect();
+
+            assert_eq!(v2, vec![2, 3, 4]);
+            ```
+        * `filter(闭包)`，闭包结果是`true`的项会留在迭代器里，结果是`false`会被删除
+    * for遍历
+        * **使用for时，不需要使迭代器可变，因为for会获取迭代器的所有权，并在后台使迭代器可变**
+        ```rust
+        let v1 = vec![1, 2, 3];
+        let v1_iter = v1.iter();
+
+        for val in v1_iter {
+            println!("Got: {}", val);
+        }
+        ```
+
+* 使用闭包获取环境
+    ```rust
+    #[derive(PartialEq, Debug)]
+    struct Shoe {
+        size: u32,
+        style: String,
+    }
+
+    fn shoes_in_my_size(shoes: Vec<Shoe>, shoe_size: u32) -> Vec<Shoe> {
+        shoes.into_iter()
+            .filter(|s| s.size == shoe_size)
+            .collect()
+    }
+
+    #[test]
+    fn filters_by_size() {
+        let shoes = vec![
+            Shoe { size: 10, style: String::from("sneaker") },
+            Shoe { size: 13, style: String::from("sandal") },
+            Shoe { size: 10, style: String::from("boot") },
+        ];
+
+        let in_my_size = shoes_in_my_size(shoes, 10);
+
+        assert_eq!(
+            in_my_size,
+            vec![
+                Shoe { size: 10, style: String::from("sneaker") },
+                Shoe { size: 10, style: String::from("boot") },
+            ]
+        );
+    }
+    ```
+
+## 循环与迭代器的性能比较
+[top](#catalog)
+* 迭代器是Rust的**零成本抽象**之一
+    * 即抽象并不会引入运行时开销
+
 
 # 标准库提供的类型
 ## Range
@@ -3109,4 +3322,5 @@
     * `{:?}`:使用Debug的输出格式，需要有注解`#[derive(Debug)]`
     * `{:#?}`:使用Debug的输出格式，输出的形式比`{:?}`更易读，需要有注解`#[derive(Debug)]`
     
-    
+* trait的关联类型:`type Item`,`Self::Item`
+
