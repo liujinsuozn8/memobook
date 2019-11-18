@@ -36,6 +36,7 @@
     - [使用use关键字将名称引入作用域](#使用use关键字将名称引入作用域)
     - [分割模块](#分割模块)
     - [采用发布配置来自定义构建](#采用发布配置来自定义构建)
+    - [cargo工作空间](#cargo工作空间)
 - [常见集合](#常见集合)
     - [Vector](#vector)
     - [字符串](#字符串)
@@ -59,6 +60,26 @@
     - [闭包](#闭包)
     - [迭代器](#迭代器)
     - [循环与迭代器的性能比较](#循环与迭代器的性能比较)
+- 智能指针
+    - [使用Box指向堆上的数据](#使用box指向堆上的数据)
+    - [通过Deref将智能指针当作常规引用处理](#通过deref将智能指针当作常规引用处理)
+        - [函数和方法的隐式解引用强制多态](#函数和方法的隐式解引用强制多态)
+    - [使用Drop运行清理代码](#使用Drop运行清理代码)
+    - [Rc引用计数智能指针](#Rc引用计数智能指针)
+    - [RefCell和内部可变性模式](#RefCell和内部可变性模式)
+    - [引用循环与内存泄露](#引用循环与内存泄露)
+- 并发
+    - [线程](#线程)
+    - [使用消息传递在线程间传送数据](#使用消息传递在线程间传送数据)
+    - [共享状态并发](#共享状态并发)
+    - [使用Sync和Send的可扩展并发](#使用sync和send的可扩展并发)
+- 面向对象特性
+    - [为使用用不同类型的值而设计的trait对象](#为使用用不同类型的值而设计的trait对象)
+    - [面向对象设计模式的实现](#面向对象设计模式的实现)
+- 模式
+    - [所有可能会用到模式的位置](#所有可能会用到模式的位置)
+    - [Refutability可反驳性--模式是否会匹配失败](#refutability可反驳性--模式是否会匹配失败)
+    - [所有模式的语法](#所有模式的语法)
 
 # 基本使用
 [top](#catalog)
@@ -264,6 +285,11 @@
                 ```
             * 越界访问，编译时不会产生异常，执行时会产生一个panic
                 * 通过index访问数组时，**会检查索引是否小于数组的长度，超过了会长生panic，不会指向无效内存**
+            * 默认初始化
+                ```rust
+                //创建一个长度为4的数组，每个元素默认为-1
+                let arr:[i32;4] = [-1;4];
+                ```
 
 ### 其他数据类型
 #### String类型
@@ -993,7 +1019,7 @@
     * 通过这种方式可以防止：假设某个值不为空，但实际为空
     * 如果可能拥有一个会为空的值，必须显示的将其放入对应类型的`Option<T>`中，在使用时，如果这个值不是`Option<T>`，就**可以安全的认定它的值不为空(为空)？？？？？**
 
-## 模式匹配
+## 模式
 ### match控制流运算符
 [top](#catalog)
 * **模式可由：字面量、变量、通配符和许多其他内容构成**
@@ -1433,10 +1459,110 @@
 [top](#catalog)
 * Cargo的两种主要配置
     * 执行`cargo build`时采用的`dev`配置
-        * dev
+        * `dev`配置被定义为开发时的默认配置
     * 执行`cargo build --release`时采用的`release`配置
+        * `release`是发布构建的默认配置
+* 当`Cargo.toml`文件中没有任何`[profile.*]`部分时，Cargo会对每一个配置都采用默认设置
+* `opt-level`的设置
+    * 控制Rust会对代码进行何种程度的优化
+    * 该配置的可用值：0，1，2，3
+        * 值越大需要的编译时间更多
+        * 值越大，编译结果的运行就更快
+        * 所以默认dev是0，release是3
+    * 默认值
+        ```rust
+        [profile.dev]
+        opt-level = 0
 
+        [profile.release]
+        opt-level = 3
+        ```
+* 将create发布到Crates.io
+    * crates.io用来分发包的源代码，它主要托管开源代码
+    * 文档注释
+        * 文档注释会生成HTML文档
+        * 文档注释使用`///`
+        * 支持md注解来格式化文本
+        * 文档注释位于需要文档的项之前
+        * 可以运行`cargo doc`来生成这个文档注释的HTNL文档
+            * 该命令有Rust的分发工具`rustdoc`执行
+            * 生成的HTML文档会放入`target/doc`目录
+        * `cargo doc --open`会构建当前crate文档和所有crate依赖的文档的HTML，并会在浏览器中打开
+        * 文档注释中的常用部分
+            * Examples
+            * Panic：函数可能会`panic!`的场景
+            * Errors：如果函数返回Result，描述会出现何种错误及原因
+            * Safety：如果函数使用unsafe代码，这一部分应该会涉及到期望函数调用这支持的确保`unsafe`块中代码正常工作的不变条件
+        * 示例
+            ```rust
+            /// 将给定的数字加一
+            ///
+            /// # Examples
+            ///
+            /// ```
+            /// let five = 5;
+            ///
+            /// assert_eq!(6, my_crate::add_one(5));
+            /// ```
+            pub fn add_one(x: i32) -> i32 {
+                x + 1
+            }
+            ```
+        * 文档注释作为测试
+            * `cargo test`也会向测试那样运行文档中的示例代码
+        * 注释包含项的结构：`//!`
+            * 通常用于crate根文件，通常是`src/lib.rs`
+            * 对于描述整个crate和模块特别有用
+    * 使用`pub use`导出合适的公有API
+        * 使用`pub use`重导出一个顶级结构
+            ```rust
+            //art/src/lib.rs
 
+            //! # Art
+            //!
+            //! 一个描述美术信息的库。
+
+            pub mod kinds {
+                /// 采用 RGB 色彩模式的主要颜色。
+                pub enum PrimaryColor {
+                    Red,
+                    Yellow,
+                    Blue,
+                }
+
+                /// 采用 RGB 色彩模式的次要颜色。
+                pub enum SecondaryColor {
+                    Orange,
+                    Green,
+                    Purple,
+                }
+            }
+
+            pub mod utils {
+                use kinds::*;
+
+                /// 等量的混合两个主要颜色
+                /// 来创建一个次要颜色。
+                pub fn mix(c1: PrimaryColor, c2: PrimaryColor) -> SecondaryColor {
+                    // --snip--
+                }
+            }
+            ```
+            ```rust
+            //src/main.rs
+            use art::PrimaryColor;
+            use art::mix;
+
+            fn main() {
+                // --snip--
+            }
+            ```
+
+## cargo工作空间
+[top](#catalog)
+* 工作空间是一系列共享同样的`Cargo.lock`和输出目录的包
+* 工作空间中的crate之间相互依赖
+* 共享target目录，避免其他crate多余的重复构建
 # 常见集合
 [top](#catalog)
 * 集合指向的数据是存储在堆上的
@@ -3302,30 +3428,586 @@
 * 迭代器是Rust的**零成本抽象**之一
     * 即抽象并不会引入运行时开销
 
+# 智能指针
+* 智能指针通常使用结构体实现
+* 智能结构体区别于常规结构体的特性
+    * 实现了`Deref`trait
+        * 允许智能指针结构体实例表现的像引用一样
+            * 便于编写既用于引用、又用于智能指针的代码
+    * 实现了`Drop`trait
+        * 当智能指针离开作用域时运行的代码
+## 使用Box指向堆上的数据
+[top](#catalog)
+* 最简单直接的智能指针是`Box`，类型是`Box<T>`
+* box允许将一个值**放在堆上，留在栈上的则是指向堆数据的指针**
+* box没有性能损失，也没有很多额外的功能
+* `Box<T>`本身是一个指针
+* `Box<T>`被定义为包含一个元素的元素结构体
+* box常用于
+    * 有一个在编译时未知大小的类型，又想要在**需要确切大小的上下文中**使用这个类型值
+    * 有大量数据，并希望在**确保数据不被拷贝的情况下转移所有权**
+    * 希望拥有一个值，并**只关心它的类型是否实现了特定trait，而不是具体类型**
+        * 即trait对象
+* 使用`Box<T>`在堆上存储数据
+    * 使用Box在堆上存储一个`i32`数据
+    * 在作用域结尾，进行释放时，会分别释放：box本身(栈数据)，box指向的数据(堆数据)
+        ```rust
+        fn main() {
+            let b = Box::new(5);
+            println!("b = {}", b);
+        }
+        ```
+* Box允许创建递归类型
+    * Rust需要在编译时知道类型占用多少空间，但是递归类型无法知道
+    * 递归类型：值的一部分是相同类型的另一个值，这中值的嵌套理论上可以无限进行下去
+    * 枚举所需空间的判别
+        * Quit不需要空间，Move=两个i32空间，Write=1个String空间，ChangeColor=3个i32空间
+        * 所需的空间等于存储其最大成员的空间大小
+        ```rust
+        enum Message {
+            Quit,
+            Move { x: i32, y: i32 },
+            Write(String),
+            ChangeColor(i32, i32, i32),
+        }
+        ```
+    * 使用`Box<T>`给递归类型一个已知的大小
+        * `Box<T>`本身是一个指针，总是能知道它所需的空间大小
+            * 指针的大小并不会根据其指向的数据量而改变
+        * 实例
+            * Nil不占用空间
+            * Cons占用的空间=i32 + usize(指针的空间大小，取决于计算机架构)
+            ```rust
+            enum List {
+                Cons(i32, Box<List>),
+                Nil,
+            }
 
-# 标准库提供的类型
-## Range
-## 可派生trait
-## 读取参数值
-* `std::env::args`
-    * 该函数会返回一个命令行参数的**迭代器(iterator)**
-    * 第一个参数为二进制文件的路径
-* 迭代器
-    * 迭代器生成一系列的值
-    * 可以在迭代器上调用`collect`方法将其转换为一个集合，比如包含所有迭代器产生元素的`vector`
+            use crate::List::{Cons, Nil};
 
-* `Box<dyn Error>`
-    * dyn(dynamic):无需指定具体将会返回的值的类型。这提供了在不同的错误场景可能有不同类型的错误返回值的灵活性
+            fn main() {
+                let list = Cons(1,
+                    Box::new(Cons(2,
+                        Box::new(Cons(3,
+                            Box::new(Nil))))));
+            }
+            ```
 
-* println!()
-    * `{}`:使用Display输出格式
-    * `{:?}`:使用Debug的输出格式，需要有注解`#[derive(Debug)]`
-    * `{:#?}`:使用Debug的输出格式，输出的形式比`{:?}`更易读，需要有注解`#[derive(Debug)]`
-    
-* trait的关联类型:`type Item`,`Self::Item`
+## 通过Deref将智能指针当作常规引用处理
+[top](#catalog)
+* 实现`Deref`trait允许重载**解引用运算符**`*`
+    * **只有实现了Deref，才能启用`*`的解引用功能**
+    * 通过这种方式实现`Deref`trait的智能指针可以被当作常规引用对待，可以编写操作引用的代码并用于智能指针
+
+* 通过解引用运算符追踪指针的值
+    * 常规引用是一个指针类型
+    * 使用解引用运算符来跟踪引用的数据
+        ```rust
+        fn main() {
+            let x = 5;
+            let y = &x;
+
+            assert_eq!(5, x);
+            assert_eq!(5, *y); //不能直接比较数据与数字的引用，需要解引用
+        }
+        ```
+* 像引用一样使用`Box<T>`
+    * 通过解引用运算符以y为引用时相同的方式追踪box的指针
+    ```rust
+        fn main() {
+            let x = 5;
+            let y = Box::new(x);
+
+            assert_eq!(5, x);
+            assert_eq!(5, *y); //不能直接比较数据与数字的引用，需要解引用
+        }
+        ```
+* 自定义智能指针
+    * 定义
+        ```rust
+        struct MyBox<T>(T);
+
+        impl<T> MyBox<T>{
+            fn new(x: T) -> MyBox<T> {
+                MyBox(x)
+            }
+        }
+        ```
+    * 实现`Deref`trait
+        * `Deref`trait由标准库提供
+        * 需要实现名为`deref`的方法：
+            * 需要实现的内容
+                ```rust
+                trait Iterator {
+                    type Target;
+
+                    fn deref(&self) -> &T {
+                        ...
+                    }
+
+                    // 此处省略了方法的默认实现
+                }
+                ```
+        * MyBox的具体实现
+            ```rust
+            use std::ops::Deref;
+
+            impl<T> Deref for MyBox<T> {
+                type Target = T; //定义用于trait的关联类型
+
+                fn deref(&self) -> &T {
+                    &self.0 //返回希望通过 * 运算符访问的值的引用
+                }
+            }
+            ```
+        * 实现`Deref`之后使用`*`运算符时，底层会运行如下的代码
+            ```rust
+            *(y.deref()) //返回一个引用&T，在使用 * 运算符来解引用
+            ```
+        * 如果`fn deref`不返回一个引用而是直接返回具体的值，改值的所有权将被移出`self`
+            * 使用智能指针时，并不希望获取内部值的所有权
+### 函数和方法的隐式解引用强制多态
+[top](#catalog)
+* 函数和方法的隐式解引用强制多态
+    * **解引用强制多态**是Rust表现在函数或方法传参上的一种便利
+        * 实现了`Deref`的类型的**引用**转换为**原始类型通过`fn deref`后返回的引用类型**
+        * 当实现了`Deref`的引用作为实参时，如果和形参类型不同，会自动触发**解引用强制多态**
+            * 此时会有一系列的`deref`方法被调用
+    * 实例：String
+        * MyBox类型的引用&m 经过deref后会转换为&String类型
+        * String实现了Deref，&String经过deref后会转换为&str
+        * 经过两次deref，从&MyBox转换为hello的参数类型：&str
+        * 如果没有解引用强制多态，为了使用`&MyBox<String>`类型调用hello，需要编写：`hello(&(*m)[..])`
+            * 先解引用为String，再获取字符串slice
+        ```rust
+        fn hello(name: &str) {
+            println!("Hello, {}!", name);
+        }
+
+        fn main() {
+            let m = MyBox::new(String::from("Rust"));
+            hello(&m); 
+        }
+        ```
+    * 解引用强制多态的解析都发生在编译期，所以在运行时并没有额外的消耗
+* 解引用强制多态如何与可变性交互
+    * Rust提供了`DerefMut`trait用于**重载可变引用**的`*` 运算符
+    * Rust在发现类型和trait实现满足三种情况时会进行解引用强制多态
+        * 当`T:Deref<Target=U>`时，从&T到&U
+        * 当`T:DerefMut<Target=U>`时，从&mut T到&mut U
+        * 当`T:Deref<Target=U>`时，从&mut T到&U
+            * 将不可变引用转换为可变引用则需要数据只能有一个不可变引用？？？？，而借用规则无法保证这一点
+
+## 使用Drop运行清理代码
+[top](#catalog)
+* Drop会在值离开作用域时执行一些代码
+* 可以为任何类型提供Drop实现
+* 需要实现:`fn drop(&mut self) {`
+* 实例
+    ```rust
+    struct CustomSmartPointer {
+        data: String,
+    }
+
+    impl Drop for CustomSmartPointer {
+        fn drop(&mut self) {
+            println!("Dropping CustomSmartPointer with data `{}`!", self.data);
+        }
+    }
+
+    //输出
+    //CustomSmartPointers created.
+    //Dropping CustomSmartPointer with data `other stuff`!
+    //Dropping CustomSmartPointer with data `my stuff`!
+    //依赖栈的顺序，先drop d，再drop c
+    fn main() {
+        let c = CustomSmartPointer { data: String::from("my stuff") };
+        let d = CustomSmartPointer { data: String::from("other stuff") };
+        println!("CustomSmartPointers created.");
+    }
+    ```
+* Rust不允许主动调用`Drop`的drop方法
+    * 因为Rust仍然会在作用域结束时对值自动调用drop，会导致重复free的异常
+    * **无法禁止**Rust在作用域结束时自动调用drop
+* 可以使用`std::mem::drop`在作用域结束之前**强制释放变量**
+    * 该方法位于`prelude`中，可以直接使用
+
+## Rc引用计数智能指针
+[top](#catalog)
+* `Rc<T>`用于希望在堆上分配一些内存供程序的多个部分读取，并且无法在编译时确定程序的哪一部分会最后使用
+* `Rc<T>`只能用于单线程场景
+* Rc允许一个值有多个所有者，引用计数则确保只要任何所有者依然存在其值也保持有效
+* 使用`Rc<T>`共享数据
+    * 无法编译的共享列表实例
+        ```rust
+        enum List {
+            Cons(i32, Box<List>),
+            Nil,
+        }
+
+        use crate::List::{Cons, Nil};
+
+        fn main() {
+            let a = Cons(5,
+                Box::new(Cons(10,
+                    Box::new(Nil))));
+            let b = Cons(3, Box::new(a)); //a的所有权已经被移动到b中
+            let c = Cons(4, Box::new(a)); //a的所有权已经被移动，无法创建c，会产生编译异常
+        }
+        ```
+    * 使用`Rc<T>`改造共享列表
+        ```rust
+        enum List {
+            Cons(i32, Rc<List>),
+            Nil,
+        }
+
+        use crate::List::{Cons, Nil};
+        use std::rc::Rc;
+
+        fn main() {
+            let a = Rc::new(Cons(5, Rc::new(Cons(10, Rc::new(Nil)))));
+            let b = Cons(3, Rc::clone(&a)); //clone后Rc的引用计数变为2
+            let c = Cons(4, Rc::clone(&a));//clone后Rc的引用计数变为3
+        }
+        ```
+
+## RefCell和内部可变性模式
+[top](#catalog)
+* **内部可变性**是Rust中的一个设计模式，允许在有不可变引用时改变数据，这是借用规则所不允许的
+* 内部可变性模式：在不可变值内部改变值
+* `RefCell<T>`本身在运行时会产生损耗
+* 为了改变数据，该模式在数据结构中使用`unsafe`代码来模糊Rust通常的可变性和借用规则
+* 通过`RefCell<T>`在运行时检查借用规则
+    * 对于引用和`Box<T>`，不可变性作用于编译时
+        * 如果违反规则，会产生编译异常
+        * 用来在开发过程中捕获
+    * 对于`RefCell<T>`，不可变性作用于运行时
+        * 如果违反规则，程序会panic并退出
+        * 在运行时检查借用规则的好处是允许出现特定内存安全的场景，而它们在编译是检查中是不允许的
+        * `RefCell<T>`正是用于确信代码遵守借用规则，而编译器不能理解和确定的时候
+* `RefCell<T>`只能用于单线程场景
+    * 如果在多线程上下文中使用`RefCell<T>`，会得到一个编译错误
+* 选择`Box<T>`，`Rc<T>`或`RefCell<T>`的理由
+    * `Rc<T>`允许相同数据有多个所有者；`Box<T>`和`RefCell<T>`有单一所有者。
+    * `Box<T>`允许在编译时执行不可变或可变借用检查；`Rc<T>`仅允许在编译时执行不可变借用检查；`RefCell<T>`允许在运行时执行不可变或可变借用检查。
+    * 因为`RefCell<T>`允许在运行时执行可变借用检查，所以我们可以在即便 `RefCell<T>`自身是不可变的情况下修改其内部的值。
+
+* 内部不可变性：不可变值的可变借用
+    * 借用规则的一个推论：当有一个不可变值时，不能可变的借用它
+        ```rust
+        let x = 5;
+        let y = &mut x; //产生编译异常
+        ```
+    * 内部可变性的用例：mock对象
+        * 测试替身：一个通用编程概念，代表一个在测试中替代某个类型的类型
+        * mock对象是特定类型的测试替身，负责记录测试过程中发生了什么，以便可以断言操作是正确的
+* `RefCell<T>`在运行时记录借用
+    * `&`不可变引用，`&mut`可变引用
+    * 对于RefCell
+        * `borrow`获取不可变引用，返回`Ref`类型的智能指针
+        * `borrow_mut()`获取可变引用，返回`RefMut`类型的智能指针
+    * `RefCell<T>`会记录当前有多少个活动的`Ref<T>`和`RefMut<T>`
+        * 每次调用borrow，会讲活动的不可变借用计数加1，当Ref离开作用域时，不变借用计数减1
+    * `RefCell<T>`在任何时候都只运行有多个不可变借用和一个可变借用
+* 结合`Rc<T>`和`RefCell<T>`来拥有多个可变数据所有者
+
+## 引用循环与内存泄露
+* `Weak<T>`创建弱引用
+    * 使用`Rc::downgrade`来创建弱引用
+    * `use std::rc::Weak`
+    * 调用`Weak<T>`实例的`upgrade`方法，这会返回`Option<Rc<T>>`
+    * 如果`Rc<T>`值还未被丢弃则结果是`Some`，如果`Rc<T>`已经被丢弃则结果是 `None`
+
+# 并发
+## 线程
+[top](#catalog)
+* Rust标准库只提供了1:1线程模型实现
+* 使用`spawn`创建新线程
+    * 向函数传递一个闭包，其包含希望在新线程运行的代码
+        ```rust
+        use std::thread;
+        use std::time::Duration;
+
+        fn main() {
+            thread::spawn(|| {
+                for i in 1..10 {
+                    println!("hi number {} from the spawned thread!", i);
+                    thread::sleep(Duration::from_millis(1));
+                }
+            });
+
+            for i in 1..5 {
+                println!("hi number {} from the main thread!", i);
+                thread::sleep(Duration::from_millis(1));
+            }
+        }
+        ```
+    * 主线程结束时，新线程也会结束
+    * 使用join等待所有线程结束
+        * 可以通过将`thread::spawn`的返回值存储在变量中来修复新建线程部分没有执行或完全没有执行的问题
+            * `thread::spawn`的返回值类型`JoinHandle`
+            * `JoinHandle`是一个拥有所有权的值，当对其调用`join`方法时，会等待该线程结束
+        * join会阻塞当前线程，直到JoinHandle线程结束
+            ```rust
+            use std::thread;
+            use std::time::Duration;
+
+            fn main() {
+                let handle = thread::spawn(|| {
+                    for i in 1..10 {
+                        println!("hi number {} from the spawned thread!", i);
+                        thread::sleep(Duration::from_millis(1));
+                    }
+                });
+
+                for i in 1..5 {
+                    println!("hi number {} from the main thread!", i);
+                    thread::sleep(Duration::from_millis(1));
+                }
+
+                handle.join().unwrap();
+            }
+            ```
+* 线程与move闭包
+    * move闭包，运行在一个线程使用另一个线程的数据
+    * 在闭包的参数列表前使用move关键字，强制闭包获取其使用的环境值的所有权，将闭包传递给新线程以便数据移动到新线程中
+    ```rust
+    fn main() {
+        let v = vec![1, 2, 3];
+
+        let handle = thread::spawn(move || {
+            println!("Here's a vector: {:?}", v);
+        });
+
+        handle.join().unwrap();
+    }
+    ```
+
+## 使用消息传递在线程间传送数据
+[top](#catalog)
+* Rust中一个实现消息传递并发的主要工具是：**通道**
+* 创建通道
+    * 使用`mpsc::channel`函数创建一个新的通道
+        * `mpsc`是**多个生产者，单个消费者**的缩写（multiple producer, single consumer）
+        * 标准库的实现方式意味着：一个通道可以有**多个发送端**，但只能有**一个接收端**
+    * 创建一个通道，并将：发送端赋给`tx`(transmitter)，接收端赋给`rx`(receiver)
+    * 使用`let`对`mpsc::channel`的返回值进行解构
+        ```rust
+        use std::sync::mpsc;
+
+        fn main() {
+            let (tx, rx) = mpsc::channel();
+        }
+        ```
+* 使用通道来进行通信
+    * 通过move，将发送端的所有权移动到新建线程中
+    * 发送端通过`send`来发送元素，返回一个`Result<T,E>`类型
+        * 如果接收端已经被丢弃了，将没有发送值的目标，所以发送操作会返回错误
+    * 接收端使用`recv`、`try_recv`
+        * `recv`
+            * 方法会阻塞接收端所在的线程，直到从通道中接收一个值，返回一个`Result<T,E>`
+            * 当发送端关闭，会返回一个错误，表明不会再有新的值到来了
+        * `try_recv`
+            * 方法不会阻塞，会立刻返回一个`Result<T,E>`
+                * Ok值包含可用的信息，Err值代表**此时没有任何消息**
+                * 如果在等待消息过程中还有其他工作时，`try_recv`很有用
+                    * 可以使用循环来频繁调用`try_recv`，在有可用消息是进行处理，其他时间则处理其他工作
+        ```rust
+        use std::thread;
+        use std::sync::mpsc;
+
+        fn main() {
+            let (tx, rx) = mpsc::channel();
+
+            thread::spawn(move || {
+                let val = String::from("hi");
+                tx.send(val).unwrap();
+            });
+
+            let received = rx.recv().unwrap();
+            println!("Got: {}", received);
+        }
+        ```
+* 通道与所有权转移
+    * 发送端的`send`会获取参数的所有权，并移动这个值归接受者所有
+    * 在`send`方法之后，无法再使用发送的值，否则会引发编译异常
+* 发送多个值并观察接受者的等待
+    ```rust
+    use std::thread;
+    use std::sync::mpsc;
+    use std::time::Duration;
+
+    fn main() {
+        let (tx, rx) = mpsc::channel();
+
+        thread::spawn(move || {
+            let vals = vec![
+                String::from("hi"),
+                String::from("from"),
+                String::from("the"),
+                String::from("thread"),
+            ];
+
+            for val in vals {
+                tx.send(val).unwrap();
+                thread::sleep(Duration::from_secs(1));
+            }
+        });
+
+        for received in rx {
+            println!("Got: {}", received);
+        }
+    }
+    ```
+
+* 通过克隆发送者来创建多个生产者
+    ```rust
+    let (tx, rx) = mpsc::channel();
+
+    let tx1 = mpsc::Sender::clone(&tx);
+    thread::spawn(move || {
+        let vals = vec![
+            String::from("hi"),
+            String::from("from"),
+            String::from("the"),
+            String::from("thread"),
+        ];
+
+        for val in vals {
+            tx1.send(val).unwrap();
+            thread::sleep(Duration::from_secs(1));
+        }
+    });
+
+    thread::spawn(move || {
+        let vals = vec![
+            String::from("more"),
+            String::from("messages"),
+            String::from("for"),
+            String::from("you"),
+        ];
+
+        for val in vals {
+            tx.send(val).unwrap();
+            thread::sleep(Duration::from_secs(1));
+        }
+    });
+
+    for received in rx {
+        println!("Got: {}", received);
+    }
+    ```
+
+## 共享状态并发
+[top](#catalog)
+* 互斥器一次只运行一个线程访问数据
+    * 互斥器, mutex, mutual exclusion
+    * 任意时刻，只允许一个线程访问某些数据
+    * 为了访问互斥器中的数据，线程首先需要通过获取互斥器的锁(lock)来表明其希望访问数据
+        * 锁是互斥器的部分数据结构
+        * 锁可以记录谁有数据的排他访问权
+* `Mutex<T>`的API
+    * `Mutex<T>`是一个智能指针
+    * 在单线程上下文使用互斥器
+        * 使用`new`来创建一个`Mutex<T>`
+        * 使用`lock`方法获取锁，以访问互斥器中的数据
+            * 该调用会阻塞当前线程，**直到拥有锁为止**
+            * `lock`方法会返回一个`MutexGuard`的智能指针
+                * 该指针实现了`Deref`，来指向内部数据
+                * 该指针实现了`Drop`，当`MutexGuard`**离开作用域时自动释放锁**
+        * 如果另一个线程拥有锁，并且那个线程panic了，则lock调用会失败
+            * 该情况下，没有线程能够再获取锁，
+        * 如果获取了锁，就可以将返回值视为一个：**内部数据的可变引用**
+        ```rust
+        use std::sync::Mutex;
+
+        fn main() {
+            let m = Mutex::new(5);
+
+            {
+                let mut num = m.lock().unwrap();
+                *num = 6;
+            }
+
+            println!("m = {:?}", m);
+        }
+        ```
+* 不能直接将互斥锁通过move移动到某个线程中，会导致其他线程无法使用
+* 多线程和多所有权
+    * 原子引用计数`Arc<T>` (atomically reference counted)
+        * 类似`Rc<T>`，可以安全的用于并发环境
+        ```rust
+        use std::sync::{Mutex, Arc};
+        use std::thread;
+
+        fn main() {
+            let counter = Arc::new(Mutex::new(0));
+            let mut handles = vec![];
+
+            for _ in 0..10 {
+                let counter = Arc::clone(&counter);
+                let handle = thread::spawn(move || {
+                    let mut num = counter.lock().unwrap();
+
+                    *num += 1;
+                });
+                handles.push(handle);
+            }
+
+            for handle in handles {
+                handle.join().unwrap();
+            }
+
+            println!("Result: {}", *counter.lock().unwrap());
+        }
+        ```
+
+## 使用Sync和Send的可扩展并发
+[top](#catalog)
+* 内嵌与语言中的两个并发概念：`std::marker`中的`Sync`和`Send`trait
+* 通过Send允许在线程间转移所有权
+    * `Send`trait表明类型的所有权可以在线程间传递
+    * 几乎所有的Rust类型都是Send的
+        * 不包括`Rc<T>`
+            * 因为如果克隆了`Rc<T>`并将克隆的所有权转移到另一个线程，这两个线程可能同时更新引用计数，导致计数的更新不正确
+    * 任何由Send类型组成的类型也会自动被标记为Send
+* `Sync`允许多线程访问
+    * 实现了`Sync`trait的类型可以安全的在多个线程中拥有其值的引用
+    * 对于任意类型T，如果&T是Send，T就是Sync的
+    * 任何由Sync类型组成的类型也会自动被标记为Sync
+    * `Rc<T>`、`RefCell<T>`、`Cell<T>`不是Sync的
+* 手动实现Send和Sync是不安全的
+    * 通常不需要手动实现Send和Sync，因为Send和Sync的类型组成的类型，自动被标记为Send和Sync
+    * Send和Sync是标记trait，甚至不需要实现任何方法，只是用来加强并发相关的不可变性的
+    * 手动实现这些标记trait涉及到编写不安全的Rust代码
+
+# 面向对象特性
+## 为使用用不同类型的值而设计的trait对象
+[top](#catalog)
+* trait对象要求对象安全
+    * 只有对象安全的trait才可以组成trait对象
+    * 对象安全的trait的两条规则
+        * 返回值类型不为`Self`
+            * `Self`是要实现的trait或方法的类型的别名
+            * 因为一旦有了trait对象，就无法确定该trait的具体类型是什么了
+            * 如果trait方法返回具体的`Self`类型，但是trait对象忘记了其真正的类型，那么不可能使用已经忘却的原始具体类型
+        * 方法没有任何泛型类型参数
+            * 对于泛型类型参数，使用trait时，会放入具体的类型参数，这个具体类型变成了实现该trait的类型的一部分
+            * 当使用trait对象时具体类型被抹去了，所以无法得知放入泛型参数类型的类型是什么
+    * 违反两条规则的示例：标准库的`Clone`trait
+        ```rust
+        pub trait Clone {
+            fn clone(&self) -> Self;
+        }
+        ```
+## 面向对象设计模式的实现
+[top](#catalog)
 
 
+# 模式匹配
 ## 所有可能会用到模式的位置
+[top](#catalog)
 * 需要匹配的内容需要写在前边，但是match除外
 * match
     * match必须是穷尽的
@@ -3418,7 +4100,8 @@
         }
         ```
 
-## Refutability可反驳性：模式是否会匹配失败
+## Refutability可反驳性--模式是否会匹配失败
+[top](#catalog)
 * 模式的两种形式
     * refutable(可反驳的)
         * 对某些值进行匹配可能会失败的模式
@@ -3453,6 +4136,7 @@
     * **允许将不可反驳模式用于只有一个分支的match**，不过可以使用`let`语句替代，并且这中做法不是特别有用
 
 ## 所有模式的语法
+[top](#catalog)
 * 匹配字面值
     * 用途：代码得到某个具体值时进行的操作 
     ```rust
@@ -3813,3 +4497,26 @@
             },
         }
         ```
+
+
+# 标准库提供的类型
+## Range
+## 可派生trait
+## 读取参数值
+* `std::env::args`
+    * 该函数会返回一个命令行参数的**迭代器(iterator)**
+    * 第一个参数为二进制文件的路径
+* 迭代器
+    * 迭代器生成一系列的值
+    * 可以在迭代器上调用`collect`方法将其转换为一个集合，比如包含所有迭代器产生元素的`vector`
+
+* `Box<dyn Error>`
+    * dyn(dynamic):无需指定具体将会返回的值的类型。这提供了在不同的错误场景可能有不同类型的错误返回值的灵活性
+
+* println!()
+    * `{}`:使用Display输出格式
+    * `{:?}`:使用Debug的输出格式，需要有注解`#[derive(Debug)]`
+    * `{:#?}`:使用Debug的输出格式，输出的形式比`{:?}`更易读，需要有注解`#[derive(Debug)]`
+    
+* trait的关联类型:`type Item`,`Self::Item`
+
