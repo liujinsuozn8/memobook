@@ -3324,3 +3324,492 @@
     
 * trait的关联类型:`type Item`,`Self::Item`
 
+
+## 所有可能会用到模式的位置
+* 需要匹配的内容需要写在前边，但是match除外
+* match
+    * match必须是穷尽的
+    * `_`可以匹配所有情况，不会绑定任何变量
+    ```rust
+    match VALUE {
+        PATTERN => EXPRESSION,
+        PATTERN => EXPRESSION,
+        PATTERN => EXPRESSION,
+    }
+    ```
+* `if let`表达式
+    * 组合`if let`，`else if`，`else if let`，`else`
+    * 不能将两个条件组合为`if let Ok(age) = age && age > 30`，因为我们希望与30进行比较的被覆盖的`age`直到大括号开始的新作用域才是有效的。
+    * `if let`的缺点是：编译器不会进行穷尽性检查
+    ```rust
+    fn main() {
+        let favorite_color: Option<&str> = None;
+        let is_tuesday = false;
+        let age: Result<u8, _> = "34".parse();
+
+        if let Some(color) = favorite_color {
+            println!("Using your favorite color, {}, as the background", color);
+        } else if is_tuesday {
+            println!("Tuesday is green day!");
+        } else if let Ok(age) = age {
+            if age > 30 {
+                println!("Using purple as the background color");
+            } else {
+                println!("Using orange as the background color");
+            }
+        } else {
+            println!("Using blue as the background color");
+        }
+    }
+    ```
+* `while let`条件循环
+    * 只要条件匹配就一直循环
+    ```rust
+    let mut stack = Vec::new();
+
+    stack.push(1);
+    stack.push(2);
+    stack.push(3);
+
+    //返回None时，循环停止
+    while let Some(top) = stack.pop() {
+        println!("{}", top);
+    }
+    ```
+* for循环
+    * 通过for来获取模式
+        ```rust
+        let v = vec!['a', 'b', 'c'];
+
+        // 使用模式来结构元祖
+        for (index, value) in v.iter().enumerate() {
+            println!("{} is at index {}", value, index);
+        }
+        ```
+* let语句
+    * let的赋值就是一种模式：`let PATTERN = EXPRESSION;`
+        * `let x = 5;`,这个模式表示：将匹配到的值绑定到变量`x`
+            * 因为名称`x`是整个模式，这个模式实际上等于:将任何值绑定到变量 x，不管值是什么
+    * 使用let和模式来解构元祖
+        * 可以将这个元组模式看作是3个独立的变量模式结合在一起
+        ```rust
+        let (x, y, z) = (1, 2, 3);
+        ```
+    * 如果元素的数量与元组的数量不匹配，**则整个类型不匹配**，并且会引发编译异常
+        ```rust
+        let (x, y) = (1, 2, 3);
+        ```
+* 函数参数
+    * 基本的模式使用:参数x就是一个模式
+        ```rust
+        fn foo(x: i32) { //函数获取一个i32类型的参数
+            // 代码
+        }
+        ```
+    * 在函数参数中匹配元组
+        ```rust
+        fn print_coordinates(&(x, y): &(i32, i32)) {
+            println!("Current location: ({}, {})", x, y);
+        }
+
+        fn main() {
+            let point = (3, 5);
+            print_coordinates(&point);
+        }
+        ```
+
+## Refutability可反驳性：模式是否会匹配失败
+* 模式的两种形式
+    * refutable(可反驳的)
+        * 对某些值进行匹配可能会失败的模式
+        * 如`if let Some(x) = a_value`，如果`a_value`的值是`None`而不是`Some`，则`Some(x)`无法匹配
+    * irrefutable(不可反驳的)
+        * 能匹配任何传递的可能值的模式
+        * 如`let x = ....;`，无论右边是什么，`x`都能匹配，所以不可能会失败
+* **let语句、函数参数、for循环**只能接受**不可反驳的模式**,如果是可反驳的，即可以匹配失败，则无法进行有意义的处理
+* `if let`、`while let`表达式被限制为只能**接受可反驳的模式**，因为它们需要处理可能的失败
+* 在不可反驳的模式中使用可反驳的模式
+    * let本身是不可反驳模式，但是`Some(x)`是可反驳模式，会引发编译异常
+        * 如果some_option_value是None，则不会匹配`Some(x)`,表名这是个可反驳模式
+        ```rust
+        let Some(x) = some_option_value;
+        ```
+    * 修复错误使用的模式
+        * 使用`if let`转化为可反驳模式
+        ```rust
+        if let Some(x) = some_option_value{
+            ...
+        }
+        ```
+* 在可反驳模式中使用不可反驳模式
+    * 会引发编译异常
+    ```rust
+    if let x = 5 {
+        ...
+    }
+    ```
+* 匹配分支时，必须使用可反驳模式
+    * 最后一个分支需要使用**能匹配任何剩余值的不可反驳模式**
+    * **允许将不可反驳模式用于只有一个分支的match**，不过可以使用`let`语句替代，并且这中做法不是特别有用
+
+## 所有模式的语法
+* 匹配字面值
+    * 用途：代码得到某个具体值时进行的操作 
+    ```rust
+    let x = 1;
+
+    match x {
+        1 => println!("one"),
+        2 => println!("two"),
+        3 => println!("three"),
+        _ => println!("anything"),
+    }
+    ```
+* 匹配变量名
+    * match会开始一个新的作用域，match中作为模式的一部分声明的变量会覆盖外部的同名变量
+    ```rust
+    fn main() {
+        let x = Some(5);
+        let y = 10;
+
+        match x {
+            Some(50) => println!("Got 50"),
+            Some(y) => println!("Matched, y = {:?}", y),
+            _ => println!("Default case, x = {:?}", x),
+        }
+
+        println!("at the end: x = {:?}, y = {:?}", x, y);
+    }
+    ```
+* 多个模式
+    * match中可以使用`|`语法来匹配多个模式
+    * `|`表示或(`or`)
+    ```rust
+    let x = 1;
+
+    // 输出：one or two
+    match x {
+        1 | 2 => println!("one or two"),
+        3 => println!("three"),
+        _ => println!("anything"),
+    }
+    ```
+* 通过`...`匹配值的范围
+    * `...`允许匹配一个**闭区间**范围内的值(整数值)
+        * 范围只允许使用**数字或char**
+        * 因为编译器会在编译时检查范围不空，**数字或char是Rust中仅有的可以判断范围是否为空的类型**
+    * 比`|`更加方便
+    * 使用数字范围
+        ```rust
+        let x = 5;
+
+        match x {
+            // 匹配的范围是[1，5]中的所有整数
+            1 ... 5 => println!("one through five"),
+            _ => println!("something else"),
+        }
+        ```
+    * 使用字符范围
+        ```rust
+        let x = 'c';
+
+        //输出：early ASCII letter
+        match x {
+            'a' ... 'j' => println!("early ASCII letter"),
+            'k' ... 'z' => println!("late ASCII letter"),
+            _ => println!("something else"),
+        }
+        ```
+* 解构并分解值
+    * 可以使用模式来解构结构体、枚举、元组和引用，以便使用这些值的的不同部分
+    * 解构结构体
+        * 通过带有模式的let语句将结构体分解
+            ```rust
+            struct Point {
+                x: i32,
+                y: i32,
+            }
+
+            fn main() {
+                let p = Point { x: 0, y: 7 };
+
+                let Point { x: a, y: b } = p;
+                assert_eq!(0, a);
+                assert_eq!(7, b);
+            }
+            ```
+        * 使用结构体字段简写来解构结构体字段
+            * 通过`Point { x, y }`创建了变量`x`和`y`与结构体变量`p`中的字段相匹配
+            ```rust
+            struct Point {
+                x: i32,
+                y: i32,
+            }
+
+            fn main() {
+                let p = Point { x: 0, y: 7 };
+
+                let Point { x, y } = p;
+                assert_eq!(0, x);
+                assert_eq!(7, y);
+            }
+            ```
+        * 将字面值作为结构体模式的一部分进行解构，而不是为所有的字段创建变量
+            ```rust
+            fn main() {
+                let p = Point { x: 0, y: 7 };
+
+                match p {
+                    Point { x, y: 0 } => println!("On the x axis at {}", x),
+                    Point { x: 0, y } => println!("On the y axis at {}", y),
+                    Point { x, y } => println!("On neither axis: ({}, {})", x, y),
+                }
+            }
+            ```
+    * 解构枚举
+        * 解构枚举的模式需要对应枚举所定义的存储数据的方式
+            * 结构包含不同类型值成员的枚举
+            ```rust
+            enum Message {
+                Quit,
+                Move { x: i32, y: i32 },
+                Write(String),
+                ChangeColor(i32, i32, i32),
+            }
+
+            fn main() {
+                let msg = Message::ChangeColor(0, 160, 255);
+
+                //输出：Change the color to red 0, green 160, and blue 255
+                match msg {
+                    Message::Quit => {
+                        println!("The Quit variant has no data to destructure.")
+                    },
+                    Message::Move { x, y } => {
+                        println!(
+                            "Move in the x direction {} and in the y direction {}",
+                            x,
+                            y
+                        );
+                    }
+                    Message::Write(text) => println!("Text message: {}", text),
+                    Message::ChangeColor(r, g, b) => {
+                        println!(
+                            "Change the color to red {}, green {}, and blue {}",
+                            r,
+                            g,
+                            b
+                        )
+                    }
+                }
+            }
+            ```
+    * 解构嵌套的结构体和枚举
+        ```rust
+        enum Color {
+            Rgb(i32, i32, i32),
+            Hsv(i32, i32, i32)，
+        }
+
+        enum Message {
+            Quit,
+            Move { x: i32, y: i32 },
+            Write(String),
+            ChangeColor(Color),
+        }
+
+        fn main() {
+            let msg = Message::ChangeColor(Color::Hsv(0, 160, 255));
+
+            //输出：Change the color to hue 0, saturation 160, and value 255",
+            match msg {
+                Message::ChangeColor(Color::Rgb(r, g, b)) => {
+                    println!(
+                        "Change the color to red {}, green {}, and blue {}",
+                        r,
+                        g,
+                        b
+                    )
+                },
+                Message::ChangeColor(Color::Hsv(h, s, v)) => {
+                    println!(
+                        "Change the color to hue {}, saturation {}, and value {}",
+                        h,
+                        s,
+                        v
+                    )
+                }
+                _ => ()
+            }
+        }
+        ```
+    * 解构结构体和元组
+        ```rust
+        let ((feet, inches), Point {x, y}) = ((3, 10), Point { x: 3, y: -10 });
+        ```
+* 忽略模式中的值
+    * 使用`_`来忽略整个值
+        * 可以用于：实现某个trait时，只需要具体的函数签名，但不需要某个具体的参数。
+            * 这样可以避免编译器报告有未使用的函数参数
+        ```rust
+        //忽略了方法的第一个参数
+        fn foo(_: i32, y: i32) {
+            println!("This code only uses the y parameter: {}", y);
+        }
+
+        fn main() {
+            foo(3, 4);
+        }
+        ```
+    * 使用嵌套的`_`忽略部分值
+        * 使用`_`忽略Some中的值，只匹配Some这种模式
+        * 使用`_`时，Some中的值不会移动
+            ```rust
+            let mut setting_value = Some(5);
+            let new_setting_value = Some(10);
+
+            match (setting_value, new_setting_value) {
+                (Some(_), Some(_)) => {
+                    println!("Can't overwrite an existing customized value");
+                }
+                _ => {
+                    setting_value = new_setting_value;
+                }
+            }
+
+            println!("setting is {:?}", setting_value);
+
+            //输出：
+            //Can't overwrite an existing customized value
+            //setting is Some(5)
+            ```
+        * 在一个模式中使用多个`_`来忽略特定的值
+            ```rust
+            let numbers = (2, 4, 8, 16, 32);
+
+            match numbers {
+                (first, _, third, _, fifth) => {
+                    println!("Some numbers: {}, {}, {}", first, third, fifth)
+                },
+            }
+
+            //输出：Some numbers: 2, 8, 32
+            ```
+    * 通过在名字前以一个`_`开头来忽略未使用的变量
+        * `_x`不会引发编译异常、编译器会将它忽略，`y`会引发编译异常
+            ```rust
+            fn main() {
+                let _x = 5;
+                let y = 10;
+            }
+            ```
+        * `_x`这样的以`_`开头的变量仍然会绑定变量，`_`则不会绑定变量
+    * 用`..`忽略剩余值
+        * 对于有多个部分的值，可以用`..`来只使用部分并忽略剩余值
+        * 可以将`..`理解为多个连续的`_`
+        * 忽略结构体中的值
+            ```rust
+            struct Point {
+                x: i32,
+                y: i32,
+                z: i32,
+            }
+
+            let origin = Point { x: 0, y: 0, z: 0 };
+
+            match origin {
+                Point { x, .. } => println!("x is {}", x),
+                //等同于
+                //Point { x, y:_, z:_ } => println!("x is {}", x),
+            }
+            ```
+        * 忽略元组中的值
+            ```rust
+            fn main() {
+                let numbers = (2, 4, 8, 16, 32);
+
+                match numbers {
+                    (first, .., last) => {
+                        println!("Some numbers: {}, {}", first, last);
+                    },
+                }
+            }
+            ```
+        * 使用`..`必须是无歧义的，如果期望匹配和希望忽略的值是不明确的，Rust会报错
+            * Rust不能确定`second`之前应该忽略多少个值，以及在`second`之后应该忽略多少个值
+            ```rust
+            fn main() {
+                let numbers = (2, 4, 8, 16, 32);
+
+                match numbers {
+                    (.., second, ..) => {
+                        println!("Some numbers: {}", second)
+                    },
+                }
+            }
+            ```
+
+* 匹配守卫
+    * 匹配守卫是`match`分支之后的额外`if`条件
+    * 匹配守卫的条件必须被满足才能选择此分支
+        ```rust
+        let num = Some(4);
+
+        //输出：less than five: 4
+        match num {
+            Some(x) if x < 5 => println!("less than five: {}", x),
+            Some(x) => println!("{}", x),
+            None => (),
+        }
+        ```
+    * 使用匹配守卫来解决变量覆盖的问题
+        ```rust
+        fn main() {
+            let x = Some(5);
+            let y = 10;
+
+            //输出
+            //Default case, x = 5
+            //at the end: x = Some(5), y = 10
+            match x {
+                Some(50) => println!("Got 50"),
+                Some(n) if n == y => println!("Matched, n = {:?}", n),
+                _ => println!("Default case, x = {:?}", x),
+            }
+
+            println!("at the end: x = {:?}, y = {:?}", x, y);
+        }
+        ```
+    * 匹配守卫与多个模式的结合
+        * `4 | 5 | 6 if y`可以理解为：`(4 | 5 | 6) if y`
+        ```rust
+        let x = 4;
+        let y = false;
+
+        match x {
+            4 | 5 | 6 if y => println!("yes"),
+            _ => println!("no"),
+        }
+        ```
+
+* `@`绑定
+    * `@`运算符允许创建一个变量的同时**测试其是否匹配模式**
+        ```rust
+        enum Message {
+            Hello { id: i32 },
+        }
+
+        let msg = Message::Hello { id: 5 };
+
+        match msg {
+            Message::Hello { id: id_variable @ 3...7 } => {
+                println!("Found an id in range: {}", id_variable)
+            },
+            Message::Hello { id: 10...12 } => {
+                println!("Found an id in another range")
+            },
+            Message::Hello { id } => {
+                println!("Found some other id: {}", id)
+            },
+        }
+        ```
