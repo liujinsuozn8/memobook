@@ -136,3 +136,15 @@
                 </mirrors>
             </settings>
             ```
+* 从git拉取项目
+    * File-->New-->Project from version control--->git
+* 添加SDKS
+    * File-->Project Structure
+* 使从git上克隆的java项目可用
+    * File-->Project Structure
+        * Projcet：添加out目录，SDK
+        * Modules：设置src路径
+* 排除某个目录，不进行index
+    * 右键 --> Mark Directory as --> Excluded
+* 调整java的内存使用
+    * idea.vmoptions
