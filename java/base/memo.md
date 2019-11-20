@@ -905,19 +905,35 @@ public class CommandPara {
 
 ## 对象的序列化
 [top](#catalog)
-* `内存中的Java对象 <--> 平台无关的二进制流` 之间转化，可以保存到磁盘上或通过网络传播
-* 可以将任何实现了Serializable接口的对象转化为字节数据，使用器在保存和传输时可以被还原
+* 部分参考：
+    * `https://www.jianshu.com/p/e554c787c286`
+* 序列化：java-->字节序列(平台无关的二进制流)
+* 反序列化：字节序列-->java
+* 序列化之后，可以保存到磁盘上或通过网络传播
 * JavaEE --> RMI(Remote Method Invoke远程方法调用) --> 序列化
-    * 序列化时RMI过程的参数和返回值都必须实现的机制，时JavaEE的基础
-* 类必须实现`Serializable`或`Externalizable`接口，否则会引发NotSerializableException异常
-* private static final long serialVersionUID;
+    * 序列化是RMI过程的参数和返回值都必须实现的机制，时JavaEE的基础
+* 序列化的应用场景
+    * 两个Java进程进行通信(如远程通信)时，需要通过序列化和反序列化来传送对象
+        * 发送方序列化，在通信信道(如网络)上传送字节序列
+        * 接收方反序列化，从字节序列中还原Java对象
+    * 数据传输
+    * 数据的存储与恢复
+* 序列化的实现方法
+    * 实现序列化接口`Serializable`，该接口本身是一个空接口
+    * 实现接口`Externalizable`
+        * 该接口继承了`Serializable`，是`Serializable`的扩展
+        * 可以做序列化约束：哪些属性可以做序列化，哪些属性可以做反序列化
+    * 如果没有实现这两个接口，会引发NotSerializableException异常
+
+* 序列化**版本标识**符常量：`private static final long serialVersionUID = ...;`
     * 表示序列化版本标识符的静态变量
         * 用来表明类的不同版本间的兼容性(对序列化对象进行版本控制)
         * 序列化时，用serialVersionUID验证版本的一致性
         * 反序列化时，jvm将字节流中的serialVersionUID与本地对应实体类的serialVersionUID进行比较，**如果相同则一致，进行反序列化；不一致，则引发InvalidCastException**
-    * 如果没有显示定义该常量，它的只是运行时根据类内部细节自动生成的，**如果类的实例变量发生变化，则serialVersionUID会变化**
-* 如果类的成员变量**不是基本数据类型或String，而是其他引用类型，则该类型必须是可序列化的**，否则无法序列化
+    * 如果没有显示定义该常量，它的值是运行时根据类内部细节自动生成的，**如果类的实例变量发生变化，则serialVersionUID会变化**
+* 如果类的成员变量**不是基本数据类型或String，而是其他引用类型，则该类型必须是可序列化的，否则无法序列化**
 * 对象流ObjectInputStream、ObjectOutputStream不能序列化static和transient修饰的成员变量
+    - <a href="#serializableSample">实例</a>
 
 
 ## object
@@ -2517,7 +2533,7 @@ public void method(){
     * 使用时需要套接InputStream、OutputStream及其子类
 * 将java中的对象写入数据源，也可以从数据源中读取
 * 对象流ObjectInputStream、ObjectOutputStream不能序列化static和transient修饰的成员变量
-* 序列化与反序列化
+* 序列化与反序列化<span id="serializableSample"></span>
     ```java
     class Person implements Serializable {
         String name;
@@ -2570,7 +2586,7 @@ public void method(){
             FileInputStream fis = new FileInputStream("...");
             ois = new ObjectInputStream(fis);
 
-            Person p1 = (Person) ois.readObject();
+            Person p1 = (Person) ois.readObject(); //将返回的Object对象进行强转
             System.out.println(p1);
             Person p2 = (Person) ois.readObject();
             System.out.println(p2);
