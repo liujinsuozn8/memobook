@@ -941,19 +941,26 @@ public class CommandPara {
         System.out.print("XXXX" + d.toString());
         ```
         * 基本数据类型转换为String型时，调用了**对应包装类**的toString()方法
-* `==`与equals
-    * `==`：基本类型，比值；引用类型，比内存地址
-    * equals，**只能比较引用类型**，没有被重写时，与`==`相同。
-        * equals已经被重写的一些特例
-            * String，String的equals方法被重写过，是直接比较两个对象的内容
-            * 其他特例：File，Date，包装类，这些类**比较类型及内容**
-        * 重写equals的规则
-            * 对称：x.equals(y) -->true, y.equals(x) -->true
-            * 自反：x.equals(x) -->true
-            * 传递：x.equals(y) -->true, y.equals(z) -->true，z.equals(x) --> true
-            * 每次的比较结果都相同
-            * x.equal(null)，**永远都返回false**
-            * x.equal(和x不同类型的对象)，**永远都返回false**
+* equals
+    * 默认的equals实现，即默认equals与`==`相同
+        ```java
+        public boolean equals(Object obj) {
+            return (this == obj);
+        }
+        ```
+    * `==`与equals
+        * `==`：基本类型，比值；引用类型，比内存地址
+        * equals，**只能比较引用类型**，没有被重写时，与`==`相同。
+            * equals已经被重写的一些特例
+                * String，String的equals方法被重写过，是直接比较两个对象的内容
+                * 其他特例：File，Date，包装类，这些类**比较类型及内容**
+            * 重写equals的规则
+                * 对称：x.equals(y) -->true, y.equals(x) -->true
+                * 自反：x.equals(x) -->true
+                * 传递：x.equals(y) -->true, y.equals(z) -->true，z.equals(x) --> true
+                * 每次的比较结果都相同
+                * x.equal(null)，**永远都返回false**
+                * x.equal(和x不同类型的对象)，**永远都返回false**
 
 # 应用
 ## 字符串
@@ -994,16 +1001,22 @@ public class CommandPara {
     ```
 * 字符串的内存结构
     * 字面量的方式创建， 如：`String s = "AA";`
-        * 字符串会存储在** 方法区的字符串常量池(元空间) **中
+        * 字符串会存储在**方法区的字符串常量池--元空间**中
         * String对象会指向字符串常量池中的某一个
         * 如果初始化String时，常量池中已经有了同样的数据，则不会开辟新的空间来创建数据，而是直接指向已有的数据
+        * 如果通过**字面量变量**来创建时，也会指向字符串常量池中的某一个
+            ```java
+            String s1 = "aa";
+            String s2 = s1;
+            System.out.println(s1 == s2);//true
+            ```
     * new实例对象的方式创建：`String s = new String("AA")`
         * new创建的对象，会在堆空间中开辟内存，然后堆内存中的数据再**指向字符串常量池**中的数据
     * 拼接式创建：`String s2 = s1 + "aa";`,`String s2 = "bb" + "aa";`
         * 常量和常量的**拼接结果在字符串常量池**，且常量池中不会存在相同内容的常量
         * 只要有一个是变量，字符串对象就在堆中
             * **<label style="color:red">如果变量使用final修饰，即常量时，字符串对象仍然在字符串常量池中</label>**
-        * 如果拼接的结果调用`intern()`方法, 返回值就在常量池中
+        * <label style="color:red">如果拼接的结果调用`intern()`方法, 返回值就在常量池中</label>
         * 拼接式创建字符串的比较
             ```java
             String s1 = "aa";
@@ -1054,6 +1067,7 @@ public class CommandPara {
             String name;
 
             public A(String name) {
+                // 可以理解为通过：字面量变量来创建字符串，this.name仍然属于字面量
                 this.name = name;
             }
         }
@@ -1070,27 +1084,27 @@ public class CommandPara {
         ```
     * ![stringVal](./imgs/stringVal.png)
 * String常用方法
-    * int length(): 返回字符串的长度，`return value.length;`
-    * char charAt(int index): 返回某索引处的字符 `return value[index];`
-    * boolean isEmpty(): 判断是否是空字符串：`return value.length == 0;`
-    * String toLowerCase(): 使用默认语言环境，将String中的所有字符转换为小写
-    * String toUpperCase(): 使用默认语言环境，将String中的所有字符转换为大写
-    * String trim(): 删除首位的空格，并返回一个字符串
+    * `int length()`: 返回字符串的长度，`return value.length;`
+    * `char charAt(int index)`: 返回某索引处的字符 `return value[index];`
+    * `boolean isEmpty()`: 判断是否是空字符串：`return value.length == 0;`
+    * `String toLowerCase()`: 使用默认语言环境，将String中的所有字符转换为小写
+    * `String toUpperCase()`: 使用默认语言环境，将String中的所有字符转换为大写
+    * `String trim()`: 删除首位的空格，并返回一个字符串
         * 如果首或尾部有空格则返回一个新的字符串对象，如果首或尾部没有空格，则返回该字符串本身
-    * boolean equals(Object obj):比较字符串的内容是否相同
-    * boolean equalsIgnoreCase(String anotherString):比较字符串内容，忽略大小写
-    * String concat(String str):连接两个字符串，并返回一个新的字符串，先当相当于`+`(**并且返回的也是一个堆中的对象**)
-    * int compareTo(String  anotherString):
+    * `boolean equals(Object obj)`:比较字符串的内容是否相同
+    * `boolean equalsIgnoreCase(String anotherString)`:比较字符串内容，忽略大小写
+    * `String concat(String str)`:连接两个字符串，并返回一个新的字符串，先当相当于`+`(**并且返回的也是一个堆中的对象**)
+    * `int compareTo(String  anotherString)`:
         * 接口`Comparable`的实现方法
         * 比较两个字符串**内容**的大小，返回的是字符码值的减法结果
-    * String substirng(int beginIndex):返回一个新字符串，范围：[beginIndex, 最后一个字符]
-    * String substirng(int beginIndex, int endIndex):返回一个新字符串，范围：[beginIndex, endIndex)
-    * boolean endsWith(String suffix): 字符串是否以指定后缀结束
-    * boolean startsWith(String prefix): 字符串是否以指定前缀开始
-    * boolean startsWith(String prefix, int toffset): 从toffset开始是否以prefix开始
-    * boolean contains(CharSequence s):是否包含指定char序列
-    * int indexOf(String str): 返回指定字符串第一次出现的索引，未找到返回-1
-    * int indexOf(String str, int fromIndex): 从fromIndex开始，str第一次出现的索引，未找到返回-1
+    * `String substirng(int beginIndex)`:返回一个新字符串，范围：[beginIndex, 最后一个字符]
+    * `String substirng(int beginIndex, int endIndex)`:返回一个新字符串，范围：[beginIndex, endIndex)
+    * `boolean endsWith(String suffix)`: 字符串是否以指定后缀结束
+    * `boolean startsWith(String prefix)`: 字符串是否以指定前缀开始
+    * `boolean startsWith(String prefix, int toffset)`: 从toffset开始是否以prefix开始
+    * `boolean contains(CharSequence s)`:是否包含指定char序列
+    * `int indexOf(String str)`: 返回指定字符串第一次出现的索引，未找到返回-1
+    * `int indexOf(String str, int fromIndex)`: 从fromIndex开始，str第一次出现的索引，未找到返回-1
 		* **如果fromIndex > str.length(), 不会引发异常, 返回-1**
 		* 统计一个字符串在另一个字符串中出现的次数
 			```java
@@ -1115,21 +1129,21 @@ public class CommandPara {
 				int result = findCount(str, sub)
 			}
 			```
-    * int lastIndexOf(String str):从右开始，指定字符串第一次出现的索引
+    * `int lastIndexOf(String str)`:从右开始，指定字符串第一次出现的索引
         * 和indexOf结果一样的情况：只包含一个str，不包含str
-    * int lastIndexOf(String str, int fromIndex):从fromIndex反向查找，指定字符串第一次出现的索引
-    * String replace(char oldChar, char newChar):用newChar替换oldChar，返回一个新字符串
-    * String replace(CharSequence target, CharSequence replacement):用replacement替换target，返回一个新字符串
-    * String repalceAll(String regex, String replacement):使用replacement替换所有匹配正则表达式的子字符串
-    * String repalceFirst(String regex, String replacement):使用replacement替换匹配正则表达式的第一个子字符串
-    * boolean matches(String regex): 检查字符串是否匹配正则表达式regex
-    * String[] split(String regex):根据正则表达式拆分字符串
+    * `int lastIndexOf(String str, int fromIndex)`:从fromIndex反向查找，指定字符串第一次出现的索引
+    * `String replace(char oldChar, char newChar)`:用newChar替换oldChar，返回一个新字符串
+    * `String replace(CharSequence target, CharSequence replacement)`:用replacement替换target，返回一个新字符串
+    * `String repalceAll(String regex, String replacement)`:使用replacement替换所有匹配正则表达式的子字符串
+    * `String repalceFirst(String regex, String replacement)`:使用replacement替换匹配正则表达式的第一个子字符串
+    * `boolean matches(String regex)`: 检查字符串是否匹配正则表达式regex
+    * `String[] split(String regex)`:根据正则表达式拆分字符串
         ``` java
         String st2 = "werw|vdgd|fg|hg";
         String[] st3 = st2.split("\\|");
         // st3 = [werw, vdgd, fg, hg]
         ```
-    * String[] split(String regex, int limit): 根据正则表达式拆分字符串，最多不超过limit，如果超过了，则都放到最后一个元素中
+    * `String[] split(String regex, int limit)`: 根据正则表达式拆分字符串，最多不超过limit，如果超过了，则都放到最后一个元素中
         ``` java
         String st2 = "werw|vdgd|fg|hg";
         String[] st3 = st2.split("\\|",2);
