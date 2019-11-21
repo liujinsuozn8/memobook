@@ -1,7 +1,7 @@
 <span id="catalog"></span>
+
 - [Collection](#collection)
     - [ArrayList](#arrayList)
-
 - [辅助接口和抽象类](#辅助接口和抽象类)
     - [RandomAccess接口](#randomAccess接口)
     - [Cloneable接口](#cloneable接口)
@@ -35,8 +35,8 @@
         * `transient Object[] elementData;`，元素数组
             * 内部构成
                 ```
-                |1|4|5|6|size属性标记的位置|  |  |  |  |
-                0 1 2 3 size             null
+                数组内容 |1|4|5|6|size属性标记的位置|null|null|null|null|
+                index    0 1 2 3 size             
                 ```
         * `private int size;`，elementData数组**已使用**的元素数量
             * 通过`public int size()`获取该属性
@@ -44,7 +44,9 @@
     * 类属性
         * `private static final int DEFAULT_CAPACITY = 10;`，默认的`elementData`初始化容量
         * `private static final Object[] EMPTY_ELEMENTDATA = {};`
+            * 首次扩容为1，后续按照1.5倍扩容
         * `private static final Object[] DEFAULTCAPACITY_EMPTY_ELEMENTDATA = {};`
+            * 首次扩容为10，后续1.5被扩容
 * 构造方法
     * `public ArrayList(int initialCapacity)`
         * 如果初始化时就直到数组的大小，应该使用这种方法来进行初始化
@@ -64,14 +66,7 @@
             }
         }
         ```
-    * `public ArrayList()`
-        * 使用`DEFAULTCAPACITY_EMPTY_ELEMENTDATA`来创建一个空数组:`{}`
-            * 在添加元素时会进行数组扩容
-        ```java
-        public ArrayList() {
-            this.elementData = DEFAULTCAPACITY_EMPTY_ELEMENTDATA;
-        }
-        ```
+
     * `public ArrayList(Collection<? extends E> c)`
         * 使用其他集合来创建数组，集合类型必须是E及其子类
             ```java
@@ -89,7 +84,9 @@
             }
             ```
         * bug:`JDK-6260652`的修复
-            * 问题的原因：`collection.toArray()`和`collection.toArray(new Object[0])`在功能上相同，但是`Arrays.ArrayList`没有遵守规则进行实现
+            * 问题的原因：
+                * `collection.toArray()`和`collection.toArray(new Object[0])`在功能上相同，但是`Arrays.ArrayList`没有遵守规则进行实现
+                    * 应该返回`Object[]`,但是`Arrays.ArrayList.toArray()`会返回`Type[] (某种类型的数组))`
             * 问题的产生
                 * 有两个`ArrayList`
                     * `Arrays.ArrayList`，`Arrays`的内部类
@@ -97,6 +94,7 @@
                 * 两个`ArrayList`的`toArray`在JDK8中实现不同
                     * `Arrays.ArrayList`的实现
                         ```java
+                        private final E[] a;
                         @Override
                         public Object[] toArray() {
                             return a.clone();
@@ -104,14 +102,316 @@
                         ```
                     * `java.util.ArrayList`
                         ```java
-                         public Object[] toArray() {
+                        public Object[] toArray() {
                             return Arrays.copyOf(elementData, size);
                         }
                         ```
-                * 使用`Arrays.ArrayList`之后无法填充其他类型
+                * `public ArrayList(Collection<? extends E> c) `构造中的参数有可能来自于：`Arrays.ArrayList`
+                    * 由于`Arrays.ArrayList.toArray()`的返回值类型不是`Object[].class`
+                        * 在没有使用泛型的情况下，无法再添加其他类型的元素
+                        * 会导致`ArrayList.toArray()`的返回值实际上不是`Object[]`????
                     ```java
-                    
+                    @Test
+                    public void arraysToArrayTest(){
+                        List<String> a = Arrays.asList("aa", "bb", "cc"); 
+                        List b = new ArrayList(a);
+                        System.out.println(b.toArray().getClass());
+                        b.add("ddd");
+                        b.add(100);
+                    }
                     ```
+            * JDK9及以后的`Arrays.ArrayList.toArray()`
+                ```java
+                @Override
+                public Object[] toArray() {
+                    return Arrays.copyOf(a, a.length, Object[].class);
+                }
+                ```
+            * bug解决之后产生的其他问题
+                * bug解决之前的代码
+                    * 由于`Arrays.asList("a", "b", "c")`中的参数是`String`型，所以内部生成的也是`Arrays.ArrayList<String>`类型
+                    * 执行`toArray()`后，虽然返回的是`Object[]`，但是实际上是`String[]`
+                    ```java
+                    List<String> list = Arrays.asList("a", "b", "c");
+                    String[] array = (String[]) list.toArray();
+                    ```
+                * bug解决之后的代码
+                    ```java
+                    List<String> list = Arrays.asList("a", "b", "c");
+                    String[] array = list.toArray(new String[0]);
+                    ```
+
+    * `public ArrayList()`
+        * 使用`DEFAULTCAPACITY_EMPTY_ELEMENTDATA`来创建一个空数组:`{}`
+            * 在添加元素时会进行数组扩容
+        * `ArrayList`考虑到节省内存，一些场景下仅创建了一个空数组，**在首次添加元素时**，会使用`DEFAULT_CAPACITY`来初始化一个容量为10的数组
+        ```java
+        public ArrayList() {
+            this.elementData = DEFAULTCAPACITY_EMPTY_ELEMENTDATA;
+        }
+        ```
+* 添加元素
+    * 添加单个元素
+        * 直接添加元素
+            * 源码
+                ```java
+                @Override
+                public boolean add(E e) {
+                    modCount++;
+                    add(e, elementData, size);
+                    
+                    return true;
+                }
+
+                private void add(E e, Object[] elementData, int s) {
+                    if (s == elementData.length)
+                        elementData = grow();
+                    elementData[s] = e;
+                    size = s + 1;
+                }
+                ```
+            * 添加的步骤
+                * `modCount++`,增加数组的修改次数
+                    * `modCount`来源与父类`AbstractList`，用于记录数组修改的次数
+                * `if (s == elementData.length)`，如果当前数组`elementData`已经用完，则进行扩容
+                * 添加元素，并增加数组中已使用的元素数量
+        * 在指定index位置上添加元素
+            * 源码
+                ```java
+                public void add(int index, E element) {
+                    // 校验位置index是否有效
+                    rangeCheckForAdd(index);
+                    // 增加数组的修改次数
+                    modCount++;
+                    
+                    final int s;
+                    Object[] elementData;
+                    // 拷贝数组已经使用的大小，拷贝数组地址
+                    if ((s = size) == (elementData = this.elementData).length)
+                        //如果数组已满，则进行扩容
+                        elementData = grow();
+
+                    // (使用拷贝的方式)移动元素，从elementData的index开始，移动到index+1，共移动s-index个元素
+                    // 数据源:elementData
+                    // 数据源中的数据起始位置:index
+                    // (拷贝)移动的目标数组:elementData
+                    // (拷贝)移动的起始位置:index + 1
+                    // (拷贝)移动的元素数量:s - index
+                    System.arraycopy(elementData, index,
+                                    elementData, index + 1,
+                                    s - index);
+                    // 添加元素到指定位置
+                    elementData[index] = element;
+                    // 数组大小加一
+                    size = s + 1;
+                }
+
+                private void rangeCheckForAdd(int index) {
+                    if (index > size || index < 0)
+                        throw new IndexOutOfBoundsException(outOfBoundsMsg(index));
+                }
+
+                private String outOfBoundsMsg(int index) {
+                    return "Index: "+index+", Size: "+size;
+                }
+                ```
+    * 添加多个元素
+        * 直接添加多个元素
+            * 源码
+                ```java
+                public boolean addAll(Collection<? extends E> c) {
+                    // 转成 a 数组
+                    Object[] a = c.toArray();
+                    // 增加修改次数
+                    modCount++;
+                    // 如果 a 数组大小为 0 ，返回 ArrayList 数组无变化
+                    int numNew = a.length;
+                    if (numNew == 0)
+                        return false;
+                    // 如果 elementData 剩余的空间不够，则进行扩容。要求扩容的大小，至于能够装下 a 数组。
+                    Object[] elementData;
+                    final int s;
+                    if (numNew > (elementData = this.elementData).length - (s = size))
+                        elementData = grow(s + numNew);
+                    // 将 a 复制到 elementData 从 s 开始位置
+                    System.arraycopy(a, 0, elementData, s, numNew);
+                    // 数组大小加 numNew
+                    size = s + numNew;
+                    return true;
+                }
+                ```
+            * 如果剩余空间做足，则进行扩容
+            * 扩容方案：`Max(numNew + oldLength - oldLength, oldLength >> 1) + oldLength`
+                * 小数据量时，是1.5倍扩容
+                * 大数据量时，按照数据的增长扩容，但是扩容后数组仍然是**满的**
+        * 在指定index位置插入多个元素
+            * 源码
+                ```java
+                public boolean addAll(int index, Collection<? extends E> c) {
+                    // 校验位置是否在数组范围内
+                    rangeCheckForAdd(index);
+
+                    // 转成 a 数组
+                    Object[] a = c.toArray();
+                    // 增加数组修改次数
+                    modCount++;
+                    // 如果 a 数组大小为 0 ，返回 ArrayList 数组无变化
+                    int numNew = a.length;
+                    if (numNew == 0)
+                        return false;
+                    // 如果 elementData 剩余的空间不够，则进行扩容。要求扩容的大小，至于能够装下 a 数组。
+                    Object[] elementData;
+                    final int s;
+                    if (numNew > (elementData = this.elementData).length - (s = size))
+                        elementData = grow(s + numNew);
+
+                    // 【差异点】如果 index 开始的位置已经被占用，将它们后移
+                    int numMoved = s - index;
+                    if (numMoved > 0)
+                        System.arraycopy(elementData, index,
+                                        elementData, index + numNew,
+                                        numMoved);
+
+                    // 将 a 复制到 elementData 从 s 开始位置
+                    System.arraycopy(a, 0, elementData, index, numNew);
+                    // 数组大小加 numNew
+                    size = s + numNew;
+                    return true;
+                }
+                ```
+
+* 数组扩容
+    * 扩容的策略
+        * 数组为空
+            * 如果是通过空参构造器初始化的，则先创建一个长度为：10的数组
+            * 如果是`EMPTY_ELEMENTDATA`初始化的, 即通过数量构造，且`数量=0`
+                * oldCapacity = 0
+                * oldCapacity >> 1 = 0
+                * 扩容大小 = minCapacity - oldCapacity + oldCapacity = 1 + 0 + 0 = 1
+        * 数组不为空
+            * 如果是数组内有元素，则按照1.5倍扩容 = (oldCapacity >> 1) + oldCapacity
+    * 根据扩容策略，最少会保证**扩容后比扩容前多1个**，一般情况为**1.5被扩容**
+    ```java
+    private Object[] grow(int minCapacity) {
+        // 保存旧容量
+        int oldCapacity = elementData.length;
+
+        // 扩容策略1
+        // 如果原容量大于 0 ，或者数组不是:DEFAULTCAPACITY_EMPTY_ELEMENTDATA
+        if (oldCapacity > 0 || elementData != DEFAULTCAPACITY_EMPTY_ELEMENTDATA) {
+            // 计算新的数组大小: Max(minCapacity - oldCapacity, oldCapacity >> 1) +　oldCapacity
+            int newCapacity = ArraysSupport.newLength(oldCapacity,
+                    minCapacity - oldCapacity, /* minimum growth */
+                    oldCapacity >> 1           /* preferred growth */);
+
+            // 进行扩容，并拷贝数据
+            return elementData = Arrays.copyOf(elementData, newCapacity);
+        } else {
+            // 扩容策略2
+            // 当前数组是：DEFAULTCAPACITY_EMPTY_ELEMENTDATA ，即通过空参构造的数组，构造一个长度为10的数组
+            return elementData = new Object[Math.max(DEFAULT_CAPACITY, minCapacity)];
+        }
+    }
+
+    private Object[] grow() {
+        return grow(size + 1);
+    }
+    ```
+
+* 数组缩容
+    * 只会在`elementData`有多余空间时执行缩容
+    * 如果数组未被使用，则直接使用`EMPTY_ELEMENTDATA`
+    * 如果数组已被使用，则创建一个大小为`size`的数组，并拷贝数据
+    ```java
+    public void trimToSize() {
+        // 增加修改次数
+        modCount++;
+        // 检查是否有未使用的空间
+        if (size < elementData.length) {
+            elementData = (size == 0)
+              ? EMPTY_ELEMENTDATA // 大小为 0 时，直接使用 EMPTY_ELEMENTDATA
+              : Arrays.copyOf(elementData, size); // 大小大于 0 ，则创建大小为 size 的新数组，将原数组复制到其中。
+        }
+    }
+    ```
+
+* 删除元素
+    * 通过index来删除元素
+        * 在`remove`中先获取要删除的元素，作为返回值返回
+        * 在`fastRemove`中
+            * 如果需要删除的元素在末尾，则直接删除
+            * 如果需要删除的元素不在末尾，则进行元素的移动,然后将末尾的元素删除
+        ```java
+        public E remove(int index) {
+            // 校验 index 不要超过 size
+            Objects.checkIndex(index, size);
+            final Object[] es = elementData;
+
+            // 记录该位置的原值
+            @SuppressWarnings("unchecked") E oldValue = (E) es[index]; //将Object类型强转为E类型
+            // 快速移除
+            fastRemove(es, index);
+
+            // 返回该位置的原值
+            return oldValue;
+        }
+
+        private void fastRemove(Object[] es, int i) {
+            // 增加数组修改次数
+            modCount++;
+            // 如果 i 不是移除最末尾的元素，则将 i + 1 位置的数组往前挪
+            final int newSize;
+            if ((newSize = size - 1) > i) // -1 的原因是，size 是从 1 开始，而数组下标是从 0 开始。
+                System.arraycopy(es, i + 1, es, i, newSize - i);
+            // 将新的末尾置为 null ，帮助 GC
+            es[size = newSize] = null;  //？？？？？ List<int> ？？？？？
+        }
+        ```
+        
+    * 通过元素来删除元素
+        * 找到第一个对应的元素后，会立刻删除该元素，也是使用`fastRemove`来删除
+        ```java
+        public boolean remove(Object o) {
+            final Object[] es = elementData;
+            final int size = this.size;
+            // 寻找首个为 o 的位置
+            int i = 0;
+            found: {
+                if (o == null) { // o 为 null 的情况
+                    for (; i < size; i++)
+                        if (es[i] == null)
+                            break found;
+                } else { // o 非 null 的情况
+                    for (; i < size; i++)
+                        if (o.equals(es[i]))
+                            break found;
+                }
+                // 如果没找到，返回 false
+                return false;
+            }
+            // 快速移除
+            fastRemove(es, i);
+            // 找到了，返回 true
+            return true;
+        }
+        ```
+    * 删除多个元素
+        * 
+        ```java
+        protected void removeRange(int fromIndex, int toIndex) {
+            // 范围不正确，抛出 IndexOutOfBoundsException 异常
+            if (fromIndex > toIndex) {
+                throw new IndexOutOfBoundsException(
+                        outOfBoundsMsg(fromIndex, toIndex));
+            }
+            // 增加数组修改次数
+            modCount++;
+            // 移除 [fromIndex, toIndex) 的多个元素
+            shiftTailOverGap(elementData, fromIndex, toIndex);
+        }
+        ```
+        
+
 # 辅助接口和抽象类
 ## RandomAccess接口
 [top](#catalog)
