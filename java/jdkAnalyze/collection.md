@@ -153,132 +153,129 @@
 * 添加元素
     * 添加单个元素
         * 直接添加元素
-            * 源码
-                ```java
-                @Override
-                public boolean add(E e) {
-                    modCount++;
-                    add(e, elementData, size);
-                    
-                    return true;
-                }
+            * `modCount++`,增加数组的修改次数
+                * `modCount`来源与父类`AbstractList`，用于记录数组修改的次数
+            * `if (s == elementData.length)`，如果当前数组`elementData`已经用完，则进行扩容
+            * 添加元素，并增加数组中已使用的元素数量
+            ```java
+            @Override
+            public boolean add(E e) {
+                modCount++;
+                add(e, elementData, size);
+                
+                return true;
+            }
 
-                private void add(E e, Object[] elementData, int s) {
-                    if (s == elementData.length)
-                        elementData = grow();
-                    elementData[s] = e;
-                    size = s + 1;
-                }
-                ```
-            * 添加的步骤
-                * `modCount++`,增加数组的修改次数
-                    * `modCount`来源与父类`AbstractList`，用于记录数组修改的次数
-                * `if (s == elementData.length)`，如果当前数组`elementData`已经用完，则进行扩容
-                * 添加元素，并增加数组中已使用的元素数量
+            private void add(E e, Object[] elementData, int s) {
+                if (s == elementData.length) //保证数组容量
+                    elementData = grow();
+                elementData[s] = e; //添加元素
+                size = s + 1;
+            }
+            ```
         * 在指定index位置上添加元素
-            * 源码
-                ```java
-                public void add(int index, E element) {
-                    // 校验位置index是否有效
-                    rangeCheckForAdd(index);
-                    // 增加数组的修改次数
-                    modCount++;
-                    
-                    final int s;
-                    Object[] elementData;
-                    // 拷贝数组已经使用的大小，拷贝数组地址
-                    if ((s = size) == (elementData = this.elementData).length)
-                        //如果数组已满，则进行扩容
-                        elementData = grow();
+            ```java
+            public void add(int index, E element) {
+                // 校验位置index是否有效
+                rangeCheckForAdd(index);
+                // 增加数组的修改次数
+                modCount++;
+                
+                final int s;
+                Object[] elementData;
+                
+                // 拷贝数组已经使用的大小，拷贝数组地址
+                //如果数组已满，则进行扩容
+                if ((s = size) == (elementData = this.elementData).length)
+                    elementData = grow();
 
-                    // (使用拷贝的方式)移动元素，从elementData的index开始，移动到index+1，共移动s-index个元素
-                    // 数据源:elementData
-                    // 数据源中的数据起始位置:index
-                    // (拷贝)移动的目标数组:elementData
-                    // (拷贝)移动的起始位置:index + 1
-                    // (拷贝)移动的元素数量:s - index
-                    System.arraycopy(elementData, index,
-                                    elementData, index + 1,
-                                    s - index);
-                    // 添加元素到指定位置
-                    elementData[index] = element;
-                    // 数组大小加一
-                    size = s + 1;
-                }
+                // (使用拷贝的方式)移动元素，从elementData的index开始，移动到index+1，共移动s-index个元素
+                // 数据源:elementData
+                // 数据源中的数据起始位置:index
+                // (拷贝)移动的目标数组:elementData
+                // (拷贝)移动的起始位置:index + 1
+                // (拷贝)移动的元素数量:s - index
+                System.arraycopy(elementData, index,
+                                elementData, index + 1,
+                                s - index);
+                // 添加元素到指定位置
+                elementData[index] = element;
+                // 数组大小加一
+                size = s + 1;
+            }
 
-                private void rangeCheckForAdd(int index) {
-                    if (index > size || index < 0)
-                        throw new IndexOutOfBoundsException(outOfBoundsMsg(index));
-                }
+            private void rangeCheckForAdd(int index) {
+                if (index > size || index < 0)
+                    throw new IndexOutOfBoundsException(outOfBoundsMsg(index));
+            }
 
-                private String outOfBoundsMsg(int index) {
-                    return "Index: "+index+", Size: "+size;
-                }
-                ```
+            private String outOfBoundsMsg(int index) {
+                return "Index: "+index+", Size: "+size;
+            }
+            ```
     * 添加多个元素
         * 直接添加多个元素
-            * 源码
-                ```java
-                public boolean addAll(Collection<? extends E> c) {
-                    // 转成 a 数组
-                    Object[] a = c.toArray();
-                    // 增加修改次数
-                    modCount++;
-                    // 如果 a 数组大小为 0 ，返回 ArrayList 数组无变化
-                    int numNew = a.length;
-                    if (numNew == 0)
-                        return false;
-                    // 如果 elementData 剩余的空间不够，则进行扩容。要求扩容的大小，至于能够装下 a 数组。
-                    Object[] elementData;
-                    final int s;
-                    if (numNew > (elementData = this.elementData).length - (s = size))
-                        elementData = grow(s + numNew);
-                    // 将 a 复制到 elementData 从 s 开始位置
-                    System.arraycopy(a, 0, elementData, s, numNew);
-                    // 数组大小加 numNew
-                    size = s + numNew;
-                    return true;
-                }
-                ```
             * 如果剩余空间做足，则进行扩容
             * 扩容方案：`Max(numNew + oldLength - oldLength, oldLength >> 1) + oldLength`
                 * 小数据量时，是1.5倍扩容
                 * 大数据量时，按照数据的增长扩容，但是扩容后数组仍然是**满的**
+            
+            ```java
+            public boolean addAll(Collection<? extends E> c) {
+                // 转成数组
+                Object[] a = c.toArray();
+                // 增加修改次数
+                modCount++;
+                // 如果 a 数组大小为 0 ，返回 ArrayList 数组无变化
+                int numNew = a.length;
+                if (numNew == 0)
+                    return false;
+                // 如果 elementData 剩余的空间不够，则进行扩容。要求扩容的大小，至少能够装下 a 数组。
+                Object[] elementData;
+                final int s;
+                if (numNew > (elementData = this.elementData).length - (s = size))
+                    elementData = grow(s + numNew);
+                // 将 a 复制到 elementData 从 s 开始位置
+                System.arraycopy(a, 0, elementData, s, numNew);
+                // 数组大小加 numNew
+                size = s + numNew;
+                return true;
+            }
+            ```
         * 在指定index位置插入多个元素
-            * 源码
-                ```java
-                public boolean addAll(int index, Collection<? extends E> c) {
-                    // 校验位置是否在数组范围内
-                    rangeCheckForAdd(index);
+            ```java
+            public boolean addAll(int index, Collection<? extends E> c) {
+                // 校验位置是否在数组范围内
+                rangeCheckForAdd(index);
 
-                    // 转成 a 数组
-                    Object[] a = c.toArray();
-                    // 增加数组修改次数
-                    modCount++;
-                    // 如果 a 数组大小为 0 ，返回 ArrayList 数组无变化
-                    int numNew = a.length;
-                    if (numNew == 0)
-                        return false;
-                    // 如果 elementData 剩余的空间不够，则进行扩容。要求扩容的大小，至于能够装下 a 数组。
-                    Object[] elementData;
-                    final int s;
-                    if (numNew > (elementData = this.elementData).length - (s = size))
-                        elementData = grow(s + numNew);
+                // 转成 a 数组
+                Object[] a = c.toArray();
+                // 增加数组修改次数
+                modCount++;
+                // 如果 a 数组大小为 0 ，返回 ArrayList 数组无变化
+                int numNew = a.length;
+                if (numNew == 0)
+                    return false;
+                // 如果 elementData 剩余的空间不够，则进行扩容。要求扩容的大小，至于能够装下 a 数组。
+                Object[] elementData;
+                final int s;
+                if (numNew > (elementData = this.elementData).length - (s = size))
+                    elementData = grow(s + numNew);
 
-                    // 【差异点】如果 index 开始的位置已经被占用，将它们后移
-                    int numMoved = s - index;
-                    if (numMoved > 0)
-                        System.arraycopy(elementData, index,
-                                        elementData, index + numNew,
-                                        numMoved);
+                // 【差异点】如果 index 开始的位置已经被占用，将它们后移
+                int numMoved = s - index;
+                if (numMoved > 0)
+                    System.arraycopy(elementData, index,
+                                    elementData, index + numNew,
+                                    numMoved);
 
-                    // 将 a 复制到 elementData 从 s 开始位置
-                    System.arraycopy(a, 0, elementData, index, numNew);
-                    // 数组大小加 numNew
-                    size = s + numNew;
-                    return true;
-                }
-                ```
+                // 将 a 复制到 elementData 从 s 开始位置
+                System.arraycopy(a, 0, elementData, index, numNew);
+                // 数组大小加 numNew
+                size = s + numNew;
+                return true;
+            }
+            ```
 
 * 数组扩容
     * 扩容的策略
@@ -320,8 +317,8 @@
 
 * 数组缩容
     * 只会在`elementData`有多余空间时执行缩容
-    * 如果数组未被使用，则直接使用`EMPTY_ELEMENTDATA`
-    * 如果数组已被使用，则创建一个大小为`size`的数组，并拷贝数据
+    * 如果数组完全没有被使用，则直接使用`EMPTY_ELEMENTDATA`
+    * 如果数组已有元素被被使用，则创建一个大小为`size`的数组，并拷贝数据
     ```java
     public void trimToSize() {
         // 增加修改次数
@@ -336,7 +333,7 @@
     ```
 
 * 删除元素
-    * 通过index来删除元素
+    * 通过index来删除单个元素
         * 在`remove`中先获取要删除的元素，作为返回值返回
         * 在`fastRemove`中
             * 如果需要删除的元素在末尾，则直接删除
@@ -368,8 +365,9 @@
         }
         ```
         
-    * 通过元素来删除元素
+    * 通过元素来删除单个元素
         * 找到第一个对应的元素后，会立刻删除该元素，也是使用`fastRemove`来删除
+        * 通过`equals`来比较元素
         ```java
         public boolean remove(Object o) {
             final Object[] es = elementData;
@@ -395,11 +393,11 @@
             return true;
         }
         ```
-    * 删除多个元素
-        * 
+    * 删除指定范围内的多个元素
+        * 先移动(拷贝)元素，在将多余的元素设为`null`
         ```java
         protected void removeRange(int fromIndex, int toIndex) {
-            // 范围不正确，抛出 IndexOutOfBoundsException 异常
+            // 检验范围
             if (fromIndex > toIndex) {
                 throw new IndexOutOfBoundsException(
                         outOfBoundsMsg(fromIndex, toIndex));
@@ -409,7 +407,76 @@
             // 移除 [fromIndex, toIndex) 的多个元素
             shiftTailOverGap(elementData, fromIndex, toIndex);
         }
+
+        private void shiftTailOverGap(Object[] es, int lo, int hi) {
+            // 从hi(toIndex)开始将后面不需要删除的元素 拷贝到 lo(fromIndex)
+            System.arraycopy(es, hi, es, lo, size - hi);
+
+            // 计算新的size = size - (hi - lo)
+            // 将[new_size, old_size)范围的元素设为null
+            for (int to = size, i = (size -= hi - lo); i < to; i++)
+                es[i] = null;
+        }
         ```
+
+    * 删除通过列表删除多个元素
+        * 只遍历一次数据
+        * 通过`r`来标记当前遍历的位置
+        * 通过`w`来标记当前的写入(替换)位置，在执行写入后`w++`
+        * 整体遍历之后，数组结尾会产生`end-w`个多余的元素，将其设为`null`
+        ```java
+        public boolean removeAll(Collection<?> c) {
+            return batchRemove(c, false, 0, size);
+        }
+
+        //complement表示是否需要保留
+        boolean batchRemove(Collection<?> c, boolean complement,
+                        final int from, final int end) {
+            Objects.requireNonNull(c);
+            final Object[] es = elementData;
+            int r;
+            // Optimize for initial run of survivors
+            for (r = from;; r++) {
+                // 如果elementData遍历结束，则返回false
+                if (r == end)
+                    return false;
+
+                // 搜索第一个不满足保留条件的元素
+                if (c.contains(es[r]) != complement)
+                    break;
+            }
+
+            //w=r 开始记录元素的写入位置
+            //r++
+            int w = r++;
+            try {
+                //继续搜索到结尾
+                for (Object e; r < end; r++)
+                    //如果满足保留条件，则移动到 w 位置，w++
+                    if (c.contains(e = es[r]) == complement)
+                        es[w++] = e;
+            } catch (Throwable ex) {
+                // Preserve behavioral compatibility with AbstractCollection,
+                // even if c.contains() throws.
+                System.arraycopy(es, r, es, w, end - r);
+                w += end - r;
+                throw ex;
+            } finally {
+                modCount += end - w;
+                shiftTailOverGap(es, w, end);
+            }
+            return true;
+        }
+        ```
+
+* 求与指定集合的交集
+    * 执行后，会直接修改`ArraryList`对象自身
+    * 
+    ```java
+    public boolean retainAll(Collection<?> c) {
+        return batchRemove(c, true, 0, size);
+    }
+    ```
         
 
 # 辅助接口和抽象类
@@ -487,6 +554,16 @@
                 return end-start;
             }
 
+            public long foreachTime(List list){
+                long start = System.currentTimeMillis();
+                for (Object o : list) {
+
+                }
+                long end = System.currentTimeMillis();
+
+                return end-start;
+            }
+
             public long iteratorTime(List list){
                 Iterator iterator = list.iterator();
                 long start = System.currentTimeMillis();
@@ -503,15 +580,16 @@
                 RandomAccessTimeTest t = new RandomAccessTimeTest();
 
                 List<Integer> al = new ArrayList<>();
-                for (int i = 0; i < 30000; i++) {
+                for (int i = 0; i < 300000; i++) {
                     al.add(i);
                 }
 
                 System.out.println("ArrayList loop time: " + t.loopTime(al));
+                System.out.println("ArrayList foreach time: " + t.foreachTime(al));
                 System.out.println("ArrayList iterator time: " + t.iteratorTime(al));
 
                 List<Integer> ll = new LinkedList<>();
-                for (int i = 0; i < 30000; i++) {
+                for (int i = 0; i < 300000; i++) {
                     ll.add(i);
                 }
 
