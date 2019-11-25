@@ -27,6 +27,8 @@
     - [二叉堆](#二叉堆)
     - [优先队列](#优先队列)
 - [排序算法](#排序算法)
+    - [冒泡排序](#冒泡排序)
+    - [快速排序](#快速排序)
 
 # 概述
 ## T(n)函数
@@ -1374,7 +1376,7 @@
         * 选择排序
         * 插入排序
         * 希尔排序
-            * 希尔排序比较特殊，性能优于`O(n^2)`,但有大于`O(nlogn)`
+            * 希尔排序比较特殊，性能优于`O(n^2)`,但又大于`O(nlogn)`
     * `O(nlogn)`
         * 快速排序
         * 归并排序
@@ -1388,3 +1390,241 @@
         * 值相同的元素，在排序后**仍然保持**着相同的顺序
     * 不稳定排序
         * 值相同的元素，在排序后**无法保持**着相同的顺序
+* 交换排序
+    * 冒泡排序
+    * 快速排序
+
+## 冒泡排序
+[top](#catalog)
+* 冒泡排序本身是单向的：从左到有，将最大/最小的元素移动到右边
+* 两种优化方法
+    * 记录本轮循环是否有序，如果有序，则说明整体以有序
+    * 记录有序边界，减少循环的论述，和单次循环的比较次数
+* 实现
+    ```java
+    public class MyBubbleSort {
+        public static void maxSort01(int[] list){
+            int temp;
+            for (int i = 0; i < list.length - 1; i++) {
+                for (int j = 0; j < list.length - 1 - i; j++) {
+                    if (list[j] > list[j+1]){
+                        temp = list[j+1];
+                        list[j+1] = list[j];
+                        list[j] = temp;
+                    }
+                }
+            }
+        }
+
+        // 优化方法1，有序停止
+        public static void maxSort02(int[] list){
+            int temp;
+            boolean isSorted;
+            for (int i = 0; i < list.length - 1; i++) {
+                isSorted = true;
+                for (int j = 0; j < list.length - 1 - i; j++) {
+                    if (list[j] > list[j + 1]){
+                        isSorted = false; //记录本次循环中是否已达到有序，没有交换则有序
+                        temp = list[j + 1];
+                        list[j + 1] = list[j];
+                        list[j] = temp;
+                    }
+                }
+
+                if (isSorted)
+                    break;
+            }
+        }
+
+        // 优化方法2，增加有序边界
+        public static void maxSort03(int[] list){
+            int temp;
+            boolean isSorted;
+            int sortBorder = list.length - 1;
+            int lastChangeIndex = 0;
+            for (int i = 0; i < list.length - 1; i++) {
+                isSorted = true;
+
+                for (int j = 0; j < sortBorder; j++) {
+                    if (list[j] > list[j+1]){
+                        temp = list[j + 1];
+                        list[j + 1] = list[j];
+                        list[j] = temp;
+                        lastChangeIndex = j; //每次保存最后进行调整的位置作为有序边界
+                        isSorted = false;
+                    }
+                }
+
+                if (isSorted) {
+                    break;
+                }
+
+                sortBorder = lastChangeIndex; //重新设定有序边界
+            }
+
+        }
+    }
+    ```
+* 测试
+    ```java
+    public class MyBubbleSortTest {
+        @Test
+        public void maxSort01Test(){
+            int[] a = new int[] {5,3,7,2,6,4,8,10,1};
+            System.out.println(Arrays.toString(a));
+            MyBubbleSort.maxSort01(a);
+            System.out.println(Arrays.toString(a));
+        }
+
+        @Test
+        public void maxSort02Test(){
+            int[] a = new int[] {5,3,7,2,6,4,8,10,1};
+            System.out.println(Arrays.toString(a));
+            MyBubbleSort.maxSort02(a);
+            System.out.println(Arrays.toString(a));
+        }
+        @Test
+        public void maxSort03Test(){
+            int[] a = new int[] {3, 4, 2, 1, 5, 6, 7, 8};
+            System.out.println(Arrays.toString(a));
+            MyBubbleSort.maxSort03(a);
+            System.out.println(Arrays.toString(a));
+        }
+    }
+    ```
+## 鸡尾酒排序
+[top](#catalog)
+* 冒泡排序的一种优化
+* 从左向右，然后在从右向左，当某一轮达到有序时则停止
+* 鸡尾酒排序能有效的减少循环的轮数，但是会使代码量增加一倍
+* 适用于**大部分元素已经有序**的情况
+* 实现
+    ```java
+    public class MyCocktailSort {
+        // 从左到右，再从右到左 为一轮
+        public static void maxSort01(int[] list){
+            int temp;
+            boolean isSorted;
+
+            // 从左到右，再从右到左 为一轮
+            for (int i = 0; i < list.length/2; i++) {
+                //从左到右
+                isSorted = true;
+                for (int j = i; j < list.length - 1 - i; j++) {
+                    if (list[j] > list[j+1]){
+                        isSorted = false;
+                        temp = list[j+1];
+                        list[j + 1] = list[j];
+                        list[j] = temp;
+                    }
+                }
+
+                if (isSorted){
+                    break;
+                }
+
+                //从右到左
+                isSorted = true;
+                for (int j = list.length - 1 - i; j > i; j--) {
+                    if (list[j] < list[j - 1]) {
+                        isSorted = false;
+                        temp = list[j];
+                        list[j] = list[j - 1];
+                        list[j - 1] = temp;
+                    }
+                }
+
+                if (isSorted) {
+                    break;
+                }
+            }
+        }
+
+        // 使用边界来减少轮数和比较次数
+        public static void maxSort02(int[] list){
+            int temp;
+            boolean isSorted;
+            int firstSortBorder = list.length - 1; //从左到右的边界
+            int firstChangeIndex = 0; //保存从左到右的边界变化
+            int secondSortBorder = 0; //从右到左的边界
+            int secondChangeIndex = list.length - 1; //保存从右到左的边界变化
+
+            // 从左到右，再从右到左 为一轮
+            for (int i = 0; i < list.length/2; i++) {
+                //从左到右
+                isSorted = true;
+                for (int j = secondSortBorder; j < firstSortBorder; j++) {
+                    if (list[j] > list[j+1]){
+                        isSorted = false;
+                        firstChangeIndex = j;
+                        temp = list[j+1];
+                        list[j + 1] = list[j];
+                        list[j] = temp;
+                    }
+                }
+
+                if (isSorted){
+                    break;
+                }
+                firstSortBorder = firstChangeIndex;
+
+
+                //从右到左
+                isSorted = true;
+                for (int j = firstSortBorder; j > secondSortBorder; j--) {
+                    if (list[j] < list[j - 1]) {
+                        isSorted = false;
+                        secondChangeIndex = j;
+                        temp = list[j];
+                        list[j] = list[j - 1];
+                        list[j - 1] = temp;
+                    }
+                }
+
+                if (isSorted) {
+                    break;
+                }
+
+                secondSortBorder = secondChangeIndex;
+            }
+        }
+    }
+    ```
+* 测试
+```java
+public class MyCocktailSortTest {
+    @Test
+    public void maxSort01Test(){
+        int[] a = new int[] {2, 3, 4, 5, 6, 7, 8, 1};
+        System.out.println(Arrays.toString(a));
+        MyCocktailSort.maxSort01(a);
+        System.out.println(Arrays.toString(a));
+    }
+
+    @Test
+    public void maxSort02Test(){
+        int[] a = new int[] {2, 3, 4, 5, 6, 7, 8, 1};
+        System.out.println(Arrays.toString(a));
+        MyCocktailSort.maxSort02(a);
+        System.out.println(Arrays.toString(a));
+    }
+}
+```
+
+## 快速排序
+[top](#catalog)
+* 快速排序是从**冒泡排序**演变过来的
+* 平均复杂度为：`O(nlogn)`，最坏情况的时间复杂度：`O(n^2)`
+* **分治法**：
+    * 每一轮挑选一个基准元素，将比基准元素大的移动到一边，比基准元素小的移动到另一边，**把数组拆成两部分**
+    * 数组每一轮都被拆成两部分，每一部分在下一轮又被拆成两部分，直到不可分为止
+* 每一轮都要遍历n个元素，平均要做`logn`轮，所以**平均时间复杂度**为：`O(nlogn)`
+* 基准元素的选择
+    * 最简单的方式：**选择每个数列的第一个元素**
+        * 每个部分都选择第一个元素的问题：
+            * 如果整个数组是一个**逆序数组**
+                * 第一个元素会变成**最大值或最小值**，无法将数组分成两部分
+                * 时间复杂度会退化成：`O(n^2)`
+    * 随机选择一个元素，然后与数列的首个元素进行交换
+        * 如果选择的元素是整个数列的最大值、最小值，仍然会影响分治的效果
+* 元素的交换-双边法
