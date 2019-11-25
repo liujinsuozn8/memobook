@@ -3,25 +3,32 @@
 - [Collection](#collection)
     - [ArrayList](#arrayList)
         - [ArrayList概述](#arraylist概述)
-        - [继承与实现关系](#继承与实现关系)
-        - [属性](#属性)
-        - [构造方法](#构造方法)
-        - [构造方法](#构造方法)
-        - [添加元素](#添加元素)
-        - [数组扩容](#数组扩容)
-        - [数组缩容](#数组缩容)
-        - [删除元素](#删除元素)
-        - [求与指定集合的交集](#求与指定集合的交集)
-        - [查找元素的index](#查找元素的index)
-        - [通过index获取元素get](#通过index获取元素get)
-        - [通过index设置元素set](#通过index设置元素set)
-        - [转换为数组](#转换为数组)
-        - [求hash值](#求hash值)
-        - [清空数组](#清空数组)
-        - [序列化数组](#序列化数组)
+        - [ArrayList继承与实现关系](#arrayList继承与实现关系)
+        - [ArrayList属性](#arrayList属性)
+        - [ArrayList内部类](#arrayList内部类)
+        - [ArrayList构造方法](#arrayList构造方法)
+        - [ArrayList构造方法](#arrayList构造方法)
+        - [ArrayList添加元素](#arrayList添加元素)
+        - [ArrayList数组扩容](#arrayList数组扩容)
+        - [ArrayList数组缩容](#arrayList数组缩容)
+        - [ArrayList删除元素](#arrayList删除元素)
+        - [ArrayList求与指定集合的交集](#arrayList求与指定集合的交集)
+        - [ArrayList查找元素的index](#arrayList查找元素的index)
+        - [ArrayList通过index获取元素get](#arrayList通过index获取元素get)
+        - [ArrayList通过index设置元素set](#arrayList通过index设置元素set)
+        - [ArrayList转换为数组](#arrayList转换为数组)
+        - [ArrayList求hash值](#arrayList求hash值)
+        - [ArrayList清空数组](#arrayList清空数组)
+        - [ArrayList序列和反序列化](#arrayList序列和反序列化)
+        - [ArrayList克隆](#arrayList克隆)
+        - [ArrayList创建子数组](#arrayList创建子数组)
+        - [ArrayList创建迭代器](#arrayList创建迭代器)
         - [](#)
         - [](#)
-
+        - [](#)
+    - [LinkedList](#linkedList)
+        - [LinkedList概述](#linkedList概述)
+        - [LinkedList继承与实现关系](#linkedList继承与实现关系)
 - [辅助接口和抽象类](#辅助接口和抽象类)
     - [RandomAccess接口](#randomAccess接口)
     - [Cloneable接口](#cloneable接口)
@@ -41,7 +48,7 @@
 * 支持自动扩容的动态数组
 * 继承关系图:![ArrayListDiagram.png](./imgs/collection/ArrayListDiagram.png)
 
-### 继承与实现关系
+### ArrayList继承与实现关系
 [top](#catalog)
 * 实现的四个接口
     * `java.util.List`:提供数组的添加、删除、修改、迭代遍历 等操作
@@ -53,7 +60,7 @@
         * `AbstractList`提供了List接口的主要实现，大幅度减少了实现**迭代遍历**相关操作的代码
         * `ArrayList`大量重写了`AbstractList`的方法实现
         * `AbstractList`本身对`ArrayList`意义不大，更多的是`AbstractList`对其他子类的影响
-### 属性
+### ArrayList属性
 [top](#catalog)
 * 对象属性
     * `transient Object[] elementData;`，元素数组
@@ -71,7 +78,17 @@
         * 首次扩容为1，后续按照1.5倍扩容
     * `private static final Object[] DEFAULTCAPACITY_EMPTY_ELEMENTDATA = {};`
         * 首次扩容为10，后续1.5被扩容
-### 构造方法
+
+### ArrayList内部类
+[top](#catalog)
+* `private class Itr implements Iterator<E>`
+    * 
+* `private class ListItr extends Itr implements ListIterator<E>`
+    * 
+* `private static class SubList<E> extends AbstractList<E> implements RandomAccess`
+    * 负责从`ArrayList`和`SubList`类自身创建子数组
+
+### ArrayList构造方法
 [top](#catalog)
 * `public ArrayList(int initialCapacity)` 通过集合大小来初始化
     * 如果初始化时就直到数组的大小，应该使用这种方法来进行初始化
@@ -179,12 +196,12 @@
     }
     ```
 
-### 添加元素
+### ArrayList添加元素
 [top](#catalog)
 * 添加单个元素
     * 直接添加元素
         * `modCount++`,增加数组的修改次数
-            * `modCount`来源与父类`AbstractList`，用于记录数组修改的次数
+            * `modCount`来源于父类`AbstractList`，用于记录数组修改的次数
         * `if (s == elementData.length)`，如果当前数组`elementData`已经用完，则进行扩容
         * 添加元素，并增加数组中已使用的元素数量
         ```java
@@ -245,7 +262,7 @@
         ```
 * 添加多个元素
     * 直接添加多个元素
-        * 如果剩余空间做足，则进行扩容
+        * 如果剩余空间不足，则进行扩容
         * 扩容方案：`Max(numNew + oldLength - oldLength, oldLength >> 1) + oldLength`
             * 小数据量时，是1.5倍扩容
             * 大数据量时，按照数据的增长扩容，但是扩容后数组仍然是**满的**
@@ -307,7 +324,7 @@
         }
         ```
 
-### 数组扩容
+### ArrayList数组扩容
 [top](#catalog)
 * 扩容的策略
     * 数组为空
@@ -346,7 +363,7 @@ private Object[] grow() {
 }
 ```
 
-### 数组缩容
+### ArrayList数组缩容
 [top](#catalog)
 * 只会在`elementData`有多余空间时执行缩容
 * 如果数组完全没有被使用，则直接使用`EMPTY_ELEMENTDATA`
@@ -364,7 +381,7 @@ public void trimToSize() {
 }
 ```
 
-### 删除元素
+### ArrayList删除元素
 [top](#catalog)
 * 通过index来删除单个元素
     * 在`remove`中先获取要删除的元素，作为返回值返回
@@ -452,7 +469,7 @@ public void trimToSize() {
     }
     ```
 
-* 删除通过列表删除多个元素
+* 通过列表删除多个元素
     * 只遍历一次数据
     * 通过`r`来标记当前遍历的位置
     * 通过`w`来标记当前的写入(替换)位置，在执行写入后`w++`
@@ -503,7 +520,7 @@ public void trimToSize() {
     }
     ```
 
-### 求与指定集合的交集
+### ArrayList求与指定集合的交集
 [top](#catalog)
 * 执行后，会直接修改`ArraryList`对象自身
 ```java
@@ -513,7 +530,7 @@ public boolean retainAll(Collection<?> c) {
 }
 ```
 
-### 查找元素的index
+### ArrayList查找元素的index
 [top](#catalog)
 * 找到返回`index`，如果没有找到返回`-1`
 * 通过循环遍历来查找
@@ -557,6 +574,8 @@ public boolean retainAll(Collection<?> c) {
         return lastIndexOfRange(o, 0, size);
     }
 
+    //start 起始index
+    //end 长度，使用时需要end-1
     int lastIndexOfRange(Object o, int start, int end) {
         Object[] es = elementData;
         // o 为 null 的情况
@@ -580,7 +599,7 @@ public boolean retainAll(Collection<?> c) {
     }
     ```
 
-### 通过index获取元素get
+### ArrayList通过index获取元素get
 [top](#catalog)
 ```java
 public E get(int index) {
@@ -595,7 +614,7 @@ E elementData(int index) {
 }
 ```
 
-### 通过index设置元素set
+### ArrayList通过index设置元素set
 [top](#catalog)
 * 设置新元素之后，将旧元素返回
 ```java
@@ -611,11 +630,11 @@ public E set(int index, E element) {
 }
 ```
 
-### 转换为数组
+### ArrayList转换为数组
 [top](#catalog)
 * 转换为`Object[]`
     * 不直接返回`elementData`，通过`Arrays.copyOf`返回一个`Object[]`类型的数组
-        * 必须拷贝，直接返回`elementData`，外部的修改会影响集合本身
+        * 必须拷贝，如果直接返回`elementData`，外部的修改会影响集合本身
     ```java
     //ArrayList.java
 
@@ -664,11 +683,11 @@ public E set(int index, E element) {
     }
     ```
 
-### 求hash值
+### ArrayList求hash值
 [top](#catalog)
 * 如果数组为`{}`，则返回`1`
 * 使用`31`作为hash值的计算因子
-* 计算结果：$31^{size} + \sum_{i=0}^{size-1}(31^{size-1} \cdot hash(e[i]))$
+* 计算结果：$31^{size} + \sum_{i=0}^{size-1}(31^{size-1-i} \cdot hash(e[i]))$
     * 如果某个`e[i]==null`，则使用0作为该元素的hash值
 ```java
 public int hashCode() {
@@ -697,7 +716,7 @@ int hashCodeRange(int from, int to) {
 }
 ```
 
-### 判断两个集合是否相等
+### ArrayList判断两个集合是否相等
 * 比较的策略
     * 如果是自身，返回`true`
     * 如果参数不是`List`,返回`false`
@@ -782,8 +801,10 @@ boolean equalsRange(List<?> other, int from, int to) {
 }
 ```
 
-### 清空数组
+### ArrayList清空数组
 [top](#catalog)
+* 遍历所有元素，并设为null
+* 不会清除数组本身
 ```java
 public void clear() {
     // 增加修改该次数
@@ -797,9 +818,168 @@ public void clear() {
 }
 ```
 
-### 序列化数组
+### ArrayList序列和反序列化
 [top](#catalog)
+* 序列化
+    * 序列化顺序
+        * 序列化非transient和非static变量
+            * size
+        * 序列化底层数组，只序列化从`0-size-1`的有效元素
+    ```java
+    @java.io.Serial
+    private void writeObject(java.io.ObjectOutputStream s)
+        throws java.io.IOException {
+        // Write out element count, and any hidden stuff
+        // 获得当前的数组修改次数
+        int expectedModCount = modCount;
 
+        // 写入非静态属性、非 transient 属性
+        s.defaultWriteObject();
+
+        // Write out size as capacity for behavioral compatibility with clone()
+        // 写入 size ，主要为了与 clone 方法的兼容
+        s.writeInt(size);
+
+        // Write out all elements in the proper order.
+        // 逐个写入 elementData 数组的元素
+        for (int i = 0; i < size; i++) {
+            s.writeObject(elementData[i]);
+        }
+
+        // 如果 other 修改次数发生改变，则抛出 ConcurrentModificationException 异常
+        if (modCount != expectedModCount) {
+            throw new ConcurrentModificationException();
+        }
+    }
+    ```
+* 反序列化
+    * 序列化顺序
+        * 反序列化非transient和非static变量
+            * size
+        * 根据size来初始化底层数组
+            * size=0,默认使用`EMPTY_ELEMENTDATA` (会导致初始的扩容策略不同????)
+            * size!=0,按照size的长度初始化数组
+        * 反序列化底层数组，只序列化从`0-size-1`的有效元素，防止直接使用length初始化造成的空间浪费
+            * 序列化后，数组是**满的**
+    ```java
+    @java.io.Serial
+    private void readObject(java.io.ObjectInputStream s)
+        throws java.io.IOException, ClassNotFoundException {
+
+        // Read in size, and any hidden stuff
+        // 读取非静态属性、非 transient 属性
+        s.defaultReadObject();
+
+        // Read in capacity
+        // 读取 size ，不过忽略不用
+        s.readInt(); // ignored
+
+        if (size > 0) {
+            // like clone(), allocate array based upon size not capacity
+            SharedSecrets.getJavaObjectInputStreamAccess().checkArray(s, Object[].class, size);
+            // 创建 elements 数组
+            Object[] elements = new Object[size];
+
+            // Read in all elements in the proper order.
+            // 逐个读取
+            for (int i = 0; i < size; i++) {
+                elements[i] = s.readObject();
+            }
+
+            // 赋值给 elementData
+            elementData = elements;
+        } else if (size == 0) {
+            // 如果 size 是 0 ，则直接使用空数组
+            elementData = EMPTY_ELEMENTDATA;
+        } else {
+            throw new java.io.InvalidObjectException("Invalid size: " + size);
+        }
+    }
+    ```
+
+### ArrayList克隆
+[top](#catalog)
+* 先调用父类进行克隆，在强制为ArrayList
+* 重新拷贝数组内容，只拷贝`0 - size-1`的元素
+* 将修改该次数设为`0`
+    ```java
+    public Object clone() {
+        try {
+            // 调用父类，进行克隆
+            ArrayList<?> v = (ArrayList<?>) super.clone();
+            // 拷贝一个新的数组
+            v.elementData = Arrays.copyOf(elementData, size);
+            // 设置数组修改次数为 0
+            v.modCount = 0;
+            return v;
+        } catch (CloneNotSupportedException e) {
+            // this shouldn't happen, since we are Cloneable
+            throw new InternalError(e);
+        }
+    }
+    ```
+
+### ArrayList创建子数组
+[top](#catalog)
+* 使用`ArrayList`的内部类`SubList`创建子数组
+* `ArrayList`和`SubList`共享 `[fromIndex, toIndex)`的数组元素
+    ```java
+    public List<E> subList(int fromIndex, int toIndex) {
+        subListRangeCheck(fromIndex, toIndex, size);
+        return new SubList<>(this, fromIndex, toIndex);
+    }
+
+    private static class SubList<E> extends AbstractList<E> implements RandomAccess {
+
+        /**
+            * 根 ArrayList
+            */
+        private final ArrayList<E> root;
+        /**
+            *  父 SubList
+            */
+        private final SubList<E> parent;
+        /**
+            * 起始位置
+            */
+        private final int offset;
+        /**
+            * 大小
+            */
+        private int size;
+
+        /**
+            * Constructs a sublist of an arbitrary ArrayList.
+            */
+        public SubList(ArrayList<E> root, int fromIndex, int toIndex) {
+            this.root = root;
+            this.parent = null;
+            this.offset = fromIndex;
+            this.size = toIndex - fromIndex;
+            this.modCount = root.modCount;
+        }
+        ...
+        ...
+        ...
+    }
+    ```
+
+
+## LinkedList
+### LinkedList概述
+[top](#catalog)
+* 基于节点实现的双向链表List
+
+### LinkedList继承与实现关系
+[top](#catalog)
+* 实现的四个接口
+    * `java.util.List`:提供数组的添加、删除、修改、迭代遍历 等操作
+    * `java.util.Queue`:提供双端队列的功能
+    * `java.io.Serializable`:提供序列化功能
+    * `java.lang.Cloneable`:表示支持克隆
+* 继承关系
+    * `java.util.AbstractSequentList`抽象类
+        * 
 
 
 # 辅助接口和抽象类
