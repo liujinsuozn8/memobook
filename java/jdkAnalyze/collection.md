@@ -1,6 +1,7 @@
 <span id="catalog"></span>
 
 - [Collection](#collection)
+    - [Queue接口](#Queue接口)
     - [ArrayList](#arrayList)
         - [ArrayList概述](#arraylist概述)
         - [ArrayList继承与实现关系](#arrayList继承与实现关系)
@@ -23,12 +24,23 @@
         - [ArrayList克隆](#arrayList克隆)
         - [ArrayList创建子数组](#arrayList创建子数组)
         - [ArrayList创建迭代器](#arrayList创建迭代器)
-        - [](#)
-        - [](#)
-        - [](#)
     - [LinkedList](#linkedList)
         - [LinkedList概述](#linkedList概述)
         - [LinkedList继承与实现关系](#linkedList继承与实现关系)
+        - [LinkedList属性](#linkedList属性)
+        - [LinkedList构造器](#linkedList构造器)
+        - [LinkedList范围检查](#linkedList范围检查)
+        - [LinkedList添加单个元素](#linkedList添加单个元素)
+        - [LinkedList添加多个元素](#linkedList添加多个元素)
+        - [LinkedList删除元素](#linkedList删除元素)
+        - [LinkedList与集合取交集](#linkedList与集合取交集)
+        - [LinkedList查找元素的index](#LinkedList查找元素的index)
+        - [LinkedList获取元素](#linkedList获取元素)
+        - [LinkedList设定指定位置的元素](#linkedList设定指定位置的元素)
+        - [](#)
+        - [](#)
+        - [](#)
+        - [](#)
 - [辅助接口和抽象类](#辅助接口和抽象类)
     - [RandomAccess接口](#randomAccess接口)
     - [Cloneable接口](#cloneable接口)
@@ -38,6 +50,41 @@
         - [Serializable和Externalizable的异同](#serializable和externalizable的异同)
 
 # Collection
+
+## Queue接口
+[top](#catalog)
+- 继承关系:`public interface Queue<E> extends Collection<E>`
+    - 直接继承自抽象类:`Collection`
+
+- 向队列中添加元素
+    - `boolean add(E e);`
+        - 返回值:是否添加成功
+        - 异常:
+            - IllegalStateException
+            - ClassCastException
+            - NullPointerException
+            - IllegalArgumentException
+    - `boolean offer(E e);`
+        - 返回值:是否添加成功
+        - 异常:
+            - ClassCastException
+            - NullPointerException
+            - IllegalArgumentException
+
+- 返回**队头元素**
+    - `E peek();`
+        - 如果是**空队列**，则返回`null`
+    - `E element();`
+        - 如果是**空队列**，则引发异常`NoSuchElementException`
+
+- 删除**队头**元素，并返回其值
+    - `E poll();`
+        - 如果是**空队列**，则返回`null`
+    - `E remove();`
+        - 如果是**空队列**，则引发异常`NoSuchElementException`
+
+
+
 ## ArrayList
 [top](#catalog)
 * 部分内容参考：
@@ -969,17 +1016,723 @@ public void clear() {
 ### LinkedList概述
 [top](#catalog)
 * 基于节点实现的双向链表List
+* 相比`ArrayList`，**不需要考虑扩容的问题**
 
 ### LinkedList继承与实现关系
 [top](#catalog)
 * 实现的四个接口
     * `java.util.List`:提供数组的添加、删除、修改、迭代遍历 等操作
-    * `java.util.Queue`:提供双端队列的功能
+    * `java.util.Deque`:提供**双端队列**的功能
     * `java.io.Serializable`:提供序列化功能
     * `java.lang.Cloneable`:表示支持克隆
 * 继承关系
     * `java.util.AbstractSequentList`抽象类
-        * 
+        * 一般支持随机访问的会继承`java.util.AbstractList`抽象类，不支持的会继承`java.util.AbstractSequentList`抽象类
+        * `LinkedList`重写了`java.util.AbstractSequentList`的方法
+
+### LinkedList属性
+[top](#catalog)
+* 三个基本属性
+    * `transient int size = 0;`，当前链表的长度
+        * 随时记录链表长度，防止获取长度时，对链表进行遍历
+    * `transient Node<E> first;`，头节点
+    * `transient Node<E> last;`，尾节点
+* 父类中的属性
+    * `modCount`，负责记录列表的修改该次数
+* 内部类：链表节点
+    ```java
+    private static class Node<E> {
+
+        /**
+            * 元素
+            */
+        E item;
+        /**
+            * 前一个节点
+            */
+        Node<E> next;
+        /**
+            * 后一个节点
+            */
+        Node<E> prev;
+
+        Node(Node<E> prev, E element, Node<E> next) {
+            this.item = element;
+            this.next = next;
+            this.prev = prev;
+        }
+
+    }
+    ```
+* first和last的变化
+    * 初始化：
+        * `first = null`
+        * `last = null`
+    * 插入第一个节点`Node01`:
+        * `Node01.prev = null`
+        * `Node01.next = null`
+        * `first = Node01`
+        * `last = Node01`
+    * 插入第二个节点`Node02`:
+        * `Node01.prev = null`
+        * `Node01.next = Node02`
+        * `Node02.prev = Node02`
+        * `Node02.next = null`
+        * `first = Node01`
+        * `last = Node02`
+
+### LinkedList构造器
+[top](#catalog)
+* 空参构造器
+    ```java
+    public LinkedList() {
+    }
+    ```
+* 通过集合来构造
+    ```java
+    public LinkedList(Collection<? extends E> c) {
+        this();
+        // 添加 c 到链表中
+        addAll(c);
+    }
+    ```
+
+### LinkedList范围检查
+[top](#catalog)
+```java
+private void checkPositionIndex(int index) {
+    if (!isPositionIndex(index))
+        throw new IndexOutOfBoundsException(outOfBoundsMsg(index));
+}
+
+private boolean isPositionIndex(int index) {
+    return index >= 0 && index <= size;
+}
+```
+
+### LinkedList添加单个元素
+[top](#catalog)
+* 在链表尾部添加单个节点
+    * 添加流程
+        * 保存`l = last`的指针
+        * 创建节点`newNode`:通过`last，元素值，null`创建节点
+        * 重新设定`last`:`last = newNode;`
+        * 如果`l==null`,则当前是空链表，重新设定:`first=newNode`
+        * 如果`l!=null`,则需要链接`l`和`newNode`:`l.next = newNode`
+    ```java
+    public boolean add(E e) {
+        // 添加末尾
+        linkLast(e);
+        return true;
+    }
+
+    /**
+     * Links e as last element.
+     */
+    void linkLast(E e) {
+        // 记录原 last 节点
+        final Node<E> l = last;
+        // 创建新节点
+        final Node<E> newNode = new Node<>(l, e, null);
+        // last 指向新节点
+        last = newNode;
+        // 如果原 last 为 null ，说明 fast 也为空，则 fast 也指向新节点
+        if (l == null)
+            first = newNode;
+        // 如果原 last 非 null ，说明 fast 也非空，则原 last 的 next 指向新节点。
+        else
+            l.next = newNode;
+        // 增加链表大小
+        size++;
+        // 增加数组修改次数
+        modCount++;
+    }
+    ```
+* 在指定位置添加节点
+    * 添加策略
+        * 特殊情况：如果`index==size`,添加的链表末尾
+        * 获取`index`节点
+            * 如果`index < size/2`，则正序遍历，查找`index`节点
+            * 如果`index >= size/2`，则逆序遍历，查找`index`节点
+        * 添加
+            * 保存`index`的前一个节点`pred`
+            * 创建节点`newNode`:使用`index.prev, 元素值, index`传节点
+                * 创建后，该节点已完成链表的连接
+            * 修改前后节点的连接
+                * `index.prev = newNode`
+                * 如果`pred == null`，则index之前是`first`节点，需要重新设定`first=newNode`
+                * 否则`pred.next = newNode`
+    ```java
+    public void add(int index, E element) {
+        // 校验index范围
+        checkPositionIndex(index);
+
+        // 如果index等于链表大小，则添加到链表末尾
+        if (index == size)
+            linkLast(element);
+        // 添加到第 index 的节点的前面
+        else
+            linkBefore(element, node(index));
+    }
+
+    /**
+     * Returns the (non-null) Node at the specified element index.
+     * 获取第index个节点
+     */
+    Node<E> node(int index) {
+        // assert isElementIndex(index);
+
+        // 如果 index 小于 size 的一半，就正序遍历，获得第 index 个节点
+        if (index < (size >> 1)) {
+            Node<E> x = first;
+            for (int i = 0; i < index; i++)
+                x = x.next;
+            return x;
+        // 如果 index 大于 size 的一半，就倒序遍历，获得第 index 个节点
+        } else {
+            Node<E> x = last;
+            for (int i = size - 1; i > index; i--)
+                x = x.prev;
+            return x;
+        }
+    }
+
+    /**
+     * Inserts element e before non-null Node succ.
+     */
+    void linkBefore(E e, Node<E> succ) {
+        // assert succ != null;
+        // 获得 succ 的前一个节点
+        final Node<E> pred = succ.prev;
+        // 创建新的节点 newNode
+        final Node<E> newNode = new Node<>(pred, e, succ);
+        // 设置 succ 的前一个节点为新节点
+        succ.prev = newNode;
+        // 如果 pred 为 null ，说明succ之前为first，现在newNode为first，则重新设定first
+        if (pred == null)
+            first = newNode;
+        else
+        // 如果 pred 非 null ，则 pred 指向新节点
+            pred.next = newNode;
+        // 增加链表大小
+        size++;
+        // 增加数组修改次数
+        modCount++;
+    }
+    ```
+* **Deque**接口的添加元素方法
+    * 从头节点添加元素
+        ```java
+        @Override
+        public void addFirst(E e) {
+            linkFirst(e);
+        }
+
+        public boolean offerFirst(E e) {
+            addFirst(e);
+            return true;
+        }
+
+        private void linkFirst(E e) {
+            // 记录原 first 节点
+            final Node<E> f = first;
+            // 创建新节点
+            final Node<E> newNode = new Node<>(null, e, f);
+            // first 指向新节点
+            first = newNode;
+            // 如果原 first 为空，说明 last 也为空，则 last 也指向新节点
+            if (f == null)
+                last = newNode;
+            // 如果原 first 非空，说明 last 也非空，则原 first 的 next 指向新节点。
+            else
+                f.prev = newNode;
+            // 增加链表大小
+            size++;
+            // 增加数组修改次数
+            modCount++;
+        }
+        ```
+    * 从尾节点添加元素
+        * 与`add(E e)`相同
+        ```java
+        @Override
+        public void addLast(E e) {
+            linkLast(e);
+        }
+
+        public boolean offerLast(E e) {
+            addLast(e);
+            return true;
+        }
+        ```
+* **Queue**接口的实现
+    * 添加到队头
+        ```java
+        public void push(E e) {
+            addFirst(e);
+        }
+        ```
+    * 添加到队尾
+        ```java
+        public boolean offer(E e) {
+            return add(e);
+        }
+        ```
+
+### LinkedList添加多个元素
+[top](#catalog)
+* 添加策略
+    * 如果`index == size`，则在链表末尾添加
+    * 否则遍历链表来获取`index`个元素
+    * 将集合转换为数组，再迭代数组来创建链表
+    * 创建后将新链表与第`index`个元素连接
+    ```java
+    public boolean addAll(Collection<? extends E> c) {
+        return addAll(size, c);
+    }
+
+    public boolean addAll(int index, Collection<? extends E> c) {
+        checkPositionIndex(index);
+
+        // 将 c 转成 a 数组
+        Object[] a = c.toArray();
+        int numNew = a.length;
+        if (numNew == 0) // 如果无添加元素，直接返回 false 数组未变更
+            return false;
+
+        // 获得第 index 位置的节点 succ ，和其前一个节点 pred
+        Node<E> pred, succ;
+        if (index == size) { // 如果 index 就是链表大小，那说明插入队尾，所以 succ 为 null ，pred 为 last 。
+            succ = null;
+            pred = last;
+        } else { // 如果 index 小于链表大小，则 succ 是第 index 个节点，prev 是 succ 的前一个二节点。
+            succ = node(index);
+            pred = succ.prev;
+        }
+
+        // 遍历 a 数组，添加到 pred 的后面
+        for (Object o : a) {
+            // 创建新节点
+            @SuppressWarnings("unchecked") E e = (E) o;
+            Node<E> newNode = new Node<>(pred, e, null);
+            // 如果 pred 为 null ，说明 first 也为 null ，则直接将 first 指向新节点
+            if (pred == null)
+                first = newNode;
+            // pred 下一个指向新节点
+            else
+                pred.next = newNode;
+            // 修改 pred 指向新节点
+            pred = newNode;
+        }
+
+        // 修改 succ 和 pred 的指向
+        if (succ == null) { // 如果 succ 为 null ，说明插入队尾，则直接修改 last 指向最后一个 pred
+            last = pred;
+        } else { // 如果 succ 非 null ，说明插入到 succ 的前面
+            pred.next = succ; // prev 下一个指向 succ
+            succ.prev = pred; // succes 前一个指向 pred
+        }
+
+        // 增加链表大小
+        size += numNew;
+        // 增加数组修改次数
+        modCount++;
+        // 返回 true 数组有变更
+        return true;
+    }
+    ```
+
+### LinkedList删除元素
+[top](#catalog)
+* 可用的删除方法
+    `public E remove(int index)`,删除指定index的元素
+    `public boolean remove(Object o)`,删除首个值等于`o`的元素
+    `public boolean removeAll(Collection<?> c)`,删除多个节点，使用父类中的方法
+
+    |实现的接口|方法|处理|空集合返回值|
+    |-|-|-|-|
+    |Queue|`public E poll()`|删除头节点|null|
+    |Queue|`public E remove()`|删除头节点|异常|
+    |Deque|`public E pollFirst()`|删除头节点|null|
+    |Deque|`public E removeFirst()`|删除头节点|异常`NoSuchElementException`|
+    |Deque|`public E pop()`|删除尾节点|异常`NoSuchElementException`|
+    |Deque|`public E pollLast()`|删除尾节点|null|
+    |Deque|`public E removeLast()`|删除尾节点|异常`NoSuchElementException`|
+    |Deque|`public boolean removeFirstOccurrence(Object o)`|删除首次出现的元素||
+    |Deque|`public boolean removeLastOccurrence(Object o)`|删除末次出现的元素||
+
+* 删除单个元素
+    * 删除指定index的元素
+        * 互相连接指定节点的`prev`和`next`
+        * 删除指定节点与前后两个节点的连接，并删除指定节点的元素值，来辅助GC回收
+        * 删除后返回节点中保存的值
+        ```java
+        public E remove(int index) {
+            checkElementIndex(index);
+            // 获得第 index 的 Node 节点，然后进行移除。
+            return unlink(node(index));
+        }
+
+        E unlink(Node<E> x) {
+            // assert x != null;
+            // 获得 x 的前后节点 prev、next
+            final E element = x.item;
+            final Node<E> next = x.next;
+            final Node<E> prev = x.prev;
+
+            // 将 prev 的 next 指向下一个节点
+            if (prev == null) { // 如果 prev 为空，说明 first 被移除，则直接将 first 指向 next
+                first = next;
+            } else { // 如果 prev 非空
+                prev.next = next; // prev 的 next 指向 next
+                x.prev = null; // x 的 pre 指向 null
+            }
+
+            // 将 next 的 prev 指向上一个节点
+            if (next == null) { // 如果 next 为空，说明 last 被移除，则直接将 last 指向 prev
+                last = prev;
+            } else { // 如果 next 非空
+                next.prev = prev; // next 的 prev 指向 prev
+                x.next = null; // x 的 next 指向 null
+            }
+
+            // 将 x 的 item 设置为 null ，帮助 GC
+            x.item = null;
+            // 减少链表大小
+            size--;
+            // 增加数组的修改次数
+            modCount++;
+            return element;
+        }
+        ```
+    * 删除首个值等于`o`的元素
+        * 从头节点开始遍历，直到找到第一个符合条件的元素，执行删除
+        ```java
+        public boolean remove(Object o) {
+            if (o == null) { // o 为 null 的情况
+                // 顺序遍历，找到 null 的元素后，进行移除
+                for (Node<E> x = first; x != null; x = x.next) {
+                    if (x.item == null) {
+                        unlink(x);
+                        return true;
+                    }
+                }
+            } else {
+                // 顺序遍历，找到等于 o 的元素后，进行移除
+                for (Node<E> x = first; x != null; x = x.next) {
+                    if (o.equals(x.item)) {
+                        unlink(x);
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+        ```
+    * `removeFirstOccurrence`删除首次出现的元素，`Deque`接口的实现方法
+        ```java
+        public boolean removeFirstOccurrence(Object o) {
+            return remove(o);
+        }
+        ```
+    * `removeLastOccurrence`删除末次出现的元素，`Deque`接口的实现方法
+        * 使用倒序遍历，继续查找
+        ```java
+        public boolean removeLastOccurrence(Object o) {
+            if (o == null) { // o 为 null 的情况
+                // 倒序遍历，找到 null 的元素后，进行移除
+                for (Node<E> x = last; x != null; x = x.prev) {
+                    if (x.item == null) {
+                        unlink(x);
+                        return true;
+                    }
+                }
+            } else {
+                // 倒序遍历，找到等于 o 的元素后，进行移除
+                for (Node<E> x = last; x != null; x = x.prev) {
+                    if (o.equals(x.item)) {
+                        unlink(x);
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+        ```
+    * 删除**头节点(队头)**
+        * 删除头节点：如果链表为空，会引发异常的方法
+            - 通用删除设定：如果`first.next == null`,则当前链表只有一个节点，删除后，设`last = null`,否则将`next.prev=null`
+
+            - `Deque`接口的实现方法
+                ```java
+                public E pop() {
+                    return removeFirst();
+                }
+                ```
+            - `Queue`接口的实现方法
+                ```java
+                @Override
+                public E remove() {
+                    return removeFirst();
+                }
+                ```
+            - `LinkedList`的自定义删除头节点的方法
+                ```java
+                public E removeFirst() {
+                    final Node<E> f = first;
+                    // 如果链表为空，抛出 NoSuchElementException 异常
+                    if (f == null)
+                        throw new NoSuchElementException();
+                    // 移除链表首个元素
+                    return unlinkFirst(f);
+                }
+
+                private E unlinkFirst(Node<E> f) {
+                    // assert f == first && f != null;
+                    final E element = f.item;
+                    // 获得 f 的下一个节点
+                    final Node<E> next = f.next;
+                    // 设置 f 的 item 为 null ，帮助 GC
+                    f.item = null;
+                    // 设置 f 的 next 为 null ，帮助 GC
+                    f.next = null; // help GC
+                    // 修改 fisrt 指向 next
+                    first = next;
+                    // 修改 next 节点的 prev 指向 null
+                    if (next == null) // 如果链表只有一个元素，说明被移除后，队列就是空的，则 last 设置为 null
+                        last = null;
+                    else
+                        next.prev = null;
+                    // 链表大小减一
+                    size--;
+                    // 增加数组修改次数
+                    modCount++;
+                    return element;
+                }
+                ```
+        - 删除头节点：允许链表为空，如果是**空链表**，则返回`null`
+            - `Queue`接口的实现方法
+                ```java
+                public E poll() {
+                    final Node<E> f = first;
+                    return (f == null) ? null : unlinkFirst(f);
+                }
+                ```
+            - `Deque`接口的实现方法，**与pool()**的实现相同
+                ```java
+                public E pollFirst() {
+                    final Node<E> f = first;
+                    return (f == null) ? null : unlinkFirst(f);
+                }
+                ```
+
+    * 删除尾节点
+        * 删除尾节点:如果链表为空，会引发异常
+            ```java
+            public E removeLast() {
+                final Node<E> l = last;
+                // 如果链表为空，则抛出 NoSuchElementException 移除
+                if (l == null)
+                    throw new NoSuchElementException();
+                // 移除链表的最后一个元素
+                return unlinkLast(l);
+            }
+
+            private E unlinkLast(Node<E> l) {
+                // assert l == last && l != null;
+                final E element = l.item;
+                // 获得 f 的上一个节点
+                final Node<E> prev = l.prev;
+                // 设置 l 的 item 为 null ，帮助 GC
+                l.item = null;
+                // 设置 l 的 prev 为 null ，帮助 GC
+                l.prev = null; // help GC
+                // 修改 last 指向 prev
+                last = prev;
+                // 修改 prev 节点的 next 指向 null
+                if (prev == null) // 如果链表只有一个元素，说明被移除后，队列就是空的，则 first 设置为 null
+                    first = null;
+                else
+                    prev.next = null;
+                // 链表大小减一
+                size--;
+                // 增加数组修改次数
+                modCount++;
+                return element;
+            }
+            ```
+        * 删除尾节点:允许链表为空，如果链表为空则返回`null`，不执行删除操作
+            * `Deque`接口的实现方法
+            ```java
+            public E pollLast() {
+                final Node<E> l = last;
+                return (l == null) ? null : unlinkLast(l);
+            }
+            ```
+
+* 删除多个元素
+    * `LinkedList`没有重写，直接使用`AbstractCollection.java`中的方法
+    * 删除流程
+        * 将当前`LinkedList`转化为迭代器
+        * 对迭代器进行遍历，如果`迭代器中的项`在`集合`中存在，则进行删除
+            * 如果有删除行为，则将`modified`设为true，结束时作为结果返回
+    * 删除后，会直接改变`LinkedList`对象自身
+    ```java
+    //AbstractCollection.java
+    public boolean removeAll(Collection<?> c) {
+        Objects.requireNonNull(c);
+        boolean modified = false;
+        // 获得迭代器
+        Iterator<?> it = iterator();
+        // 通过迭代器遍历
+        while (it.hasNext()) {
+            // 如果 c 中存在该元素，则进行移除
+            if (c.contains(it.next())) {
+                it.remove(); //?????
+                modified = true; // 标记修改
+            }
+        }
+        return modified;
+    }
+    ```
+
+### LinkedList与集合取交集
+[top](#catalog)
+* `LinkedList`没有重写，直接使用`AbstractCollection.java`中的方法
+* 删除流程
+    * 将当前`LinkedList`转化为迭代器
+    * 对迭代器进行遍历，如果`迭代器中的项`**不在**`集合`中存在，则进行删除
+        * 如果有删除行为，则将`modified`设为true，结束时作为结果返回
+* 删除后，会直接改变`LinkedList`对象自身
+    ```java
+    public boolean retainAll(Collection<?> c) {
+        Objects.requireNonNull(c);
+        boolean modified = false;
+        // 获得迭代器
+        Iterator<E> it = iterator();
+        // 通过迭代器遍历
+        while (it.hasNext()) {
+            // 如果 c 中不存在该元素，则进行移除
+            if (!c.contains(it.next())) {
+                it.remove();
+                modified = true;
+            }
+        }
+        return modified;
+    }
+    ```
+
+### LinkedList查找元素的index
+[top](#catalog)
+* 顺序遍历，查找首个等于指定元素`o`的index
+    * 未找到时返回`-1`
+    ```java
+    public int indexOf(Object o) {
+        int index = 0;
+        if (o == null) { // 如果 o 为 null 的情况
+            // 顺序遍历，如果 item 为 null 的节点，进行返回
+            for (Node<E> x = first; x != null; x = x.next) {
+                if (x.item == null)
+                    return index; // 找到
+                index++;
+            }
+        } else { // 如果 o 非 null 的情况
+            // 顺序遍历，如果 item 为 o 的节点，进行返回
+            for (Node<E> x = first; x != null; x = x.next) {
+                if (o.equals(x.item))
+                    return index; // 找到
+                index++;
+            }
+        }
+        // 未找到
+        return -1;
+    }
+    ```
+* 逆序遍历，查找最后一个等于指定元素`o`的index
+    * 未找到时返回`-1`
+    ```java
+    public int lastIndexOf(Object o) {
+        int index = size;
+        if (o == null) { // 如果 o 为 null 的情况
+            // 倒序遍历，如果 item 为 null 的节点，进行返回
+            for (Node<E> x = last; x != null; x = x.prev) {
+                index--;
+                if (x.item == null)
+                    return index; // 找到
+            }
+        } else { // 如果 o 非 null 的情况
+            // 倒序遍历，如果 item 为 o 的节点，进行返回
+            for (Node<E> x = last; x != null; x = x.prev) {
+                index--;
+                if (o.equals(x.item))
+                    return index; // 找到
+            }
+        }
+        // 未找到
+        return -1;
+    }
+    ```
+* 查找元素的扩展
+    * 直接使用顺序查找
+    ```java
+    public boolean contains(Object o) {
+        return indexOf(o) >= 0;
+    }
+    ```
+
+### LinkedList获取元素
+[top](#catalog)
+- 获取指定位置的元素
+    - 如果列表为空，则引发异常
+    - 根据index进行正序/逆序遍历来获取指定元素
+    ```java
+    public E get(int index) {
+        checkElementIndex(index);
+        // 基于 node(int index) 方法实现
+        return node(index).item;
+    }
+    ```
+- **Deque**接口实现的获取元素方法
+    - 获取头节点
+        - 如果列表为空，则返回`null`
+        ```java
+        public E peekFirst() {
+            final Node<E> f = first;
+            return (f == null) ? null : f.item;
+        }
+        ```
+    - 获取尾节点
+        - 如果列表为空，则返回`null`
+        ```java
+        public E peekLast() {
+            final Node<E> l = last;
+            return (l == null) ? null : l.item;
+        }
+        ```
+- **Queue**接口实现的获取**队头**元素方法
+    - 如果列表为空，则返回`null`
+        ```java
+        public E peek() {
+            final Node<E> f = first;
+            return (f == null) ? null : f.item;
+        }
+        ```
+    - 如果列表为空，则引发异常
+        ```java
+        public E element() {
+            return getFirst();
+        }
+
+        public E getFirst() {
+            final Node<E> f = first;
+            if (f == null) // 如果链表为空识，抛出 NoSuchElementException 异常
+                throw new NoSuchElementException();
+            return f.item;
+        }
+        ```
+
+### LinkedList设定指定位置的元素
+[top](#catalog)
 
 
 # 辅助接口和抽象类
@@ -1100,7 +1853,6 @@ public void clear() {
                 System.out.println("LinkedList iterator time: " + t.iteratorTime(ll));
             }
         }
-
         ```
 
 
