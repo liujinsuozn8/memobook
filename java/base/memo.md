@@ -191,6 +191,9 @@
 * 装箱：基本数据类型--->包装类
     * `int i = 500; Integer t = new Integer(i);`
     * 通过字符串构造包装类对象：`Float f = new Float("3.45")`
+    * 装箱操作会消耗性能
+        * 装箱的本质是：使用基本类型创建对象，然后保存到堆中
+        * 装箱后使用更多的内存，并需要额外的内存搜索来获取被包裹的原始值
 * 拆箱：包装类--->基本数据类型变量
     * 调用包装类的：xxxValue()方法：`boolean b = bObj.booleanValue();`
 * jdk1.5 之后支持自动的拆箱和装箱
@@ -896,12 +899,18 @@ public class CommandPara {
 * 接口和父类中出现**同名属性**时，通过super.param来调用从父类中继承的属性，通过Interface.param来调用接口中的属性
 * java8以后可以为接口添加静态方法和默认方法
     * 可以通过接口直接调用静态方法
-* **默认方法的冲突**
-    * 一个接口中定义了一个默认方法A， 另一个接口中也有同名同参数(无论是否default)的方法，此时会出现接口冲突
-        * 解决方法：实现类必须覆盖接口中的同名同参数的方法
-        * 若想调用某个接口中的冲突方法，可以：Interface.super.method()
-    * 一个接口中定义了一个默认方法A，父类中也定义了一个同名同参数的非抽象方法，此时不会出现冲突
-        * 使用时，遵循**类优先**的原则，接口中的方法会被忽略掉
+* 默认方法
+    * 默认方法使用`default`来修饰：`default 返回值 method(参数列表){...}`
+    * 默认方法在实现类中可以不提供具体的方法实现，可以直接在实现类的对象中进行使用
+        * 通过这种方式，接口变化时，不会影响实现类，即：实现类不需要因为接口的变化而提供接口方法的实现
+    * **默认方法的冲突**
+        * 接口与接口的冲突
+            * 一个接口中定义了一个默认方法A， 另一个接口中也有同名同参数(无论是否default)的方法，此时会出现接口冲突
+            * 解决方法：实现类必须覆盖接口中的同名同参数的方法
+            * 若想调用某个接口中的冲突方法，可以：Interface.super.method()
+        * 接口默认方法与父类方法的冲突
+            * 一个接口中定义了一个默认方法A，父类中也定义了一个同名同参数的**非抽象方法**，此时不会出现冲突
+            * 使用时，遵循**类优先**的原则，**接口中的方法会被忽略掉**
 
 ## 对象的序列化
 [top](#catalog)
@@ -982,6 +991,7 @@ public class CommandPara {
 ## 字符串
 ### 字符串-string
 [top](#catalog)
+* <label style="color:red">任何基本类型与字符串String进行`+`运算时，基本类型转换为字符串类型String</label>
 * 继承关系：
     ```java
     public final class String
@@ -1732,7 +1742,7 @@ public class CommandPara {
             ```
     * 泛型接口
     * 泛型方法: 
-        * 格式：[访问权限] <泛型> 返回类型 方法名([泛型标识 参数名称]) 抛出的异常
+        * 格式：[访问权限] [static] <泛型> 返回类型 方法名([泛型标识 参数名称]) 抛出的异常
             * `public <E> E method(E e){...}`
         * `<E>`标识一个泛型方法 
 
@@ -2720,7 +2730,7 @@ public void method(){
 * run()
     * 每个线程都通过run方法来操作，run()方法的主体称为线程体,**需要重写**
     * 手动调用run()，只是成员方法调用，没有真正启动多线程
-    * run()由JVM调用，调用时间、执行过程有操作系统的CPU调度决定
+    * run()由JVM调用，调用时间、执行过程由操作系统的`CPU调度`决定
 * start()
     * 作用：启动线程，调用run()
     * 必须使用start()启动多线程
@@ -2738,20 +2748,25 @@ public void method(){
     }.start();
     ```
 * 常用方法
-    * public static Thread currentThread() 返回当前代码执行的线程
-    * getName() 获取当前线程的名字
-    * setName() 设置当前线程的名字
-    * yield() 
+    * `public static Thread currentThread()` 返回当前代码执行的线程
+    * `getName()` 获取当前线程的名字
+    * `setName()` 设置当前线程的名字
+    * `yield()`
         * 暂停当前正在执行的线程，把执行机会让会优先级相同或更高的线程
         * **若队列中没有同优先级的线程，则忽略此方法**
-    * join() 阻塞当前线程，等待直接调用join()的对象的线程执行完成
-    * stop() 已过时，强制结束线程
-    * static void sleep(long millis) 阻塞当前线程的执行，参数：毫秒
-    * boolean isAlive() 判断线程是否还活着
+    * `join()` 阻塞当前线程，等待直接调用join()的对象的线程执行完成
+    * `stop()` 已过时，强制结束线程
+    * `static void sleep(long millis)` 阻塞当前线程的执行，参数：毫秒
+    * `boolean isAlive()` 判断线程是否还活着
 
 ### 多线程-线程的4种创建与使用
 [top](#catalog)
-* 创建方式1:继承Thread
+* 四种方式
+    * 继承`Thread`
+    * 实现`Runnable接口`
+    * 实现`Callable接口`
+    * 线程池
+* 创建方式1:继承`Thread`
     1. 创建一个继承与Thread类的子类
     2. 重写Thread类的run() 该线程的操纵
     3. 创建Thread类的子类的对象 在主线程中创建
@@ -2769,13 +2784,13 @@ public void method(){
         t1.start();
     }
     ```
-*  创建方式2:实现Runnable接口
-    1. 定义Runnable接口的实现类A
+*  创建方式2:实现`Runnable接口`
+    1. 定义Runnable接口的实现类`A`
     2. 实现接口中的run()
-    3. 创建A的实例化对象a
-        * A的实例对象可以重复利用。**重复利用时，各线程共享该实例对象中的各种资源**
-    3. 将a作为参数通过Thread类的含参构造器创建线程对象t
-    4. 使用t的start方法，启动线程，调用A中实现的run()
+    3. 创建`A`的实例化对象`a`
+        * `A`的实例对象可以重复利用。**重复利用时，各线程共享该实例对象中的各种资源**
+    3. 将`a`作为参数通过`Thread类`的含参构造器创建`线程对象t`
+    4. 使用`t`的`start()`，启动线程，调用`A`中实现的`run()`
     ```java
     public static void main(String[] args) {
         A a = new A(); //A的实例对象可以重复利用
@@ -2794,7 +2809,7 @@ public void method(){
     * 实现接口方式的优势
         * 实现接口的方式没有单继承的局限性
         * 多线程可以共享同一个对象中的资源
-* 创建方式3:**实现Callable接口**
+* 创建方式3:实现`Callable接口`
     * **需要重写call()**
     * 功能
         * 可以有返回值，并支持泛型的返回值，需要借助FutureTask类(如获取返回结果)
@@ -3581,7 +3596,7 @@ class A {
     * 定制排序：java.util.Comparator
 
 * 自然排序：java.lang.Comparable
-    * 实现该接口的对象集合可以通过`Arrays.sort`、`Collections,sort`进行自动排序
+    * 实现该接口的对象集合可以通过`Arrays.sort`、`Collections.sort`进行自动排序
     * **实现该接口的对象可以用作有效映射中的键或有序集合中的元素，无需指定比较器**
     * 对类C的对象e1、e2，当且仅当`e1.compareTo(e2) == 0`与`e1.equals(e2)`的boolean值相同时，C的自然排序与equals一致。（自然排序与equals的结果最好一致）
     * 重写compareTo(obj)的规则
