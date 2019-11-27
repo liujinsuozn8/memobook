@@ -9,6 +9,8 @@
     - [方法引用](#方法引用)
         - [方法引用的基本概念](#方法引用的基本概念)
         - [如何构建方法引用](#如何构建方法引用)
+    - [复合Lambda表达式的有用方法](#复合lambda表达式的有用方法)
+    - [类型检查&类型推断以及限制](#类型检查&类型推断以及限制)
 
 - java中的并行与无共享可变状态
     - `synchronized`的替代：库会负责分块，将大的流分成几个小的流，来进行**并行处理**
@@ -537,41 +539,245 @@
 [top](#catalog)
 - 使用构造函数名称和`new`，来创建该构造函数的引用：`ClassName::new`
     - 与指向静态方法的引用类似
-    - 根据所使用的函数式接口，编译器会选择对应参数的构造函数
-    - 示例
-        ```java
-        class Apple{
-            int weigth;
+    - 根据所使用的函数式接口，需要有对应的构造函数，否则会产生异常
+- 示例1，通过构造函数引用来实例化对象
+    ```java
+    class Apple{
+        int weigth;
 
-            public Apple(){
-                System.out.println("create a apple");
-            }
-
-            public Apple(Integer weight){
-                System.out.println("create a apple, weight = " + weight);
-                this.weigth = weigth;
-            }
+        public Apple(){
+            System.out.println("create a apple");
         }
 
+        public Apple(Integer weight){
+            System.out.println("create a apple, weight = " + weight);
+            this.weigth = weigth;
+        }
+    }
+
+    @Test
+    public void test(){
+        //空参构造函数引用：  Apple::new
+        //函数签名：() -> Apple
+        //相当于函数式接口：Supplier ()->T
+
+        //创建空参构造函数的引用
+        //等价于： Supplier<Apple> constructor = () -> new Apple();
+        Supplier<Apple> constructor1 = Apple::new;
+        //通过引用创建对象
+        Apple a1 = constructor1.get();
+
+        //创建 Apple(Integer weight) 的引用
+        //函数签名：Integer->Apple
+        //相当于函数式接口：Function<T, R> T->R
+        //等价于： Function<Integer, Apple> constructor2 = (weight) -> new Apple(weight)
+        Function<Integer, Apple> constructor2 = Apple::new;
+        //通过引用创建对象
+        Apple a2 = constructor2.apply(100);
+    }
+    ```
+- 示例2，通过构造函数引用来执行`forEach`
+    ```java
+    class Apple{
+        int weight;
+
+        public Apple(){
+            System.out.println("this is Apple");
+        }
+
+        public Apple(Integer weight){
+            this.weight = weight;
+            System.out.println("this is Apple, weight = " + this.weight);
+        }
+
+        @Override
+        public String toString() {
+            return "Apple{" +
+                    "weight=" + weight +
+                    '}';
+        }
+    }
+    class MyMap{
+        public static <T, R> List<R> map(List<T> list, Function<T, R> f){
+            List<R> result = new ArrayList<>();
+            for (T e : list) {
+                result.add(f.apply(e));
+            }
+
+            return result;
+        }
+    }
+
+    @Test
+    public void MyMapTest(){
+        List<Integer> list = Arrays.asList(3,6,1,7);
+        List<Apple> result = MyMap.map(list, Apple::new);
+        System.out.println(result);
+
+    }
+    ```
+- 使用map保存一些构造函数引用，根据需求示例化对应的对象
+    ```java
+    interface Fruit{}
+
+    class Apple implements Fruit{
+        int weight;
+
+        public Apple(Integer weight){
+            this.weight = weight;
+            System.out.println("this is Apple, weight = " + this.weight);
+        }
+    }
+
+    class Orange implements Fruit{
+        int weight;
+        public Orange(Integer weight){
+            this.weight = weight;
+            System.out.println("this is orange, weight = " + weight);
+        }
+    }
+
+    class MyFruits{
+        static Map<String, Function<Integer, Fruit>> map = new HashMap<>();
+        static {
+            map.put("apple", Apple::new);
+            map.put("orange", Orange::new);
+        }
+
+        public static void getFruit(String type, int weight){
+            map.get(type.toLowerCase()).apply(weight);
+        }
+    }
+
+    @Test
+    public void MyFruitsTest(){
+        MyFruits.getFruit("orange", 100);
+    }
+    ```
+- 针对构造函数、数组构造函数、父类调用(super-call)的一些特殊形式的方法引用？？？
+
+## 复合Lambda表达式的有用方法
+[top](#catalog)
+- 多个简单的Lambda可以复合成复杂的表达式
+- 比较复合器
+    - 基本的比较排序:`list.sort(comparing(Apple::getWeight));`
+    - 逆序比较
+        - 使用Comparator接口的默认方法`reversed`
+        ```java
+        list.sort(comparing(Apple::getWeight).reversed());
+        ```
+    - 比较器链
+        - 使用默认方法`thenComparing`
+        - 通过第一个条件比较，如果第一个条件的比较结果相等，再使用另一个条件进行比较
+        ```java
+        list.sort(comparing(Apple::getWeight)
+                .reversed()
+                .thenComparing(Apple::getCountry));
+        ```
+- Predicate接口的复合
+    - Predicate接口包括三个方法
+        - negate 取反
+        - and
+        - or
+    - 复合时，从左向右确定优先级`a.or(b).and(c)`相当于`(a||b)&&c`
+    - 通过谓词可以重用已有的`Predicate`来创建更复杂谓词
+        ```java
+        readApple.and(a->a.getWeight() > 150)
+                 .or(a-> "green".equals(a.getColor())); 
+        ```
+- Function接口的复合
+    - Function接口提供的复合方法
+        - andThen
+            - 将会先应用第一个Function，在应用另一个Function
+            ```java
+            @Test
+            public void andThenTest(){
+                Function<Integer, Integer> f1 = x -> x+1;
+                Function<Integer, Integer> f2 = x -> x*2;
+                Function<Integer, Integer> f3 = f1.andThen(f2);
+                assert(f3.apply(3) == 8);
+            }
+            ```
+        - compose
+            - `f.compose(g)`，先执行`g`，再执行`f`
+            ```java
+            @Test
+            public void composeTest(){
+                Function<Integer, Integer> f1 = x -> x+1;
+                Function<Integer, Integer> f2 = x -> x*2;
+                Function<Integer, Integer> f3 = f1.compose(f2);
+                assert(f3.apply(3) == 7);
+            }
+            ```
+
+## 类型检查&类型推断以及限制
+[top](#catalog)
+- Lambda表达式本身并不包含它在实现那个函数式接口的信息
+- 类型检查
+    - Lambda的类型是从**使用Lambda的上下文推断出来的**
+    - 上下文：接收Lambda的方法的参数，接收Lambda的局部变量
+    - **目标类型**：上下文中Lambda表达式需要的类型称为目标类型
+- 类型检查的过程
+    - `List<Apple> result = filter(list, (Apple a) -> a.getWeight() > 150);`
+    - 找出`filter`方法的声明：`filter(List<Apple> list, Predicate<Apple> p)`
+    - 确定目标类型：`Predicate<Apple>`
+    - 确定`Predicate<Apple>`是一个函数式接口，定义了一个`test`抽象方法
+    - `test`方法描述了一个**函数描述符**，可以：接收一个`Apple`、返回一个`boolean`
+    - `filter`的任何实际参数都必须匹配这个要求
+        - Lambda表达式的函数签名相同，接收一个`Apple`、返回一个`boolean`
+        - <lambda style="color:red">如果抽象方法中有`throws`，Lambda表达式抛出的异常也必须匹配</lambda>
+- 同样的Lambda，不同的函数式接口
+    - 只要接口的函数签名相同，同一个Lambda可以适用于不同的接口
+    - void兼容规则：如果Lambda的主题是一个表达式，则它和一个返回void的函数描述符兼容
+        ```java
         @Test
-        public void test(){
-            //空参构造函数引用：  Apple::new
-            //函数签名：() -> Apple
-            //相当于函数式接口：Supplier ()->T
+        public void voidRuleTest(){
+            List<String> list = new ArrayList<>();
+            list.add("aaaa");
+            list.add("bbb");
+            System.out.println(list);
 
-            //创建空参构造函数的引用
-            //等价于： Supplier<Apple> constructor = () -> new Apple();
-            Supplier<Apple> constructor1 = Apple::new;
-            //通过引用创建对象
-            Apple a1 = constructor1.get();
+            Predicate<String> p = s -> list.add(s);
+            Consumer<String> b = s -> list.add(s);
 
-            //创建 Apple(Integer weight) 的引用
-            //函数签名：Integer->Apple
-            //相当于函数式接口：Function<T, R> T->R
-            //等价于： Function<Integer, Apple> constructor2 = (weight) -> new Apple(weight)
-            Function<Integer, Apple> constructor2 = Apple::new;
-            //通过引用创建对象
-            Apple a2 = constructor2.apply(100);
+            p.test("ccc");
+            System.out.println(list);
+
+            b.accept("ddd");
+            System.out.println(list);
         }
         ```
-- 针对构造函数、数组构造函数、父类调用(super-call)的一些特殊形式的方法引用
+- 类型推断
+    - java编译器会从**上下文/目标类型**推断出用什么函数式接口来配合Lambda表达式
+        - 通过目标类型，可以推断出函数签名，再推断出适合Lambda的签名
+        - 编译器能够了解Lambda表达式的参数类型，这样就**可以在Lambda语法中省去标注参数类型**
+        ```java
+        //标记参数类型
+        Comparator<Apple> c = (Apple a1, Apple a2) -> a1.getWeight().compareTo(a2.getWeight());
+
+        //省略参数类型
+        Comparator<Apple> c = (a1, a2) -> a1.getWeight().compareTo(a2.getWeight());
+        ```
+    - 当Lambda只有一个参数时，可以省略`()`
+        ```java
+        List<Apple> result = filter(list, a -> "green".equals(a.getColor()));
+        ```
+- 使用局部变量
+    - Lambda表达式允许使用**自由变量**，即在Lambda表达式的外部定义的变量
+        - 包括局部变量和静态变量
+    - 使用自由变量的称作**Lambda**
+        ```java
+        @Test
+        public void localParamTest(){
+            int a = 10;
+            Runnable r = () -> System.out.println(a);
+            r.run();
+        }
+        ```
+    - 使用局部变量的限制
+        - Lambda表达式引用的局部变量必须是`final`的，或只有一次赋值
+        - 限制的原因（为什么只是**局部变量**）
+            - 实例变量存储在堆中，局部变量保存在栈上
+            - 如果Lambda可以直接访问局部变量，而且Lambda是在一个线程中使用的，则在使用Lambda线程时，可能会在变量被回收之后去访问
+                - java在访问自由局部变量时，实际上是在访问它的副本，而不是访问原始变量 ??????????????
+            - 这一限制不鼓励使用改变外部变量的命令式编程模型
