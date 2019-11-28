@@ -22,7 +22,9 @@
     - [映射](#映射)
     - [查找和匹配](#查找和匹配)
     - [reduce归约](#reduce归约)
-    - [](#)
+    - [交易员示例](#交易员示例)
+    - [数值流](#数值流)
+    - [构建流](#构建流)
     - [](#)
     - [](#)
     - [](#)
@@ -993,27 +995,34 @@ List<Dish> menu = Arrays.asList(
         - 构建器模式会调用built方法;相当于终端操作
 
 - 无状态和有状态
-    - 无状态：没有内部状态
-    - 像`map`,`filter`等操作会从输入流中获取每一个元素，并在输出流中得到0或1个结果
+    - 无状态操作：没有内部状态
+        - 像`map`,`filter`等操作会从输入流中获取每一个元素，并在输出流中得到0或1个结果
+    - 有状态操作
+        - 像`reduce`,`sum`,`max`等操作需要内部状态来累计结果。但不管流中有多少元素要处理，内部状态都是**有界的**
+        - 像`sort`,`distinct`等操作，虽然也是中间操作，但是从流中排序和删除重复项目是都需要知道先前的历史
+            - 排序需要所有元素都放入缓冲区之后才能给输出流加入一个项目，这个操作的存储要求是**无界的**，当流比较大或是无限时，就可能会有问题
 
 -StreamAPI提供的操作
-    - 中间操作
 
     |操作|类型|返回类型|操作参数|函数描述符|
     |-|-|-|-|-|
     |filter|中间|Stream<T>|Predicate<T>|T -> boolean|
+    |distinct|中间(有状态-无界)|Stream<T>|-|-|
+    |skip|中间(有状态-有界)|Stream<T>|long||
+    |limit|中间(有状态-有界)|Stream<T>|long|-|
     |map|中间|Stream<T>|Function<T,R>|T -> R|
-    |limit|中间|Stream<T>|-|-|
-    |sorted|中间|Stream<T>|Comparator<T>|(T, T) -> int|
-    |distinct|中间|Stream<T>|-|-|
+    |flatMap|中间|Stream<T>|Function<T,Stream<R>>|T -> Stream<R>|
+    |sorted|中间(有状态-无界)|Stream<T>|Comparator<T>|(T, T) -> int|
+    |anyMatch|终端|boolean|Predicate<T>|T->boolean|
+    |noneMatch|终端|boolean|Predicate<T>|T->boolean|
+    |allMatch|终端|boolean|Predicate<T>|T->boolean|
+    |findAny|终端|Optional<T>|-|-|
+    |FindFirst|终端|Optional<T>|-|-|
+    |forEach|终端|void|Consume<T>|T->void|
+    |collect|终端|R|Collector<T, A, R>||
+    |reduce|终端(有状态-有界)|Optional<T>|BinaryOperator<T>|(T, T)->T|
+    |count|终端|long|||
 
-    - 终端操作
-
-    |操作|类型|目的|
-    |-|-|-|
-    |forEach|终端|消费流中的每个元素并对其应用Lambda表达式。返回void|
-    |count|终端|返回流中的元素个数。返回long|
-    |collect|终端|把流归约成一个集合，如List、Map、甚至是Integer|
 
 # 流的使用
 ## 筛选和切片
@@ -1105,11 +1114,12 @@ List<Dish> menu = Arrays.asList(
         List<Integer> numbers2 = Arrays.asList(3, 4);
 
         List<int[]> pairs = numbers1.stream()
-                                    .flatMap(i -> numbers1.stream()
+                                    .flatMap(i -> numbers2.stream()
                                                           .filter(j -> (j+i) % 3 == 0)
                                                           .map(j -> new int[] {i, j}) //只需要流，在外部进行flatMap，不需要终端操作
                                                           // 与Arrays.stream()类似，将值转换为流
                                      )
+
                                     .collect(toList());
         ```
 
@@ -1228,7 +1238,233 @@ List<Dish> menu = Arrays.asList(
     - Lambda表达式不能更改状态，如示例变量
     - 操作必须满足结合律，才可以按照任意顺序执行
 
+## 交易员示例
+[top](#catalog)
+- 类定义
+    ```java
+    public class Trader {
+        private final String name;
+        private final String city;
 
+        public Trader(String name, String city) {
+            this.name = name;
+            this.city = city;
+        }
 
+        public String getName() {
+            return name;
+        }
+
+        public String getCity() {
+            return city;
+        }
+
+        @Override
+        public String toString() {
+            return "Trader:" + name + "in" + city;
+        }
+    }
+    ```
+    ```java
+    public class Transaction {
+        private final Trader trader;
+        private final int year;
+        private final int value;
+
+        public Transaction(Trader trader, int year, int value) {
+            this.trader = trader;
+            this.year = year;
+            this.value = value;
+        }
+
+        public Trader getTrader() {
+            return trader;
+        }
+
+        public int getYear() {
+            return year;
+        }
+
+        public int getValue() {
+            return value;
+        }
+
+        @Override
+        public String toString() {
+            return "Transaction{" +
+                    "trader=" + trader +
+                    ", year=" + year +
+                    ", value=" + value +
+                    '}';
+        }
+    }
+    ```
+- 测试
+    ```java
+    @Test
+    public void test(){
+        Trader raoul = new Trader("Raoul", "Cambridge");
+        Trader mario = new Trader("Mario","Milan");
+        Trader alan = new Trader("Alan","Cambridge");
+        Trader brian = new Trader("Brian","Cambridge");
+        List<Transaction> transactions = Arrays.asList(
+                new Transaction(brian, 2011, 300),
+                new Transaction(raoul, 2012, 1000),
+                new Transaction(raoul, 2011, 400),
+                new Transaction(mario, 2012, 710),
+                new Transaction(mario, 2012, 700),
+                new Transaction(alan, 2012, 950)
+        );
+
+        //(1) 找出2011年发生的所有交易，并按交易额排序(从低到高)。
+        List<Transaction> c1 = transactions.stream()
+                .filter(t -> t.getYear() == 2011)
+                .sorted(comparing(Transaction::getValue))
+                .collect(toList());
+        //System.out.println(c1);
+        //(2) 交易员都在哪些不同的城市工作过?
+        List<String> c2 = transactions.stream()
+                .map(t -> t.getTrader().getCity())
+                .distinct()
+                .collect(toList());
+        //System.out.println(c2);
+
+        //(3) 查找所有来自于剑桥的交易员，并按姓名排序。
+        List<Trader> c3 = transactions.stream()
+                .map(Transaction::getTrader)
+                .filter(t -> "Cambridge".equals(t.getCity()))
+                .distinct()
+                .sorted(comparing(Trader::getName))
+                .collect(toList());
+        //System.out.println(c3);
+
+        //(4) 返回所有交易员的姓名字符串，按字母顺序排序。
+        String c4 = transactions.stream()
+                .map(t -> t.getTrader().getName())
+                .sorted()
+                .collect(joining());
+        //System.out.println(c4);
+
+        //(5) 有没有交易员是在米兰工作的?
+        boolean c5 = transactions.stream()
+                .anyMatch(t -> "Milan".equals(t.getTrader().getCity()));
+        System.out.println(c5);
+        //System.out.println(c5);
+
+        //(6) 打印生活在剑桥的交易员的所有交易额。
+        transactions.stream()
+                .filter(t -> "Cambridge".equals(t.getTrader().getCity()))
+                .map(Transaction::getValue)
+                .forEach(System.out::println);
+
+        //(7) 所有交易中，最高的交易额是多少?
+        Optional<Integer> maxValue = transactions.stream()
+                .map(Transaction::getValue)
+                .reduce(Integer::max);
+        System.out.println(maxValue.get());
+
+        //(8) 找到交易额最小的交易。
+        Optional<Integer> minValue = transactions.stream()
+                .map(Transaction::getValue)
+                .reduce(Integer::min);
+        System.out.println(minValue.get());
+    }
+    ```
+
+## 数值流
+[top](#catalog)
+- 原始类型流特化
+    - 三个原始类型特化流接口
+        - IntStream
+        - DoubleStream
+        - LongStream
+    - 特化接口会将流中的元素特化为`int`,`long`,`double`，从而避免装箱成本
+    - 出现特化接口的原因：防止装箱造成的复杂性
+    - 映射到数值流
+        - 将流转换为特化版本的常用方法
+            - mapToInt
+            - mapToLong
+            - mapToDouble  
+        - 这些方法和map的工作方式相同，只是它们返回一个特化流，而不是`Stream<T>`
+        - 特化流上的操作只能产生原始数据
+            - 如IntStream的map操作接受的Lambda必须接受int并返回int
+        - 转换后会提供`sum`,`max`,`min`,`average`等方法            
+        - 示例：求和
+            - 如果是空流，`sum`默认返回`0`
+            ```java
+            int sumValue = menu.stream()
+                            .mapToInt(Dish::getCalories)
+                            .sum();
+            ```
+    - 转换回对象流 
+        - `boxed`方法，将原始流转换成一般流
+            - 示例
+                ```java
+                IntStream intStream = menu.stream().mapToInt(Dish::getCaloried);
+                Stream<Integer> stream = intStream.boxed();
+                ```
+        - `mapToObj`方法，返回一个对象值流
+    - 默认值`Optional`的特化版本
+        - `OptionalInt`,`OptionalDouble`,`OptionalLong`
+        - 通过`Optional`的特化版本来表示值是否存在
+        ```java
+        OptionalInt max = menu.stream()
+                .mapToInt(Dish::getCalories)
+                .max();
+        // 如果值不存在，则使用默认值1
+        System.out.println(max.orElse(1));
+        ```
+- 数值范围
+    - java8引入了两个可用于`IntStream`和`LongStream`的静态方法，来生成范围
+        - `range(起始值, 结束值)`，不包含结束值
+        - `rangeClosed(起始值, 结束值)`，包含结束值
+
+    ```java
+    long count = IntStream.rangeClosed(1, 100)
+                          .filter(i -> i % 2 == 0)
+                          .count();
+    ```
+
+- 数值流应用：勾股数
+    ```java
+    IntStream.rangeClosed(1, 100).boxed()
+            .flatMap(a -> IntStream.rangeClosed(1, 100)
+                                    .mapToObj(b-> new double[]{a, b, Math.sqrt(a*a + b*b)})
+                                    .filter(t -> t[2]%1 == 0)
+            ).limit(5)
+            .forEach(t-> System.out.println(Arrays.toString(t)));
+    ```
+
+## 构建流
+[top](#catalog)
+- 由值创建流
+    - `Stream.of`，可以通过显示值创建一个流
+        - **该方法可以接受任意数量的参数**
+        - 示例：创建一个字符串流，并转换为大写
+            ```java
+            Stream.of("aaa", "bbb","ccc")
+                    .map(String::toUpperCase)
+                    .forEach(System.out::println);
+            ```
+    - `Stream.empty()`获得一个空流
+        ```java
+        Stream<String> emptyStream = Stream.empty();
+        ```
+- 由数组创建流
+    - `Arrays.stream`，从数组创建一个流
+        - 方法接受一个数组作为参数
+        - 示例：将`int[]`转换为流，并求和
+            ```java
+            int[] a = new int[]{1,2,3,6,7,8};
+            int sum = Arrays.stream(a).sum();
+            System.out.println(sum);
+            ```
+- 由文件生成流
+    - `java.nio.file.Files`中的很多静态方法都会放回一个流
+- 由函数生成流：创建无限流
+    - 通过两个静态方法从函数生成流
+        - `Stream.iterate`
+        - `Stream.generate`
+    - 通过`iterate`、`generate`会用给定的函数创建值，可以无穷尽的计算下去，需要`limit(n)`来对流进行限制
 
 [top](#catalog)
