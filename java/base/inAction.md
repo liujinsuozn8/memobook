@@ -25,6 +25,10 @@
     - [交易员示例](#交易员示例)
     - [数值流](#数值流)
     - [构建流](#构建流)
+- [用流收集数据](#用流收集数据)
+    - [Collector收集器](#collector收集器)
+    - [归约和汇总](#归约和汇总)
+    - [](#)
     - [](#)
     - [](#)
     - [](#)
@@ -48,7 +52,6 @@
         - 通过行为参数化，可以**将处理逻辑 与 对集合元素的应用 进行拆分**
         - 可以重复使用同一个方法，通过传递不同的行为 来达到不同的目的
     - 能够轻松的应对需求的变化
-- **谓词**:一个**返回指定类型值的函数**
 - 对一个实例的改造
     - 对苹果库存的数据筛选
     - 不好的实现：通过标识来区分属性，并执行删选
@@ -206,7 +209,7 @@
 - Lambda表达式的特性
     - 匿名性：没有明确的名称
     - 函数性：
-        - 不属于末各特定的类
+        - 不属于某个特定的类
         - 和方法一样，有参数列表、函数主体、返回类型，可能还有一个可以抛出的异常列表
     - 传递性：可以作为参数传递给方法 或 存储在遍历中
     - 简洁性：无需像匿名类一样写**模板代码**
@@ -331,9 +334,9 @@
         ``` 
     - 传递Labmda表达式
         - 读取一行
-            - `String result processFile((BufferedReader br) -> br.readLine());`
+            - `String result = processFile((BufferedReader br) -> br.readLine());`
         - 读取两行
-            - `String result processFile((BufferedReader br) -> br.readLine() + br.readLine());`
+            - `String result = processFile((BufferedReader br) -> br.readLine() + br.readLine());`
 
 ## 使用函数式接口
 [top](#catalog)
@@ -428,7 +431,7 @@
 - 原始类型特化
     - java对内置的几个函数式接口`Predicate, Consumer, Function`等 做了基本类型的特化处理
         - 通过`原始类型特化`，来防止基本类型的自动装箱操作
-    - 在使用泛型时，无法使用基本类型，只能使用对应的包装类，这是有泛型的实现机制决定的，但是java的自动装箱操作会浪费性能
+    - 在使用泛型时，无法使用基本类型，只能使用对应的包装类，这是由泛型的实现机制决定的，但是java的自动装箱操作会浪费性能
     - 示例：`IntPredicate`
         - `java.util.function.IntPredicate`
             * 内部实现，不使用泛型，直接使用`int`
@@ -456,7 +459,7 @@
                 String process(BufferedReader b) throws IOException;
             }
             ```
-        - 使用java提供的内部杉树式接口时，可以将Lambda包裹在一个`try/catch`块中
+        - 使用java提供的内部函数式接口时，可以将Lambda包裹在一个`try/catch`块中
             ```java
             Function<BufferedReader, String> f = (BufferedReader b) -> {
                 try{
@@ -634,7 +637,7 @@
 
     }
     ```
-- 使用map保存一些构造函数引用，根据需求示例化对应的对象
+- 使用map保存一些构造函数引用，根据需求实例化对应的对象
     ```java
     interface Fruit{}
 
@@ -1375,9 +1378,9 @@ List<Dish> menu = Arrays.asList(
 [top](#catalog)
 - 原始类型流特化
     - 三个原始类型特化流接口
-        - IntStream
-        - DoubleStream
-        - LongStream
+        - `IntStream`
+        - `DoubleStream`
+        - `LongStream`
     - 特化接口会将流中的元素特化为`int`,`long`,`double`，从而避免装箱成本
     - 出现特化接口的原因：防止装箱造成的复杂性
     - 映射到数值流
@@ -1437,6 +1440,11 @@ List<Dish> menu = Arrays.asList(
 
 ## 构建流
 [top](#catalog)
+- 可以构建流的数据源
+    - 值序列
+    - 数组
+    - 文件数据
+    - 函数
 - 由值创建流
     - `Stream.of`，可以通过显示值创建一个流
         - **该方法可以接受任意数量的参数**
@@ -1463,8 +1471,156 @@ List<Dish> menu = Arrays.asList(
     - `java.nio.file.Files`中的很多静态方法都会放回一个流
 - 由函数生成流：创建无限流
     - 通过两个静态方法从函数生成流
-        - `Stream.iterate`
-        - `Stream.generate`
+        - `Stream.iterate(初始值, UnaryOperator<T>)`
+        - `Stream.generate(Supplier<T>)`
+        - 原始类型流特化接口`IntStream`、`DoubleStream`、`LongStream`中也有相同的方法，但是对应的函数也需要使用特化的函数式接口
+
+    - **无限流不能做排序或归约，因为所有元素都需要处理，但是永远无法完成**
     - 通过`iterate`、`generate`会用给定的函数创建值，可以无穷尽的计算下去，需要`limit(n)`来对流进行限制
+    - `iterate`
+        - 示例：
+            ```java
+            Stream.iterate(0, n->n+2).limit(10).forEach(System.out:println);
+            ```
+        - 示例：斐波那契数列
+            ```java
+            //0,1,1,2,3,5,8,13,21
+            //0,1为起始数
+            Stream.iterate({1,1}, n-> {n[1], n[0]+n[1])
+                .limit(20)
+                .forEach(n->System.out.println(Arrays.toString(n)))
+            ```
+    - `generate`
+        - 示例:处理随机值
+            ```java
+            Stream.generate(Math::random)
+                  .limit(5)
+                  forEach(System.out::println)
+            ```
+        - 示例：内部有可变状态的**斐波那契数列**
+            - 不使用lambda，直接使用函数式接口的匿名类对象，并在对象内部保存可变状态
+            ```java
+            IntSupplier fib = new IntSupplier(){
+                private int previous = 0;
+                private int current = 1;
+                public int getAsInt(){
+                    int oldPrevious = current;
+                    int next = current + previous;
+                    previous = current;
+                    current = next;
+                    return oldPrevious;
+                }
+            }
+            ```
+
+# 用流收集数据
+
+## Collector收集器
+[top](#catalog)
+- 传给`collect`的参数需要是一个`Collector`
+    - 对流做`collect`方法将对流中的元素触发一个归约操作，由`Collector`来提供参数化
+    - `Collector`会对元素应用一个转换函数，经常是不体现任何效果的恒等转换，并将结果积累在一个数据结构中，再产生最终输出
+- 预定义收集器
+    - 都是`java.util.stream.Collectors`类提供的工厂方法创建的收集器
+    - 预定义收集器主要提供了三大功能：
+        - 将流元素归约和汇总为一个值
+        - 元素分组
+        - 元素分区
+## 归约和汇总
+[top](#catalog)
+- 计算元素的个数：`counting`
+    - 示例：计算菜单里有多少中菜
+        ```java
+        // 使用counting工厂方法返回的收集器
+        long dishCount1 = menu.stream().collect(Collectors.counting());
+
+        // 直接使用count()
+        long dishCount2 = menu.stream().count();
+        ```
+- 求最大值、最小值
+    - 可以使用两个收集器
+        - `Collectors.maxBy(Comparator<T>)`
+        - `Collectors.minBy(Comparator<T>)`
+        - 返回值都是`Optional<T>`，防止空流
+    - 示例：查找流中的最大值、最小值
+        ```java
+        Comparator<Dish> com = Comparator.comparingInt(Dish::getCalories); //创建比较器
+        Optional<Dish> maxDish = menu.stream().collect(maxBy(com));
+        ```
+- 汇总
+    - 求和：`Collectors.summingInt(T->int)`,`summingLong`,`summingDouble`
+        - 返回一个收集器`Collector`
+        - 遍历的初始值默认是`0`
+        - 示例：计算菜单列表的热量
+            ```java
+            int s = menu.stream().collect(summingInt(Dish::getCalories));
+            ```
+    - 计算平均值`Collectors.averagingInt`,`averagingLong`,`averagingDouble`
+        ```java
+        double s = menu.stream().collect(averagingInt(Dish::getCalories));
+        ```
+    - 一次操作分别执行：求和，最大最小值，均值  `Collectors.summarizingInt`,`summarizingLong`,`summarizingDouble`
+        - 返回`IntSummaryStatistics`，`LongSummaryStatistics`，`DoubleSummaryStatistics`对象
+            - 通过`getter`来访问结果
+        ```java
+        int s = menu.stream().collect(averagingInt(Dish::getCalories));
+        ```
+- 连接字符串：`joining`
+    - `joining`返回的收集器会对流中每一个对象应用`toString`，将得到的所有字符串连接成一个字符串
+        - 如果类内部有`toString`方法，则不用对流进行转换，直接对原始流应用`joining`即可
+            ```java
+            String result = menu.stream().collect(joining());
+            ```
+    - `joining`内部使用了`StringBuilder`来连接字符串
+    - `joining(String split)`, 通过重载方法来提供连接字符串的分隔符
+            ```java
+            String result = menu.stream().collect(joining(", "));
+            ```
+
+- 广义的归约汇总`Collectors.reducing`
+    - 上面这些收集器都是`Collectors.reducing`工厂方法定义的归约过程的特殊情况
+    - 重载：`reducing(起始值, 转换函数, BinaryOperator)`
+        - 三个参数
+            - 起始值，也是空流的放回值
+            - 转换函数，将对象转换为数值
+            - `BinaryOperator`，对数值进行求和
+    - 重载：`reducing(起始值, 转换函数, BinaryOperator)`
+        - 可以看作三个参数的特殊情况
+        - 起始值：默认使用流中的第一个项目作为起始值
+        - 恒等函数作为转换函数：`x=y`
+        - 
+    - 通过`reducing`来做`summing`
+        ```java
+        int total = menu.stream().collect(reducing(0, Dish::getCalories, (i, j)->i+j ));
+        ```
 
 [top](#catalog)
+
+
+`Stream.of` 可以通过显示值创建一个流
+`Stream.empty()`获得一个空流
+`Arrays.stream()`，从数组创建一个流
+`Stream.iterate(初始值, UnaryOperator<T>)`从函数生成流
+`Stream.generate(Supplier<T>)`
+
+中间操作
+filter, map, limit, distinct, sort
+终端操作
+collect, reduce, sum, max
+
+复合Lambda表达式
+Comparator:reversed,thenComparing
+Predicate:negate,and,or
+Function:andThen,compose
+
+收集器
+counting
+maxBy
+minBy
+summingXXX
+averagingXXX
+summarizingXXX
+joining
+
+comparing
+comparingInt
