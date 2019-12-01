@@ -473,26 +473,26 @@
 ## java8中常用的函数式接口
 [top](#catalog)
 
-    |函数式接口|函数描述符|原始类型特化|
-    |-|-|-|
-    |Predicate<T>|`T->boolean`|IntPredicate,LongPredicate,DoublePredicate|
-    |Consume<T>|`T->void`|IntConsume,LongConsume,DoubleConsume|
-    |Function<T, R>|`T->R`|IntFunction<R>|
-    |||IntToDoubleFunction|
-    |||IntToLongFunction|
-    |||LongFunction<R>|
-    |||LongToDoubleFunction|
-    |||LongToIntFunction|
-    |||DoubleFunction<R>|
-    |||ToIntFunction<T>|
-    |||ToDoubleFunction<T>|
-    |||ToLongFunction<T>|
-    |Supplier<T>|`()->T`|BooleanSupplier,IntSupplier,LongSupplier,DoubleSupplier|
-    |UnaryOperator<T>|`T->T`|IntUnaryOperator,LongUnaryOperator,DoubleUnaryOperator|
-    |BinaryOprator<T>|`(T,T)->T`|IntBinaryOprator, LongBinaryOprator, DoubleBinaryOprator|
-    |BiPredicate<L,R>|`(L,R)->boolean`|-|
-    |BiConsumer<T,U>|`(T,U)->void`|ObjIntConsume<T>, ObjLongConsume<T>, ObjDoubleComsume<T>|
-    |BiFunction<T,U,R>|`(T,U)->R`|ToIntBiFunction<T,U>, ToLongBiFunction<T,U>, ToDoubleBiFunction<T,U>|
+|函数式接口|函数描述符|原始类型特化|
+|-|-|-|
+|Predicate<T>|`T->boolean`|IntPredicate,LongPredicate,DoublePredicate|
+|Consume<T>|`T->void`|IntConsume,LongConsume,DoubleConsume|
+|Function<T, R>|`T->R`|IntFunction<R>|
+|||IntToDoubleFunction|
+|||IntToLongFunction|
+|||LongFunction<R>|
+|||LongToDoubleFunction|
+|||LongToIntFunction|
+|||DoubleFunction<R>|
+|||ToIntFunction<T>|
+|||ToDoubleFunction<T>|
+|||ToLongFunction<T>|
+|Supplier<T>|`()->T`|BooleanSupplier,IntSupplier,LongSupplier,DoubleSupplier|
+|UnaryOperator<T>|`T->T`|IntUnaryOperator,LongUnaryOperator,DoubleUnaryOperator|
+|BinaryOprator<T>|`(T,T)->T`|IntBinaryOprator, LongBinaryOprator, DoubleBinaryOprator|
+|BiPredicate<L,R>|`(L,R)->boolean`|-|
+|BiConsumer<T,U>|`(T,U)->void`|ObjIntConsume<T>, ObjLongConsume<T>, ObjDoubleComsume<T>|
+|BiFunction<T,U,R>|`(T,U)->R`|ToIntBiFunction<T,U>, ToLongBiFunction<T,U>, ToDoubleBiFunction<T,U>|
 
 ## 方法引用
 [top](#catalog)
@@ -1007,24 +1007,24 @@ List<Dish> menu = Arrays.asList(
 
 -StreamAPI提供的操作
 
-    |操作|类型|返回类型|操作参数|函数描述符|
-    |-|-|-|-|-|
-    |filter|中间|Stream<T>|Predicate<T>|T -> boolean|
-    |distinct|中间(有状态-无界)|Stream<T>|-|-|
-    |skip|中间(有状态-有界)|Stream<T>|long||
-    |limit|中间(有状态-有界)|Stream<T>|long|-|
-    |map|中间|Stream<T>|Function<T,R>|T -> R|
-    |flatMap|中间|Stream<T>|Function<T,Stream<R>>|T -> Stream<R>|
-    |sorted|中间(有状态-无界)|Stream<T>|Comparator<T>|(T, T) -> int|
-    |anyMatch|终端|boolean|Predicate<T>|T->boolean|
-    |noneMatch|终端|boolean|Predicate<T>|T->boolean|
-    |allMatch|终端|boolean|Predicate<T>|T->boolean|
-    |findAny|终端|Optional<T>|-|-|
-    |FindFirst|终端|Optional<T>|-|-|
-    |forEach|终端|void|Consume<T>|T->void|
-    |collect|终端|R|Collector<T, A, R>||
-    |reduce|终端(有状态-有界)|Optional<T>|BinaryOperator<T>|(T, T)->T|
-    |count|终端|long|||
+|操作|类型|返回类型|操作参数|函数描述符|
+|-|-|-|-|-|
+|filter|中间|Stream<T>|Predicate<T>|T -> boolean|
+|distinct|中间(有状态-无界)|Stream<T>|-|-|
+|skip|中间(有状态-有界)|Stream<T>|long||
+|limit|中间(有状态-有界)|Stream<T>|long|-|
+|map|中间|Stream<T>|Function<T,R>|T -> R|
+|flatMap|中间|Stream<T>|Function<T,Stream<R>>|T -> Stream<R>|
+|sorted|中间(有状态-无界)|Stream<T>|Comparator<T>|(T, T) -> int|
+|anyMatch|终端|boolean|Predicate<T>|T->boolean|
+|noneMatch|终端|boolean|Predicate<T>|T->boolean|
+|allMatch|终端|boolean|Predicate<T>|T->boolean|
+|findAny|终端|Optional<T>|-|-|
+|FindFirst|终端|Optional<T>|-|-|
+|forEach|终端|void|Consume<T>|T->void|
+|collect|终端|R|Collector<T, A, R>||
+|reduce|终端(有状态-有界)|Optional<T>|BinaryOperator<T>|(T, T)->T|
+|count|终端|long|||
 
 
 # 流的使用
@@ -1624,3 +1624,49 @@ joining
 
 comparing
 comparingInt
+
+
+
+
+-----------------------------------
+- 参考:`https://www.cnblogs.com/CarpenterLee/p/6637118.html`
+- Stream流水线解决方案
+    - 操作如何记录
+        - 指中间操作
+        - 操作的描述：`Stage<数据来源，操作，回调函数>`
+            - 使用`pipelineHelper`表示`Stage`
+        - `Head`表示第一个Stage，如`Collection.stream()`产生的Stage
+            - 这个Stage中不包含任何操作
+        - `StatelessOp`，表示无状态的中间操作
+        - `StatefulOp`，表示有状态的中间操作
+    - 操作如何叠加
+        - 基本问题：
+            - 前面的Stage并不直到后面的Stage执行了哪种操作、回调函数是哪种形式
+            - 只有当前Stage本身才知道该如何执行自己包含的动作
+        - 通过`Sink`协议接口来解决问题
+            - 包含的方法
+                - `void begin(long size)`:开始遍历元素之前调用该方法，通知Sink做好准备
+                - `void end()`:所有元素遍历完成之后调用，通知Sink没有更多的元素了
+                - `boolean cancellationRequested()`:是否可以结束操作，可以让短路操作尽早结束
+                - `void accept(T t)`
+                    - **遍历元素时**调用，接受一个待处理元素，并对元素进行处理
+                    - `Stage`把自己包含的**操作和回调函数**封装到该方法力，前一个Stage只需要调用当前`Stage.accept(T t)`方法就可以了???????
+
+        - 每个Stage都会将自己的操作封装到一个Sink中，前一个Stage只要调用后一个`Stage.accept()`，不需要知道其内部是如何处理的
+            - 对于**有状态**操作，必须实现`begin`,`end`
+                - 如`sorted`，它的`begin`会创建一个保存结果的容器，`accept`会将元素添加到容器中，`end`负责对容器进行排序
+        - <label style="color:red">`Stream API`内部实现的本质，就是如何重载`Sink`接口</label>
+        - 执行时，只需要从流水线的`head`开始对数据源依次调用每个`Stage`对应的`Sink.{begin, accept, cancellationRequested, end}`
+
+- Map的Sink解析
+    -
+
+
+数据保存在：spliterator
+操作保存在各PipelineHelper
+    执行时转换成sink
+        所以每个sink的Sink操作需要调用下一个sink的Accept来完成链式调用
+整体要通过stream的终端操作来启动
+        
+
+
