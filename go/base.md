@@ -1,4 +1,5 @@
 <span id="catalog"></span>
+- [通过zip配置环境])(#通过zip配置环境)
 - [基本知识](#基本知识)
 - [数据类型](#数据类型)
     - [基本数据类型](#基本数据类型)
@@ -41,6 +42,50 @@
 - [tcp编程](#tcp编程)
 - [操作redis](#操作redis)
 
+# 通过zip配置环境
+[top](#catalog)
+- 压缩包解压到`C盘`
+- X盘创建目录`mygo`
+	- 目录下在创建`bin`,`pkg`,`src`三个目录
+- 添加环境变量
+	- 用户变量：GOROOT:`C:\go`
+	- 用户变量：GOPATH:`X:\mygo`
+	- 环境变量：path：`C:\go\bin`,`X:\mygo\bin`
+- 测试：`go version`
+- git下载
+	- `github.com/golang/tools`->`src/golang.org/x/tools`
+		- 不需要安装
+	- `github.com/sqs/goreturns`
+		- 执行`go install`
+	- `github.com/mdempsky/gocode`
+		- 执行`go install`
+	- `github.com/uudashr/gopkgs`
+		- 需要`github.com/karrick/godirwalk`
+		- 需要`github.com/pkg/errors`
+		- 执行`go install xxx/github.com/uudashr/gopkgs/cmd/gopkgs`
+	- `github.com/ramya-rao-a/go-outline`
+		- 执行`go install`
+	- `github.com/rogpeppe/godef`
+		- 执行`go install`
+	- `github.com/go-delve/delve`
+		- 执行`go install xxx/github.com/go-delve/delve/cmd/dlv`
+- Vscode配置
+	- 下载第一个go工具
+	- 测试配置
+		```xml
+		"version": "0.2.0",
+		"configurations": [
+			{
+				"name": "GoLaunch",
+				"type": "go",
+				"request": "launch",
+				"mode": "auto",
+				"program": "${fileDirname}",
+				"env": {},
+				"args": []
+			}
+		]
+		```
 # 基本知识
 [top](#catalog)
 * Go 程序开发的注意事项
