@@ -15,10 +15,11 @@
     - [为什么需要所有权](#为什么需要所有权)
     - [引用与借用](#引用与借用)
 - 结构体
-    - [基本使用](#基本使用)
+    - [结构体的基本使用](#结构体的基本使用)
         - [结构体的使用](#结构体的使用)
         - [元祖结构体](#元祖结构体)
         - [类单元结构体](#类单元结构体)
+        - [空结构体](#空结构体)
     - [结构体的方法](#结构体的方法)
     - [结构体的关联函数](#结构体的关联函数)
     - [多个impl块](#多个impl块)
@@ -74,12 +75,15 @@
     - [共享状态并发](#共享状态并发)
     - [使用Sync和Send的可扩展并发](#使用sync和send的可扩展并发)
 - 面向对象特性
-    - [为使用用不同类型的值而设计的trait对象](#为使用用不同类型的值而设计的trait对象)
+    - [为使用不同类型的值而设计的trait对象](#为使用不同类型的值而设计的trait对象)
     - [面向对象设计模式的实现](#面向对象设计模式的实现)
 - 模式
     - [所有可能会用到模式的位置](#所有可能会用到模式的位置)
     - [Refutability可反驳性--模式是否会匹配失败](#refutability可反驳性--模式是否会匹配失败)
     - [所有模式的语法](#所有模式的语法)
+- 高级特征
+    - [不安全的Rust](#不安全的Rust)
+    - [高级trait](#高级trait)
 
 # 基本使用
 [top](#catalog)
@@ -783,7 +787,7 @@
 
 # 结构体
 ## 结构体的使用
-### 基本使用
+### 结构体的基本使用
 [top](#catalog)
 * 定义结构体：
     ```rust
@@ -863,6 +867,9 @@
 ### 类单元结构体
 * 类单元结构体没有任何字段，类似于`()`，即unit类型
 * 用于在某个类型上实现trait，但不需要在类型中存储数据
+
+### 空结构体
+* `struct XXX;`
 
 ## 结构体的方法
 [top](#catalog)
@@ -3970,7 +3977,7 @@
 
 ## 使用Sync和Send的可扩展并发
 [top](#catalog)
-* 内嵌与语言中的两个并发概念：`std::marker`中的`Sync`和`Send`trait
+* 内嵌于语言中的两个并发概念：`std::marker`中的`Sync`和`Send`trait
 * 通过Send允许在线程间转移所有权
     * `Send`trait表明类型的所有权可以在线程间传递
     * 几乎所有的Rust类型都是Send的
@@ -3988,7 +3995,7 @@
     * 手动实现这些标记trait涉及到编写不安全的Rust代码
 
 # 面向对象特性
-## 为使用用不同类型的值而设计的trait对象
+## 为使用不同类型的值而设计的trait对象
 [top](#catalog)
 * trait对象要求对象安全
     * 只有对象安全的trait才可以组成trait对象
@@ -4502,8 +4509,10 @@
             },
         }
         ```
+
 # 高级特征
 ## 不安全的Rust
+[top](#catalog)
 * 可以使用`unsafe`关键字来切换到不安全Rust，并存放不安全的代码块
 * 四类可以使用的不安全特性：
     * 解引用裸指针
@@ -4523,8 +4532,8 @@
         ```rust
         let mut num = 5;
 
-        let r1 = &num as *const i32;
-        let r2 = &mut num as *mut i32;
+        let r1 = &num as *const i32;//强转为裸指针类型
+        let r2 = &mut num as *mut i32;//强转为裸指针类型
         ```
     * 可以在安全代码中**创建**裸指针，只是不能在不安全块之外**解引用**裸指针和读取其指向的数据
     * 创建指向任意内存地址的裸指针
@@ -4547,6 +4556,321 @@
         }
         ```
 * 调用不安全函数或方法
+    * 使用`unsafe`修饰的函数是`不安全函数`
+    * 不安全函数只能在`unsafe`中调用
+        ```rust
+        unsafe fn dangerous() {}
+
+        unsafe {
+            dangerous();
+        }
+        ```
+    * 不安全函数体也是有效的`unsafe`块
+        * 在不安全函数中进行另一个不安全操作时无需添加`unsafe`
+    * 使用不安全代码构造安全抽象
+        ```rust
+        use std::slice;
+
+        fn split_at_mut(slice: &mut [i32], mid: usize) -> (&mut [i32], &mut [i32]) {
+            let len = slice.len();
+            let ptr = slice.as_mut_ptr();//获取slice的裸指针
+
+            assert!(mid <= len);
+
+            unsafe {
+                (slice::from_raw_parts_mut(ptr, mid),
+                slice::from_raw_parts_mut(ptr.offset(mid as isize), len - mid))
+            }
+        }
+        ```
+    * 使用`extern`函数调用外部代码
+        * 可以通过`extern`创建外部函数接口
+        * `extern`块中声明的函数在Rust中总是不安全的
+            * 因为其他语言不会强制执行Rust的规则，且Rust无法检查他们
+        * 示例：继承`C`标准库中的`abs`函数
+            * `C`部分定义了外部函数所使用的`应用程序接口ABI`
+                * `ABI`定义了如何在汇编语言层面调用次函数
+            ```rust
+            extern "C" {
+                fn abs(input: i32) -> i32;
+            }
+
+            fn main() {
+                unsafe {
+                    println!("Absolute value of -3 according to C: {}", abs(-3));
+                }
+            }
+            ```
+        * 使用`extern`来创建一个允许其他语言调用Rust函数的接口
+            * 需要添加注解：`#[no_mangle]`，来防止编译器将函数名修改为不同的名称
+            ```rust
+            #[no_mangle]
+            pub extern "C" fn call_from_c() {
+                println!("Just called a Rust function from C!");
+            }
+            ```
+* 访问或修改可变静态变量
+    * `全局变量`在Rust中被成为`静态变量`
+        * 全局变量一般使用全大写
+        * 全局变量必须标注类型
+        * 全局变量只能存储拥有`'static`生命周期的引用
+        ```rust
+        static HELLO_WORLD: &str = "Hello, world!";
+
+        fn main() {
+            println!("name is: {}", HELLO_WORLD);
+        }
+        ```
+    * 一般常量于静态变量的区别
+        * 数据访问
+            * 全局变量中的值又一个固定的内存地址，使用这个值总会访问相同的地址
+            * 一般的常量则会在使用时复制数据
+        * 可变/不可变
+            * 静态变量**可以是可变的**，但是访问和修改静态变量都是不安全的，需要在`unsafe`中操作
+                ```rust
+                static mut COUNTER: u32 = 0;
+
+                fn add_to_count(inc: u32) {
+                    unsafe {
+                        COUNTER += inc;
+                    }
+                }
+
+                fn main() {
+                    add_to_count(3);
+
+                    unsafe {
+                        println!("COUNTER: {}", COUNTER);
+                    }
+                }
+                ```
+* 实现不安全trait
+    ```rust
+    unsafe trait Foo {
+        // methods go here
+    }
+
+    unsafe impl Foo for i32 {
+        // method implementations go here
+    }
+    ```
+
+## 高级trait
+[top](#catalog)
+* 关联类型在trait定义中指定占位符类型
+    * 关联类型是一个`将类型占位符与trait关联的方式`
+    * 与trait关联之后，trait的方法签名中就可以使用这些占位符类型
+    * 示例：`Iterator`
+        ```rust
+        pub trait Iterator {
+            type Item;
+
+            fn next(&mut self) -> Option<Self::Item>;
+        }
+        ```
+        ```rust
+        impl Iterator for Counter {
+            type Item = u32;
+
+            fn next(&mut self) -> Option<Self::Item> {
+                // --snip--
+        ```
+* 默认泛型类型参数和运算符重载
+    * 使用泛型类型参数时，可以为泛型指定一个默认的具体类型
+        * 如果默认类型就足够，这消除了为具体类型实现trait的需要
+        * 为泛型类型指定默认类型的语法是在声明泛型类型时使用
+            ```rust
+            <PlaceholderType=ConcreteType>
+            ```
+    * Rust**不允许创建自定义运算符或重载任意运算符**
+        * `std::ops`中列出的运算符和相应的trait可以通过实现运算符相关trait来重载
+        * 示例：
+            * 重载`+`
+                ```rust
+                use std::ops::Add;
+
+                #[derive(Debug, PartialEq)]
+                struct Point {
+                    x: i32,
+                    y: i32,
+                }
+
+                //通过实现Add来重载 + 运算符
+                impl Add for Point {
+                    type Output = Point;
+
+                    fn add(self, other: Point) -> Point {
+                        Point {
+                            x: self.x + other.x,
+                            y: self.y + other.y,
+                        }
+                    }
+                }
+
+                fn main() {
+                    assert_eq!(Point { x: 1, y: 0 } + Point { x: 2, y: 3 },
+                            Point { x: 3, y: 3 });
+                }
+                ```
+            * `Add`的定义
+                * `RHS=Self`是默认类型参数
+                * 如果实现`Add`时不指定`RHS`的具体类型，则RHS时默认的Self类型，即实现`Add`的类型
+                ```rust
+                trait Add<RHS=Self> {
+                    type Output;
+
+                    fn add(self, rhs: RHS) -> Self::Output;
+                }
+                ```
+            * 自定义`Add`的泛型类型
+                ```rust
+                use std::ops::Add;
+
+                struct Millimeters(u32);
+                struct Meters(u32);
+
+                impl Add<Meters> for Millimeters {
+                    type Output = Millimeters;
+
+                    fn add(self, other: Meters) -> Millimeters {
+                        Millimeters(self.0 + (other.0 * 1000))
+                    }
+                }
+                ```
+
+* 完全限定语法与消歧义：调用相同名称的方法
+    * 示例：两个trait的方法同名
+        ```rust
+        trait Pilot {
+            fn fly(&self);
+        }
+
+        trait Wizard {
+            fn fly(&self);
+        }
+
+        struct Human;
+
+        impl Pilot for Human {
+            fn fly(&self) {
+                println!("This is your captain speaking.");
+            }
+        }
+
+        impl Wizard for Human {
+            fn fly(&self) {
+                println!("Up!");
+            }
+        }
+
+        impl Human {
+            fn fly(&self) {
+                println!("*waving arms furiously*");
+            }
+        }
+
+        fn main(){
+            let person = Human;
+            //默认调用Human的fly，也可以写做：Human::fly(&person);
+            person.fly();
+
+
+            // 调用trait中的fly
+            // 通过指定trait名来确定方法
+            Pilot::fly(&person);
+            Wizard::fly(&person);
+        }
+        ```
+    * 完全限定语法：`<类型 as Trait>::方法名(参数列表)`
+        * 示例
+            ```rust
+            trait Animal {
+                fn baby_name() -> String;
+            }
+
+            struct Dog;
+
+            impl Dog {
+                fn baby_name() -> String {
+                    String::from("Spot")
+                }
+            }
+
+            impl Animal for Dog {
+                fn baby_name() -> String {
+                    String::from("puppy")
+                }
+            }
+
+            fn main() {
+                // 调用Dog中的方法
+                // 输出：A baby dog is called a Spot
+                println!("A baby dog is called a {}", Dog::baby_name());
+
+                //完全限定语法，指定调用哪个方法
+                println!("A baby dog is called a {}", <Dog as Animal>::baby_name());
+            }
+            ```
+
+* 在trait添加父trait
+    * 在trait添加父trait后，可以在trait中调用父trait中的方法
+    ```rust
+    use std::fmt;
+
+    trait OutlinePrint: fmt::Display {
+        fn outline_print(&self) {
+            let output = self.to_string();
+            let len = output.len();
+            println!("{}", "*".repeat(len + 4));
+            println!("*{}*", " ".repeat(len + 2));
+            println!("* {} *", output);
+            println!("*{}*", " ".repeat(len + 2));
+            println!("{}", "*".repeat(len + 4));
+        }
+    }
+
+    struct Point {
+        x: i32,
+        y: i32,
+    }
+
+    impl OutlinePrint for Point {}
+
+    // 为point实现Display
+    use std::fmt;
+
+    impl fmt::Display for Point {
+        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+            write!(f, "({}, {})", self.x, self.y)
+        }
+    }
+    ```
+
+* newtype模式用以在外部类型上实现外部trait
+    * 通过newtype来绕过孤儿规则
+    * 通过`元组结构体`来实现
+    * 示例：为外部trait:`Vec`实现外部trait:`Display`
+        ```rust
+        use std::fmt;
+
+        struct Wrapper(Vec<String>);
+
+        impl fmt::Display for Wrapper {
+            fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+                write!(f, "[{}]", self.0.join(", "))
+            }
+        }
+
+        fn main() {
+            let w = Wrapper(vec![String::from("hello"), String::from("world")]);
+            println!("w = {}", w);
+        }
+        ```
+    * 如果需要使用原始外部类型的方法，可以实现`Deref`，来将newtype当作引用处理
+        * 如果要限制原始外部类型的方法，只能手动的在newtype中实现
+
+## 高级类型
+[top](#catalog)
 
 # 标准库提供的类型
 ## Range
