@@ -73,7 +73,7 @@
     - [线程](#线程)
     - [使用消息传递在线程间传送数据](#使用消息传递在线程间传送数据)
     - [共享状态并发](#共享状态并发)
-    - [使用Sync和Send的可扩展并发](#使用sync和send的可扩展并发)
+    - [使用Sync和   的可扩展并发](#使用sync和  的可扩展并发)
 - 面向对象特性
     - [为使用不同类型的值而设计的trait对象](#为使用不同类型的值而设计的trait对象)
     - [面向对象设计模式的实现](#面向对象设计模式的实现)
@@ -84,6 +84,9 @@
 - 高级特征
     - [不安全的Rust](#不安全的Rust)
     - [高级trait](#高级trait)
+    - [高级类型](#高级类型)
+    - [高级函数与闭包](#高级函数与闭包)
+    - [宏](#宏)
 
 # 基本使用
 [top](#catalog)
@@ -1035,6 +1038,7 @@
     1. 模式的表现力
     2. 编译器检查
 * match类似于`switch...case`
+* match分支必须返回相同的类型
 * 基本使用方法：
     ```rust
     enum Coin {
@@ -3204,17 +3208,17 @@
         let n = example_closure(5);//产生编译异常
         ```
 
-* 使用带有泛型和`Fn`trait的闭包
+* 使用带有泛型和`Fn` trait的闭包
     * 防止重复调用，可以创建一个存放闭包和调用闭包结果的结构体
         * 该结构体只会在需要结果时执行闭包，并缓存结果值
     
     * 为了定义使用闭包的**结构体，枚举，函数参数**，需要使用范型和trait bound
         * 每个闭包实例都有自己独特的匿名类型
             * 即两个闭包的签名相同，两者的类型仍然可以认为是不同的
-    * `Fn`trait由标准库提供
+    * `Fn` trait由标准库提供
         * 所有闭包都实现了trait：`Fn`,`FnMut`,`FnOnce`**中的一个**
             * **如果不需要捕获环境中的值，则可以使用实现了`Fn`trait的函数而不是闭包**
-        * 为了满足`Fn`trait，需要增加参数和返回值的类型
+        * 为了满足`Fn` trait，需要增加参数和返回值的类型
             ```rust
             struct Cacher<T>
                 where T: Fn(u32) -> u32
@@ -3814,7 +3818,7 @@
         ```
 * 使用通道来进行通信
     * 通过move，将发送端的所有权移动到新建线程中
-    * 发送端通过`send`来发送元素，返回一个`Result<T,E>`类型
+    * 发送端通过`   `来发送元素，返回一个`Result<T,E>`类型
         * 如果接收端已经被丢弃了，将没有发送值的目标，所以发送操作会返回错误
     * 接收端使用`recv`、`try_recv`
         * `recv`
@@ -3834,7 +3838,7 @@
 
             thread::spawn(move || {
                 let val = String::from("hi");
-                tx.send(val).unwrap();
+                tx. (val).unwrap();
             });
 
             let received = rx.recv().unwrap();
@@ -3842,8 +3846,8 @@
         }
         ```
 * 通道与所有权转移
-    * 发送端的`send`会获取参数的所有权，并移动这个值归接受者所有
-    * 在`send`方法之后，无法再使用发送的值，否则会引发编译异常
+    * 发送端的` `会获取参数的所有权，并移动这个值归接受者所有
+    * 在`   `方法之后，无法再使用发送的值，否则会引发编译异常
 * 发送多个值并观察接受者的等待
     ```rust
     use std::thread;
@@ -3862,7 +3866,7 @@
             ];
 
             for val in vals {
-                tx.send(val).unwrap();
+                tx. (val).unwrap();
                 thread::sleep(Duration::from_secs(1));
             }
         });
@@ -3877,7 +3881,7 @@
     ```rust
     let (tx, rx) = mpsc::channel();
 
-    let tx1 = mpsc::Sender::clone(&tx);
+    let tx1 = mpsc::    er::clone(&tx);
     thread::spawn(move || {
         let vals = vec![
             String::from("hi"),
@@ -3887,7 +3891,7 @@
         ];
 
         for val in vals {
-            tx1.send(val).unwrap();
+            tx1.    (val).unwrap();
             thread::sleep(Duration::from_secs(1));
         }
     });
@@ -3901,7 +3905,7 @@
         ];
 
         for val in vals {
-            tx.send(val).unwrap();
+            tx. (val).unwrap();
             thread::sleep(Duration::from_secs(1));
         }
     });
@@ -3975,28 +3979,41 @@
         }
         ```
 
-## 使用Sync和Send的可扩展并发
+## 使用Sync和   的可扩展并发
 [top](#catalog)
-* 内嵌于语言中的两个并发概念：`std::marker`中的`Sync`和`Send`trait
-* 通过Send允许在线程间转移所有权
-    * `Send`trait表明类型的所有权可以在线程间传递
-    * 几乎所有的Rust类型都是Send的
+* 内嵌于语言中的两个并发概念：`std::marker`中的`Sync`和`    `trait
+* 通过  允许在线程间转移所有权
+    * ` `trait表明类型的所有权可以在线程间传递
+    * 几乎所有的Rust类型都是    的
         * 不包括`Rc<T>`
             * 因为如果克隆了`Rc<T>`并将克隆的所有权转移到另一个线程，这两个线程可能同时更新引用计数，导致计数的更新不正确
-    * 任何由Send类型组成的类型也会自动被标记为Send
+    * 任何由    类型组成的类型也会自动被标记为  
 * `Sync`允许多线程访问
     * 实现了`Sync`trait的类型可以安全的在多个线程中拥有其值的引用
-    * 对于任意类型T，如果&T是Send，T就是Sync的
+    * 对于任意类型T，如果&T是   ，T就是Sync的
     * 任何由Sync类型组成的类型也会自动被标记为Sync
     * `Rc<T>`、`RefCell<T>`、`Cell<T>`不是Sync的
-* 手动实现Send和Sync是不安全的
-    * 通常不需要手动实现Send和Sync，因为Send和Sync的类型组成的类型，自动被标记为Send和Sync
-    * Send和Sync是标记trait，甚至不需要实现任何方法，只是用来加强并发相关的不可变性的
+* 手动实现  和Sync是不安全的
+    * 通常不需要手动实现    和Sync，因为    和Sync的类型组成的类型，自动被标记为    和Sync
+    *   和Sync是标记trait，甚至不需要实现任何方法，只是用来加强并发相关的不可变性的
     * 手动实现这些标记trait涉及到编写不安全的Rust代码
 
 # 面向对象特性
 ## 为使用不同类型的值而设计的trait对象
 [top](#catalog)
+* 定义通用行为的trait
+    * `Box<dyn Draw>`:这是一个trait对象：它是 Box 中任何实现了 Draw trait 的类型的替身
+        * 与泛型不同，泛型一次只能替代一个具体的类型，trait对象允许在运行时替代多种类型
+
+    ```rust
+    pub trait Draw {
+        fn draw(&self);
+    }
+
+    pub struct Screen {
+        pub components: Vec<Box<dyn Draw>>,
+    }
+    ```
 * trait对象要求对象安全
     * 只有对象安全的trait才可以组成trait对象
     * 对象安全的trait的两条规则
@@ -4871,6 +4888,162 @@
 
 ## 高级类型
 [top](#catalog)
+* 类型别名
+    * 如: `type Kilometers = i32;`
+        * `Kilometers`和`i32`是同一类型，可以将两者进行混合运算
+        * `Kilometers`可以传递给参数为`i32`的函数
+* 从不返回的`never type`
+    * Rust的一个特殊类型: `!`，被称为`empty type`
+    * 在函数从不返回的时候充当返回值，从不返回的函数被称为 `发散函数`
+        * 不能创建 `!` 类型的值，所以 `bar` 也不可能返回值。
+        ```rust
+        fn bar() -> ! {
+            // --snip--
+        }
+        ```
+    * `!`可以被强转为其他类型
+    * 应用
+        * continue的值是`!`
+            * `continue`并不真正返回一个值；相反它把控制权交回上层循环，所以在`Err`的情况，事实上并未对`guess`赋值。
+            ```rust
+            let guess: u32 = match guess.trim().parse() {
+                Ok(num) => num,
+                Err(_) => continue,
+            };
+            ```
+        * `panic!`
+            * `panic!`并不产生一个值，会直接终止程序
+            * 对于`None`的情况，`unwrap`并不返回值，所以代码是有效的
+                ```rust
+                impl<T> Option<T> {
+                    pub fn unwrap(self) -> T {
+                        match self {
+                            Some(val) => val,
+                            None => panic!("called `Option::unwrap()` on a `None` value"),
+                        }
+                    }
+                }
+                ```
+        * `loop`
+            * 该循环永远也不结束，所以此表达式的值是 `!`
+            * 如果引入`break`这就不为真了，因为循环在执行到`break`后就会终止。
+            ```rust
+            print!("forever ");
+
+            loop {
+                print!("and ever ");
+            }
+            ```
+* 动态大小类型和`Sized` trait
+    * 动态大小类型（dynamically sized types）, 这有时被称为`DST`或`unsized types`
+    * 动态大小类型允许我们**处理只有在运行时才知道大小的类型**
+    * 动态大小类型的规则：**必须将动态大小类型的值置于某种指针之后**
+        * 对于字符串切片`&str`
+            * `str`部分的长度在编译时无法确定，需要借助引用，变为切片
+            * `str`可以与所有类型的指针结合： `Box<str>` 或 `Rc<str>`
+    * 每一个`trait`都是一个可以通过`trait`名称来引用的动态大小类型
+        * 为了将`trait`用于`trait对象`，必须将他们放入指针之后，比如`&Trait`或`Box<Trait>`
+        * `Sized` trait, 为了处理`DST`，Rust通过`Sized trait`来决定一个类型的大小是否在编译时可知
+            * `Sized` trait 是在**编译时就知道大小的类型**实现
+            * Rust 隐式的为每一个泛型函数增加了`Sized` bound
+                ```rust
+                fn generic<T>(t: T) {
+                    // --snip--
+                }
+
+                //会转换为如下处理
+                fn generic<T: Sized>(t: T) {
+                    // --snip--
+                }
+                ```
+    * 泛型函数默认只能用于在编译时已知大小的类型，可以使用`?Sized`来放宽这个限制
+        * 表明`T`可能是也可能不是`Sized`的
+        * 这种语法只能用于`Sized`
+        * `t`类型使用`&T`,因为其类型可能不是`Sized`，所以需要将其放在某种指针之后
+        ```rust
+        fn generic<T: ?Sized>(t: &T) {
+            // --snip--
+        }
+        ```
+## 高级函数与闭包
+[top](#catalog)
+* 函数指针
+    * 通过`函数指针`允许我们使用函数作为另一个函数的参数
+    * 函数类型是`fn`，被称为`函数指针`
+        * `fn`是一种类型，不是trait
+        * 区别于闭包：`Fn`
+        ```rust
+        fn add_one(x: i32) -> i32 {
+            x + 1
+        }
+
+        fn do_twice(f: fn(i32) -> i32, arg: i32) -> i32 {
+            f(arg) + f(arg)
+        }
+
+        fn main() {
+            let answer = do_twice(add_one, 5);
+
+            println!("The answer is: {}", answer);
+        }
+        ```
+    * `函数指针`实现了三个闭包trait：`Fn`, `FnMut`, `FnOnce`
+        * 可以向参数是闭包的函数传递函数指针
+        * 应该编写使用泛型和闭包trait的函数，这样就能接受闭包和函数指针
+    * 一个只期望接受`fn`的情况：**与不存在闭包的外部代码交互**
+        * 如`C`，没有闭包，只有函数
+* 返回闭包
+    * 闭包表现为trait，意味着不能直接返回闭包
+    * Rust并不知道需要多少空间来存储闭包，可以使用`Sized`对象
+        ```rust
+        fn returns_closure() -> Box<dyn Fn(i32) -> i32> {
+            Box::new(|x| x + 1)
+        }
+        ```
+
+## 宏
+[top](#catalog)
+* 基本概念
+    * 宏是指Rust中的一系列功能
+        * 声明（Declarative）宏，使用 `macro_rules!`
+        * 过程（Procedural），其有三种类型：
+            * 自定义 `#[derive]` 宏
+            * 类属性（Attribute）宏
+            * 类函数宏
+    * 宏是一种为写其他代码而写代码的方式，即`元编程`
+    * 宏与函数的区别
+        1. 函数必须声明参数的个数和类型；宏可以接受可变数量参数
+        2. 宏可以在编译代码前展开
+            * 如，可以通过宏给某个类型实现trait，函数是运行时调用，trait需要在运行时实现????????，所以函数无法提供这种功能
+        3. 宏的定义比函数更复杂
+            * 因为写宏相当于在写：**生产Rust代码的Rust代码**
+        4. 在调用宏之前必须定义并将其引入作用域，而函数则可以在任何地方定义和调用。
+* 使用`macro_rules!`的声明宏用于元编程
+    * 声明宏允许我们编写一些类似 Rust match 表达式的代码
+        * 宏也将一个值和包含相关代码的模式进行比较
+            * 值是传递给宏的 `Rust 源代码字面值`
+            * 模式用于和传递给宏的源代码进行比较
+                * 每个模式的相关代码则用于替换传递给宏的代码
+            * 所有这一切都发生于编译时
+        * 示例：`vec!`的实现
+            * `#[macro_export]` 注解说明宏应该是可用的
+                * 如果没有该注解，这个宏不能被引入作用域
+            * `macro_rules! 宏名称 {定义体}`, 定义宏
+                * 定义的宏不需要`!`
+            ```rust
+            #[macro_export]
+            macro_rules! vec {
+                ( $( $x:expr ),* ) => {
+                    {
+                        let mut temp_vec = Vec::new();
+                        $(
+                            temp_vec.push($x);
+                        )*
+                        temp_vec
+                    }
+                };
+            }
+            ```
 
 # 标准库提供的类型
 ## Range
