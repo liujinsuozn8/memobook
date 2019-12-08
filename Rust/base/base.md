@@ -2722,7 +2722,7 @@
 
         #[cfg(test)]
         mod tests {
-            use * *::*;
+            use super::*;
 
             #[test]
             fn greeting_contains_name() {
@@ -4014,6 +4014,9 @@
         pub components: Vec<Box<dyn Draw>>,
     }
     ```
+* 静态分发
+    * 在便器期，为每一个泛型类型参数代替的具体类型生成非范型的函数和方法实现
+* 动态分发：trait对象
 * trait对象要求对象安全
     * 只有对象安全的trait才可以组成trait对象
     * 对象安全的trait的两条规则

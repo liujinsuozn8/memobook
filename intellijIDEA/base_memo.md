@@ -8,6 +8,7 @@
         2. 操作1并没有真正从磁盘中删除，若需要从磁盘中删除，需要在project中选择module右键删除
 * 常用设置
     * 启动设置：File-->Settings
+        * mac：intellij idea--> Preferences
     * 设置工具的主题
         * Appearance&Behavior-->Appearance-->theme
     * 修改当前主题的字体、字体大小、字体行间距
@@ -66,7 +67,8 @@
     * 省电模式
         * File-->Power Save Mode
         * 在省电模式下，将自动关闭代码检查和代码提示等功能。可以理解为这是一种阅读模式
-
+    * java编译版本
+        - Settings-->Bulid, Execution,Deployment-->Java Compiler
 * 快捷键keymap
     * 光标向下移动一行 = shift + enter
     * 万能解错/生成返回值变量=alt + enter
@@ -82,6 +84,8 @@
     * 创建get/set，构造器 = alt+ insert
     * 复制一行代码 = ctrl + D
     * 查看接口的实现类= ctrl + alt + B
+    * 查看方法的实现= ctrl + alt + B
+        * mac=option+commond+B
     * 查找某个类：ctrl+alt+shift+n
 * 模版
     * 配置一些常用代码字母缩写，输入简写时可以使用
