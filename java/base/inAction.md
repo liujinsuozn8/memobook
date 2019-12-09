@@ -10,7 +10,7 @@
     - [方法引用](#方法引用)
         - [方法引用的基本概念](#方法引用的基本概念)
         - [如何构建方法引用](#如何构建方法引用)
-    - [复合Lambda表达式的有用方法](#复合lambda表达式的有用方法)
+    - [复合Lambda表达式的使用方法](#复合Lambda表达式的使用方法)
     - [类型检查&类型推断以及限制](#类型检查&类型推断以及限制)
 - [流的引入](#流的引入)
     - [Dish定义](#dish定义)
@@ -28,8 +28,10 @@
 - [用流收集数据](#用流收集数据)
     - [Collector收集器](#collector收集器)
     - [归约和汇总](#归约和汇总)
-    - [](#)
-    - [](#)
+    - [分组](#分组)
+    - [对收集器的结果进行转换](#对收集器的结果进行转换)
+    - [分区](#分区)
+    - [Collectors类的静态工厂方法](#collectors类的静态工厂方法)
     - [](#)
     - [](#)
 
@@ -677,7 +679,7 @@
     ```
 - 针对构造函数、数组构造函数、父类调用(super-call)的一些特殊形式的方法引用？？？
 
-## 复合Lambda表达式的有用方法
+## 复合Lambda表达式的使用方法
 [top](#catalog)
 - 多个简单的Lambda可以复合成复杂的表达式
 - 比较复合器
@@ -876,19 +878,19 @@ List<Dish> menu = Arrays.asList(
             - 集合的目的是**数据**,集合是**数据结构**，集合存在的目的是以特定的时间/空间复杂度**存储和访问元素**
             - 流的目的是**表达计算**
     - 源
-        - 流会使用那个一个提供数据的源，包括：**集合、数组、输入/输出资源**
+        - 流会使用一个提供数据的源，包括：**集合、数组、输入/输出资源**
             - 从**有序集合**生产流时会保留原有的顺序
             - 由列表生成的流，其元素顺序与列表一致
     - 数据处理操作
-        - 流的数据处理功能支持类似与数据库的操作，以及函数式编程语言中的常用操作
+        - 流的数据处理功能支持类似于数据库的操作，以及函数式编程语言中的常用操作
         - 包括：filter, map, reduce, find, match, sort
-        - **流的操作可以顺畅执行，也可以并行执行** (stream/parallelStream??????)
+        - **流的操作可以顺序执行，也可以并行执行** (stream/parallelStream??????)
 - 流的两个重要特点
     - 流水线
         - 很多流操作本身会返回一个流，多个操作可以进行链接，形成一个大的流水线
         - 可以在流水线中进行优化，包括：`延迟、短路` 等等
         - 流水线的操作可以看作：**对数据源进行数据库式查询**
-        - **流水线本身并会生产任何结果，相当于做了一系列的配置**
+        - **流水线本身并会不生产任何结果，相当于做了一系列的配置**
     - 内部迭代
         - 与迭代器的显示迭代不同，流的迭代实在内部进行的
  
@@ -918,13 +920,13 @@ List<Dish> menu = Arrays.asList(
     - 流的目的是**表达计算**
 - 流与集合的差异在于**什么时候进行计算**
     - 对于集合，每个元素必须先计算出来，才能添加到集合中，成为数据结构中的一部分
-    - 对于流，流水在概念行固定的数据结构，因此**无法添加/删除元素**，流中的元素是`按需计算的`
+    - 对于流，流水线运行在固定的数据结构，因此**无法添加/删除元素**，流中的元素是`按需计算的`
         - `按需计算/生成`可以理解为`生产者-消费者`的关系
         - `按需计算/生成`也可以理解为**延迟创建的集合**：只有在消费者要求的时候才会计算值
 - **流只能遍历一次**（这一点与迭代器相同）
     - 遍历结束后，这个流就已经被**消费掉了**
     - 如果想再次遍历，可以从数据源再获取一个流，并重新遍历一遍
-        - 集合数据源可以，如果是IO资源，可能就不行了
+        - 集合数据源可以再次遍历，如果是IO资源，可能就不行了
         ```java
         List<String> title = Arrays.asList("aaa", "bbb", "ccc");
         Stream<String> s = titile.stream();
@@ -1098,7 +1100,7 @@ List<Dish> menu = Arrays.asList(
         Stream<String> streamOfWord = Arrays.stream(a);
         ```
     - 通过`flatMap`，可以将多个流进行合并
-        - 即：将一个流中的每一个值都转换成另一个流，然后把usuoyou的流连接起来称为一个流
+        - 即：将一个流中的每一个值都转换成另一个流，然后把所有的流连接起来成为一个流
 
     - 示例：统计单词数组中出现过的字母
         - 如果在一个流中使用`Arrays.stream`，会把一个流变成多个流，需要使用`flatMap`来进行合并
@@ -1429,6 +1431,7 @@ List<Dish> menu = Arrays.asList(
     ```
 
 - 数值流应用：勾股数
+    - `t[2]%1 == 0` 保证结果为整数????????????????
     ```java
     IntStream.rangeClosed(1, 100).boxed()
             .flatMap(a -> IntStream.rangeClosed(1, 100)
@@ -1468,7 +1471,7 @@ List<Dish> menu = Arrays.asList(
             System.out.println(sum);
             ```
 - 由文件生成流
-    - `java.nio.file.Files`中的很多静态方法都会放回一个流
+    - `java.nio.file.Files`中的很多静态方法都会返回一个流
 - 由函数生成流：创建无限流
     - 通过两个静态方法从函数生成流
         - `Stream.iterate(初始值, UnaryOperator<T>)`
@@ -1486,7 +1489,7 @@ List<Dish> menu = Arrays.asList(
             ```java
             //0,1,1,2,3,5,8,13,21
             //0,1为起始数
-            Stream.iterate({1,1}, n-> {n[1], n[0]+n[1])
+            Stream.iterate({1,1}, n-> {n[1], n[0]+n[1]})  //??????????????????
                 .limit(20)
                 .forEach(n->System.out.println(Arrays.toString(n)))
             ```
@@ -1526,6 +1529,11 @@ List<Dish> menu = Arrays.asList(
         - 将流元素归约和汇总为一个值
         - 元素分组
         - 元素分区
+- `Collector`在某种程度上比`Stream`接口上直接提供的方法用起来更复杂，但是能提供更改水平的抽象和概括，也更容易重用和自定义
+    - 因为函数式编程本身就就提供了很多种方法来执行同一个操作
+    - 应该为问题寻找不同的解决方案，并选择**最专门化的**
+        - 要同时兼顾可读性和性能
+    - 
 ## 归约和汇总
 [top](#catalog)
 - 计算元素的个数：`counting`
@@ -1548,22 +1556,22 @@ List<Dish> menu = Arrays.asList(
         Optional<Dish> maxDish = menu.stream().collect(maxBy(com));
         ```
 - 汇总
-    - 求和：`Collectors.summingInt(T->int)`,`summingLong`,`summingDouble`
+    - 求和：`Collectors.summingInt(T->int)`, `summingLong`, `summingDouble`
         - 返回一个收集器`Collector`
         - 遍历的初始值默认是`0`
         - 示例：计算菜单列表的热量
             ```java
             int s = menu.stream().collect(summingInt(Dish::getCalories));
             ```
-    - 计算平均值`Collectors.averagingInt`,`averagingLong`,`averagingDouble`
+    - 计算平均值`Collectors.averagingInt`, `averagingLong`, `averagingDouble`
         ```java
         double s = menu.stream().collect(averagingInt(Dish::getCalories));
         ```
-    - 一次操作分别执行：求和，最大最小值，均值  `Collectors.summarizingInt`,`summarizingLong`,`summarizingDouble`
+    - 一次操作分别执行：求和，最大最小值，均值  `Collectors.summarizingInt`, `summarizingLong`,  `summarizingDouble`
         - 返回`IntSummaryStatistics`，`LongSummaryStatistics`，`DoubleSummaryStatistics`对象
             - 通过`getter`来访问结果
         ```java
-        int s = menu.stream().collect(averagingInt(Dish::getCalories));
+        int s = menu.stream().collect(summarizingInt(Dish::getCalories));
         ```
 - 连接字符串：`joining`
     - `joining`返回的收集器会对流中每一个对象应用`toString`，将得到的所有字符串连接成一个字符串
@@ -1577,25 +1585,293 @@ List<Dish> menu = Arrays.asList(
             String result = menu.stream().collect(joining(", "));
             ```
 
-- 广义的归约汇总`Collectors.reducing`
+- 广义的归约汇总 : `Collectors.reducing`
     - 上面这些收集器都是`Collectors.reducing`工厂方法定义的归约过程的特殊情况
     - 重载：`reducing(起始值, 转换函数, BinaryOperator)`
         - 三个参数
-            - 起始值，也是空流的放回值
+            - 起始值，也是空流的返回值
             - 转换函数，将对象转换为数值
             - `BinaryOperator`，对数值进行求和
-    - 重载：`reducing(起始值, 转换函数, BinaryOperator)`
-        - 可以看作三个参数的特殊情况
-        - 起始值：默认使用流中的第一个项目作为起始值
-        - 恒等函数作为转换函数：`x=y`
-        - 
-    - 通过`reducing`来做`summing`
+        
         ```java
         int total = menu.stream().collect(reducing(0, Dish::getCalories, (i, j)->i+j ));
         ```
 
+    - 单参数重载：`reducing(BinaryOperator)`
+        - 可以看作三个参数的特殊情况
+        - 起始值：默认使用流中的第一个项目作为起始值
+        - 恒等函数作为转换函数：`x=y`
+        - 因为该重载没有起始值，所以在`collect()`中使用时，会返回`Optional<T>`
+
+    - 通过`reducing`来做`collect`
+        - 使用上的问题
+            - `reducing`和`collect`的语义区别
+                - `reduce`是为了把两个值结合起来生产一个新的值
+                - `collect`是为了改变容器，积累需要输出的结果
+            - 虽然可以实现`collect`的功能，但却是在滥用`reduce`
+                - 使用过程中修改了，作为累加器的List
+                - 无法正常执行并行处理
+                    - 多个线程同时操作同一个`List`可能会破坏`List`本身
+                    - 这种情况下如果想要线程安全就需要每次都分配一个新的`List`，但是对象分配会影响性能
+            ```java
+            Stream<Integer> stream = Arrays.asList(1, 2, 3, 4, 5, 6).stream();
+            List<Integer> numbers = stream.reduce(
+                                    new ArrayList<Integer>(),
+                                    (List<Integer> l, Integer e) -> {l.add(e); return l;}, //l是从何而来的
+                                    (List<Integer> l1, List<Integer> l2) -> {l1.addAll(l2); return l1;}
+            )
+            ```
+
+    - 收集框架的灵活性：以不同的方法执行同样的操作
+        - 简化求和
+        - 归约过程???????????? ![图](./imgs/)
+            ```java
+            // 简化前
+            int total = menu.stream().collect(reducing(0, Dish::getCalories, (i, j)->i+j ));
+            // 简化后
+            int total = menu.stream().collect(reducing(0, Dish::getCalories, Integer:sum);
+            ```
+        - `stream`内部利用三参数`reducing`来实现`counting`
+            - 在内部，`reducing`会将每一个元素都转换成一个值为1的`Long`对象，然后在相加
+                ```java
+                public static <T> Collector<T, ?, Long> counting() {
+                    return summingLong(e -> 1L);
+                }
+                ```
+    - 根据情况选择最佳解决方案
+        - 收集器内部很多处理都源于`reducing`，需要根据情况决定如何使用
+
+## 对收集器的结果进行转换
+[top](#catalog)
+- 使用`Collectors.collectingAndThen(需要转换的收集器, 转换函数)`
+    - 该方法会返回另一个收集器，相当于：用`转换函数`包装过的收集器
+    ```java
+    Map<Dish.Type, Dish> result = menu.stream().collect(
+        groupingBy(
+            Dish::getType,
+            collectingAndThen(maxBy(comparingInt(Dish::getCalories), Optional::get)
+        )
+    );
+    ```
+
+## 分组
+[top](#catalog)
+- 使用`groupingBy(分组函数)`进行简单分组
+    - `分组操作`的结果是一个`Map`
+    - 分组函数的**返回值**作为`Key`，把流中所有具有这个分类值的项目的列表作为对应的`Value`
+        - `groupingBy`在应用分组函数后，**只有第一次在流中找到某个键对应的元素时**才会把`Key`加入分组Map中
+
+    - 示例：对菜单按照类型分组
+        - 分组流程????????????????????????? ![图](./imgs/)
+        ```java
+        Map<Dish.Type, List<Dish>> dishesByType = menu.stream().collect(groupingBy(Dish::getType))
+        ```
+
+    - 示例：根据菜的热量进行分组
+        - 因为`根据热量对菜的类型进行划分`这个处理并没有写在类中，所以需要提供一个`Lambda表达式`
+        
+        ```java
+        public enum CaloricLevel {DIET, NORMAL, FAT};
+
+        Map<CaloricLevel, List<Dish>> result = menu.stream().collect(groupingBy(
+            dish -> {
+                if (dish.getCalories() <= 400) return CaloricLevel.DIET;
+                else if (dish.getCalories() <= 700) return CaloricLevel.NORMAL;
+                else return CaloricLevel.FAT;
+            }
+        ));
+        ```
+    - `groupingBy(分组函数)`内部是`groupingBy(分组函数, toList())`
+- 多级分组
+    - `groupingBy(分组函数1, groupingBy(分组函数2))`
+        - 即多个分组收集器的嵌套
+    - n级分组最后会得到一个代表n级树形结构的`n级Map`
+    - 示例：对菜单按照 类型和热量 进行多级分组
+        ```java
+        public enum CaloricLevel {DIET, NORMAL, FAT};
+
+        Map<Dish.Type, Map<CaloricLevel, List<Dish>>> result = menu.stream().collect(groupingBy(
+            Dish::getType,
+            groupingBy(
+                dish -> {
+                    if (dish.getCalories() <= 400) return CaloricLevel.DIET;
+                    else if (dish.getCalories() <= 700) return CaloricLevel.NORMAL;
+                    else return CaloricLevel.FAT;
+                }
+            )
+        ));
+        ```
+        - 嵌套关系：![图](./imgs/)
+- 按子组收集数据
+    - 传递给第一个`groupingBy`的第二个收集器不一定是另一个`groupingBy`，可以是其他收集器，来完成不同的任务
+    - `groupingBy(分组函数, counting())`，对每个分组中的数量进行统计
+        - 示例：统计每个类型下菜的数量
+            ```java
+            Map<Dish.Type, Long> result = menu.stream().collect(
+                groupingBy(Dish::getType, counting())
+            );
+            ```
+    - `groupingBy(分组函数, maxBy())`，计算每个分组中的最大值
+        - 示例：统计每个类型下热量最高的菜
+            - 此处的`Optional`类型实际上没有什么用，因为不存在实际`Value`的`Key`不会加入到`Map`中
+                ```java
+                Map<Dish.Type, Optional<Dish>> result = menu.stream().collect(
+                    groupingBy(Dish::getType, maxBy(comparingInt(Dish::getCalories))
+                );
+                ```
+            - 直接对`maxBy`的结果进行转换
+                ```java
+                Map<Dish.Type, Dish> result = menu.stream().collect(
+                    groupingBy(
+                        Dish::getType,
+                        collectingAndThen(maxBy(comparingInt(Dish::getCalories), Optional::get)
+                    )
+                );
+                ```
+            - 示例的工作方式
+                - 一级收集器
+                    - 原始流根据分组函数进行划分，分为多个子流，有二级收集器进行处理
+                - 二级收集器
+                    - 由`maxBy`对各子流进行处理
+                    - `Optional::get`将结果进行转换
+                    - 二级收集器的结果作为一级收集器中各分组的值
+                - ?????????????  ![图](./imgs/)
+    - `groupingBy(分组函数, summingXXX())`, 分组求和
+        ```java
+        Map<Dish.Type, Integer> result = menu.stream().collect(groupingBy(Dish::getType), summingInt(Dish::getCalories)) ?????????????????? Integer-->int, long
+        ```
+    - `groupingBy(分组函数, mapping(转换函数，收集器))`, 让接受特定类型元素的收集器适应不同类型的对象
+        - 示例： 查看各菜单类型下，都有哪些`CaloricLevel`
+            ```java
+            public enum CaloricLevel {DIET, NORMAL, FAT};
+            Map<Dish.Type, Set<CaloricLevel>> result = menu.stream().collect(groupingBy(
+                Dish::getType, mapping(
+                    dish->{
+                        if (dish.getCalories() <= 400) return CaloricLevel.DIET;
+                        else if (dish.getCalories() <= 700) return CaloricLevel.NORMAL;
+                        else return CaloricLevel.FAT;
+                    },
+                    toSet()
+                )
+            ));
+            ```
+        - 示例： 查看各菜单类型下，都有哪些`CaloricLevel`，通过`toCollection()`来指定生成的结果类型
+            ```java
+            public enum CaloricLevel {DIET, NORMAL, FAT};
+            Map<Dish.Type, Set<CaloricLevel>> result = menu.stream().collect(groupingBy(
+                Dish::getType, mapping(
+                    dish->{
+                        if (dish.getCalories() <= 400) return CaloricLevel.DIET;
+                        else if (dish.getCalories() <= 700) return CaloricLevel.NORMAL;
+                        else return CaloricLevel.FAT;
+                    },
+                    toCollection(HashSet::new)
+                )
+            ));
+            ```
+
+## 分区
+[top](#catalog)
+- 分区是分组的特殊情况
+    - `partitioningBy(Predicate分区函数)`
+    - 由一个`Predicate`作为分类函数，称为`分区函数`
+    - `分区函数`的返回值是`true/false`，所以`Map`的`Key`是`Boolean`型的
+- 示例：找出菜单中的所有素食
+    - 使用分区
+        ```java
+        Map<Boolean, List<Dish>> result = menu.stream().collect(partitioningBy(Dish::isVegetarian));
+        List<Dish> ds = result.get(true);
+        ```
+    - 使用流水线
+        ```java
+        List<Dish> result = menu.stream().filter(Dish::isVegetarian).collect(toList());
+        ```
+- 分区的优势
+    - 分区返回了`true`和`false`两组流的列表
+- `partitioningBy`和其他收集器进行组合
+    - `partitioningBy(Predicate分区函数, groupingBy(分组函数))`， 在分区中再分组
+        - 示例: 素食/非素食 下的各类菜单中有哪些菜
+            ```java
+            Map<Boolean, Map<Dish.Type, List<Dish>>> result = menu.stream().collect(partitioningBy(
+                Dish::isVegetarian,
+                groupingBy(Dish::getType)
+            ));
+            ```
+    - `partitioningBy(Predicate分区函数, partitioningBy)`，可以实现多级分区
+        - 示例:
+            ```java
+            menu.stream().collect(partitioningBy(
+                Dish::isVegetarian,
+                partitioningBy(dish -> dish.getCalories() > 500)
+            ));
+            ```
+    - 将数字按质数/非质数分区
+        ```java
+        // 只测试小于等待测数平方根的因子
+        public boolean isPrime(int candidate) {
+            int candidateRoot = (int) Math.sqrt((double)candidate);
+            return IntStream.rangeCloser(2, candidateRoot).noneMatch(i -> candidate % i == 0);
+        }
+
+        IntStream.rangeClosed(2, n).boxed().collect(
+            partitioningBy(candidate -> isPrime(candidate))
+        );
+        ```
+
+## Collectors类的静态工厂方法
 [top](#catalog)
 
+|工厂方法|返回类型|用途|使用示例|
+|-|-|-|-|
+|-|-|-|Stream<T> menuStream = menu.stream()|
+|toList|List<T>|将流中的元素收集到一个List|List<Dish> result = menuStream.collect(toList())|
+|toSet|Set<T>|将流中的元素收集到一个List，去重|Set<Dish> result = menuStream.collect(toSet())|
+|toCollection|Collection<T>|对每个元素使用指定的方法，创建并收集到集合中|Collection<Dish> result = menuStream.collect(toCollection(), ArrayList::new())??????|
+|counting|Long|计算流中的元素个数|long result = menuStream.collect(count())|
+|summingInt|Integer|对各元素的求和项进行求和|int result = menuStream.collect(summingInt(Dish::getCalories))|
+|averagingInt|Double|计算流中Interger属性的平均值|double result = menuStream.collect(averagingInt(Dish::getCalories))|
+|summarizingInt|IntSummaryStatistics|同时统计所有元素的：最大值、最小值、求和、平均值|IntSummaryStatistics resutlt = menuStream.collect(summarizingInt(Dish::getCalories))|
+|joining|String|对流中的每个元素调用`toString()`，并连接成一个字符串|String result = menuStream.collect(joining(", "))|
+|maxBy|Optional<T>|返回流中的最大值，空流返回`Optional.empty()`|Optional<Dish> result = menuStream.collect(maxBy(comparingInt(Dish::getCalories)))|
+|minBy|Optional<T>|返回流中的最小值，空流返回`Optional.empty()`|Optional<Dish> result = menuStream.collect(minBy(comparingInt(Dish::getCalories)))|
+|reducing|T||int result = menuStream.collect(reducing(0, Dish::getCalories, Integer::sum))|
+|collectingAndThen|转换函数返回的类型|包装另一个收集器，并对其结果调用转换函数|int result = menuStream.collect(collectingAndThen(toList(), List::size))|
+|groupingBy|`Map<K, List<T>>`|对流进行分组|`Map<Dish.Type, List<Dish>> result = menuStream.collect(groupingBy(Dish::getType))`|
+|partitioningBy|`Map<Boolean, List<Dish>`|对流进行分区|`Map<Dish.Type, List<Dish>> result = menuStream.collect(partitioningBy(Dish::isVegetarian))`|
+
+## 收集器接口
+- Collector接口的定义
+    - 接口方法定义
+        ```java
+        public interface Collector<T, A, R> {
+            Supplier<A> supplier();
+            BiConsumer<A, T> accumulator();
+            BinaryOperator<A> combiner();
+            Function<A, R> finisher();
+            Set<Characteristics> characteristics();
+        }
+        ```
+    - `T`是流中要收集的项目的泛型
+    - `A`是累加器的类型，累加器是在收集过程中用于累计部分结果的对象
+    - `R`是收集操作得到的对象的类型（不一定是集合）
+- `Supplier<A> supplier();`，建立新的结果容器
+    - 调用时，会创建一个**空的累加器实例**，供数据收集过程使用
+
+[top](#catalog)
+    
+
+
+
+
+
+
+
+
+
+
+
+
+---------------------------------------------------------------------------
 
 `Stream.of` 可以通过显示值创建一个流
 `Stream.empty()`获得一个空流
