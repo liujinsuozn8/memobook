@@ -31,7 +31,16 @@
     - [分组](#分组)
     - [对收集器的结果进行转换](#对收集器的结果进行转换)
     - [分区](#分区)
+        - [Collector接口的定义](#collector接口的定义)
+        - [自定义ToListCollector收集器](#自定义toListCollector收集器)
     - [Collectors类的静态工厂方法](#collectors类的静态工厂方法)
+    - [收集器接口](#收集器接口)
+    - [开发收集器以获得更好的性能](#开发收集器以获得更好的性能)
+- [并行处理数据与性能](#并行处理数据与性能)
+    - [并行流](#并行流)
+    - [分支合并框架](#分支合并框架)
+    - [](#)
+    - [](#)
     - [](#)
     - [](#)
 
@@ -1738,7 +1747,7 @@ List<Dish> menu = Arrays.asList(
                 - ?????????????  ![图](./imgs/)
     - `groupingBy(分组函数, summingXXX())`, 分组求和
         ```java
-        Map<Dish.Type, Integer> result = menu.stream().collect(groupingBy(Dish::getType), summingInt(Dish::getCalories)) ?????????????????? Integer-->int, long
+        Map<Dish.Type, Integer> result = menu.stream().collect(groupingBy(Dish::getType), summingInt(Dish::getCalories)) //?????????????????? Integer-->int, long
         ```
     - `groupingBy(分组函数, mapping(转换函数，收集器))`, 让接受特定类型元素的收集器适应不同类型的对象
         - 示例： 查看各菜单类型下，都有哪些`CaloricLevel`
@@ -1810,9 +1819,11 @@ List<Dish> menu = Arrays.asList(
         // 只测试小于等待测数平方根的因子
         public boolean isPrime(int candidate) {
             int candidateRoot = (int) Math.sqrt((double)candidate);
+            // 如果能被前面的某个整除，则不是质数
             return IntStream.rangeCloser(2, candidateRoot).noneMatch(i -> candidate % i == 0);
         }
 
+        // 对流中的数字按照质数/非质数分区
         IntStream.rangeClosed(2, n).boxed().collect(
             partitioningBy(candidate -> isPrime(candidate))
         );
@@ -1840,34 +1851,505 @@ List<Dish> menu = Arrays.asList(
 |partitioningBy|`Map<Boolean, List<Dish>`|对流进行分区|`Map<Dish.Type, List<Dish>> result = menuStream.collect(partitioningBy(Dish::isVegetarian))`|
 
 ## 收集器接口
-- Collector接口的定义
-    - 接口方法定义
-        ```java
-        public interface Collector<T, A, R> {
-            Supplier<A> supplier();
-            BiConsumer<A, T> accumulator();
-            BinaryOperator<A> combiner();
-            Function<A, R> finisher();
-            Set<Characteristics> characteristics();
-        }
-        ```
+### Collector接口的定义
+[top](#catalog)
+- 接口方法定义
+    ```java
+    public interface Collector<T, A, R> {
+        Supplier<A> supplier();
+        BiConsumer<A, T> accumulator();
+        BinaryOperator<A> combiner();
+        Function<A, R> finisher();
+        Set<Characteristics> characteristics();
+    }
+    ```
+- 三个泛型
     - `T`是流中要收集的项目的泛型
     - `A`是累加器的类型，累加器是在收集过程中用于累计部分结果的对象
     - `R`是收集操作得到的对象的类型（不一定是集合）
+
 - `Supplier<A> supplier();`，建立新的结果容器
     - 调用时，会创建一个**空的累加器实例**，供数据收集过程使用
+- `BiConsumer<A, T> accumulator();`，将元素添加到结果容器
+    - 该方法会返回**归约操作的函数**
+    - 归约函数的参数
+        - 参数1：保存结果的累加器
+        - 参数2：第n个元素本身
+- `Function<A, R> finisher();`，对结果容器应用最终转换
+    - 变量完流后，调用`finisher`，返回一个函数来将累加器对象转换为整个集合操作的最终结果
+- 通过`supplier`, `accumulator`, `finisher`三个操作就可以完成顺序归约
+    - 基本的归约流程 ??????????????????? ![图](./imgs/.......)
+
+- `BinaryOperator<A> combiner();`，合并两个结果容器
+    - 返回一个函数，该函数定义了：对流的各个子部分进行并行处理时，各个子部分的累加器要如何合并
+        - `toList`的`combiner`函数:
+            ```java
+            (left, right) -> { left.addAll(right); return left; }
+            ```
+    - 并行处理的归约过程
+        ![图](./imgs/)
+
+- `Set<Characteristics> characteristics();`,
+    - 返回一个不可变的`Characteristics`集合
+        - `Characteristics`定义了收集器的行为，包括能否并行，以及如何优化
+        - `Characteristics`是一个包含三个项目的枚举
+            - `UNORDERED`，归约结果不受流中项目的遍历和累计顺序的影响，**即无序的**
+            - `CONCURRENT`，`accumulator`函数可以从多个线程同时调用，且该收集器可以并行归约流
+                - 如果收集器没有标为`UNORDERED`，那它**仅在用于无序数据源时才可以并行归约**，
+            - `IDENTITY_FINISH`，表明`finisher`返回的是一个`恒等函数`，可以跳过
+                - 这种情况下，累加器的结果将直接作为归约的结果
+
+### 自定义ToListCollector收集器
+[top](#catalog)
+- 自定义收集器
+    ```java
+    public class ToListCollector<T> implements Collector<T, List<T>, List<T>> {
+        // 集合操作的起始点
+        @Override
+        public Suppkier<List<T>> supplier() {
+            return ArrayList::new;
+        }
+
+        //累加操作
+        @Override
+        public BiConsumer<List<T>, T> accumulator(){
+            return List::add;
+        }
+
+        @Override
+        public BinaryOperator<A> combiner(){
+            return (list1, list2) -> {
+                list1.addAll(list2);
+                return list1;
+            }
+        }
+
+        @Override
+        public Function<A, R> finisher(){
+            return Function.identity();
+        }
+
+        @Override
+        public Set<Characteristics> characteristics(){
+            // 结果需要保证顺序，所以不是：UNORDERED的
+            // finsher是一个恒等函数
+            // 仅在数据源时无序时做并行处理
+            return Collections.unmodifiableSet(EnumSet.of(Collector.Characteristics.CONCURRENT,
+                                                    Collector.Characteristics.IDENTITY_FINISH));
+        }
+
+    }
+    ```
+- 收集器的调用
+    ```java
+    List<Dish> result = meun.stream().collect(new ToListCollector<Dish>());
+    ```
+- 通过`collect`的重载来完成收集处理
+    - `collect`的重载
+        - 这种重载默认的`Characteristics`是：`CONCURRENT`, `IDENTITY_FINISH`
+        - 重载所使用的`combiner`与接口中的`combiner`是不同的
+            - 接口中的是：`BinaryOperator<A> combiner()`
+                - 函数需要返回一个结果
+            - 重载中使用的是：`BiConsumer<R, R> combiner`
+                - 函数不需要返回结果
+            ```java
+            <R> R collect(Supplier<R> supplier,
+                    BiConsumer<R, ? super T> accumulator,
+                    BiConsumer<R, R> combiner);
+            ```
+    - 调用
+        ```java
+        List<Dish> result = meun.stream().collect(
+            ArrayList::new,
+            List::add,
+            List::addAll //?????? public boolean addAll(Collection<? extends E> c)
+        );
+        ```
+
+## 开发收集器以获得更好的性能
+[top](#catalog)
+- 再讨论`将数字按质数/非质数分区`
+    - 只测试小于等于测数平方根的因子，避免遍历[2, n-1]各数来提供性能
+    ```java
+    // 只测试小于等于测数平方根的因子，避免遍历[2, n-1]各数来提供性能
+    public boolean isPrime(int candidate) {
+        int candidateRoot = (int) Math.sqrt((double)candidate);
+
+        // 如果能被前面的某个整除，则不是质数
+        return IntStream.rangeCloser(2, candidateRoot).noneMatch(i -> candidate % i == 0);
+    }
+
+    // 对流中的数字按照质数/非质数分区
+    public Map<Boolean, List<Integer>> partitionPrime(int n) {
+        return IntStream.rangeClosed(2, n).boxed().collect(
+                    partitioningBy(candidate -> isPrime(candidate))
+            );
+    }
+    ```
+- 优化方法：仅用质数做除数
+    - 只看被测试的数**是否能够被质数整除**
+        - 作为除数的质数都小于等于当前数的平方根
+    - 如果只使用java框架提供的方法，在收集的过程中无法访问部分结果
+
+- 通过当前测试的数值来构造:`质数除数列表`
+    ```java
+    // 给定一个数，返回小于该数平方根的质数列表
+    // 在迭代过程中，通过p来判断当前元素是否满足条件
+    // 如果不满足了，则对列表进行截取并返回
+    // 如果全部满足，则将整个list返回
+    public static<A> List<A> takeWhile(List<A> list, Predicate<A> p){
+        int i = 0;
+        for (A item : list){
+            if (!p.test(item)){
+                // 如果不满足了，则对列表进行截取并返回
+                return list.sublist(0, i)
+            }
+            i++;
+        }
+
+        //如果全部满足，则将整个list返回
+        return list;
+    }
+    ```
+
+- 定义判断质数的方法
+    - 将`迭代质数除数列表`作为数据源，并进行流处理
+    ```java
+    /*
+    @param primes 质数列表
+    @param candidate 当期要检测的数值
+    */
+    public static boolean isPrime(List<Integer> primes, int candidate){
+        int candidateRoot = (int) Math.sqrt((double)candidate);
+        return takeWhile(primes, i->i<candidateRoot) //制作数据源
+                .stream()                            //流水线
+                .noneMatch(i -> candidate % i == 0); //判断
+    }
+    ```
+- 自定义收集器来进行质数/非质数的分区
+    ```java
+    // 数据源是List<Integer>, 累加器和最终结果都是分区类型：Map<Boolean, List<Integer>>
+    // true=质数列表，false=非质数列表
+    // public interface Collector<T, A, R>
+    public class PrimeNumbersCollector 
+            implements Collector<Integer, Map<Boolean, List<Integer>>, Map<Boolean, List<Integer>>> {
+        @Override
+        public Supplier<Map<Boolean, List<Integer>>> supplier(){
+            return () -> new HasMap<Boolean, List<Integer>>() {{
+                put(true, new ArrayList<Integer>());
+                put(false, new ArrayList<Integer>());
+            }}; // 双{{}} ???????????
+        }
+
+        @Override
+        public BiConsumer<Map<Boolean, List<Integer>>, Integer> accumulator(){
+            return (Map<Boolean, List<Integer>> acc, Integer candidate) -> {
+                // 先从Map中获取ture部分/质数部分的List，作为参数，使用isPrime来验证当前数是否为质数
+                acc.get(isPrime(acc.get(true), candidate))
+                    .add(candidate);
+            }
+        }
+
+        // 定义并行处理的方法
+        // 但是实际上这个收集器本身是不能并行运行的，因为该算法本身是顺序的，所以永远都不可能调用该方法
+        @Override
+        public BinaryOperator<A> combiner() {
+            // 需要做的只是合并两部分的结果
+            return (Map<Boolean, List<Integer>> map1,
+                    Map<Boolean, List<Integer>> map2) -> {
+                        map1.get(true).addAll(map2.get(true));
+                        map1.get(false).addAll(map2.get(false));
+                        return map1;
+                    }
+                    
+            // 由于该方法永远都不可能被调用，更好的处理方法是引发异常
+            // throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Function<A, R> finisher() {
+            // 返回的结果不需要转换
+            return Function.identity();
+        }
+
+        @Override
+        public Set<Characteristics> characteristics() {
+            // 该处理必须是顺序执行的，且无法并行处理
+            // 返回结果不需要进行转换
+            return Collections.unmodifiableSet(EnumSet.of(Collector.Characteristics.IDENTITY_FINISH));
+        }
+    }
+    ```
+- 调用自定义收集器
+    ```java
+    public Map<Boolean, List<Integer>> partitionPrimeWithConsume(int n) {
+        return result = IntStream.rangeClosed(2, n)
+                                    .boxed()
+                                    .collect(new PrimeNumbersCollector());
+    }
+    ```
+
+- 性能测试
+??????????????????????????
+
+
+# 并行处理数据与性能
+## 并行流
+[top](#catalog)
+- 通过对数据源调用`parallelStream()`，将集合转换为并行流
+- 处理无限数字集的求和
+    - 使用`stream`做顺序流处理
+        ```java
+        public static long sequentialSum(long n) {
+            return Stream.iterate(1L, i -> i+1)
+                            .limit(n)
+                            .reduce(0, Long::sum);
+        }
+        ```
+    - 使用`stream`，相当于在做，
+        ```java
+        public static long iterativeSum(long n) {
+            long sum = 0;
+            for(long i = iL; i<=n; i++) {
+                sum += i;
+            }
+
+            return sum;
+        }
+        ```
+    - 使用`parallelStream`做并行流处理
+        ```java
+        public static long parallelSum(long n) {
+            return Stream.iterate(1L, i -> i+1)
+                            .limit(n)
+                            .parallel() //转换为并行流
+                            .reduce(0, Integer::sum);
+        }
+        ```
+        - 归纳操作的基本流程：![图](./imgs/....)????????????????????????/
+- `parallel()`和`sequential()`
+    - 两个方法实际上没有对前面一系列方法的处理方式做管理，只是设定了一个`boolean标志`
+    - 只有**最后调用**的`parallel()`或`sequential()`会生效
+
+- 测试流性能
+    - 测试代码
+        ```java
+        class ParallelStream{
+            // 测试方法
+            public static long measureSunPerf(Function<Long, Long> adder, long n){
+                long fastest = Long.MAX_VALUE;
+                for(int i = 0; i < 10; i++){
+                    long start = System.nanoTime();
+                    long sum = adder.apply(n);
+                    long duration = (System.nanoTime() - start) / 1_000_000;
+                    System.out.println("Result: " + sum);
+                    if (duration < fastest) fastest = duration; //去n此测试的最大值
+                }
+
+                return fastest;
+            }
+
+            public static long sequentialSum(long n) {
+                return Stream.iterate(1L, i -> i+1)
+                                .limit(n)
+                                .reduce(0, Long::sum);
+            }
+
+            public static long iterativeSum(long n) {
+                long sum = 0;
+                for(long i = iL; i<=n; i++) {
+                    sum += i;
+                }
+
+                return sum;
+            }
+
+            public static long parallelSum(long n) {
+                return Stream.iterate(1L, i -> i+1)
+                                .limit(n)
+                                .parallel() //转换为并行流
+                                .reduce(0, Integer::sum);
+            }
+        }
+
+        class MyTest{
+            @Test
+            public void method(){
+                System.out.println(measureSunPerf(ParallelStream::measureSunPerf, 1_000_000));
+                System.out.println(measureSunPerf(ParallelStream::iterativeSum, 1_000_000));
+                System.out.println(measureSunPerf(ParallelStream::parallelSum, 1_000_000));
+            }
+        }
+        ```
+    - 测试结果的分析
+        - `for`循环最快，`parallel`最慢
+        - 为什么并行变慢了
+            - `iterate`生产的是装箱对象，必须拆箱成数字才能用
+            - 很难把`iterate`分成多个独立块来并行执行
+                - `iterate`很难分割成能够独立执行的小块，因为**每次应用这个函数都要依赖前一次应用的结果**
+                - 整个数据源在开始时无法做分割，所以无法有效的使用并行处理
+                - 虽然使用`parallel`将流标记为并行，但实际上是**给顺序处理增加了开销**
+                    - 除了任务分配，每次还需要将求和操作分到一个不同的线程上
+- 使用`LongStream`来改进
+    - 使用原始类型特化流`LongStream`来避免装箱和拆箱的操作
+    - 使用`LongStream.rangeClosed`
+        - 直接生成`long`型的数字
+        - 生成的数字范围可以拆分成独立的小块，便于并行
+    ```java
+    //顺序处理
+    public static long rangedSum(long n) {
+        return LongStream.rangeClosed(1L, i -> i+1)
+                        .limit(n)
+                        .reduce(0, Integer::sum);
+    }
+
+    //并行处理
+    public static long parallelRangedSum(long n) {
+        return LongStream.rangeClosed(1L, i -> i+1)
+                        .limit(n)
+                        .parallel()
+                        .reduce(0, Integer::sum);
+    }
+    ```
+
+- 并行化本身的代价
+    - 并行化过程：
+        - 对流做递归划分
+        - 把每个子流的归纳操作分配到不同的线程
+        - 把子流的操作结果合并成一个值
+    - **需要保证在内核中并行执行工作的时间比在内核之间传输数据的时间长**
+        - 多个内核之间移动数据的代价可能比想象的要大
+    - 很多情况下不可能或不方便并行化，使用之前必须确保使用得当
+
+
+- 使用并行流产生错误的原因：**使用的算法改变了某些共享状态**
+    - 如果使用同步来修复问题，就失去了并行的意义
+- 如何使用并行流
+    1. 避免装箱和拆箱： 使用原始类型流来避免装箱和拆箱
+    2. 有效操作本身在并行流上的性能就比顺序流差
+        - 如`limit`、`findFirst`等依赖于元素顺序的操作，在并行流上的执行代价非常大
+        - `findAny`比`findFirst`更好，因为它不一定要按照顺序来执行
+        - 可以调用`unordered`方法来把有序流变成无序流
+            - 变成无序流之后，再调用`limit`的效率更高
+    3. 考虑流水线的总计算成本
+        - `N`是流中元素的总数, `Q`是一个元素通过流水线的大致处理成本
+        - 总成本 = `N * Ｑ`
+        - 如果`Q`比较高，则使用并行流能提高性能的可能性比较大
+    4. **数据量小，并行流不是很好**
+    5. 需要考虑流的数据结构是否易于分解
+        - 如`ArrayList`的拆分效率比`LinkedList`高很多
+            - 因为`ArrayList`不需要遍历就可以`平均拆分`
+    6. 流自身的特点、中间操作修改流的方式，**可能会改变分解过程的性能**
+        - 一个`sized`流可以分成大小相等的两部分，每部分可以高效的并行处理
+        - `filter`操作可能会丢弃元素，丢弃的数量未知，会导致流本身的大小未知
+    7. `combiner`合并操作的代价
+        - 如果`combiner`合并两个结果的代价很大，就可能超过并行流得到的性能提升
+
+- 一些数据源的可分解性
+    - 易于分解的结构更适合并行处理
+
+    |数据源|可分解性|
+    |-|-|
+    |ArrayList|极佳|
+    |LinkedList|差|
+    |IntStream.range|极佳|
+    |Stream.iterate|差|
+    |HashSet|好|
+    |TreeSet|好|
+
+## 分支合并框架
+[top](#catalog)
+- 分支合并框架的目的
+    1. 以递归的方式将可以并行的任务拆分成更小的任务
+    2. 将每个子任务的结果合并，得到总体结构
+- 该框架是`ExecutorService`接口的一个实现
+    - `ExecutorService`将子任务分配给线程池中的工作线程
+- 使用`RecursiveTask`
+    - 如果要把任务提交到这个池，必须创建`RecursiveTask<R>`的一个子类
+        - `R`是并行化任务产生的结果类型
+        - 如果任务不返回结果，则是`RecursiveAction`类型
+    - 定义`RecursiveTask`，只需要实现`protected abstract R compute();`
+        - 该方法定义了
+            1. 将任务拆分成子任务的逻辑
+            2. 无法再拆分或不方便再拆分时，产生单个子任务结果的逻辑
+
+- 使用分支合并框架执行并行求和
+    - 实现分支合并框架
+        ```java
+        public class ForkJoinSumCalculator extends java.util.concurrent.RecursiveTask<Long> {
+            private final long[] numbers; // 需要求和的数组
+
+            // 子任务处理是的起始和终止index
+            private final int start; 
+            private final int end;
+
+            public static final long THRESHOLD = 10_000; // 数组拆分的最小值
+
+            public ForkJoinSumCalculator (long[] numbers) {
+                this(numbers, 0, numbers.length);
+            }
+
+            //通过私有构造来创建对象
+            private ForkJoinSumCalculator (long[] numbers, int start, int end) {
+                this.numbers = numbers;
+                this.start = start;
+                this.end = end;
+            }
+
+            private long computeSequentially() {
+                long sum = 0;
+                for (int i = start; i <end; i++){
+                    sum += numbers[i];
+                }
+                return sum;
+            }
+
+            @Override
+            protected Long compute() {
+                int length = end - start; // 求当前任务负责的块大小
+
+                // 终止拆分，进行计算
+                if (length < THRESHOLD) { 
+                    return computeSequentially();
+                }
+
+                // 继续拆分，拆成两半：左节点和右节点
+                ForkJoinSumCalculator leftTask = new ForkJoinSumCalculator(numbers, start, start+length/2);
+                // 利用另一个ForkJoinPool线程异步执行左节点的任务
+                leftTask.fork();
+                
+                ForkJoinSumCalculator rightTask = new ForkJoinSumCalculator(numbers, start+length/2, end);
+                // 同步执行右节点的任务，可能会发生进一步的递归划分
+                Long rightResult = rightTask.compute();
+
+                //等待左节点的任务结束
+                Long leftResult = leftTask.join();
+
+                return leftResult + rightResult;
+            }
+        }
+        ```
+    - 使用自定义`RecursiveTask`，来并行计算前n个数
+        ```java
+        public static long forkJoinSum(long n) {
+            long[] numbers = LongStream.rangeClosed(1, n).toArray();
+            ForkJoinTask<Long> task = new ForkJoinSumCalculator(numbers);
+            return new ForkJoinPool().invoke(task); // 创建线程池并执行
+        }
+        ```
+- 分支合并框架使用线程池`ForkJoinPool`
+    - 在实际应用时，使用多个`ForkJoinPool`是无意义的
+    - 一般情况，应该使用单例：实例化一次，并保存在静态字段中，并在任意位置重用
+    - 无参构造器:`ForkJoinPool()`
+        - 默认使用JVM能够使用的所有处理器
+            - 即使用：`Runtime.availableProcessors`的返回值来决定线程池使用的线程数
+                - 该方法返回的是**可用内核**的数量，**包括超线程生产的虚拟内核**
+
+
+
+
 
 [top](#catalog)
-    
-
-
-
-
-
-
-
-
-
 
 
 
