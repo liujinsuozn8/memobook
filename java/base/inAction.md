@@ -39,7 +39,7 @@
 - [并行处理数据与性能](#并行处理数据与性能)
     - [并行流](#并行流)
     - [分支合并框架](#分支合并框架)
-    - [](#)
+    - [Spliterator](#spliterator)
     - [](#)
     - [](#)
     - [](#)
@@ -1016,7 +1016,7 @@ List<Dish> menu = Arrays.asList(
         - 像`sort`,`distinct`等操作，虽然也是中间操作，但是从流中排序和删除重复项目是都需要知道先前的历史
             - 排序需要所有元素都放入缓冲区之后才能给输出流加入一个项目，这个操作的存储要求是**无界的**，当流比较大或是无限时，就可能会有问题
 
--StreamAPI提供的操作
+- StreamAPI提供的操作
 
 |操作|类型|返回类型|操作参数|函数描述符|
 |-|-|-|-|-|
@@ -1222,9 +1222,12 @@ List<Dish> menu = Arrays.asList(
         int sum = numbers.stream()
                          .reduce(0, Integer::sum);
         ```
-    - 无初始值`reduce(BinaryOperator<T>)`
+    - 无初始值`reduce(BinaryOperator<T>)`重载
         - 返回一个`Optional<Integer>`
             - 如果是`空流`,reduce操作无法返回结果，因为没有初始值，通过`Optional`来表明结果可能不存在
+    - 使用`reduce`的三参数重载
+        - `<U> U reduce(U identity, BiFunction<U, ? super T, U> accumulator, BinaryOperator<U> combiner);`
+        - 需要提供：初始值、计算方法、合并方法
 
 - 最大最小值
     - 使用`无初始值reduce`来计算最大最小值
@@ -1969,7 +1972,7 @@ List<Dish> menu = Arrays.asList(
 ## 开发收集器以获得更好的性能
 [top](#catalog)
 - 再讨论`将数字按质数/非质数分区`
-    - 只测试小于等于测数平方根的因子，避免遍历[2, n-1]各数来提供性能
+    - 只测试小于等于测数平方根的因子，避免遍历[2, n-1]个数来提供性能
     ```java
     // 只测试小于等于测数平方根的因子，避免遍历[2, n-1]各数来提供性能
     public boolean isPrime(int candidate) {
@@ -2175,9 +2178,9 @@ List<Dish> menu = Arrays.asList(
         class MyTest{
             @Test
             public void method(){
-                System.out.println(measureSunPerf(ParallelStream::measureSunPerf, 1_000_000));
-                System.out.println(measureSunPerf(ParallelStream::iterativeSum, 1_000_000));
-                System.out.println(measureSunPerf(ParallelStream::parallelSum, 1_000_000));
+                System.out.println(measureSunPerf(ParallelStream::measureSunPerf, 10_000_000));
+                System.out.println(measureSunPerf(ParallelStream::iterativeSum, 10_000_000));
+                System.out.println(measureSunPerf(ParallelStream::parallelSum, 10_000_000));
             }
         }
         ```
@@ -2226,7 +2229,7 @@ List<Dish> menu = Arrays.asList(
     - 如果使用同步来修复问题，就失去了并行的意义
 - 如何使用并行流
     1. 避免装箱和拆箱： 使用原始类型流来避免装箱和拆箱
-    2. 有效操作本身在并行流上的性能就比顺序流差
+    2. 有些操作本身在并行流上的性能就比顺序流差
         - 如`limit`、`findFirst`等依赖于元素顺序的操作，在并行流上的执行代价非常大
         - `findAny`比`findFirst`更好，因为它不一定要按照顺序来执行
         - 可以调用`unordered`方法来把有序流变成无序流
@@ -2329,25 +2332,297 @@ List<Dish> menu = Arrays.asList(
             }
         }
         ```
-    - 使用自定义`RecursiveTask`，来并行计算前n个数
+    - 使用自定义`RecursiveTask`，来并行计算前n个数，并进行测试
         ```java
-        public static long forkJoinSum(long n) {
-            long[] numbers = LongStream.rangeClosed(1, n).toArray();
-            ForkJoinTask<Long> task = new ForkJoinSumCalculator(numbers);
-            return new ForkJoinPool().invoke(task); // 创建线程池并执行
+        class ParallelStream{
+            ...
+            public static long forkJoinSum(long n) {
+                long[] numbers = LongStream.rangeClosed(1, n).toArray();
+                ForkJoinTask<Long> task = new ForkJoinSumCalculator(numbers);
+                return new ForkJoinPool().invoke(task); // 创建线程池并执行
+            }
+        }
+
+        class MyTest{
+            @Test
+            public void method(){
+                System.out.println(measureSunPerf(ParallelStream::measureSunPerf, 10_000_000));
+                System.out.println(measureSunPerf(ParallelStream::iterativeSum, 10_000_000));
+                System.out.println(measureSunPerf(ParallelStream::parallelSum, 10_000_000));
+
+
+                System.out.println(measureSunPerf(ParallelStream::forkJoinSum, 10_000_000));
+            }
         }
         ```
-- 分支合并框架使用线程池`ForkJoinPool`
+- `ForkJoinPool`, 分支合并框架使用线程池
     - 在实际应用时，使用多个`ForkJoinPool`是无意义的
     - 一般情况，应该使用单例：实例化一次，并保存在静态字段中，并在任意位置重用
     - 无参构造器:`ForkJoinPool()`
         - 默认使用JVM能够使用的所有处理器
             - 即使用：`Runtime.availableProcessors`的返回值来决定线程池使用的线程数
-                - 该方法返回的是**可用内核**的数量，**包括超线程生产的虚拟内核**
+                - 该方法返回的是**可用内核**的数量，**包括超线程生成的虚拟内核**
+
+- 合理使用分支合并框架
+    - `join()`，阻塞调用者，直到该任务完成
+        - 所以应该在所有任务都启动之后，再使用该方法
+    - 不应该在`RecursiveTask`内部使用`ForkJoinPool`的`invoke`方法，应该调用子任务的`compute`进行计算，或者调用`fork`方法将任务放到其他线程执行
+        - 只应该在顺序代码中应用`invoke`来计算
+    - `fork`会将任务排进`ForkJoinPool`中，但是调用该方法的效率要比`compute`要低
+        - 在有n个子任务时，可以将`n-1`个任务放入`ForkJoinPool`中，剩余的一个任务在当前线程中执行，来重用当前线程，避免在`ForkJoinPool`多启动一个线程
+    - 一个可以分解成多个子任务的任务，才能让性能在并行化时有提升
+        - `所有子任务的运行时间 > 创建新任务的时间`
+            - 惯用方法：
+                - <label style="color:red">`输入/输出`放在一个子任务中，`计算`放在另一个任务中</label>
+    - 分支合并框架需要`预热`
+        - 在测试同一算法的顺序版本和并行版本前，需要**多执行几遍，代码才能被JIT编译器优化**
+        - 需要知道：编译器内置的优化可能会为顺序版本带来一些优势
+            - 如: 执行死代码分析--删除从未被使用的计算
+    - 需要制定标准，来决定拆分任务的临界值 ????????????????????
+
+- 工作窃取算法
+    - 工作窃取算法一般用于：**在线程池中的工作线程之间重新分配和平衡任务**
+    - 求和任务的设定和执行分析
+        - 在求和任务中硬编码了规定:当包含`10_000`个元素时就不再创建子任务
+            - 没有更好的方式来直接确定如何划分，只能尝试多个不同的值来尝试优化
+        - 测试求和目标为`n=10_000_000`，将会产生1000个子任务，但实际只有几个内核可以使用
+            - 当前的划分规则产生了大量的小任务
+                - 理想情况下，划分并行任务时，应该让每个任务都用相同的时间完成，让所有的cpu一样繁忙
+                - 实际情况下，每个子任务花费的时间是完全不同的，原因包括
+                    - 划分策略低
+                    - 存在不可知原因，如
+                        - 磁盘访问慢
+                        - 需要和外部服务协调执行
+
+    - 分支合并框架通过`工作窃取`的技术来解决问题
+        - 工作流程
+            - 任务被平均分配到`ForkJoinPool`的所有线程中，每个线程都将任务保存在一个`双向队列`中
+            - 线程每做完一个任务，就会从`双向队列`的`队头`取出下一个任务来执行
+            - 当某个线程执行完所有任务后，`双向队列`为空，但是其他线程可能还有任务没有执行，则当前线程会`随机选择`一个其他线程，从目标线程的`双向队列`的`队尾`偷走一个任务
+            - 重复这种执行自身任务，全部完成后偷取其他线程任务的过程，直到所有线程的所有任务都完成
+        - 递归示意图：![图](./imgs/...) ??????????????????????
+        - 所以通常将一个任务划分成**多个 小 任务**，而不是**几个大任务**，这种划分方式有助于更好的在工作线程之间`平衡负载`
 
 
+## Spliterator
+[top](#catalog)
+- 在流中不需要直接使用分支合并框架，在Stream框架内部使用了`Spliterator`来自动拆分流
+- `Spliterator`，Java8中的新接口，表示：`可分迭代器`
+    - 和`Iterato`一样，`Spliterator`也用于遍历数据
+    - `Spliterator`是为并行处理而设计的
+    - 一般不用重新开发接口实现
+        - Java8已经为集合框架中包含的所有数据结构提供了一个默认的`Spliterator`实现
+- `Spliterator`接口
+    ```java
+    public interface Spliterator<T> {
+        boolean tryAdvance(Consumer<? super T> action);
+        Spliterator<T> trySplit();
+        long estimateSize();
+        int characteristics();
+    }
+    ```
+    - `T`是遍历的元素类型
+    - `tryAdvance`类似于普通`Iterator`，按顺序一个一个使用`Spliterator`中的元素，如果还有元素则返回`true`
+    - `trySplit`用于将一些元素划分为第二个`Spliterator`,让两个`Spliterator`**并行处理**
+    - `estimateSize`用于估计当前还剩下多少元素需要遍历
+        - 可能会不准，但能快速算出一个值，有助于将任务拆分的更均匀
+    - `characteristics`，该方法返回一个`int`，代表`Spliterator`自身特性集的编码，通过这些特性来更好的控制和优化
+
+        |特性|含义|
+        |-|-|
+        |ORDERED|元素有序(如`List`)，`Spliterator`在遍历和划分时也会遵守这个规则|
+        |DISTINCT|全部元素具有唯一性|
+        |SORTED|遍历的元素按照一个预定义的顺序排序|
+        |SIZED|当前`Spliterator`由一个已知大小的源建立(如`Set`??????)，因此`estimateSize()`返回的是准确值?????????|
+        |NONULL|保证遍历的元素不为空|
+        |IMMUTABL|`Spliterator`数据源不能修改该。即在遍历时，**不能添加、删除、修改 任何元素**|
+        |CONCURRENT|`Spliterator`的数据源可以被其他线程同时修改而无需同步|
+        |SUBSIZED|当前`Spliterator`和所有从它自身拆分出来的`Spliterator`都是`SIZED`的|
+
+- `Spliterator`的拆分过程
+    - 将`Stream`拆分成多个部分是一个递归过程，不停调用`trySplit`直到返回`null`
+        - ![递归拆分过程](./imgs/....) ????????????????????????????
+
+- 自定义`Spliterator`
+    - 自定义`Spliterator`来:计算字符串中的单词数
+    - 使用`for-each`迭代式统计
+        ```java
+        public int countWord(String s){
+            int counter = 0;
+            boolean lastSpace = true;
+            for (char c : s.toCharArray()) {
+                if (Character.isWhitespace(c)){
+                    lastSpace = true;
+                } else {
+                    if (lastSpace) count++;
+                    lastSpace = false;
+                }
+            }
+        }
+
+        //测试
+        @Test
+        public void method(){
+            String a = "aa bb cc ddd";
+            System.out.println(countWord(a));
+        }
+        ```
+    - 使用三参数重载的`reduce`
+        - 创建流
+            - 无法直接通过String创建流
+            - 通过`IntStream`创建一个索引流，然后将索引转换成字符串中对应的字符
+                ```java
+                // ?????? char ?? Character
+                Stream<Character> stream = IntStream.range(0, xxxx.length()).mapToObj(xxxx::charAt);
+                ```
+        - 自定义收集器
+            - 收集器中需要保存两个状态
+                - `counter`，单词数量的统计结果
+                - `lastSpace`，上一个单词是否为空格
+            ```java
+            class WordCounter{
+                public final int counter;
+                public final boolean lastSpace;
+                public WordCounter(int counter, boolean lastSpace) {
+                    this.counter = counter;
+                    this.lastSpace = lastSpace;
+                }
+
+                public WordCounter accumulate(Character c){
+                    if (Character.isWhitespace(c)) {
+                        return lastSpace? this : new WordCounter(counter, true);
+                    } else {
+                        return lastSpace? new WordCounter(counter + 1, false) : this;
+                    }
+                }
+
+                public WordCounter combine(WordCounter wordCounter) {
+                    return new WordCounter(counter + wordCounter.counter, wordCounter.lastSpace);
+                }
+
+                public int getCounter() {
+                    return counter;
+                }
+            }
+            ```
+        - 测试
+            - 测试类
+                ```java
+                class WordCounterTest{
+                    //20
+                    public static final String testStr = "aasfsfa bbsdfdfb ccewrewc dtyrydd eertyre ffrtyrfff ssfdsfs rtyrr xcrtyrtyrvv ljkrtllk xvcvvcvvxv rrrrrrr ggggggggggg sssssssss qqqqqqqqqqq  iooiioou sfdfdfsf kjklklkjlkl ewerrwe sfddfsdf"
+                    public static int countWords(Stream<Character> stream) {
+                        WordCounter counter = stream.reduce(new WordCounter(0, true), WordCounter::accumulate, WordCounter::combine);
+                                
+                        return counter.getCounter();        
+                    }
+
+                    // 顺序测试
+                    @Test
+                    public void streamTest(){
+                        Stream<Character> stream = IntStream.range(0, testStr.length()).mapToObj(testStr::charAt);
+                        System.out.println(countWords(stream));
+                    }
+
+                    // 并行测试
+                    @Test
+                    public void parallelTest(){
+                        Stream<Character> stream = IntStream.range(0, testStr.length()).mapToObj(testStr::charAt);
+                        System.out.println(countWords(stream.parallel()));
+                    }
+                }
+                ```
+            - 并行测试的统计结果不正确
+                - 原始的字符串会在任意位置进行拆分，导致**一个词变成了两个词**
 
 
+    - 使用自定义`Spliterator`来做并行处理
+        - 如何解决`WordCounter`的问题
+            - 只能从单词尾部进行拆分
+        - 自定义`Spliterator`
+            ```java
+            class WordCounterSpliterator implements Spliterator<Character> {
+                private final String s;
+                private int currentChar = 0;
+
+                public WordCounterSpliterator(String s) {
+                    this.s = s;
+                }
+
+                @Override
+                public boolean tryAdvance(Consumer<? super Character> action){
+                    // 处理当前字符
+                    action.accept(s.charAt(currentChar));
+                    currentChar++;
+
+                    // 返回是否还有字符需要处理
+                    return currentChar < s.length();
+                }
+
+                @Override
+                public Spliterator<Character> trySplit(){
+                    // 获取当前 [未处理]的字符数
+                    int currentSize = s.length() - currentChar;
+
+                    // 不再分割任务
+                    if (currentSize < 10) {
+                        return null;
+                    }
+
+                    // 试探性切分字符串
+                    // 从剩余部分的中间开始尝试
+                    // 如果剩余的字符串中没有 [空格了]，则不再划分子任务
+                    for (int splitPos = currentSize/2 + currentChar; splitPos < s.length(); splitPos++){
+
+                        // 如果找到空格，则从当前位置：currentChar，切分到：splitPos-1的位置
+                        // 从 currentChar 开始切分，可能会在单词中间切分
+                        // 即保证在 [尾部] 切一个完整的单词
+                        if (Character.isWhitespace(s.charAt(splitPos))) {
+                            Spliterator<Character> spliterator = new WordCounterSpliterator(s.substring(currentChar, splitPos));
+
+                            currentChar = splitPos;
+                            return spliterator
+                        }
+                    }
+
+                    return null;
+                }
+
+                @Override
+                public long estimateSize(){
+                    return s.length() - currentChar; 
+                }
+
+                @Override
+                public int characteristics(){
+                   return ORDERED + SIZED + NONULL + IMMUTABL + SUBSIZED；
+                }
+            }
+            ```
+        - 测试
+            ```java
+            class WordCounterTest{
+                //20
+                public static final String testStr = "aasfsfa bbsdfdfb ccewrewc dtyrydd eertyre ffrtyrfff ssfdsfs rtyrr xcrtyrtyrvv ljkrtllk xvcvvcvvxv rrrrrrr ggggggggggg sssssssss qqqqqqqqqqq  iooiioou sfdfdfsf kjklklkjlkl ewerrwe sfddfsdf"
+
+                public static int countWords(Stream<Character> stream) {
+                    WordCounter counter = stream.reduce(new WordCounter(0, true), WordCounter::accumulate, WordCounter::combine);
+                            
+                    return counter.getCounter();        
+                }
+
+                ...
+                
+                // 使用自定义Spliterator做并行测试
+                @Test
+                public void spliteratorParallelTest(){
+                    Spliterator<Character> spliterator = new WordCounterSpliterator(testStr);
+                    Stream<Character> stream = StreamSupport.stream(spliterator, true);
+
+                    System.out.println(countWords(stream.parallel()));
+                }
+            }
+            ```
 
 [top](#catalog)
 
