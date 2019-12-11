@@ -1481,6 +1481,7 @@ List<Dish> menu = Arrays.asList(
             int[] a = new int[]{1,2,3,6,7,8};
             int sum = Arrays.stream(a).sum();
             System.out.println(sum);
+
             ```
 - 由文件生成流
     - `java.nio.file.Files`中的很多静态方法都会返回一个流
@@ -1501,9 +1502,9 @@ List<Dish> menu = Arrays.asList(
             ```java
             //0,1,1,2,3,5,8,13,21
             //0,1为起始数
-            Stream.iterate({1,1}, n-> {n[1], n[0]+n[1]})  //??????????????????
+            Stream.iterate(new int[]{1, 1}, n-> new int[]{n[1], n[0]+n[1]})
                 .limit(20)
-                .forEach(n->System.out.println(Arrays.toString(n)))
+                .forEach(n->System.out.println(Arrays.toString(n)));
             ```
     - `generate`
         - 示例:处理随机值
@@ -1526,6 +1527,9 @@ List<Dish> menu = Arrays.asList(
                     return oldPrevious;
                 }
             }
+
+            int[] ints = IntStream.generate(fib).limit(6).toArray();
+            System.out.println(Arrays.toString(ints));
             ```
 
 # 用流收集数据
@@ -1573,7 +1577,7 @@ List<Dish> menu = Arrays.asList(
         - 遍历的初始值默认是`0`
         - 示例：计算菜单列表的热量
             ```java
-            int s = menu.stream().collect(summingInt(Dish::getCalories));
+            IntSummaryStatistics collect = menu.stream().collect(summingInt(Dish::getCalories));
             ```
     - 计算平均值`Collectors.averagingInt`, `averagingLong`, `averagingDouble`
         ```java
@@ -1584,6 +1588,8 @@ List<Dish> menu = Arrays.asList(
             - 通过`getter`来访问结果
         ```java
         int s = menu.stream().collect(summarizingInt(Dish::getCalories));
+
+        //IntSummaryStatistics{count=9, sum=4200, min=120, average=466.666667, max=800}
         ```
 - 连接字符串：`joining`
     - `joining`返回的收集器会对流中每一个对象应用`toString`，将得到的所有字符串连接成一个字符串
@@ -1629,14 +1635,14 @@ List<Dish> menu = Arrays.asList(
             Stream<Integer> stream = Arrays.asList(1, 2, 3, 4, 5, 6).stream();
             List<Integer> numbers = stream.reduce(
                                     new ArrayList<Integer>(),
-                                    (List<Integer> l, Integer e) -> {l.add(e); return l;}, //l是从何而来的
+                                    (List<Integer> l, Integer e) -> {l.add(e); return l;}, //l是前一次的累积结果
                                     (List<Integer> l1, List<Integer> l2) -> {l1.addAll(l2); return l1;}
             )
             ```
 
     - 收集框架的灵活性：以不同的方法执行同样的操作
         - 简化求和
-        - 归约过程???????????? ![图](./imgs/)
+        - 归约过程 ![归约过程](./imgs/inAction/归约过程.png)
             ```java
             // 简化前
             int total = menu.stream().collect(reducing(0, Dish::getCalories, (i, j)->i+j ));
@@ -1674,7 +1680,7 @@ List<Dish> menu = Arrays.asList(
         - `groupingBy`在应用分组函数后，**只有第一次在流中找到某个键对应的元素时**才会把`Key`加入分组Map中
 
     - 示例：对菜单按照类型分组
-        - 分组流程????????????????????????? ![图](./imgs/)
+        - 分组流程 ![分组流程](./imgs/inAction/对菜单按照类型分组.png)
         ```java
         Map<Dish.Type, List<Dish>> dishesByType = menu.stream().collect(groupingBy(Dish::getType))
         ```
@@ -1683,7 +1689,7 @@ List<Dish> menu = Arrays.asList(
         - 因为`根据热量对菜的类型进行划分`这个处理并没有写在类中，所以需要提供一个`Lambda表达式`
         
         ```java
-        public enum CaloricLevel {DIET, NORMAL, FAT};
+        enum CaloricLevel {DIET, NORMAL, FAT}
 
         Map<CaloricLevel, List<Dish>> result = menu.stream().collect(groupingBy(
             dish -> {
@@ -1700,7 +1706,7 @@ List<Dish> menu = Arrays.asList(
     - n级分组最后会得到一个代表n级树形结构的`n级Map`
     - 示例：对菜单按照 类型和热量 进行多级分组
         ```java
-        public enum CaloricLevel {DIET, NORMAL, FAT};
+        enum CaloricLevel {DIET, NORMAL, FAT}
 
         Map<Dish.Type, Map<CaloricLevel, List<Dish>>> result = menu.stream().collect(groupingBy(
             Dish::getType,
@@ -1713,7 +1719,7 @@ List<Dish> menu = Arrays.asList(
             )
         ));
         ```
-        - 嵌套关系：![图](./imgs/)
+        
 - 按子组收集数据
     - 传递给第一个`groupingBy`的第二个收集器不一定是另一个`groupingBy`，可以是其他收集器，来完成不同的任务
     - `groupingBy(分组函数, counting())`，对每个分组中的数量进行统计
@@ -1747,15 +1753,18 @@ List<Dish> menu = Arrays.asList(
                     - 由`maxBy`对各子流进行处理
                     - `Optional::get`将结果进行转换
                     - 二级收集器的结果作为一级收集器中各分组的值
-                - ?????????????  ![图](./imgs/)
+                - 嵌套关系：![嵌套关系](./imgs/inAction/多级分组的嵌套关系.png)
+
     - `groupingBy(分组函数, summingXXX())`, 分组求和
+        - 虽然使用了原始流，但是结果只能保存到包装类型中
         ```java
-        Map<Dish.Type, Integer> result = menu.stream().collect(groupingBy(Dish::getType), summingInt(Dish::getCalories)) //?????????????????? Integer-->int, long
+        Map<Dish.Type, Integer> result = menu.stream().collect(groupingBy(Dish::getType, summingInt(Dish::getCalories)) 
         ```
     - `groupingBy(分组函数, mapping(转换函数，收集器))`, 让接受特定类型元素的收集器适应不同类型的对象
         - 示例： 查看各菜单类型下，都有哪些`CaloricLevel`
             ```java
-            public enum CaloricLevel {DIET, NORMAL, FAT};
+            enum CaloricLevel {DIET, NORMAL, FAT}
+
             Map<Dish.Type, Set<CaloricLevel>> result = menu.stream().collect(groupingBy(
                 Dish::getType, mapping(
                     dish->{
@@ -1823,7 +1832,7 @@ List<Dish> menu = Arrays.asList(
         public boolean isPrime(int candidate) {
             int candidateRoot = (int) Math.sqrt((double)candidate);
             // 如果能被前面的某个整除，则不是质数
-            return IntStream.rangeCloser(2, candidateRoot).noneMatch(i -> candidate % i == 0);
+            return IntStream.rangeClosed(2, candidateRoot).noneMatch(i -> candidate % i == 0);
         }
 
         // 对流中的数字按照质数/非质数分区
@@ -1881,7 +1890,7 @@ List<Dish> menu = Arrays.asList(
 - `Function<A, R> finisher();`，对结果容器应用最终转换
     - 变量完流后，调用`finisher`，返回一个函数来将累加器对象转换为整个集合操作的最终结果
 - 通过`supplier`, `accumulator`, `finisher`三个操作就可以完成顺序归约
-    - 基本的归约流程 ??????????????????? ![图](./imgs/.......)
+    - 基本的归约流程 ![基本的归约流程](./imgs/inAction/基本的归约流程.png)
 
 - `BinaryOperator<A> combiner();`，合并两个结果容器
     - 返回一个函数，该函数定义了：对流的各个子部分进行并行处理时，各个子部分的累加器要如何合并
@@ -1905,48 +1914,50 @@ List<Dish> menu = Arrays.asList(
 ### 自定义ToListCollector收集器
 [top](#catalog)
 - 自定义收集器
-    ```java
-    public class ToListCollector<T> implements Collector<T, List<T>, List<T>> {
-        // 集合操作的起始点
-        @Override
-        public Suppkier<List<T>> supplier() {
-            return ArrayList::new;
-        }
+    - 自定义列表收集器
+        ```java
+        public class ToListCollector<T> implements Collector<T, List<T>, List<T>> {
+            // 集合操作的起始点
+            @Override
+            public Supplier<List<T>> supplier() {
+                return ArrayList::new;
+            }
 
-        //累加操作
-        @Override
-        public BiConsumer<List<T>, T> accumulator(){
-            return List::add;
-        }
+            //累加操作
+            @Override
+            public BiConsumer<List<T>, T> accumulator(){
+                return List::add;
+            }
 
-        @Override
-        public BinaryOperator<A> combiner(){
-            return (list1, list2) -> {
-                list1.addAll(list2);
-                return list1;
+            @Override
+            public BinaryOperator<List<T>> combiner(){
+                return (list1, list2) -> {
+                    list1.addAll(list2);
+                    return list1;
+                };
+            }
+
+            @Override
+            public Function<List<T>, List<T>> finisher(){
+                return Function.identity();
+            }
+
+            @Override
+            public Set<Characteristics> characteristics(){
+                // 结果需要保证顺序，所以不是：UNORDERED的
+                // finsher是一个恒等函数
+                // 仅在数据源时无序时做并行处理
+                return Collections.unmodifiableSet(EnumSet.of(Collector.Characteristics.CONCURRENT,
+                                                        Collector.Characteristics.IDENTITY_FINISH));
             }
         }
+        ```
 
-        @Override
-        public Function<A, R> finisher(){
-            return Function.identity();
-        }
+    - 收集器的调用
+        ```java
+        List<Dish> result = menu.stream().collect(new ToListCollector<Dish>());
+        ```
 
-        @Override
-        public Set<Characteristics> characteristics(){
-            // 结果需要保证顺序，所以不是：UNORDERED的
-            // finsher是一个恒等函数
-            // 仅在数据源时无序时做并行处理
-            return Collections.unmodifiableSet(EnumSet.of(Collector.Characteristics.CONCURRENT,
-                                                    Collector.Characteristics.IDENTITY_FINISH));
-        }
-
-    }
-    ```
-- 收集器的调用
-    ```java
-    List<Dish> result = meun.stream().collect(new ToListCollector<Dish>());
-    ```
 - 通过`collect`的重载来完成收集处理
     - `collect`的重载
         - 这种重载默认的`Characteristics`是：`CONCURRENT`, `IDENTITY_FINISH`
@@ -2703,3 +2714,9 @@ comparingInt
         
 
 
+----------
+
+可自定义部分
+收集器Collector
+Reduce
+Spliterator
