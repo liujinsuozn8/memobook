@@ -40,7 +40,14 @@
     - [并行流](#并行流)
     - [分支合并框架](#分支合并框架)
     - [Spliterator](#spliterator)
-    - [](#)
+- [重构+测试+调试](#重构+测试+调试)
+    - [为改善可读性和灵活性重构代码](#为改善可读性和灵活性重构代码)
+    - [使用Lambda重构面向对象的设计模式](#使用lambda重构面向对象的设计模式)
+    - [调试Lambda](#调试lambda)
+- [默认方法](#默认方法)
+    - [默认方法的基本概念](#默认方法的基本概念)
+    - [默认方法的使用模式](#默认方法的使用模式)
+    - [解决冲突的规则](#解决冲突的规则)
     - [](#)
     - [](#)
 
@@ -2189,9 +2196,9 @@ List<Dish> menu = Arrays.asList(
         class MyTest{
             @Test
             public void method(){
-                System.out.println(measureSunPerf(ParallelStream::measureSunPerf, 10_000_000));
-                System.out.println(measureSunPerf(ParallelStream::iterativeSum, 10_000_000));
-                System.out.println(measureSunPerf(ParallelStream::parallelSum, 10_000_000));
+                System.out.println(ParallelStream.measureSunPerf(ParallelStream::sequentialSum, 10_000_000));
+                System.out.println(ParallelStream.measureSunPerf(ParallelStream::iterativeSum, 10_000_000));
+                System.out.println(ParallelStream.measureSunPerf(ParallelStream::parallelSum, 10_000_000));
             }
         }
         ```
@@ -2357,12 +2364,12 @@ List<Dish> menu = Arrays.asList(
         class MyTest{
             @Test
             public void method(){
-                System.out.println(measureSunPerf(ParallelStream::measureSunPerf, 10_000_000));
-                System.out.println(measureSunPerf(ParallelStream::iterativeSum, 10_000_000));
-                System.out.println(measureSunPerf(ParallelStream::parallelSum, 10_000_000));
+                System.out.println(ParallelStream.measureSunPerf(ParallelStream::sequentialSum, 10_000_000));
+                System.out.println(ParallelStream.measureSunPerf(ParallelStream::iterativeSum, 10_000_000));
+                System.out.println(ParallelStream.measureSunPerf(ParallelStream::parallelSum, 10_000_000));
 
 
-                System.out.println(measureSunPerf(ParallelStream::forkJoinSum, 10_000_000));
+                System.out.println(ParallelStream.measureSunPerf(ParallelStream::forkJoinSum, 10_000_000));
             }
         }
         ```
@@ -2382,7 +2389,7 @@ List<Dish> menu = Arrays.asList(
     - `fork`会将任务排进`ForkJoinPool`中，但是调用该方法的效率要比`compute`要低
         - 在有n个子任务时，可以将`n-1`个任务放入`ForkJoinPool`中，剩余的一个任务在当前线程中执行，来重用当前线程，避免在`ForkJoinPool`多启动一个线程
     - 一个可以分解成多个子任务的任务，才能让性能在并行化时有提升
-        - `所有子任务的运行时间 > 创建新任务的时间`
+        - 需要保证：`每个子任务的运行时间 > 创建新任务的时间`
             - 惯用方法：
                 - <label style="color:red">`输入/输出`放在一个子任务中，`计算`放在另一个任务中</label>
     - 分支合并框架需要`预热`
@@ -2446,7 +2453,7 @@ List<Dish> menu = Arrays.asList(
         |SORTED|遍历的元素按照一个预定义的顺序排序|
         |SIZED|当前`Spliterator`由一个已知大小的源建立(如`Set`??????)，因此`estimateSize()`返回的是准确值?????????|
         |NONULL|保证遍历的元素不为空|
-        |IMMUTABL|`Spliterator`数据源不能修改该。即在遍历时，**不能添加、删除、修改 任何元素**|
+        |IMMUTABL|`Spliterator`数据源不能修改。即在遍历时，**不能添加、删除、修改 任何元素**|
         |CONCURRENT|`Spliterator`的数据源可以被其他线程同时修改而无需同步|
         |SUBSIZED|当前`Spliterator`和所有从它自身拆分出来的`Spliterator`都是`SIZED`的|
 
@@ -2634,10 +2641,579 @@ List<Dish> menu = Arrays.asList(
                 }
             }
             ```
+- 延迟绑定的`Spliterator`
+    - 在第一次遍历、第一次拆分、第一次查询估计大小时绑定数据源，而不是在创建时就绑定
 
+
+# 重构+测试+调试
+## 为改善可读性和灵活性重构代码
+[top](#catalog)
+- 从匿名类到Lambda表达式的转换
+    - `self`和`super`的含义
+        - 匿名类的`self`和`super`的含义不同
+            - `self`代表类自身
+            - `super`
+        - Lambda表达式中的`self`和`super`含义
+            - `self`代表的是包含类
+
+    - 匿名类中可以屏蔽包含类的变量；但是Lambda表达式中不能屏蔽，而且会导致编译错误
+        ```java
+        int a = 10;
+
+        Runnable r1 = () -> {
+            int a = 2; //编译错误
+            System.out.println(a);
+        };
+
+        Runnable r2 = new Runnable(){
+            public void run(){
+                int a = 2; //屏蔽包含类的变量
+                System.out.println(a);
+            }
+        };
+        ```
+    - 在涉及重载的上下文里，将匿名类转换为Lambda表达式可能会导致最终的代码更加难以理解
+        - 类型的确定方法
+            - 匿名类的类型是在:**初始化时确定的**
+            - Lambda的类型**取决于上下文**
+        - 通过强转类型来适应重载
+            ```java
+            // 函数签名与Runnable相同
+            public interface Task {
+                public void execute();
+            }
+
+            class MyClass{
+                public static void doSomething(Runnable r) {r.run();}
+                public static void doSomething(Task t) {t.execute();}
+                
+                @Test
+                public void method01(){
+                    // 传递匿名类，可以正常运行
+                    doSomething(new Task(){
+                        System.out.println("this is task");
+                    });
+                }
+
+                @Test
+                public void method02(){
+                    // 如果直接使用使用Lambda表达式，Runnable和Task都匹配
+                    // doSomething(() -> System.out.println("this is task"));
+
+                    // 通过类型强转来解决问题
+                    doSomething((Task)() -> System.out.println("this is task"));
+                }
+            }
+            ```
+
+- 从Lambda表达式到方法引用的转换
+    - 方法引用往往可读性更强
+    - 示例：从Lambda归约转换为方法引用
+        ```java
+        // Lambda归约
+        int result = menu.stream().map(Dish::getCalories).reduce(0, (c1, c2) -> c1+c2);
+
+        // 使用方法引用
+        int result = menu.stream().collect(summingInt(Dish::getCalories));
+        ```
+
+- 从命令式的数据处理切换到Stream
+    - 建议将**使用迭代器处理集合的代码**转换成**StreamAPI**
+    - 转换时需要考虑`break`,`continue`,`return`，`http://refactoring.info/tools/LambdaFicator` ???????????
+
+- 增加代码的灵活性
+    - 采用函数式接口
+        - 没有函数式接口，就无法使用Lambda表达式，所以需要在代码中引入函数式接口
+        - 两种通用的改造模式
+            - `有条件的延迟执行`
+            - `环绕执行`
+    - `有条件的延迟执行`
+        - 示例：一段日志代码
+            - 代码的问题
+                - 日志器的状态通过`isLoggable`方法保留给了客户端代码
+                - 每次输出一条日志之前都需要查询日志器对象的状态
+                ```java
+                if (logger.isLoggable(Log.FINER))){
+                    logger.finer("xxxx");
+                }
+                ```
+            - 一种解决方案
+                - 这种方式不需要在代码中添加条件判断
+                - 日志器的状态也不用暴露
+                - 剩余的问题
+                    - 输出日志之前，仍然需要判断，**即使已经关闭了日志**
+                ```java
+                logger.log(Log.FINER, "xxxxx");
+                ```
+        - 改造的过程
+            - 改造的条件
+                - 如果需要频繁的从客户端代码去查询一个对象的状态，只是为了传递参数、然后执行一个方法
+            - 改造的方法
+                - 实现一个新的方法，以Lambda或方法表达式作为参数，新方法在检查完对象的状态之后再调用参数方法
+        - 通过改造使代码更易读
+    
+    - `环绕执行`
+        - 改造的条件
+            - 业务部分不同，但是准备和清理阶段的逻辑相同
+        - 改造的目的
+            - **重用**准备和清理阶段的逻辑
+            - [环绕执行模式](#环绕执行模式)
+
+## 使用Lambda重构面向对象的设计模式
+[top](#catalog)
+- 通过Lambda表达式来**避免常规面向对象设计中的僵化的模板代码**
+- 策略模式的改造
+    - 策略模式的三部分内容
+        - 一个代表某个算法的接口，即策略模式的接口
+        - 一个或多个接口的具体实现，即算法的具体实现
+        - 一个或多个策略对象的客户 ????????????????
+    - 策略模式的示意图
+        - ![图](./imgs) ????????????????
+        
+- 模板方法
+    - 使用的场景：**需要使用某个算法，同时又希望有一定的灵活度，可以对某些部分进行改造**
+    - 示例：在线银行
+        - 搭建了基本的算法框架
+        - 不同的银行需要通过继承，来提供不同的实现
+        ```java
+        abstract class OnlineBanking{
+            public void processCustomer(int id) {
+                Customer c = Database.getCustomerWithId(id);
+                makeCustomerHappy(c);
+            }
+
+            abstract void makeCustomerHappy(Customer c);
+        }
+        ```
+    - 使用Lambda表达式来改造示例
+        - 使用时直接通过Lambda表达式来调用
+        ```java
+        class OnlineBanking{
+            public void processCustomer(int id, Consume<Customer> makeCustomerHappy) {
+                Customer c = Database.getCustomerWithId(id);
+                makeCustomerHappy.accept(c);
+            }
+        }
+
+        //调用
+        new OnlineBanking().processCustomer(1111, (Customer, c) -> System.out.println("..."));
+        ```
+
+- 观察者模式
+    - 示例：新闻订阅
+        ```java
+        // 观察者
+        interface Observer {
+            void notify(String tweet);
+        }
+
+        class NYTimes implements Observer{
+            public void notify(String tweet) {
+                if (tweet != null && tweet.contains("NYTimes")){
+                    System.out.println("this is NYTimes");
+                }
+            }
+        }
+
+        class Guardian implements Observer{
+            public void notify(String tweet) {
+                if (tweet != null && tweet.contains("Guardian")){
+                    System.out.println("this is Guardian");
+                }
+            }
+        }
+
+        class LeMonde implements Observer{
+            public void notify(String tweet) {
+                if (tweet != null && tweet.contains("LeMonde")){
+                    System.out.println("this is LeMonde");
+                }
+            }
+        }
+
+        // 可观察对象
+        interface Subject {
+            void registObject(Observer o);
+            void notifyObject(String tweet);
+        }
+
+        class Feed implements Subject {
+            private final List<Observer> observers = new List<Observer>();
+
+            public void registObject(Observer o) {
+                observers.add(o);
+            }
+            
+            public void notifyObject(String tweet){
+                for(Observer o : observers) {
+                    o.notify();
+                }
+            }
+        }
+
+        // 调用
+        class ObserverModelTest {
+            @Test
+            public void method01(){
+                Subject f = new Feed();
+                f.registObject(new NYTimes());
+                f.registObject(new Guardian());
+                f.registObject(new LeMonde());
+                f.notifyObject("LeMonde");
+            }
+
+            // 直接使用Lambda表达式改造
+            @Test
+            public void method02(){
+                Subject f = new Feed();
+                f.registObject((String tweet) -> {
+                    if (tweet != null && tweet.contains("NYTimes")){
+                        System.out.println("this is NYTimes");
+                    }
+                });
+
+                f.registObject((String tweet) -> {
+                    if (tweet != null && tweet.contains("LeMonde")){
+                        System.out.println("this is LeMonde");
+                    }
+                });
+                f.registObject(new LeMonde());
+                f.notifyObject("LeMonde");
+            }
+        }
+        ```
+    - 当观察者的逻辑过于复杂时，还是需要使用类的方式
+
+- 责任链模式
+    - 责任链是一种船舰处理对象序列的统一方案
+        - 一个处理对象完成一些工作后，将结果传递给另一个对象，再做其他工作，再传递给其他对象，以此类推
+    - 通常这种模式是通过定义一个代表处理对象的抽象类来实现
+        - 抽象类中包含一个字段来记录后续对象
+        - 完成后在交给它后续的对象
+    - 示例
+        ```java
+        public abstract class ProcessingObject<T> {
+            protected ProcessingObject<T> successor;
+
+            public void setSuccessor(ProcessingObject<T> successor){
+                this.successor = successor;
+            }
+
+            public T handle(T input) {
+                // 先做当前的任务
+                T r = handleWork(input);
+                // 如果有后续的处理对象，则进行迭代调用
+                if(successor != null) {
+                    return successor.handle(r);
+                }
+
+                return r;
+            }
+
+            abstract protected T handleWork(T input);
+        }
+
+        class HeaderTextProcessing extends ProcessingObject<String> {
+            public String handleWork(String input) {
+                return "HeaderText" + input;
+            }
+        }
+
+        class SpellCheckerProcessing extends ProcessingObject<String> {
+            public String handleWork(String input) {
+                return input.replaceAll("labda", "lambda");
+            }
+        }
+
+        // 测试
+        class ProcessingObjectTest {
+
+            @Test
+            public void method01(){
+                ProcessingObject<String> p1 = new HeaderTextProcessing();
+                ProcessingObject<String> p2 = new SpellCheckerProcessing();
+
+                p1.setSuccessor(p2);
+
+                String result =p1.handle("labdas really ");
+                System.out.println(result); // ?????????????
+            }
+        }
+        ```
+
+    - 使用lambda进行改造
+        - `abstract protected T handleWork(T input);`的函数签名与`UnaryOperator`相同
+        - 责任链实际上是在做函数的链式调用
+        - 通过`andThen`方法来改造 ??????????????????
+        ```java
+        class ProcessingObjectTest {
+            ...
+            
+            @Test
+            public void method02(){
+                UnaryOperator<String> headerProcessing = (String input) -> "HeaderText" + input;
+                UnaryOperator<String> spellCheckerProcessing = (String input) -> input.replaceAll("labda", "lambda");
+
+                Function<String, String> pipline = headerProcessing.andThen(spellCheckerProcessing);
+
+                String result = pipline.apply("labdas really ");
+                System.out.println(result);
+            }
+        }
+
+        ```
+
+## 调试Lambda
+[top](#catalog)
+- `peek()`
+    - 每个流操作之前添加`peek()`，来输出操作之间的中间值
+    ```java
+    numbers.stream().peek(x -> System.out.println(x)).map(...).collect(toList());
+    ```
+
+# 默认方法
 [top](#catalog)
 
+## 默认方法的基本概念
+[top](#catalog)
+- Java8允许在接口内声明`静态方法`
+- Java8引入了`默认方法`，通过`默认方法`可以指定接口方法的默认实现
+    - 实现接口的类，如果**不显示地**提供该方法的具体实现，就会**自动继承默认的实现**
+- 使用`default`来修饰`默认方法`
+- `默认方法`是种`非抽象方法`
 
+- 默认方法的引入是为了以`兼容的方式`解决**类库的演进问题**
+    - **向接口添加新方法是二进制兼容的，所以如果不重新编译该类，即使不实现新的方法，现有类的实现依旧可以运行**
+
+- 不同类型的兼容性：二进制、源代码、函数行为
+    - 变更对Java程序的影响大一可以分成三种类型的兼容性，分别是：二进制级兼容、源代码级兼容、函数行为的兼容
+    - 二进制级兼容
+        - 表示现有的二进制执行文件能无缝持续链接(包括验证、准备和解析)和运行
+        - 例如：为接口添加一个方法
+            - 这种方式下，**如果新添加的方法不被调用**,接口的实现仍然可以运行，不会出现异常
+
+    - 源代码级兼容
+        - 表示引入变化之后，现有的程序依然能成功编译通过
+        - 接口添加新方法就不是源码级兼容，因为旧代码没有实现新引入的方法，所以会无法通过编译
+        
+    - 函数行为的兼容
+        - 表示变更发生之后，程序接受同样的输入能得到同样的结果
+        - 为接口添加方法就是函数行为兼容的，因为新添加的方法在程序中没有被调用，或该接口在实现中被覆盖了
+
+## 默认方法的使用模式
+[top](#catalog)
+- 使用默认方法的两种用例
+    - 可选方法
+    - 行为的多继承
+
+- 可选方法
+    - 实现接口时，可能会有一些方法不用实现，这样会产生很多的模板代码
+    - 通过默认方法可以减少各个实现类中的这种模板代码
+    - java8，`Iterator`的`remove`默认实现
+        ```java
+        interface Ierator<T>  {
+            boolean hasNext();
+            T next();
+            default void remove() {
+                throw new UnsupportedOperationException();
+            }
+        }
+        ```
+- 行为的多继承
+    - 利用正交方法的精简接口
+        - 将一些方法通过默认方法提供
+    - 组合接口
+        - 实现多个接口的抽象方法，然后即可以使用接口中的默认方法
+        - 以另一种方式实现了多继承
+
+## 解决冲突的规则
+[top](#catalog)
+- 冲突问题：如果一个类使用相同的函数签名从多个地方继承了方法，包括类和接口，如何确定调用的目标？
+    - 示例：`main`方法中输出什么
+        ```java
+        interface A{
+            default void hello() {
+                System.out.println("Hello from A");
+            }
+        }
+
+        interface B extends A{
+            default void hello() {
+                System.out.println("Hello from B");
+            }
+        }
+
+        class C implements B, A {
+            public static void main(String[] args) {
+                new C().hello(); // Hello from B
+            }
+        }
+        ```
+- 解决问题的三条规则
+    1. 类中的方法优先级最高
+        - **类或父类**优先级 > `默认方法`优先级
+    2. 如果`1`无法判断，子接口的优先级更高
+        - 函数签名相同时，优先选择拥有**最具体实现的默认方法的接口**
+        - 如果B接口继承了A接口，则使用B比A具体
+    3. 如果`1`、`2`都无法判断，继承了多个接口的类必须通过显示覆盖和调用期望的方法，显示的选择使用哪一个默认方法的实现
+
+- 三条规则的应用
+    - 示例的分析
+        1. 规则1，类c中没有覆盖`hello`，无法判断
+        2. 规则2，实现了两个接口`A`、`B`，`B`继承了`A`，所以`B`比`A`更具体，会调用`B`中的`hello`
+    
+    - 在示例中添加类继承
+        1. 规则1，`C`、`D`都未覆盖`hello`无法判断
+        2. 规则2，`C`实现了`B`、`A`，但是应该选择更具体实现的接口中的方法
+            ```java
+            interface A{
+                default void hello() {
+                    System.out.println("Hello from A");
+                }
+            }
+
+            interface B extends A{
+                default void hello() {
+                    System.out.println("Hello from B");
+                }
+            }
+            
+            class D implements A {}
+
+            class C extends D implements B, A {
+                public static void main(String[] args) {
+                    new C().hello(); // Hello from B
+                }
+            }
+            ```
+    - 为`D`添加实现
+        - 规则1，类`C`中没有实现，父类`D`中有实现，所以会调用`D`中的`hello`
+            ```java
+            interface A{
+                default void hello() {
+                    System.out.println("Hello from A");
+                }
+            }
+
+            interface B extends A{
+                default void hello() {
+                    System.out.println("Hello from B");
+                }
+            }
+            
+            class D implements A {
+                void hello() {
+                    System.out.println("Hello from D");
+                }
+            }
+
+            class C extends D implements B, A {
+                public static void main(String[] args) {
+                    new C().hello(); // Hello from D
+                }
+            }
+            ```
+    - 如果`D`是抽象类
+        - 这种情况下，C必须显示的提供hello的实现，否则会导致编译异常
+            ```java
+            interface A{
+                default void hello() {
+                    System.out.println("Hello from A");
+                }
+            }
+
+            interface B extends A{
+                default void hello() {
+                    System.out.println("Hello from B");
+                }
+            }
+            
+            abstract class D implements A {
+                public abstract hello();
+            }
+
+            class C extends D implements B, A {
+
+                public static void main(String[] args) {
+                    new C().hello(); // 编译异常
+                }
+            }
+            ```
+
+- 规则3的使用方法：冲突及如何显示地消除歧义
+    - 如果`A`、`B`两个接口没有任何关联，则无法应用规则2，此时`A`和`B`的`hello`都是有效的选择
+    - Java编译器会产生异常，因为它**无法判断哪一个方法更合适**
+    - 解决方法
+        1. 在`C`中显示的实现`hello`方法
+        2. 显示的调用：
+            - Java8中的新语法：`X.super.m(...)`, `X`是希望调用的方法`m(...)`所在的父接口
+            - 显示的调用`B.super.hello()`来调用`B`中的默认方法
+            
+        ```java
+        interface A{
+            default void hello() {
+                System.out.println("Hello from A");
+            }
+        }
+
+        interface B{
+            default void hello() {
+                System.out.println("Hello from B");
+            }
+        }
+
+        class C implements B, A {
+            void hello() {
+                B.super.hello(); //覆盖接口方法，同时调用接口B中的方法
+            }
+
+            public static void main(String[] args) {
+                new C().hello(); // Hello from B
+            }
+        }
+        ```
+
+- 菱形继承问题
+    - 只有`A`中声明了`hello`方法，则会输出：`Hello from A`
+        ```java
+        interface A{
+            default void hello() {
+                System.out.println("Hello from A");
+            }
+        }
+
+        interface B extends A{}
+        interface C extends A{}
+
+        class D implements B, C {
+            public static void main(String[] args) {
+                new D().hello(); // Hello from A
+            }
+        }
+        ```
+    - 
+        ```java
+        interface A{
+            default void hello() {
+                System.out.println("Hello from A");
+            }
+        }
+
+        interface B extends A{
+            default void hello() {
+                System.out.println("Hello from B");
+            }
+        }
+        interface C extends A{}
+
+        class D implements B, C {
+            public static void main(String[] args) {
+                new D().hello(); // Hello from A
+            }
+        }
+        ```
+
+[top](#catalog)
 
 ---------------------------------------------------------------------------
 
@@ -2717,6 +3293,30 @@ comparingInt
 ----------
 
 可自定义部分
-收集器Collector
-Reduce
-Spliterator
+- 收集器Collector
+    ```java
+    public interface Collector<T, A, R> {
+        Supplier<A> supplier();
+        BiConsumer<A, T> accumulator();
+        BinaryOperator<A> combiner();
+        Function<A, R> finisher();
+        Set<Characteristics> characteristics();
+    }
+    ```
+
+- 直接使用并行流出现问题是，使用自定义`RecursiveTask`,通过`ForkJoin`调用
+    ```java
+    public interface RecursiveTask<Long> { 
+        protected Long compute();
+    }
+    ```
+
+- 使用`Spliterator`接口来拆分流
+    ```java
+    public interface Spliterator<T> {
+        boolean tryAdvance(Consumer<? super T> action);
+        Spliterator<T> trySplit();
+        long estimateSize();
+        int characteristics();
+    }
+    ```
