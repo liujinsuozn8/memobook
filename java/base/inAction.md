@@ -900,7 +900,7 @@ List<Dish> menu = Arrays.asList(
     - 数据处理操作
         - 流的数据处理功能支持类似于数据库的操作，以及函数式编程语言中的常用操作
         - 包括：filter, map, reduce, find, match, sort
-        - **流的操作可以顺序执行，也可以并行执行** (stream/parallelStream??????)
+        - **流的操作可以顺序执行，也可以并行执行** (stream/parallelStream)
 - 流的两个重要特点
     - 流水线
         - 很多流操作本身会返回一个流，多个操作可以进行链接，形成一个大的流水线
@@ -1183,7 +1183,7 @@ List<Dish> menu = Arrays.asList(
     - 可以返回流中的任意元素，可以与其他流操作结合使用
     - `findAny`是一个终端操作
     - 返回一个`Optional<T>`
-    - 流水线在后台进行优化使其只需走一遍，并在利用短路找到结果时立即结束?????????????????????????
+    - 流水线在后台进行优化使其只需走一遍，并在利用短路找到结果时立即结束
     - 示例
         ```java
         Optional<Dish> dish = menu.stream()
@@ -1450,7 +1450,7 @@ List<Dish> menu = Arrays.asList(
     ```
 
 - 数值流应用：勾股数
-    - `t[2]%1 == 0` 保证结果为整数????????????????
+    - `t[2]%1 == 0` 保证结果为整数 (1.0可以，1.1不可以)
     ```java
     IntStream.rangeClosed(1, 100).boxed()
             .flatMap(a -> IntStream.rangeClosed(1, 100)
@@ -1856,7 +1856,7 @@ List<Dish> menu = Arrays.asList(
 |-|-|-|Stream<T> menuStream = menu.stream()|
 |toList|List<T>|将流中的元素收集到一个List|List<Dish> result = menuStream.collect(toList())|
 |toSet|Set<T>|将流中的元素收集到一个List，去重|Set<Dish> result = menuStream.collect(toSet())|
-|toCollection|Collection<T>|对每个元素使用指定的方法，创建并收集到集合中|Collection<Dish> result = menuStream.collect(toCollection(), ArrayList::new())??????|
+|toCollection|Collection<T>|对每个元素使用指定的方法，创建并收集到集合中|Collection<Dish> result = menuStream.collect(toCollection(), ArrayList::new())|
 |counting|Long|计算流中的元素个数|long result = menuStream.collect(count())|
 |summingInt|Integer|对各元素的求和项进行求和|int result = menuStream.collect(summingInt(Dish::getCalories))|
 |averagingInt|Double|计算流中Interger属性的平均值|double result = menuStream.collect(averagingInt(Dish::getCalories))|
@@ -1983,7 +1983,7 @@ List<Dish> menu = Arrays.asList(
         List<Dish> result = meun.stream().collect(
             ArrayList::new,
             List::add,
-            List::addAll //?????? public boolean addAll(Collection<? extends E> c)
+            List::addAll
         );
         ```
 
@@ -2023,7 +2023,7 @@ List<Dish> menu = Arrays.asList(
         for (A item : list){
             if (!p.test(item)){
                 // 如果不满足了，则对列表进行截取并返回
-                return list.sublist(0, i)
+                return list.subList(0, i);
             }
             i++;
         }
@@ -2056,7 +2056,7 @@ List<Dish> menu = Arrays.asList(
             implements Collector<Integer, Map<Boolean, List<Integer>>, Map<Boolean, List<Integer>>> {
         @Override
         public Supplier<Map<Boolean, List<Integer>>> supplier(){
-            return () -> new HasMap<Boolean, List<Integer>>() {{
+            return () -> new HashMap<Boolean, List<Integer>>() {{
                 put(true, new ArrayList<Integer>());
                 put(false, new ArrayList<Integer>());
             }}; // 双{{}} ???????????
@@ -2068,27 +2068,27 @@ List<Dish> menu = Arrays.asList(
                 // 先从Map中获取ture部分/质数部分的List，作为参数，使用isPrime来验证当前数是否为质数
                 acc.get(isPrime(acc.get(true), candidate))
                     .add(candidate);
-            }
+            };
         }
 
         // 定义并行处理的方法
         // 但是实际上这个收集器本身是不能并行运行的，因为该算法本身是顺序的，所以永远都不可能调用该方法
         @Override
-        public BinaryOperator<A> combiner() {
+        public BinaryOperator<Map<Boolean, List<Integer>>> combiner() {
             // 需要做的只是合并两部分的结果
             return (Map<Boolean, List<Integer>> map1,
                     Map<Boolean, List<Integer>> map2) -> {
                         map1.get(true).addAll(map2.get(true));
                         map1.get(false).addAll(map2.get(false));
                         return map1;
-                    }
+                    };
                     
             // 由于该方法永远都不可能被调用，更好的处理方法是引发异常
             // throw new UnsupportedOperationException();
         }
 
         @Override
-        public Function<A, R> finisher() {
+        public Function<Map<Boolean, List<Integer>>, Map<Boolean, List<Integer>>> finisher() {
             // 返回的结果不需要转换
             return Function.identity();
         }
@@ -2104,14 +2104,11 @@ List<Dish> menu = Arrays.asList(
 - 调用自定义收集器
     ```java
     public Map<Boolean, List<Integer>> partitionPrimeWithConsume(int n) {
-        return result = IntStream.rangeClosed(2, n)
+        return IntStream.rangeClosed(2, n)
                                     .boxed()
                                     .collect(new PrimeNumbersCollector());
     }
     ```
-
-- 性能测试
-??????????????????????????
 
 
 # 并行处理数据与性能
@@ -2147,7 +2144,7 @@ List<Dish> menu = Arrays.asList(
                             .reduce(0, Integer::sum);
         }
         ```
-        - 归纳操作的基本流程：![图](./imgs/....)????????????????????????/
+        - 归纳操作的基本流程：![并行归纳操作](./imgs/inAction/并行归纳操作.png)
 - `parallel()`和`sequential()`
     - 两个方法实际上没有对前面一系列方法的处理方式做管理，只是设定了一个`boolean标志`
     - 只有**最后调用**的`parallel()`或`sequential()`会生效
@@ -2173,12 +2170,12 @@ List<Dish> menu = Arrays.asList(
             public static long sequentialSum(long n) {
                 return Stream.iterate(1L, i -> i+1)
                                 .limit(n)
-                                .reduce(0, Long::sum);
+                                .reduce(0L, Long::sum);
             }
 
             public static long iterativeSum(long n) {
                 long sum = 0;
-                for(long i = iL; i<=n; i++) {
+                for(long i = 1L; i<=n; i++) {
                     sum += i;
                 }
 
@@ -2189,11 +2186,11 @@ List<Dish> menu = Arrays.asList(
                 return Stream.iterate(1L, i -> i+1)
                                 .limit(n)
                                 .parallel() //转换为并行流
-                                .reduce(0, Integer::sum);
+                                .reduce(0L, Long::sum);
             }
         }
 
-        class MyTest{
+        class ParallelStreamTest{
             @Test
             public void method(){
                 System.out.println(ParallelStream.measureSunPerf(ParallelStream::sequentialSum, 10_000_000));
@@ -2217,19 +2214,23 @@ List<Dish> menu = Arrays.asList(
         - 直接生成`long`型的数字
         - 生成的数字范围可以拆分成独立的小块，便于并行
     ```java
-    //顺序处理
-    public static long rangedSum(long n) {
-        return LongStream.rangeClosed(1L, i -> i+1)
-                        .limit(n)
-                        .reduce(0, Integer::sum);
-    }
+    class ParallelStream{
+        ...
 
-    //并行处理
-    public static long parallelRangedSum(long n) {
-        return LongStream.rangeClosed(1L, i -> i+1)
-                        .limit(n)
-                        .parallel()
-                        .reduce(0, Integer::sum);
+        //顺序处理
+        public static long rangedSum(long n) {
+            return LongStream.rangeClosed(1L, i -> i+1)
+                            .limit(n)
+                            .reduce(0, Integer::sum);
+        }
+
+        //并行处理
+        public static long parallelRangedSum(long n) {
+            return LongStream.rangeClosed(1L, i -> i+1)
+                            .limit(n)
+                            .parallel()
+                            .reduce(0, Integer::sum);
+        }
     }
     ```
 
@@ -2297,7 +2298,7 @@ List<Dish> menu = Arrays.asList(
 - 使用分支合并框架执行并行求和
     - 实现分支合并框架
         ```java
-        public class ForkJoinSumCalculator extends java.util.concurrent.RecursiveTask<Long> {
+        class ForkJoinSumCalculator extends java.util.concurrent.RecursiveTask<Long> {
             private final long[] numbers; // 需要求和的数组
 
             // 子任务处理是的起始和终止index
@@ -2361,13 +2362,10 @@ List<Dish> menu = Arrays.asList(
             }
         }
 
-        class MyTest{
+        class ParallelStreamTest{
             @Test
             public void method(){
-                System.out.println(ParallelStream.measureSunPerf(ParallelStream::sequentialSum, 10_000_000));
-                System.out.println(ParallelStream.measureSunPerf(ParallelStream::iterativeSum, 10_000_000));
-                System.out.println(ParallelStream.measureSunPerf(ParallelStream::parallelSum, 10_000_000));
-
+                ...
 
                 System.out.println(ParallelStream.measureSunPerf(ParallelStream::forkJoinSum, 10_000_000));
             }
@@ -2396,7 +2394,7 @@ List<Dish> menu = Arrays.asList(
         - 在测试同一算法的顺序版本和并行版本前，需要**多执行几遍，代码才能被JIT编译器优化**
         - 需要知道：编译器内置的优化可能会为顺序版本带来一些优势
             - 如: 执行死代码分析--删除从未被使用的计算
-    - 需要制定标准，来决定拆分任务的临界值 ????????????????????
+    - 需要自行制定标准，来决定拆分任务的临界值
 
 - 工作窃取算法
     - 工作窃取算法一般用于：**在线程池中的工作线程之间重新分配和平衡任务**
@@ -2418,7 +2416,7 @@ List<Dish> menu = Arrays.asList(
             - 线程每做完一个任务，就会从`双向队列`的`队头`取出下一个任务来执行
             - 当某个线程执行完所有任务后，`双向队列`为空，但是其他线程可能还有任务没有执行，则当前线程会`随机选择`一个其他线程，从目标线程的`双向队列`的`队尾`偷走一个任务
             - 重复这种执行自身任务，全部完成后偷取其他线程任务的过程，直到所有线程的所有任务都完成
-        - 递归示意图：![图](./imgs/...) ??????????????????????
+        - 递归示意图：![工作窃取的递归处理](./imgs/inAction/工作窃取的递归处理.png)
         - 所以通常将一个任务划分成**多个 小 任务**，而不是**几个大任务**，这种划分方式有助于更好的在工作线程之间`平衡负载`
 
 
@@ -2452,14 +2450,14 @@ List<Dish> menu = Arrays.asList(
         |DISTINCT|全部元素具有唯一性|
         |SORTED|遍历的元素按照一个预定义的顺序排序|
         |SIZED|当前`Spliterator`由一个已知大小的源建立(如`Set`??????)，因此`estimateSize()`返回的是准确值?????????|
-        |NONULL|保证遍历的元素不为空|
-        |IMMUTABL|`Spliterator`数据源不能修改。即在遍历时，**不能添加、删除、修改 任何元素**|
+        |NONNULL|保证遍历的元素不为空|
+        |IMMUTABLE|`Spliterator`数据源不能修改。即在遍历时，**不能添加、删除、修改 任何元素**|
         |CONCURRENT|`Spliterator`的数据源可以被其他线程同时修改而无需同步|
         |SUBSIZED|当前`Spliterator`和所有从它自身拆分出来的`Spliterator`都是`SIZED`的|
 
 - `Spliterator`的拆分过程
     - 将`Stream`拆分成多个部分是一个递归过程，不停调用`trySplit`直到返回`null`
-        - ![递归拆分过程](./imgs/....) ????????????????????????????
+        - ![递归拆分过程](./imgs/inAction/Spliterator的递归拆分过程.png)
 
 - 自定义`Spliterator`
     - 自定义`Spliterator`来:计算字符串中的单词数
@@ -2490,7 +2488,6 @@ List<Dish> menu = Arrays.asList(
             - 无法直接通过String创建流
             - 通过`IntStream`创建一个索引流，然后将索引转换成字符串中对应的字符
                 ```java
-                // ?????? char ?? Character
                 Stream<Character> stream = IntStream.range(0, xxxx.length()).mapToObj(xxxx::charAt);
                 ```
         - 自定义收集器
@@ -2528,7 +2525,7 @@ List<Dish> menu = Arrays.asList(
                 ```java
                 class WordCounterTest{
                     //20
-                    public static final String testStr = "aasfsfa bbsdfdfb ccewrewc dtyrydd eertyre ffrtyrfff ssfdsfs rtyrr xcrtyrtyrvv ljkrtllk xvcvvcvvxv rrrrrrr ggggggggggg sssssssss qqqqqqqqqqq  iooiioou sfdfdfsf kjklklkjlkl ewerrwe sfddfsdf"
+                    public static final String testStr = "aasfsfa bbsdfdfb ccewrewc dtyrydd eertyre ffrtyrfff ssfdsfs rtyrr xcrtyrtyrvv ljkrtllk xvcvvcvvxv rrrrrrr ggggggggggg sssssssss qqqqqqqqqqq  iooiioou sfdfdfsf kjklklkjlkl ewerrwe sfddfsdf";
                     public static int countWords(Stream<Character> stream) {
                         WordCounter counter = stream.reduce(new WordCounter(0, true), WordCounter::accumulate, WordCounter::combine);
                                 
@@ -2599,7 +2596,7 @@ List<Dish> menu = Arrays.asList(
                             Spliterator<Character> spliterator = new WordCounterSpliterator(s.substring(currentChar, splitPos));
 
                             currentChar = splitPos;
-                            return spliterator
+                            return spliterator;
                         }
                     }
 
@@ -2613,7 +2610,7 @@ List<Dish> menu = Arrays.asList(
 
                 @Override
                 public int characteristics(){
-                   return ORDERED + SIZED + NONULL + IMMUTABL + SUBSIZED；
+                   return ORDERED + SIZED + NONNULL + IMMUTABLE + SUBSIZED;
                 }
             }
             ```
@@ -2766,9 +2763,7 @@ List<Dish> menu = Arrays.asList(
     - 策略模式的三部分内容
         - 一个代表某个算法的接口，即策略模式的接口
         - 一个或多个接口的具体实现，即算法的具体实现
-        - 一个或多个策略对象的客户 ????????????????
-    - 策略模式的示意图
-        - ![图](./imgs) ????????????????
+        - 一个或多个策略对象的客户
         
 - 模板方法
     - 使用的场景：**需要使用某个算法，同时又希望有一定的灵活度，可以对某些部分进行改造**
@@ -2936,7 +2931,7 @@ List<Dish> menu = Arrays.asList(
                 p1.setSuccessor(p2);
 
                 String result =p1.handle("labdas really ");
-                System.out.println(result); // ?????????????
+                System.out.println(result);
             }
         }
         ```
@@ -3055,7 +3050,7 @@ List<Dish> menu = Arrays.asList(
     2. 如果`1`无法判断，子接口的优先级更高
         - 函数签名相同时，优先选择拥有**最具体实现的默认方法的接口**
         - 如果B接口继承了A接口，则使用B比A具体
-    3. 如果`1`、`2`都无法判断，继承了多个接口的类必须通过显示覆盖和调用期望的方法，显示的选择使用哪一个默认方法的实现
+    3. 如果`1`、`2`都无法判断，类必须覆盖方法，并显示的指定要调用哪个接口中的方法
 
 - 三条规则的应用
     - 示例的分析
@@ -3129,7 +3124,7 @@ List<Dish> menu = Arrays.asList(
             }
             
             abstract class D implements A {
-                public abstract hello();
+                public abstract void hello();
             }
 
             class C extends D implements B, A {
@@ -3147,6 +3142,7 @@ List<Dish> menu = Arrays.asList(
         1. 在`C`中显示的实现`hello`方法
         2. 显示的调用：
             - Java8中的新语法：`X.super.m(...)`, `X`是希望调用的方法`m(...)`所在的父接口
+            - <label style="color:red">显示的调用只能调用直接的父接口，再上一层的接口无法调</label>
             - 显示的调用`B.super.hello()`来调用`B`中的默认方法
             
         ```java
@@ -3191,7 +3187,8 @@ List<Dish> menu = Arrays.asList(
             }
         }
         ```
-    - 
+    - 菱形继承，B中添加默认方法，C中不添加
+        - 使用用规则2，
         ```java
         interface A{
             default void hello() {
@@ -3208,7 +3205,36 @@ List<Dish> menu = Arrays.asList(
 
         class D implements B, C {
             public static void main(String[] args) {
-                new D().hello(); // Hello from A
+                new D().hello(); // Hello from B
+            }
+        }
+        ```
+    - 菱形继承，B中添加默认方法，C中添加一个同名的接口
+        - 必须在D中提供C的实现，否则会导致编译异常
+        ```java
+        interface A{
+            default void hello() {
+                System.out.println("Hello from A");
+            }
+        }
+
+        interface B extends A{
+            default void hello() {
+                System.out.println("Hello from B");
+            }
+        }
+        interface C extends A{
+            void hello();
+        }
+
+        class D implements B, C {
+            @Override
+            public void hello() {
+                B.super.hello();
+            }
+
+            public static void main(String[] args) {
+                new D().hello(); // Hello from B
             }
         }
         ```
