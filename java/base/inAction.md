@@ -48,6 +48,14 @@
     - [默认方法的基本概念](#默认方法的基本概念)
     - [默认方法的使用模式](#默认方法的使用模式)
     - [解决冲突的规则](#解决冲突的规则)
+- [用Optional取代null](#用optional取代null)
+- [CompletableFuture组合式异步编程](#completableFuture组合式异步编程)
+    - [Future接口](#future接口)
+    - [实现异步API](#实现异步api)
+    - [避免同步阻塞](#避免同步阻塞)
+    - [](#)
+    - [](#)
+    - [](#)
     - [](#)
     - [](#)
 
@@ -3239,9 +3247,504 @@ List<Dish> menu = Arrays.asList(
         }
         ```
 
-[top](#catalog)
 
+# 用Optional取代null
+[top](#catalog)
+- 每次不确定一个变量是否为`null`时，都需要添加一个嵌套的`if`块，增加了代码的缩进层数
+    - 这种方式不具备扩展性，牺牲了代码的可读性
+- 使用`Optional`重新定义`Preson/Car/Insurance`的数据类型
+    ```java
+    class Person {
+        private Optional<Car> car;
+        public Optional<Car> getCar(){ return car;}
+    }
+
+    class Car {
+        private Optional<Insurance> insurance;
+        public Optional<Insurance> getInsurance() { return insurance;}
+    }
+
+    class Insurance {
+        private String name;
+        public String getName() { return name;}
+    }
+    ```
+
+- 创建`Optional`对象
+    - `empty()`: 声明一个空的`Optional`
+        ```java
+        Optional<T> t = Optional.empty();
+        ```
+    - `of`: 通过一个非空值创建`Optional`
+        - 如果`t`是`null`，会抛出异常`NullPointerException`
+        ```java
+        Optional<T> opt = Optional.of(t);
+        ```
+    - `ofNullable()`: 可接受`null`的`Optional`
+        - 如果`t`是`null`，则Optional对象是一个空对象
+        ```java
+        Optional<T> opt = Optional.ofNullable(t);
+            ```
+
+- `Optional`类型**无法序列化**
+    - `Optional`的设计是为了支持能返回`Optional`对象的语法，没有考虑过将这样的类型作为字段
+    - 替代方案：提供一个访问`Optional`值的接口
+        ```java
+        class Person {
+            private Car car;
+            public Optional<Car> getCar(){ 
+                return Optional.ofNullable(car);
+            }
+        }   
+        ```
+
+- 读取`Optional`中的变量值
+    - `get()`
+        - 如果变量存在，则返回对象值
+        - 如果`Optional`对象空对象，则抛出异常`NoSuchElementException`
+    - `orElse(T other)`
+        - 如果有值则返回，否则返回一个默认值
+    - `osElseGet(Supplier<? extends T> other)`
+        - `orElse`方法的**延迟调用**
+        - 如果有值则返回，否则返回一个由`Supplier`创建的对象
+    - `osElseThrow(Supplier<? extends X> exceptionSupplier)`
+        - 如果有值则返回，否则返回一个由`Supplier`创建的异常
+    - `ifPresent()`
+        - 返回变量值的状态: 
+            - 变量存在，返回`true`
+            - 空对象，返回`false`
+            ```java
+            public boolean isPresent() {
+                return value != null;
+            }
+            ```
+
+- `Optional`的几种应用方法
+    - 使用`map`将返回值包装到`Optional`中
+        - `map`源码
+            ```java
+            public <U> Optional<U> map(Function<? super T, ? extends U> mapper) {
+                Objects.requireNonNull(mapper);
+                if (!isPresent()) {
+                    return empty(); //如果Optional是空对象，就什么都不做，直接返回空对象
+                } else {
+                    return Optional.ofNullable(mapper.apply(value)); //若如果mapper的返回值为null，则创建一个空对象
+                }
+            }
+            ```
+
+        - 示例
+            ```java
+            Optional<Insurance> optInsurance = Optional.ofNullable(insurance);
+            Optional<String> name = optInsurance.map(Insurance::getName);
+            ```
+    - 使用`flatMap`链接`Optional`对象
+        - `flatMap`源码
+            ```java
+            public <U> Optional<U> flatMap(Function<? super T, ? extends Optional<? extends U>> mapper) {
+                Objects.requireNonNull(mapper);
+                if (!isPresent()) {
+                    return empty();
+                } else {
+                    @SuppressWarnings("unchecked")
+                    Optional<U> r = (Optional<U>) mapper.apply(value);
+                    return Objects.requireNonNull(r);
+                }
+            }
+            ```
+
+        - 链式调用`map`会导致异常，`Person:geteCar`返回的是`Optional<Car>`类型，经过`map`的保证，会变成`Optional<Optional<Car>>`，无法调用`Car::getInsurance`
+            ```java
+            Optional<Person> optPerson = Optional.of(person);
+            Optional<String> name = optPerson.map(Person:geteCar)
+                                            .map(Car::getInsurance)
+                                            .map(Insurance::getName);
+            ```
+        - 通过`flatMap`将嵌套的`Optional`扁平化
+            - 重写链式调用
+                ```java
+                Optional<Person> optPerson = Optional.of(person);
+                String name = optPerson.flatMap(Person:geteCar)
+                                                .flatMap(Car::getInsurance)
+                                                .map(Insurance::getName)
+                                                .orElse("UnKnow");
+                ```
+    - 使用`filter`来过滤特定的值
+        - `filter`源码
+            ```java
+            public Optional<T> filter(Predicate<? super T> predicate) {
+                Objects.requireNonNull(predicate);
+                if (!isPresent()) {
+                    return this; //如果Optional是空对象，就什么都不做，直接返回空对象
+                } else {
+                    return predicate.test(value) ? this : empty(); // 应用predicate 如果没有通过则返回空对象
+                }
+            }
+            ```
+
+        - 判读`Insurance`的`name`字段是否指定内容
+            ```java
+            Insurance insurance = new Insurance(...);
+            if (insurance != null && "xxxx".equals(insurance.getName())) {
+                System.out.println("Ok");
+            }
+            ```
+        - 使用`filter`来过滤
+            ```java
+            Insurance insurance = new Insurance(...);
+            Optional<Insurance> optInsurance = Optional.ofNullable(insurance);
+
+            optInsurance.filter(insurance -> "xxxx".equals(insurance.getName()) )
+                        .isPresent(x -> System.out.println("Ok"));  //??????????????/ 重载????
+            ```
+
+- 两个`Optional`对象的组合
+    - 通过`person` 和 `car` 来查找最便宜的保险
+        ```java
+        public Insurance findCHeapestInsurance(Person person, Car car) {
+            ...
+            return cheapestCompany;
+        }
+        ```
+    - 使用`Optional`构造一个`null`安全的版本
+        - 直接使用`isPresent()`与判断对象为`null`类似
+            ```java
+            public Optional<Insurance> nullSafeFindCHeapestInsurance(Optional<Person> person, Optional<Car> car) {
+                if (person.isPresent() && cat.isPresent()) {
+                    return Optional.of(findCHeapestInsurance(person.get(), car.get()));
+                } else {
+                    return Optional.empty();
+                }
+            }
+            ```
+        - 通过`flatMap`和`map`以**不解包**的方式组合两个`Optional`对象
+            - 组合过程
+                - 如果`person`是空对象，整个处理会立刻停止，并返回**空对象**
+                - 如果`car`是空对象，则后续处理会立刻停止，并返回**空对象**
+                - 执行`findCHeapestInsurance`,并返回结果，`map`会将结果包装成`Optional`对象
+                - `flatMap`直接将`Optional`对象返回
+
+                ```java
+                public Optional<Insurance> nullSafeFindCHeapestInsurance(Optional<Person> person, Optional<Car> car) {
+                    return person.flatMap(p -> c.map(c -> findCHeapestInsurance(p, c)));
+                }
+                ```
+
+- 应该避免使用基本类型的`Optional`对象
+    - 基本类型的`Optional`: `OptionalInt`, `OptionalLong`, `OptionalDouble`
+    - 基本类型的`Optional`不支持`map`,`flatMap`, `filter`方法
+        - 同时也无法作为方法引用传递给另一个`Optional`对象的这些方法
+
+- 使用`Optional`的实战示例
+    - 将`String`转`int`
+        ```java
+        class OptionalUtility{
+            public static Optional<Integer> stringToInt(String s) {
+                try {
+                    return Optional.of(Integer.parse(s));
+                } catch (NumberFormatException e) {
+                    return Optional.empty();
+                }
+            }
+        }
+        ```
+    - 从属性中读取`duration`值
+        - 不是数字的，返回0
+        - 如果是负数，返回0
+            
+        ```java
+        Properties props = new Properties();
+        props.setProperty("a", "5");
+        props.setProperty("b", "true");
+        props.setProperty("c", "-3");
+
+        public int readDuration(Properties props, String name) {
+            return Optional.ofNullable(props.getProperty(name))
+                           .flatMap(OptionalUtility::stringToInt)
+                           .filter(i -> i > 0)
+                           .orElse(0);
+        }
+        ```
+
+# CompletableFuture组合式异步编程
+## Future接口
+[top](#catalog)
+- `Future`接口是用来对将来某个时刻会发生的结果进行建模
+    - `Future`建模了一种异步计算，返回一个执行运算结果的引用，当运算结束后，这个引用被返回给调用方
+    - 在`Future`中触发那些耗时的操作，来将线程解放出来，让它能继续执行其他有价值的工作
+- `Future`比底层的`Thread`更易用
+- 使用`Future`时，需要将耗时的操作封装到一个`Callable`对象中，再提交给`ExecutorService`，通过`isDone`来检测异步操作是否已经结束
+    - Java7中的写法
+        ```java
+        ExecutorService executor = Executors.newCachedThreadPool();
+        Future<Double> future = executor.submit(new Callable<Double>() {
+            public Double call() {
+                return doSomeLongComputation();
+            }
+        });
+
+        doSomthingElse();
+
+        try {
+            Double result =  future.get(1, TimeUnit.SECONDS); //等待1s后，如果仍然被阻塞则引发异常
+        } catch (ExecutionException ee){
+            //计算抛出一个异常
+        } catch (InterruptedException ie) {
+            //当前线程在等待过程中被中断
+        } catch(TimeoutException te) {
+            //future等待超时
+        }
+        ```
+    - Future的异步操作流程
+        - ![图](./imgs/) ????????????????
+- `Future`接口的局限性
+    - 很难表述`Future`结果之间的依赖性
+
+## 实现异步API
+[top](#catalog)
+- 最佳价格查询器
+    - 会查询多个在线商店，依据给定的产品或服务找出最低的价格
+    - `delay`，模拟延迟
+    - `getPrice`,根据指定名称返回价格
+        - 通过`calculatePrice`生成随机价格
+
+- 将同步方法转换为异步方法
+    - 改造`getPrice`为异步方法`getPriceAsync`
+
+- 错误处理
+    - 如果计算的线程产生异常，该异常会被限制在这个线程内，最终杀死该线程，会导致**等待get()方法的调用线程被永久的阻塞**
+    - 可以使用`get(long timeout, TimeUnit unit)`，来防止永久阻塞
+    - 可以通过`CompletableFuture`的`completeException`方法会将内部发生的异常抛出
+
+- 使用工厂方法`supplyAsync`创建`CompletableFuture`
+    - 两种重载
+        ```java
+        public static <U> CompletableFuture<U> supplyAsync(Supplier<U> supplier) {
+            return asyncSupplyStage(ASYNC_POOL, supplier);
+        }
+
+        public static <U> CompletableFuture<U> supplyAsync(Supplier<U> supplier,
+                                                       Executor executor) {
+            return asyncSupplyStage(screenExecutor(executor), supplier);
+        }
+        ```
+    - `Supplier`参数会交给`ForkJoinPool`池中的某个执行线程(`Executor`)运行
+        - 可以通过第二个参数指定不同的执行线程执行`Supplier`
+
+```java
+public class Shop {
+    private name;
+
+    public Shop(String name) {
+        this.name = name;
+    }
+
+    public String getName(){
+        return name;
+    }
+
+    //根据指定名称返回价格
+    public double getPrice(String product){
+        //可以执行：DB访问，联系其他外部服务
+        calculatePrice(product);
+    }
+
+    //根据指定名称返回价格，返回Future对象，可以立即返回，可以通过get方法获取执行结果
+    public Future<Double> getPriceAsync(String product) {
+        // 创建一个代表异步计算的实例
+        CompletableFuture<Double> futurePrice = new CompletableFuture<>();
+        new Thread(
+            () -> {
+                try {
+                    double price = calculatePrice(product); //获取价格
+                    futurePrice.complete(price); //结束当前任务，设置Future的返回值
+                } catch (Exception ex) {
+                    futurePrice.completeException(ex); //将异步计算中异常抛出
+                }
+            }
+        );
+
+        return futurePrices
+    }
+
+    // 通过工程方法创建Future对象，与getPriceAsync的功能相同
+    public Future<Double> getPriceAsyncByFactory(String product) {
+        return CompletableFuture.supplyAsync( () -> calculatePrice(product) );
+    }
+
+    // 生成随机价格
+    private double calculatePrice(String product){
+        delay();
+        return random.nextDouble() * product.charAt(0) + product.charAr(1);
+    }
+
+    // 模拟延迟的方法
+    public static void delay() {
+        try{
+            Thread.sleep(1000L);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+}
+
+// 调用异步API
+class MyAppTest {
+    @Test
+    public void method01(){
+        Shop shop = new Shop("yyyyy");
+        Future<Double> futurePrice = shop.getPriceAsync("xxxxx");
+        doSomethingElse();
+        try {
+            double price = futurePrice.get();
+            System.out.printf("....");
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+}
+```
+
+## 避免同步阻塞
+[top](#catalog)
+- 只使用同步API
+- 使用并行流：`parallelStream`, 对请求进行并行操作
+- 使用`CompletableFuture`发起异步请求
+```java
+class MyApp{
+    List<Shop> shops = Arrays.asList(
+        new Shop("aaa"),
+        new Shop("bbb"),
+        new Shop("ccc"),
+        new Shop("ddd"),
+        new Shop("eee"),
+    );
+
+    // 在各商店中寻找某个产品的价格，使用 Stream 对同步API 做顺序执行
+    public List<String> findPrices(String product) {
+        return shops.stream()
+                    .map(shop -> String.foramt("%s price is %.2f", shop.getName(), shop.getPrice(product)))
+                    .collect(toList());
+    }
+
+    // 在各商店中寻找某个产品的价格，使用 ParallelStream 对同步API 做并行执行
+    public List<String> findPricesParallel(String product) {
+        return shops.parallelStream()
+                    .map(shop -> String.foramt("%s price is %.2f", shop.getName(), shop.getPrice(product)))
+                    .collect(toList());
+    }
+
+    // 在各商店中寻找某个产品的价格
+    // 对同步API 用CompletableFuture构造异步请求
+    // 使用 Stream 做异步执行
+    public List<String> findPricesAsync(String product) {
+        return shops.stream()
+                    .map(
+                        shop -> CompletableFuture.supplyAsync(
+                            () -> String.foramt("%s price is %.2f", shop.getName(), shop.getPrice(product))
+                        )
+                    )
+                    .collect(toList());
+    }
+}
+
+class MyAppTest {
+    ...
+    
+    // 顺序执行测试
+    @Test
+    public void method02(){
+        MyApp a = new MyApp();
+        long start = System.nanoTime();
+        System.out.println(a.findPrices("xxxx"));
+        long duration = (System.nanoTime() - start) / 1_000_000;
+        System.out.println(duration);
+    }
+
+    // 并行执行测试
+    @Test
+    public void method03(){
+        MyApp a = new MyApp();
+        long start = System.nanoTime();
+        System.out.println(a.findPricesParallel("xxxx"));
+        long duration = (System.nanoTime() - start) / 1_000_000;
+        System.out.println(duration);
+    }
+}
+```
+
+
+
+[top](#catalog)
 ---------------------------------------------------------------------------
+
+
+    ```java
+    public class Shop {
+        //根据指定名称返回价格
+        public double getPrice(String product){
+            //可以执行：DB访问，联系其他外部服务
+            calculatePrice(product);
+        }
+
+        // 生成随机价格
+        private double calculatePrice(String product){
+            delay();
+            return random.nextDouble() * product.charAt(0) + product.charAr(1);
+        }
+
+        // 模拟延迟的方法
+        public static void delay() {
+            try{
+                Thread.sleep(1000L);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+    ```
+
+        ```java
+        public class Shop {
+            //根据指定名称返回价格
+            public double getPrice(String product){
+                //可以执行：DB访问，联系其他外部服务
+                calculatePrice(product);
+            }
+
+            //根据指定名称返回价格，返回Future对象，可以立即返回，可以通过get方法获取执行结果
+            public Future<Double> getPriceAsync(String product) {
+                // 创建一个代表异步计算的实例
+                CompletableFuture<Double> futurePrice = new CompletableFuture<>();
+                new Thread(
+                    () -> {
+                        double price = calculatePrice(product); //获取价格
+                        futurePrice.complete(price); //结束当前任务，设置Future的返回值
+                    }
+                );
+
+                return futurePrice;
+            }
+
+            // 生成随机价格
+            private double calculatePrice(String product){
+                delay();
+                return random.nextDouble() * product.charAt(0) + product.charAr(1);
+            }
+
+            // 模拟延迟的方法
+            public static void delay() {
+                try{
+                    Thread.sleep(1000L);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+        ```
+
+
+
 
 `Stream.of` 可以通过显示值创建一个流
 `Stream.empty()`获得一个空流
