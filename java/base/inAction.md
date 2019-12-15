@@ -52,9 +52,10 @@
 - [CompletableFuture组合式异步编程](#completableFuture组合式异步编程)
     - [Future接口](#future接口)
     - [实现异步API](#实现异步api)
+    - [CompletableFuture实现异步API](#CompletableFuture实现异步API)
     - [避免同步阻塞](#避免同步阻塞)
-    - [](#)
-    - [](#)
+    - [使用哪种方式来处理并行](#使用哪种方式来处理并行)
+    - [对多个异步任务进行流水线操作](#对多个异步任务进行流水线操作)
     - [](#)
     - [](#)
     - [](#)
@@ -3496,44 +3497,150 @@ List<Dish> menu = Arrays.asList(
         }
         ```
     - Future的异步操作流程
-        - ![图](./imgs/) ????????????????
+        - ![图](./imgs/inAction/Future的异步操作流程.png)
 - `Future`接口的局限性
     - 很难表述`Future`结果之间的依赖性
 
-## 实现异步API
+
+## CompletableFuture实现异步API
 [top](#catalog)
-- 最佳价格查询器
-    - 会查询多个在线商店，依据给定的产品或服务找出最低的价格
-    - `delay`，模拟延迟
-    - `getPrice`,根据指定名称返回价格
-        - 通过`calculatePrice`生成随机价格
-
-- 将同步方法转换为异步方法
-    - 改造`getPrice`为异步方法`getPriceAsync`
-
+- `get()`，等待异步处理完成，会一直阻塞当前进程
+- `get(long timeout, TimeUnit unit)`，指定等待时间，来防止永久阻塞
+- `join()`与`get()`相似，但是**join不会抛出任何检测到的异常**
 - 错误处理
     - 如果计算的线程产生异常，该异常会被限制在这个线程内，最终杀死该线程，会导致**等待get()方法的调用线程被永久的阻塞**
-    - 可以使用`get(long timeout, TimeUnit unit)`，来防止永久阻塞
     - 可以通过`CompletableFuture`的`completeException`方法会将内部发生的异常抛出
 
-- 使用工厂方法`supplyAsync`创建`CompletableFuture`
-    - 两种重载
-        ```java
-        public static <U> CompletableFuture<U> supplyAsync(Supplier<U> supplier) {
-            return asyncSupplyStage(ASYNC_POOL, supplier);
-        }
+- 工厂方法
+    - `supplyAsync`创建`CompletableFuture`
+        - 两种重载
+            ```java
+            public static <U> CompletableFuture<U> supplyAsync(Supplier<U> supplier) {
+                return asyncSupplyStage(ASYNC_POOL, supplier);
+            }
 
-        public static <U> CompletableFuture<U> supplyAsync(Supplier<U> supplier,
-                                                       Executor executor) {
-            return asyncSupplyStage(screenExecutor(executor), supplier);
-        }
-        ```
-    - `Supplier`参数会交给`ForkJoinPool`池中的某个执行线程(`Executor`)运行
-        - 可以通过第二个参数指定不同的执行线程执行`Supplier`
+            public static <U> CompletableFuture<U> supplyAsync(Supplier<U> supplier,
+                                                        Executor executor) {
+                return asyncSupplyStage(screenExecutor(executor), supplier);
+            }
+            ```
+        - `Supplier`参数会交给`ForkJoinPool`池中的某个执行线程(`Executor`)运行
+            - 可以通过第二个参数指定不同的执行线程执行`Supplier`
+    - `allOf`
+        - 返回一个`CompletableFuture<Void>`，将多个对象合在一起，可以对该对象执行`join()`
+    - `anyOf`
+        - 与`allOf`类似，返回第一个完成的对象
+
+- 避免同步API的阻塞
+    - 使用并行流：`parallelStream`, 对请求进行并行操作
+    - 使用`CompletableFuture`发起异步请求
+
+- 使用哪种方式来处理并行
+    - 计算密集型操作，推荐使用Stream接口
+        - 因为实现简单，同时效率也可能是最高的
+        - **如果所有线程都是计算密集型的，那就没有必要创建比处理器核数更多的线程**
+    - IO密集型操作，使用`CompletableFuture`灵活性更好
+        - 可以依据W/C的比例设定需要使用的线程数
+        - 处理流的流水线中如果发生IO等待，流的延迟特性会然我们很难判断：**什么时候触发的等待**
+
+- `CompletableFuture`的任务组合
+    - `thenApply`，将`CompletableFuture`对象进行其他转换
+    - `thenCompose`，合并两个操作，第一个任务的结果作为第二个任务的输入，两个任务在同一个线程中运行
+    - `thenComposeAsync`，合并两个操作，第一个任务的结果作为第二个任务的输入，但是第二个任务是由不同线程运行的
+        - 第二个任务取决于第一个任务，所以`thenCompose`更高效，少了很多线程切换的开销
+    - `thenCombine`，定义两个任务结束后如何合并
+    - `thenCombineAsync`，定义两个任务结束后如何合并，合并操作将提交到线程池中，由另一个线程执行
 
 ```java
-public class Shop {
-    private name;
+public class MyShopApp {
+    List<Shop> shops = Arrays.asList(
+            new Shop("aaa"),
+            new Shop("bbb"),
+            new Shop("ccc"),
+            new Shop("ddd"),
+            new Shop("eee")
+            );
+
+    private final Executor executor = Executors.newFixedThreadPool(Math.min(shops.size(), 100), new ThreadFactory() {
+        @Override
+        public Thread newThread(Runnable r) {
+            Thread t = new Thread(r);
+            t.setDaemon(true);
+            return t;
+        }
+    });
+
+    // 在各商店中寻找某个产品的价格，使用 Stream 对同步API 做顺序执行
+    public List<String> findPrices(String product) {
+        return shops.stream()
+                .map(shop -> String.format("%s price is %.2f", shop.getName(), shop.getPrice(product)))
+                .collect(toList());
+    }
+
+    // 在各商店中寻找某个产品的价格，使用 ParallelStream 对同步API 做并行执行
+    public List<String> findPricesParallel(String product) {
+        return shops.parallelStream()
+                .map(shop -> String.format("%s price is %.2f", shop.getName(), shop.getPrice(product)))
+                .collect(toList());
+    }
+
+    // 在各商店中寻找某个产品的价格
+    // 对同步API 用CompletableFuture构造异步请求
+    // 使用 Stream 做异步执行
+    public List<String> findPricesAsync(String product) {
+        List<CompletableFuture<String>> collect = shops.stream()
+                .map(
+                        shop -> CompletableFuture.supplyAsync(
+                                () -> String.format("%s price is %.2f", shop.getName(), shop.getPrice(product))
+                        )
+                )
+                .collect(toList());
+
+        return collect.stream().map(CompletableFuture::join).collect(toList());
+    }
+
+    // 在各商店中寻找某个产品的价格
+    // 对同步API 用CompletableFuture构造异步请求
+    // 使用 Stream 做异步执行
+    // 手动添加executor
+    public List<String> findPricesAsyncByExecutor(String product) {
+        List<CompletableFuture<String>> collect = shops.stream()
+                .map(
+                        shop -> CompletableFuture.supplyAsync(
+                                () -> String.format("%s price is %.2f", shop.getName(), shop.getPrice(product)),
+                                executor
+                        )
+                )
+                .collect(toList());
+
+        return collect.stream().map(CompletableFuture::join).collect(toList());
+    }
+
+    // 使用流水线处理多个操作
+    public List<String> findPricesWithDiscount(String product) {
+        return shops.stream().map(shop -> shop.getPriceWithDiscount(product))
+                .map(Quote::parse)
+                .map(Discount::applyDiscount)
+                .collect(toList());
+    }
+
+    // 合并多个异步操作
+    public List<String> findPricesWithDiscountAsync(String product) {
+        List<CompletableFuture<String>> collect = shops.stream().map(shop -> CompletableFuture.supplyAsync(() -> shop.getPriceWithDiscount(product), executor))
+                .map(future -> future.thenApply(Quote::parse))
+                .map(future -> future.thenCompose(quote ->
+                        CompletableFuture.supplyAsync(() -> Discount.applyDiscount(quote), executor)
+                ))
+                .collect(toList());
+
+        return collect.stream().map(future -> future.join()).collect(toList());
+    }
+}
+
+
+class Shop {
+    private String name;
+    private Random random = new Random();
 
     public Shop(String name) {
         this.name = name;
@@ -3546,7 +3653,14 @@ public class Shop {
     //根据指定名称返回价格
     public double getPrice(String product){
         //可以执行：DB访问，联系其他外部服务
-        calculatePrice(product);
+        return calculatePrice(product);
+    }
+
+    //返回带有折扣的价格字符串
+    public String getPriceWithDiscount(String product) {
+        double price = calculatePrice((product));
+        Discount.Code code = Discount.Code.values()[random.nextInt(Discount.Code.values().length)];
+        return String.format("%s:%.2f:%s", name, price, code);
     }
 
     //根据指定名称返回价格，返回Future对象，可以立即返回，可以通过get方法获取执行结果
@@ -3554,17 +3668,17 @@ public class Shop {
         // 创建一个代表异步计算的实例
         CompletableFuture<Double> futurePrice = new CompletableFuture<>();
         new Thread(
-            () -> {
-                try {
-                    double price = calculatePrice(product); //获取价格
-                    futurePrice.complete(price); //结束当前任务，设置Future的返回值
-                } catch (Exception ex) {
-                    futurePrice.completeException(ex); //将异步计算中异常抛出
+                () -> {
+                    try {
+                        double price = calculatePrice(product); //获取价格
+                        futurePrice.complete(price); //结束当前任务，设置Future的返回值
+                    } catch (Exception ex) {
+                        futurePrice.completeExceptionally(ex); //将异步计算中异常抛出
+                    }
                 }
-            }
-        );
+        ).start();
 
-        return futurePrices
+        return futurePrice;
     }
 
     // 通过工程方法创建Future对象，与getPriceAsync的功能相同
@@ -3575,7 +3689,7 @@ public class Shop {
     // 生成随机价格
     private double calculatePrice(String product){
         delay();
-        return random.nextDouble() * product.charAt(0) + product.charAr(1);
+        return random.nextDouble() * product.charAt(0) + product.charAt(1);
     }
 
     // 模拟延迟的方法
@@ -3588,87 +3702,67 @@ public class Shop {
     }
 }
 
-// 调用异步API
-class MyAppTest {
-    @Test
-    public void method01(){
-        Shop shop = new Shop("yyyyy");
-        Future<Double> futurePrice = shop.getPriceAsync("xxxxx");
-        doSomethingElse();
-        try {
-            double price = futurePrice.get();
-            System.out.printf("....");
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+class Quote {
+    private final String shopName;
+    private final double price;
+    private final Discount.Code discountCount;
+
+    public Quote(String shopName, double price, Discount.Code discountCount) {
+        this.shopName = shopName;
+        this.price = price;
+        this.discountCount = discountCount;
+    }
+
+    public static Quote parse(String s){
+        String[] split = s.split(":");
+        String name = split[0];
+        double price = Double.parseDouble(split[1]);
+        Discount.Code code = Discount.Code.valueOf(split[2]);
+
+        return new Quote(name, price, code);
+    }
+
+    public String getShopName() {
+        return shopName;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public Discount.Code getDiscountCount() {
+        return discountCount;
+    }
+}
+
+class Discount {
+    public enum Code{
+        NONE(0),SILVE(5),GOLD(10),PLATINUM(15), DIAMOND(20);
+
+        private final int percentage;
+
+        Code(int percentage) {
+            this.percentage = percentage;
         }
     }
-}
-```
 
-## 避免同步阻塞
-[top](#catalog)
-- 只使用同步API
-- 使用并行流：`parallelStream`, 对请求进行并行操作
-- 使用`CompletableFuture`发起异步请求
-```java
-class MyApp{
-    List<Shop> shops = Arrays.asList(
-        new Shop("aaa"),
-        new Shop("bbb"),
-        new Shop("ccc"),
-        new Shop("ddd"),
-        new Shop("eee"),
-    );
-
-    // 在各商店中寻找某个产品的价格，使用 Stream 对同步API 做顺序执行
-    public List<String> findPrices(String product) {
-        return shops.stream()
-                    .map(shop -> String.foramt("%s price is %.2f", shop.getName(), shop.getPrice(product)))
-                    .collect(toList());
+    public static String applyDiscount(Quote quote) {
+        return quote.getShopName() + " price is " +
+                Discount.apply(quote.getPrice(),
+                        quote.getDiscountCount());
+    }
+    private static double apply(double price, Code code) {
+        delay();
+        return price * (100 - code.percentage) / 100;
     }
 
-    // 在各商店中寻找某个产品的价格，使用 ParallelStream 对同步API 做并行执行
-    public List<String> findPricesParallel(String product) {
-        return shops.parallelStream()
-                    .map(shop -> String.foramt("%s price is %.2f", shop.getName(), shop.getPrice(product)))
-                    .collect(toList());
-    }
-
-    // 在各商店中寻找某个产品的价格
-    // 对同步API 用CompletableFuture构造异步请求
-    // 使用 Stream 做异步执行
-    public List<String> findPricesAsync(String product) {
-        return shops.stream()
-                    .map(
-                        shop -> CompletableFuture.supplyAsync(
-                            () -> String.foramt("%s price is %.2f", shop.getName(), shop.getPrice(product))
-                        )
-                    )
-                    .collect(toList());
-    }
-}
-
-class MyAppTest {
-    ...
-    
-    // 顺序执行测试
-    @Test
-    public void method02(){
-        MyApp a = new MyApp();
-        long start = System.nanoTime();
-        System.out.println(a.findPrices("xxxx"));
-        long duration = (System.nanoTime() - start) / 1_000_000;
-        System.out.println(duration);
-    }
-
-    // 并行执行测试
-    @Test
-    public void method03(){
-        MyApp a = new MyApp();
-        long start = System.nanoTime();
-        System.out.println(a.findPricesParallel("xxxx"));
-        long duration = (System.nanoTime() - start) / 1_000_000;
-        System.out.println(duration);
+    // 模拟延迟的方法
+    public static void delay() {
+        try{
+            Thread.sleep(1000L);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
 ```
