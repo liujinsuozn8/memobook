@@ -1,5 +1,5 @@
 <span id="catalog"></span>
-- [常用内容](#常用内容)
+- [基本配置](#基本配置)
 - [DQL语言](#dql语言)
     - [基础查询](#基础查询)
     - [常见函数](#常见函数)
@@ -27,8 +27,11 @@
 - [存储过程和函数](#存储过程和函数)
 - [](#)
 - [](#)
+- [](#)
+- [](#)
+- [总结](#总结)
 
-# 常用内容
+# 基本配置
 [top](#catalog)
 - 环境变量配置：
     - 添加Mysql的`bin`目录
@@ -69,25 +72,6 @@
     - mysql，保存用户信息
     - information_schema，保存元数据信息
     - performance_schema，保存性能信息
-- 常用指令
-    - `show databases;`,查看所有数据库
-    - `user 数据库名`，指定当前使用的库
-    - `show tables`，显示当前库的所有表
-    - `show tables from 数据库名`，显示指定数据库下的所有表
-    - `select database();`，查看当前处于哪个库
-    - `select version();`，查看当前数据库版本
-        - `mysql --version`
-        - `mysql -V`
-    - `desc 表名;`，查看表结构
-    - `ifnull(表达式, null时的返回值)`
-    - 创建表：
-        ```sql
-        create table 表名 (
-            列名 类型，
-            列名 类型，
-            ...
-        );
-        ```
 
 # DQL语言
 ## 基础查询
@@ -175,12 +159,12 @@
             - `substr(str, start, lenght)`，从start开始,截取length个字符
             - 如果`start`越界了会返回空字符串
         - `instr(str1, str2)`，寻找`str2`在`str1`中的index
-            - 如果找不到，则返沪`0`
+            - 如果找不到，则返回`0`
         - `trim(str)`，去除左右两边的空格
         - `trim(str1 from str2)`，从`str2`的左右两边去除字符`str1`
         - `lpad(str, len, padstr)`，在`str`的左边连续补充`padstr`，直到长度为`len`
             - 长度不足时会进行截位
-                - `select lpad('abcd', 5, 'xv')`，得到`1abcd`
+                - `select lpad('abcd', 5, 'xv')`，得到`1abcd`  ????????????
             - 如果`str > len`，会对`str`截位，从**左开始**截`len`位
                 - `select lpad('abcd', 2, '12')`，得到`ab`
         - `rpad(str, len, padstr)`，在`str`的左边连续补充`padstr`，直到长度为`len` 
@@ -207,8 +191,8 @@
             - 计算方法`a - a/b *b`
     - 日期函数
         - `now()`，返回当前系统日期+时间
-        - `curdate`，返回当前系统日期，不包含时间
-        - `curtime`，返回当前系统时间，不包含日期
+        - `curdate`，返回当前系统日期，不包含时间   ????????????
+        - `curtime`，返回当前系统时间，不包含日期   ????????????
         - 获取时间的指定部分
             - 获取年:`year(date)`
                 - 参数可以是日期类型，也可以是对应的字符
@@ -237,6 +221,7 @@
         - `version()`，查询当前数据库版本
         - `database()`，查询当前使用的数据库名
         - `user()`，查询当前用户
+        - `ifnull(表达式, null时的返回值)`
 
 - 流程控制函数
     - `if(表达式, ture, false)`
@@ -455,6 +440,7 @@
         values (值,...);
         ```
     - 语法2
+        - 可以省略列明，默认使用所有列，而且列的顺序和表中列的顺序必须一致
         - `values`中的列数、类型、顺序，需要与表中的列相同
         ```sql
         insert into 表名
@@ -463,8 +449,8 @@
     - **支持插入多行**
     - 插入值的类型要与列的类型一致或兼容
     - `Nullable`字段可以插入`NULL`，也可以不插入值
-    - 类书和values数必须一致
-    - 可以省略类名，默认使用所有列，而且列的顺序和表中列的顺序一致
+    - 列数和values数必须一致
+    
     - **支持子查询**
         ```sql
         insert into 表名(列名...)
@@ -473,7 +459,7 @@
 - 方法2
     ```sql
     insert into 表名
-    set 列名=值，列名=值
+    set 列名=值, 列名=值
     ```
     - 只能插入单行
 
@@ -621,7 +607,7 @@
             create table xxx {
                 t int(11) zerofill,
                 ...
-            }
+            } 
             ```
 
     |类型|字节|范围|
@@ -1330,5 +1316,201 @@
             select @strdate;
             ```
 
-            
+# 总结
 [top](#catalog)
+- 常用指令
+    - `show databases;`,查看所有数据库
+    - `user 数据库名`，指定当前使用的库
+    - `show tables`，显示当前库的所有表
+    - `show tables from 数据库名`，显示指定数据库下的所有表
+    - `select database();`，查看当前处于哪个库
+    - `select version();`，查看当前数据库版本
+        - `mysql --version`
+        - `mysql -V`
+    - `desc 表名;`，查看表结构
+    - `show index from 表名` 查看索引
+    - `show variables like '%auto_increment%'` 查询字段增长设置
+    - `show variables like 'autocommit'`，查看`自动提交功能`是否开启
+    - `set autocommit = 0`，启动事务、设置自动提交功能为禁用
+    - 查询MySql的默认事务隔离级别
+        - 5.7:`select @@tx_isolation`
+        - 8:`select @@transaction_isolation`
+    - `set global | [session] transaction isolation level 隔离级别`，设置隔离级别
+    - 回滚点
+        - `save 节点名`，设置保存节点
+        - `rollback to a;`，回滚到保存点
+    - `show global | [session] variables [like '%关键字%']`，查找系统变量
+    - `select @@global | [session].系统变量名`，查看指定系统变量
+    - `set global | [session] 系统变量名 = 值`，重设系统变量
+
+- 数据类型
+    ```sql
+    int(长度) [zerofill] 自动左侧补零
+    decimal(总长,小数位长度)
+    float(总长,小数位长度)
+    double(总长,小数位长度)
+    char(长度)
+    varchar(长度)
+    text
+    blob
+    binary/varbinary
+    enum('枚举1', '枚举2', '枚举3',....)
+    set('集合内容1', '集合内容2', '集合内容3', '集合内容4')
+
+    date
+    datetime
+    timestamp
+    time
+    year
+    ```
+
+- 数据操作:增删改
+    ```sql
+    insert into 表名(列名...)
+    values (值,...),
+    values (值,...),
+    ...
+    values (值,...);
+
+    insert into 表名
+        values (值,...),
+        values (值,...),
+        ...
+        values (值,...);
+
+    insert into 表名(列名...)
+        select ...
+
+    insert into 表名
+        set 列名1=值, 列名2=值...
+
+    update 表名
+    set 列=值，列=值
+    where 筛选条件
+
+    update 表1 别名
+    inner | left | right join 表2 别名
+    on 连接条件
+    set 别名.列=值...
+    where 筛选条件
+
+    delete from 表名 -- 全部删除，可以回滚
+
+    delete from 表名 where 筛选条件 
+
+    delete 表1别名，表2别名
+    from 表1 别名
+    inner | left | right join 表2 别名 on 连接条件
+    where 筛选条件 
+
+    truncate table 表名 -- 全部删除，bu可以回滚
+    ```
+
+- 库操作
+    ```sql
+    create database 库名
+    create database if not exists 库名
+
+    alter database 库名 character set 字符集
+
+    drop database 库名
+    drop database if exists 库名
+    ```
+
+- 表操作
+    - 创建
+        ```sql
+        -- 直接创建
+        create table 表名 (
+            列名 int primary key auto_increment,  -- 四种有效的列级约束
+            列名 float not null,
+            列名 varchar(20) unique,
+            列名 int default 18,
+            列名 类型[长度] [约束类型1] [约束类型2] ...
+            ...
+            列名 类型[长度],
+
+            constraint pk primary key(列名),  -- 三种有效的表级约束
+            constraint uk unique(列名),
+            constraint fk foreign key(列名) references 主表(主表列名)
+            【constraint 约束名1】约束类型(字段名)
+            【constraint 约束名2】约束类型(字段名)
+        )
+        ```
+        ```sql
+        -- 拷贝表
+        create table 新表名 like 库名.旧表名
+
+        create table 新表名
+        select .. from 库名.表...
+
+        create table 新表名
+        select 部分列... from 库名.表... where ...
+
+        create table 新表名
+        select 部分列... from 库名.表... where 1=2
+        ```
+    - 修改
+        - 列级修改：`alter table 表名 change | modify | drop column 列名 参数`
+            ```sql
+            alter table 表名 change column 旧列名 新列名 类型               --修改列名
+            alter table 表名 modify column 列名 类型                       --修改列类型，修改非空约束，修改默认约束，修改唯一约束
+            
+            alter table 表名 modify column 列名 类型(长度) not null         --添加非空
+            alter table 表名 modify column 列名 类型(长度) default 默认值   --添加默认
+            alter table 表名 modify column 列名 类型(长度) unique          --添加唯一 ??? 删除????????
+            alter table 表名 modify column 列名 类型 auto_increment         --添加标识
+
+            alter table 表名 modify column 列名 类型 null                  --删除非空
+            alter table 表名 modify column 列名 类型                       --删除默认， 删除标识
+
+            alter table 表名 drop column 列名                              --删除列
+
+            ```
+
+        - 表级修改:`alter table 表名 rename to | add | drop 操作内容`
+            ```sql
+            alter table 表名 rename to 新表名                            -- 表重命名
+
+            alter table 表名 add 【constraint 主键名】 primary key (列名) -- 添加主键
+            alter table 表名 add unique(列名)                            -- 添加唯一
+            alter table 表名 add constraint 约束名 foreign key(当前表的外键列) references 主表名(列名)  --添加外键
+
+            alter table 表名 drop primary key                            -- 删除主键  ????????????主键约束名
+            alter table 表名 drop index 唯一约束名                        -- 删除唯一
+            alter table 表名 drop foreign key 外键约束名                  -- 删除外键
+            ```
+    - 删除表
+        ```sql
+        drop table [is exists] 表名
+        ```
+- 视图
+    ```sql
+    create or replace view 视图名
+    as
+    查询语句
+
+    alter view 视图名
+    as
+    查询语句
+
+    drop view 视图名1, 视图名2, 视图名3....
+
+    desc 视图名     -- 查看视图结构
+
+    show create view 视图名   --查看视图创建语句
+    ```
+- 存储过程
+    ```sql
+    delimiter 结束标记 -- 重新设定结尾标识
+    create procedure 存储过程名(参数列表)
+    begin
+        ...
+    end 结束标记
+
+    call 存储过程名(实参列表);
+
+    drop procedure 存储过程名;
+
+    show create procedure 存储过程名;
+    ```
