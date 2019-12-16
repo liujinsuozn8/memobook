@@ -56,6 +56,18 @@
     - [避免同步阻塞](#避免同步阻塞)
     - [使用哪种方式来处理并行](#使用哪种方式来处理并行)
     - [对多个异步任务进行流水线操作](#对多个异步任务进行流水线操作)
+- [日期时间API](#日期时间api)
+    - [旧API的问题](#旧api的问题)
+    - [TemporalField接口](#temporalfield接口)
+    - [新的日期时间类](#新的日期时间类)
+    - [操作-解析-格式化日期](#操作-解析-格式化日期)
+    - [处理不同的时区和历法](#处理不同的时区和历法)
+- [函数式编程](#函数式编程)
+    - [函数式java编程](#函数式java编程)
+    - [](#)
+    - [](#)
+    - [](#)
+    - [](#)
     - [](#)
     - [](#)
     - [](#)
@@ -3383,7 +3395,7 @@ List<Dish> menu = Arrays.asList(
             }
             ```
 
-        - 判读`Insurance`的`name`字段是否指定内容
+        - 判断`Insurance`的`name`字段是否是指定内容
             ```java
             Insurance insurance = new Insurance(...);
             if (insurance != null && "xxxx".equals(insurance.getName())) {
@@ -3767,6 +3779,414 @@ class Discount {
 }
 ```
 
+# 日期时间API
+## 旧API的问题
+[top](#catalog)
+- `java.util.Date`的问题
+    - 无法表示日期，只能以**毫秒的精度**表示时间
+    - 易用性太差，如：
+        - **不支持时区**
+        - 年份从`1900`开始
+        - 月份从`0`开始
+        - 创建过程不直观
+            ```java
+            //创建2000-2-11
+            Date date = new Date(100, 1, 11);
+            ```
+- `java.util.Date`和`java.util.Calendar`共存的问题
+    - `java.util.Calendar`与`java.util.Date`的问题类似
+    - 容易混淆
+    - 两个类的对象是可变的，日期可能会被修改
+- 开始使用第三方的日期和时间库：`Joda-Time`
+
+## TemporalField接口
+[top](#catalog)
+- **`LocalDate`、`LocalTime`、`Instant`都实现了`Temporal`接口**
+- 接口通过`get()`和`with()`来读写和修改对象
+    - 某些实现类可能不支持某个方法，使用时会导致异常：`UnsupportedTemporalTypeException`
+- 通用方法
+
+    |方法名|是否是静态方法|用途|
+    |-|-|-|
+    |from|是|根据传入的Temporal对象创建对象实例|
+    |now|是|根据系统时钟创建Temporal对象|
+    |of|是|由Temporal对象的某个部分创建该对象的实例|
+    |parse|是|由字符串创建Temporal对象|
+    |atOffset|否|将Temporal对象和某个时区偏移相结合|
+    |atZone|否|将Temporal对象和某个时区相结合|
+    |format|否|使用某个指定的格式器将Temporal对象转换为字符串(Instant不提供)|
+    |get|否|读取Temporal对象的某一部分|
+    |with|否|以该Temporal对象为模板，对某些状态进行修改并创建副本|
+    |minus|否|将当前Temporal对象的值减去一定的时长来创建一个副本|
+    |plus|否|将当前Temporal对象的值增加一定的时长来创建一个副本|
+
+
+
+## 新的日期时间类
+[top](#catalog)
+- `java.time`
+    - `LocalDate`，`LocalTime`，`LocalDateTime`，`Instant`，`Duration`，`Period`的对象都是不可修改对象
+- `LocalDate`和`LocalTime`
+    - `LocalDate`
+        - 创建日期类型对象
+        - 特性
+            - 一个不可变对象
+            - 只提供了简单的日期，并不含当前的时间信息
+            - 不附带任何与时区相关的信息
+        - 使用方法
+            - 使用静态方法构造的对象
+                ```java
+                LocalDate date = LocalDate.of(2014, 3, 18);
+                int year = date.getYear(); // 获取:年
+                Month month = date.getMonth(); // 获取:月份，返回一个Month对象
+                int day = date.getDayOfMonth(); // 获取 日
+                DayOfWeek dow = date.getDayOfWeek(); // 获取:星期
+                int len = date.lengthOfMonth(); // 获取:当前月份有几天
+                boolean leap = date.isLeapYear(); // 检查是否是闰年
+                ```
+            - 使用当前时间创建对象
+                ```java
+                LocalDate date = LocalDate.now();
+                ```
+    - `LocalTime`
+        - 创建时间类型对象
+            - 两种静态重载
+                ```java
+                public static LocalTime of(int hour, int minute, int second) {} //接收 时分秒
+                public static LocalTime of(int hour, int minute, int second, int nanoOfSecond) {} //接收 时分秒 毫秒
+                ```
+        - 使用
+            ```java
+            LocalTime time = LocalTime.of(12, 45, 20);  //12:45:20
+            int hour = time.getHour(); //12
+            int minute = time.getMinute(); //45
+            int second = time.getSecond(); //20
+            ```
+    - 通过对应的格式化字符串来创建`LocalDate`和`LocalTime`
+        - 如果字符串无法被解析，将会导致异常：`DateTimeParseException`
+        ```java
+        LocalDate date = LocalDate.parse("2014-03-18");
+        LocalTime time = LocalTime.parse("13:45:20");
+        ```
+
+- `TemporalField`接口
+    - `TemporalField`接口定义了如何读取和操作为时间建模的对象的值
+    - 可以使用`TemporalField`接口的实现类，通过`get()`来获取某些属性
+    - `ChronoField`枚举 是 `TemporalField`接口的一个实现
+        ```java
+        LocalDate date = LocalDate.of(2014, 3, 18);
+        int year = date.get(ChronoField.YEAR);
+        int month = date.get(ChronoField.MONTH_OF_YEAR);
+        int day = date.get(ChronoField.DAY_OF_MONTH);
+        ```
+
+- `LocalDateTime`合并日期和时间
+    - 特性
+        - 同时表示了日期和时间，但**不带有时区信息**
+    - 使用方法
+        - 创建对象
+            - 可以直接创建该对象，也可以通过合并`LocalDate`和`LocalTime`来构造
+            - `LocalDate`对象通过`atTime(LocalTime)`来合并`LocalTime`对象
+            - `LocalTime`对象通过`atDate(LocalDate)`来合并`LocalDate`对象
+            ```java
+            LocalDate date = LocalDate.of(2014, 3, 18);
+            LocalTime time = LocalTime.of(12, 45, 20);
+            
+            // 1.直接创建对象
+            LocalDateTime dt1 = LocalDateTime.of(2014, Month.MARCH, 18, 13, 45, 20); //2014-03-18 18:13:45:20
+
+            // 2.合并LocalDate和LocalTime
+            LocalDateTime dt2 = LocalDateTime.of(date, time);
+
+            // 3.LocalDate合并LocalTime对象
+            LocalDateTime dt3 = date.atTime(time);
+
+            // 4.LocalDate合并具体时间
+            LocalDateTime dt4 = date.atTime(11, 12, 13);
+
+            // 5.LocalTime合并LocalDate对象
+            LocalDateTime dt5 = time.atDate(date);
+            ```
+        - 转换为:`LocalDate`或`LocalTime`
+            ```java
+            LocalDateTime dt = LocalDateTime.of(2014, Month.MARCH, 18, 13, 45, 20); //2014-03-18 18:13:45:20
+            LocalDate date = dt.toLocalDate();
+            LocalTime time = dt.toLocalTime();
+            ```
+
+- `Instant` : 机器的日期和时间格式
+    - 对于机器，建模时间最自然的格式是：`表示一个持续时间段上某个点的单一大整数`
+    - `java.time.Instant`遵循这种机器建模时间的方式
+        - 它以Unix元年时间开始经历的秒数计算
+        - Unix元年时间：`1970-01-01 00:00:00`
+
+    - 创建方法
+        - 静态方法`ofEpochSecond`，返回在`1970-01-01 00:00:00`基础上增加毫秒数之后的Instant对象，类似于`Date(long date)`
+            ```java
+            // 4个一样的时间
+            Instant.ofEpochSecond(3);
+            Instant.ofEpochSecond(3, 0); // 通过第二个参数：纳秒来调整
+            Instant.ofEpochSecond(2, 1_000_000_000); // 加1秒
+            Instant.ofEpochSecond(4, -1_000_000_000); //减1秒
+            ```
+        - 构造当前时间的时间戳
+            ```java
+            Instant ins = Instant.now();
+            ```
+
+    - 它包含的是秒级纳秒所构成的数字，所以无法处理一般意义上的时间单位，如：年月日等等
+        - 如果按照常规意义去获取某些值时，会导致异常：`UnsupportedTemporalTypeException`
+            ```java
+            int day = Instant.now().get(ChronoField.DAY_OF_MONTH);
+            ```
+
+- 时间间隔：`Duration`或`Period`
+    - `Duration`，使用秒和纳秒衡量时间的长短
+    - `Period`，使用年、月、日的方式对多个时间单位建模
+    - 时间间隔的计算不能混用，`Instant`和`LocalXXX`类型之间不能计算
+
+    - 通过`between`来获取两个`Temporal`对象的时间间隔：
+        ```java
+        LocalTime time1 = LocalTime.of(11, 12, 13);
+        LocalTime time2 = LocalTime.of(12, 13, 14);
+        LoaclDate date1 = LoaclDate.of(2014, 01, 02);
+        LoaclDate date2 = LoaclDate.of(2014, 01, 24);
+        Instant instant1 = Instant.now();
+        Instant instant2 = Instant.of(100);
+
+        Duration d1 = Duration.between(time1, time2);
+        Duration d2 = Duration.between(date1, date2);
+        DUration d3 = Duration.between(instant1, instant2);
+
+        Period p1 = Period.between(date1, dat2);
+        ```
+    - 通过静态方法直接定义`Duration`或`Period`对象
+        - 示例
+            ```java
+            Durantion d1 = Durantion.ofMinutes(3);
+            Durantion d2 = Durantion.of(3, ChronoUnit.MINUTES);
+
+            Period p1 = Period.ofDays(10);
+            Period p2 = Period.ofWeeks(3);
+            Period p2 = Period.of(3);
+            ....
+            ```
+    - `Duration`、`Period`中的一些构造对象的方法
+        |方法名|静态方法|用途|
+        |-|-|-|
+        |between|是|创建两个时间点之间的interval|
+        |from|是|由一个临时时间点创建interval|
+        |of|是|由其组成部分来创建interval|
+        |parse|是|由字符串创建interval|
+        |addTo|否|创建当前interval的副本，并将其叠加到某个指定的temporal对象|
+        |get|否|读取该interval的状态|
+        |isNegative|否|检查interval是否为负值|
+        |isZero|否|检查interval的时长是否为0|
+        |minus|否|减去一定的时间创建该interval的副本|
+        |multipliedBy|否|将interval的值乘一个标量来创建副本|
+        |negated|否|以忽略某个时长的方式创建该interval的副本|
+        |plus|否|以增加某个指定的时长的方式创建interval的副本|
+        |subtractFrom|否|从指定的temporal对象中减去该interval|
+        
+## 操作-解析-格式化日期
+[top](#catalog)
+- 绝对修改方式：通过withAttribute方法来创建时间对象的副本，并按照需求修改它的属性
+    ```java
+    LocalDate date1 = LocalDate.of(2014, 3, 18); //2014-03-18
+    LocalDate date2 = date1.withYear(2011);  //2011-03-18
+    LocalDate date3 = date2.withDayOfMonth(25);  //2011-03-25
+    LocalDate date4 = date1.with(ChronoField.MONTH_OF_YEAR, 9);  //2011-09-25
+    ```
+- 相对修改方式
+    ```java
+    LocalDate date1 = LocalDate.of(2014, 3, 18); //2014-03-18
+    LocalDate date2 = date1.plusWeeks(1); //2014-03-25
+    LocalDate date3 = date2.minusYears(3); //2011-03-25
+    LocalDate date4 = data3.plus(6, ChronoUnit.MONTHS); //2011-09-25
+    ```
+- 使用`TemporalAdjuster`
+    - 使用`Temporal`的with重载调用`TemporalAdjuster`来更加灵活的处理日期
+        ```java
+        default Temporal with(TemporalAdjuster adjuster) {
+            return adjuster.adjustInto(this);
+        }
+        ```
+    - 使用`TemporalAdjuster`的静态方法
+        ```java
+        LocalDate date1 = LocalDate.of(2014, 3, 18); //2014-03-18
+        LocalDate date2 = date1.with(nextOrSame(DayOfWeek.SUNDAY)); //2014-03-23
+        LocalDate date3 = date2.with(lastDayofMonth()); //2014-03-31
+        ```
+    - `TemporalAdjuster`提供的静态方法
+        |方法名|用途|
+        |-|-|
+        |dayOfWeekInMonth|创建一个新的日期，它的值为同一个月中每一周的几天??????|
+        |firstDayOfMonth|创建一个新的日期，值为当月的第一天|
+        |lastDayOfMonth|创建一个新的日期，值为当月的最后一天|
+        |firstDayOfNextMonth|创建一个新的日期，值为下月的第一天|
+        |lastDayOfNextMonth|创建一个新的日期，值为下月的最后一天|
+        |firstDayOfNextYear|创建一个新的日期，值为明年的一天|
+        |lastDayOfNextYear|创建一个新的日期，值为明年的最后一天|
+        |firstDayOfYear|创建一个新的日期，值为当年的第一天|
+        |lastDayOfYear|创建一个新的日期，值为当年的最后一天|
+        |firstInMonth|创建一个新的日期，值为同一个月中，第一个符合星期几要求的值 ?????|
+        |lastInMonth|创建一个新的日期，值为同一个月中，最后一个符合星期几要求的值 ?????|
+        |next/previous|创建一个新的日期，将日期向前后向后调整，第一个符合指定星期几要求的日期???????|
+        |nextOrSame/previousOrSame|创建一个新的日期，将日期向前后向后调整，第一个符合指定星期几要求的日期，如果该对象已经符合要求，则直接返回|
+    - `TemporalAdjuster`接口的内容
+        ```java
+        @FunctionalInterface
+        public interface TemporalAdjuster {
+        Temporal adjustInto(Temporal temporal);
+        }
+        ```
+- `DateTimeFormatter`格式器
+    - `DateTimeFormatter`的实例都是线程安全的
+        - 可以通过单例模式创建实例，并在多个线程间共享这些实例
+    - 格式化
+        - 格式化`Temporal`对象
+            ```java
+            LocalDate date = LocalDate.of(2014, 3, 18);
+            String s1 = date.format(DateTimeFormatter.ISO_LOCAL_DATE); //2014-03-18
+            ```
+        - 在`parse`方法中指定解析方式
+            ```java
+            LocalDate date1 = LocalDate.parse("20140318", DateTimeFormatter.BASIC_ISO_DATE);
+            ```
+    - `DateTimeFormatter.ofPattern(String pattern)` 自定义格式器
+        ```java
+        DateTimeFormatter formater = DateTimeFormatter.ofPattern("dd/MM/yyyy"); //自定义格式器
+        LocalDate date1 = LocalDate.of(2014, 3, 18);    
+        String dateStr = date1.format(formater); //格式化日期对象
+        LocalDate date2 = LocalDate.parse(dateStr, formater); //通过自定义格式器来解析字符串
+        ```
+    - `DateTimeFormatter.ofPattern(String pattern, Locale locale)` 自定义格式器
+        - 通过`locale`来创建某个Locale的格式器
+            ```java
+            DateTimeFormatter formater = DateTimeFormatter.ofPattern("d. MMMM yyyy", Local.ITALIAN); //自定义格式器
+            LocalDate date1 = LocalDate.of(2014, 3, 18);    
+            String dateStr = date1.format(formater); //格式化日期对象
+            LocalDate date2 = LocalDate.parse(dateStr, formater); //通过自定义格式器来解析字符串
+            ```
+    - 通过`DateTimeFormatterBuilder`来做细粒度的控制
+        - 模型`Locale`的构建
+            ```java
+            DateTimeFormatter formatter = new DateTimeFormatterBuilder()
+                .appendText(ChronoField.DAY_OF_MONTH)
+                .appendLiteral(". ")
+                .appendText(ChronoField.MONTH_OF_YEAR)
+                .appendLiteral(" ")
+                .appendText(ChronoField.YEAR)
+                .paeseCaseInsensitve()
+                .toFormatter(Locale.ITALIAN);
+            ```
+
+## 处理不同的时区和历法
+[top](#catalog)
+- 使用新的`java.time.ZoneId`替代了`java.util.TimeZone`
+- `ZoneId`的对象是不可修改的
+- `ZondRules`这个类中包含了40个时区的实例，可以通过`ZondId`的`getRules`来获取指定时区的规则
+- 每个`ZoneId`对象都由一个地区ID标识
+    - 地区ID的格式：`区域/城市`，这些地区集合的设定有英特网编号分配机构的**时区数据库提供**
+        ```java
+        ZoneID romeZone = ZoneId.of("Europe/Rome");
+        ```
+    - 使用`toZondId()`将`TimeZone`转换为`ZoneId`
+        ```java
+        ZoneID zone = TimeZone.getDefault().toZondId();
+        ```
+    - 构造`ZonedDateTime`实例
+        - 将`ZoneId`与`LocalDate`、`LocalDateTime`、`Instant`结合，它代表了相对于指定时区的时间点
+            ```java
+            ZoneID romeZone = ZoneId.of("Europe/Rome");
+            
+            // 与LocalDate结合
+            LocalDate date = LocalDate.of(2014, 3, 18);
+            ZonedDateTime zdt1 = date.atStartOfDay(romeZone);
+
+            // 与LocalDateTime结合
+            LocalDateTime dateTime = LocalDateTime.of(2014, 3, 18, 11, 12, 13);
+            ZonedDateTime zdt2 = dateTime.atZone(romeZone);
+
+            // 与Instant结合
+            Instant instant = Instant.now();
+            ZonedDateTime zdt3 = instant.atZone(romeZone);
+            ```
+    - 通过`ZoneId`，将`LocalDateTime`和`Instant`互相转换
+        ```java
+        ZoneID romeZone = ZoneId.of("Europe/Rome");
+
+        // LocalDateTime ---> Instant
+        LocalDateTime dateTime = LocalDateTime.of(2014, 3, 18, 11, 12, 13);
+        Instant instant = dateTime.toInstant(romeZone);
+        
+        // Instant ---> LocalDateTime
+        Instant now = Instant.now();
+        LocalDateTime nowdt = LocalDateTime.ofInstant(now, romeZone);
+        ```
+- 利用和UTC/格林尼治时间的固定偏差计算时区
+    - 另一种通用的时区表达方式：`计算当前时区时间和UTC/格林尼治时间的固定偏差`
+    - `ZoneOffset`类
+        - 该类表示的是：`计算当前时间和伦敦格林尼治子午线时间的差异`
+            - 如：`ZoneOffset newYorkOffset = ZoneOffset.of("-05:00");`
+                - 使用这种方式定义的`ZoneOffset`未考虑任何日光时的影响，一般**不推荐使用**
+        
+        - `ZoneId`的一个子类
+            - 可以像使用`ZoneId`一样使用`ZoneOffset`
+        - `OffsetDateTime`
+            - 使用`ISO-8601`历法系统
+            - 将`ZoneOffset`与其他时间对象结合，创建`OffsetDateTime`
+                ```java
+                ZoneOffset newYorkOffset = ZoneOffset.of("-05:00");
+                LocalDateTime dt = LocalDateTime.of(2014, 3, 18, 11, 12, 13);
+                OffsetDateTime odt = OffsetDateTime.of(dt, newYorkOffset);
+                ```
+    - 使用别的日历系统
+        - Java8默认使用`ISO-8601`日历系统
+        - Java8中提供的其他四种日历系统
+            - ThaiBuddhistDate
+            - MinguoDate
+            - JapaneseDate
+            - HijrahDate
+        - 四种日历系统+`LocalDate`都实现了`ChronoLocalDate`接口，能够对公历的日期进行建模
+            - 通过`LocalDate`可以创建者四种日历系统的实例
+                ```java
+                LocalDate date = LocalDate.of(2014, 3, 18);
+                JapaneseDate jdate = JapaneseDate.of(date);
+                ```
+        - 为某个`Locale`显示的创建日历系统，并创建该`Locale`对应的日期的实例
+            - `Chronology`接口建模了一个日历系统，通过它的静态方法`ofLocale`来得到一个实例
+                ```java
+                Chronology jc = Chronology.ofLocale(Locale.JAPAN);
+                ChronoLocalDate now = japaneseChronology.dateNow();
+                ```
+        - 应该尽量避免使用`ChronoLocalDate`，因为在它的实现中会存在一些假设
+        - 存储、操作是应该使用`LocalDate`，做本地化时可以使用`ChronoLocalDate`
+
+
+# 函数式编程
+## 函数式java编程
+[top](#catalog)
+- 无副作用的含义
+    - 一个方法既不修改它内嵌类的状态，也不修改其他对象的状态，使用`return`返回所有的计算结果
+    - 副作用包括
+        - 除了构造方法之外，对类中数据结构的任何修改，包括字段的赋值操作
+        - 抛出一个异常
+- 函数式的要求
+    - 需要保证没有人能察觉代码中的副作用
+        - 如果另一个线程可以查看字段的值，或者方法会同时被多个线程并发调用，就**不能称为函数式的实现**
+            - 对于并发，可以对共享资源进行加锁，但是会丧失并发执行的能力
+
+    - 函数式方法/函数都**只能修改本地变量，它引用的对象都应该是不可修改的对象**
+    - 函数式方法**不能抛出任何异常**
+        - 因为一点抛出异常，执行过程就被终止了，不能像黑盒模式一样，有`return`返回一个恰当的结果值
+        - 使用`Optional<T>`类型；
+    - 如果函数有副作用，必须设法隐藏它们的非函数式行为，否则就不能调用会泽县方法
+        - 需要确保对数据结构的任何修改对于调用者都是不可见的
+            - 可以通过首次赋值、捕获任何可能抛出的异常来实现
+- 引用透明性
+    - 如果一个函数只要传递同样的参数值，总是返回同样的结果，那这个函数就是`引用透明的`
+    - 
 
 
 [top](#catalog)
