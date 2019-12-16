@@ -25,10 +25,9 @@
 - [视图](#视图)
 - [变量](#变量)
 - [存储过程和函数](#存储过程和函数)
-- [](#)
-- [](#)
-- [](#)
-- [](#)
+    - [存储过程和函数的基本概念](#存储过程和函数的基本概念)
+    - [存储过程的语法](#存储过程的语法)
+    - [流程控制结构](#流程控制结构)
 - [总结](#总结)
 
 # 基本配置
@@ -217,6 +216,8 @@
         - `date_format(date, format)`，将日期转换成指定格式的字符
         - `datediff(date1,date2)`，计算两个日期的差
             - 日期可以是符合格式的字符串
+    - 随机函数
+        - `rand()`，产生一个[0~1)的随机值
     - 其他函数
         - `version()`，查询当前数据库版本
         - `database()`，查询当前使用的数据库名
@@ -1100,7 +1101,6 @@
             select 字段 into 局部变量名
             from 表;
 
-
             -- 3 使用
             select 局部变量名;
             ```
@@ -1129,193 +1129,362 @@
             ```
 
 # 存储过程和函数
+## 存储过程和函数的基本概念
 [top](#catalog)
-- 一组预先编译好的sql语句的集合，可以理解成批处理语句
+- 存储过程一组预先编译好的sql语句的集合，可以理解成批处理语句
     - 每次使用时会查看语句是否已被编译，如果已经编译则直接使用
 - 存储过程的好处
     - 提供代码的重用性
     - 简化操作
     - 减少编译次数
     - 减少了和数据库服务器的连接次数
-- 语法
-    - 创建语法
-        - 参数列表：`参数模式 参数名 参数类型`
-            - 参数模式
-                - `IN`，输入参数
-                - `OUT`，返回值
-                - `INOUT`，又是参数又是返回值
-            - 示例：`IN name varchar(20)`
-        - 如果`存储过程体`只有一句话，则`begin end`可以省略
-        - `存储过程体`的每句sql末尾都必须添加`;`
-        - 存储过程的结尾可以使用`delimiter`重新设置
+- 存储过程和函数的区别
+    - 返回值
+        - 存储过程可以有0个返回，也可以有多个返回
+        - 函数有且仅有一个返回值
+    - 应用场景
+        - 存储过程适合批量插入，批量更新
+        - 函数适合处理数据后返回一个结果
+
+## 存储过程的语法
+[top](#catalog)
+- 创建语法
+    - 参数列表：`参数模式 参数名 参数类型`
+        - 参数模式
+            - `IN`，输入参数
+            - `OUT`，返回值
+            - `INOUT`，又是参数又是返回值
+        - 示例：`IN name varchar(20)`
+    - 如果`存储过程体`只有一句话，则`begin end`可以省略
+    - `存储过程体`的每句sql末尾都必须添加`;`
+    - 存储过程的结尾可以使用`delimiter`重新设置
+    ```sql
+    delimiter 结束标记 -- 重新设定结尾标识
+    create procedure 存储过程名(参数列表)
+    begin
+
+    end 结束标记
+    ```
+- 调用语法
+    ```sql
+    call 存储过程名(实参列表);
+    ```
+- 删除语法
+    - 一次只能删除一个存储过程
+    ```sql
+    drop procedure 存储过程名;
+    ```
+- 查看存储过程的信息
+    ```sql
+    show create procedure 存储过程名;
+    ```
+- 示例
+    - 空参列表
         ```sql
-        delimiter 结束标记 -- 重新设定结尾标识
-        create procedure 存储过程名(参数列表)
+        create table mytest(
+            id int,
+            name varchar(20)
+        );
+        ```
+        ```sql
+        delimiter $
+        create procedure p1()
         begin
-
-        end 结束标记
+            insert into mytest values 
+            (1, 'aaa'),
+            (2, 'bbb'),
+            (3, 'ccc'),
+            (4, 'ddd');
+        end $
         ```
-    - 调用语法
         ```sql
-        call 存储过程名(实参列表);
+        -- 使用前需要将结束符修改为 ';'
+        call p1();
         ```
-    - 删除语法
-        - 一次只能删除一个存储过程
+    - IN模式：查看用户是否登录成功
         ```sql
-        drop procedure 存储过程名;
-        ```
-    - 查看存储过程的信息
+        create table myadmin (
+            id int,
+            name varchar(20),
+            password varchar(20)
+        );
+
+        insert into myadmin values
+        (1, 'aa', '1234'),
+        (2, 'bb', '2222'),
+        (3, 'cc', '3333');
+        ``` 
         ```sql
-        show create procedure 存储过程名;
+        delimiter $
+        create procedure p2(IN name varchar(20), IN passward varchar(20))
+        begin
+            declare result int default 0;
+
+            select count(*) into result
+            from myadmin
+            where myadmin.name = name
+            and myadmin.password = password;
+
+            select if(result, 'success', 'failure');
+        end $
         ```
-    - 示例
-        - 空参列表
-            ```sql
-            create table mytest(
-                id int,
-                name varchar(20)
-            );
-            ```
-            ```sql
-            delimiter $
-            create procedure p1()
-            begin
-                insert into mytest values 
-                (1, 'aaa'),
-                (2, 'bbb'),
-                (3, 'ccc'),
-                (4, 'ddd');
-            end $
-            ```
-            ```sql
-            -- 使用前需要将结束符修改为 ';'
-            call p1();
-            ```
-        - IN模式：查看用户是否登录成功
-            ```sql
-            create table myadmin (
-                id int,
-                name varchar(20),
-                password varchar(20)
-            );
+        ```sql
+        call p2('aa', '1234');
+        ```
+    - OUT模式：查询密码
+        ```sql
+        create table myadmin (
+            id int,
+            name varchar(20),
+            password varchar(20)
+        );
 
-            insert into myadmin values
-            (1, 'aa', '1234'),
-            (2, 'bb', '2222'),
-            (3, 'cc', '3333');
-            ``` 
-            ```sql
-            delimiter $
-            create procedure p2(IN name varchar(20), IN passward varchar(20))
-            begin
-                declare result int default 0;
+        insert into myadmin values
+        (1, 'aa', '1234'),
+        (2, 'bb', '2222'),
+        (3, 'cc', '3333');
+        ``` 
+        ```sql
+        delimiter $
+        create procedure p3(IN name varchar(20), OUT password varchar(20))
+        begin
+            select myadmin.password into password
+            from myadmin
+            where myadmin.name = name;
+        end $
+        ```
+        ```sql
+        -- 可以不用声明用户变量，而直接使用call p3('aa', @mypassword);
+        set @mypassword:='';
+        call p3('aa', @mypassword);
+        select @mypassword;
+        ```
+    - 多个OUT模式：通过id查询信息
+        ```sql
+        create table myadmin (
+            id int,
+            name varchar(20),
+            password varchar(20)
+        );
 
-                select count(*) into result
-                from myadmin
-                where myadmin.name = name
-                and myadmin.password = password;
+        insert into myadmin values
+        (1, 'aa', '1234'),
+        (2, 'bb', '2222'),
+        (3, 'cc', '3333');
+        ``` 
+        ```sql
+        delimiter $
+        create procedure p4(IN id int, OUT name varchar(20), OUT password varchar(20))
+        begin
+            select myadmin.name, myadmin.password into name, password
+            from myadmin
+            where myadmin.id = id;
+        end $
+        ```
+        ```sql
+        -- 可以不用声明用户变量，而直接使用call p3('aa', @mypassword);
+        call p4(2, @myname ,@mypassword);
+        select @myname, @mypassword;
+        ```
+    - INOUT模式：传入a、b两个值，加倍后返回
+        ```sql
+        delimiter $
+        create procedure p5(INOUT a int, INOUT b int)
+        begin
+            set a = a*2;
+            set b = b*2;
+        end $
+        ```
+        ```sql
+        set @m = 10;
+        set @n = 20;
+        call p5(@m, @n);
+        select @m, @n;
+        ```
+    - 比较两个日期并返回结果，正数=大于，负数=小于，0=等于
+        ```sql
+        delimiter $
+        create procedure p6(IN date1 DATETIME, IN date2 DATETIME, OUT result INT)
+        begin
+            select datediff(date1, date2) into result;
+        end $
+        ```
+        ```sql
+        call p6('1999-01-02', now(), @result);
+        select @result;
+        ```
+    - 传入一个日期，格式化成`xx/xx/xx`，并返回
+        ```sql
+        delimiter $
+        create procedure p7(IN mydate DATETIME, out strdate varchar(50))
+        begin
+            select date_format(mydate, '%y/%m/%d') into strdate;
+        end $
+        ```
+        ```sql
+        call p7(now(), @strdate);
+        select @strdate;
+        ```
+## 函数语法
+[top](#catalog)
+- 创建函数
+    - 参数列表包含两部分：`参数名 参数类型`
+    - 如果没有`return`语句也不会报错，但不建议
+    - 当函数体中仅有一句话，则可以省略`begin end`
+    ```sql
+    delimiter $
+    create function 函数名(参数列表) returns 返回类型
+    begin
+        函数体
+        return 值;
+    end $
+    ```
+- 调用函数
+    ```sql
+    select 函数名(函数列表)
+    ```
+- 查看函数
+    ```sql
+    show create function 函数名
+    ```
+- 删除函数
+    ```sql
+    drop function 函数名
+    ```
 
-                select if(result, 'success', 'failure');
+## 流程控制结构
+[top](#catalog)
+- 分支结构
+    - if函数
+        - 如果表达式1成立，则返回表达式2的值，否则返回表达式3的值
+        ```sql
+        select if(表达式1, 表达式2, 表达式3)
+        ```
+    - case结构
+        - 可以作为表达式，嵌套在其他语句中使用，可以放在任何地方，`begin end`内或`begin end`外
+        - 可以作为独立的语句来使用，只能放在`begin end`中
+        - 如果所有条件都不满足，则执行`else`中的语句
+            - 如果没有else语句，则返回`null`
+        - 用于实现等值判断
+            ```sql
+            case 变量|表达式|字段
+            when 要判断的值 then 返回的值1|语句1;
+            when 要判断的值 then 返回的值2|语句2;
+            ...
+            else 返回的值n|语句n;
+            end case;
+            ```
+        - 多重If，区间判断
+            ```sql
+            case
+            when 要判断的条件1 then 返回的值1|语句1;
+            when 要判断的条件1 then 返回的值2|语句2;
+            ...
+            else 返回的值n|语句n;
+            end case;
+            ```
+        - 示例：根据分数不同显示不同的等级
+            ```sql
+            delimiter $
+            create procedure test_case(IN score int)
+            begin
+                case
+                when score>=90 and score<=100 then select 'A';
+                when score>=80 then select 'b';
+                when score>=60 then select 'c';
+                else select 'd';
+                end case;
             end $
             ```
-            ```sql
-            call p2('aa', '1234');
-            ```
-        - OUT模式：查询密码
-            ```sql
-            create table myadmin (
-                id int,
-                name varchar(20),
-                password varchar(20)
-            );
+    - if结构
+        - 只能用在`begin end`中
+        ```sql
+        if 条件1 then 语句1;
+        elseif 条件2 then 语句2;
+        ...
+        [else 语句n;]
+        end if;
+        ```
+- 循环结构
+    - 分类
+        - while
+        - loop
+        - repeat
+    - 循环控制
+        - `iterate`，类似于`continue`
+        - `leave`，类似于`break`
+    - while，类似于`while`
+        ```sql
+        [标签:] while 循环条件 do
+            循环体;
+        end while [标签];
+        ```
+    - loop
+        - 可以模拟死循环
+        - 需要搭配`leave`
+        ```sql
+        [标签:] loop
+            循环体;
+        end loop [标签];
+        ```
+    - repeat，类似于`do while`
+        ```sql
+        [标签:] repeat
+            循环体;
+        until 结束条件
+        end repeat [标签];
+        ```
+    - 示例：插入数据，次数大于20则停止
+        ```sql
+        create table myadmin(
+            id varchar(20),
+            name varchar(20)
+        );
+        ```
+        ```sql
+        delimiter $
+        create procedure test_while(IN count int)
+        begin
+            declare i int default 1;
+            a: while i<=count do
+                insert into myadmin value (concat('aaa', i), 'xxxx');
+                if i >= 20 then leave a;
+                end if
 
-            insert into myadmin values
-            (1, 'aa', '1234'),
-            (2, 'bb', '2222'),
-            (3, 'cc', '3333');
-            ``` 
-            ```sql
-            delimiter $
-            create procedure p3(IN name varchar(20), OUT password varchar(20))
-            begin
-                select myadmin.password into password
-                from myadmin
-                where myadmin.name = name;
-            end $
-            ```
-            ```sql
-            -- 可以不用声明用户变量，而直接使用call p3('aa', @mypassword);
-            set @mypassword:='';
-            call p3('aa', @mypassword);
-            select @mypassword;
-            ```
-        - 多个OUT模式：通过id查询信息
-            ```sql
-            create table myadmin (
-                id int,
-                name varchar(20),
-                password varchar(20)
-            );
+                set i=i+1;
+            end while a;
+        end $
+        ```
+    - 示例：向表中插入指定个数的随机字符串
+        ```sql
+        create table stringcontent(
+            id int primary key auto_increment,
+            content varchar(20)
+        );
+        ```
+        ```sql
+        delimiter $
+        create procedure test_randstr_insert(IN count int)
+        begin
+            declare i int default 1;
+            declare str varchar(26) default 'abcdefghijklmnopqrstuvwxyz';
 
-            insert into myadmin values
-            (1, 'aa', '1234'),
-            (2, 'bb', '2222'),
-            (3, 'cc', '3333');
-            ``` 
-            ```sql
-            delimiter $
-            create procedure p4(IN id int, OUT name varchar(20), OUT password varchar(20))
-            begin
-                select myadmin.name, myadmin.password into name, password
-                from myadmin
-                where myadmin.id = id;
-            end $
-            ```
-            ```sql
-            -- 可以不用声明用户变量，而直接使用call p3('aa', @mypassword);
-            call p4(2, @myname ,@mypassword);
-            select @myname, @mypassword;
-            ```
-        - INOUT模式：传入a、b两个值，加倍后返回
-            ```sql
-            delimiter $
-            create procedure p5(INOUT a int, INOUT b int)
-            begin
-                set a = a*2;
-                set b = b*2;
-            end $
-            ```
-            ```sql
-            set @m = 10;
-            set @n = 20;
-            call p5(@m, @n);
-            select @m, @n;
-            ```
-        - 比较两个日期并返回结果，正数=大于，负数=小于，0=等于
-            ```sql
-            delimiter $
-            create procedure p6(IN date1 DATETIME, IN date2 DATETIME, OUT result INT)
-            begin
-                select datediff(date1, date2) into result;
-            end $
-            ```
-            ```sql
-            call p6('1999-01-02', now(), @result);
-            select @result;
-            ```
-        - 传入一个日期，格式化成`xx/xx/xx`，并返回
-            ```sql
-            delimiter $
-            create procedure p7(IN mydate DATETIME, out strdate varchar(50))
-            begin
-                select date_format(mydate, '%y/%m/%d') into strdate;
-            end $
-            ```
-            ```sql
-            call p7(now(), @strdate);
-            select @strdate;
-            ```
+            #字符串的起始索引
+            declare startIndex int default 1;
+            #截取的字符串长度
+            declare len int default 1;
+            while i <= count do
+                # 产生一个随机数代表起始索引
+                set startIndex = floor(rand() * 26 + 1);
+                # 产生一个随机数，代表截取的长度，范围：1~(20-startIndex+1)
+                set len = floor(rand() * abs(20-startIndex+1) + 1);
 
+                insert into stringcontent(content) values (substr(str, startIndex, len));
+                
+                set i = i+1;
+            end while;
+        end $
+        ```
 # 总结
 [top](#catalog)
 - 常用指令
