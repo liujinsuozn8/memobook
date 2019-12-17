@@ -64,7 +64,7 @@
     - [处理不同的时区和历法](#处理不同的时区和历法)
 - [函数式编程](#函数式编程)
     - [函数式java编程](#函数式java编程)
-    - [](#)
+    - [高阶函数](#高阶函数)
     - [](#)
     - [](#)
     - [](#)
@@ -4186,7 +4186,38 @@ class Discount {
             - 可以通过首次赋值、捕获任何可能抛出的异常来实现
 - 引用透明性
     - 如果一个函数只要传递同样的参数值，总是返回同样的结果，那这个函数就是`引用透明的`
-    - 
+- 尾递归优化
+    - 编写一个迭代方法的定义，但是迭代的调用发生在函数的最后
+    - 示例：计算阶乘
+        ```java
+        static long factorialTailRecursive(long n) {
+            return factorialHelper(1, n);
+        }
+
+        static long factorialHelper(long acc, long n) {
+            return n ==1 ? acc : factorialHelper(acc * n, n-1);
+        }
+        ```
+## 函数的类型
+[top](#catalog)
+- 高阶函数
+    - 高阶函数的条件
+        - 接受至少一个函数作为参数
+        - 返回的结果是一个函数
+- 科里化
+    - 原始的计算方式
+        - 不是每次都需要传递`f`和`b`，每次调用都传递三个参数可能会造成输入错误
+        ```java
+        static double converter(double x, double f, double b) {
+            return x * f + b;
+        }
+        ```
+    - 使用科里化改造
+        ```java
+        static DoubleUnaryOperator converter
+        ```
+
+
 
 
 [top](#catalog)
