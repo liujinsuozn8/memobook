@@ -43,6 +43,12 @@
     * 修改注释颜色
         * Editor-->Color Scheme-->Language Defaults
             * 选择Commnets，可以分别对单行、多行、说明注释进行调整
+    * 注释不在行首
+        * Editor-->Color Style-->Java
+            - 右边选择：`Code Generatoin`
+            - `Comment Code`关闭两个选项
+                - `Line comment at first column`
+                - `Block comment at first column`
     * 设置超过指定的inport个数时，自动将import改为 import xxx.* （不常用）
         * Editor-->Code Style-->Java-->
             * 选择import
@@ -87,6 +93,10 @@
     * 查看方法的实现= ctrl + alt + B
         * mac=option+commond+B
     * 查找某个类：ctrl+alt+shift+n
+    - 创建测试类：ctrl+shift+t
+    - 列出当前类的所有方法等信息
+        - `ctrl + F7`????
+        - `command + 7`
 * 模版
     * 配置一些常用代码字母缩写，输入简写时可以使用
     * 不可修改预定以设置：settings-->Editor-->General-->Postfix Completion

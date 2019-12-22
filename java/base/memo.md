@@ -3741,12 +3741,12 @@ class A {
         * Field 类的成员变量
         * Constructor 类的构造器
 * 对于单例模式，是可以通过反射来访问私有构造器的，一定程度上互相违背
-* 什么时候用反射：编译是无法确定需要使用什么类的对象
+* 什么时候用反射：编译时无法确定需要使用什么类的对象
 * 封装性--应该如何使用类，反射机制---类内部的成员能不能用
 
 ### 反射-Class类
 [top](#catalog)
-* 在Object中定义了方法：`public final Class getClass()`，被所有子类继承，是java反射的源头
+* <label style="color:red">在Object中定义了方法：`public final Class getClass()`，被所有子类继承，是java反射的源头</label>
 * 运行时类的生成
     * 执行javac.exe生成一个或多个字节码文件(.class文件)
     * 使用java.exe运行某个字节码文件，将该文件导入内存中，即加载类到内存
@@ -3759,7 +3759,7 @@ class A {
 
     |方法名|功能说明|
     |-|-|
-    |staticClass forName(Stringname)|返回指定类名name的Class对象|
+    |static Class forName(Stringname)|返回指定类名name的Class对象|
     |Object newInstance()|调用缺省构造函数，返回该Class对象的一个实例|
     |getName()|返回此Class对象所表示的实体(类、接口、数组类、基本类型 或void)名称|
     |Class getSuperClass()|返回当前Class对象的父类的Class对象|
@@ -3809,7 +3809,7 @@ class A {
         * **构造数据结构**：将加载的静态数据转换成方法区的运行时数据结构
         * **生成Class对象**：生成代表该类的java.lang.Class对象，并**作为方法区中类数据的访问入口(即引用地址)**
             * 使用和访问该类数据必须通过这个Class对象
-    2. 类的链接Link：将类的二进制数据合并带JRE中
+    2. 类的链接Link：将类的二进制数据合并到JRE中
         * **验证**：检查加载到内存的类信息符和JVM规范。如：以cafe开头，没有安全问题
         * **准备**：在**方法区**中，为**类的静态变量**分配内存并设置静态变量的默认初始值
         * **解析**：JVM常量池内的符号引用(常量名)替换为直接引用(地址)？？？
@@ -3818,7 +3818,7 @@ class A {
             * 类构造器`<clinit>()` = 编译器自动收集类中所有类变量的赋值操作 + 静态代码块中的语句
             * 类构造器是用来构造类信息的，不是构造该类对象的构造器
             * 类构造器`<clinit>()`中的内容遵循类中各成员的声明顺序
-        * 初始化一个类是，如果其父类还没有进行初始化，需要**先进行其父类的初始化**
+        * 初始化一个类时，如果其父类还没有进行初始化，需要**先进行其父类的初始化**
         * JVM会保证一个类的`<clinit>()`方法在多线程功能环境中被正确加锁和同步
         * 什么时候会发生类的初始化？
             * 类的主动引用---直接使用类的结构(不通过子类)---一定会发生类的初始化
@@ -4020,87 +4020,87 @@ class A {
 ### 反射-获取运行时类的完整结构
 [top](#catalog)
 #### 示例类
-    ```java
-    //MyInterface.java 自定义接口
-    public interface MyInterface {
-        void info();
+```java
+//MyInterface.java 自定义接口
+public interface MyInterface {
+    void info();
+}
+
+//MyAnnotation.java 自定义注解
+@Target({TYPE, FIELD,METHOD, PARAMETER, CONSTRUCTOR, LOCAL_VARIABLE})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface MyAnnotation {
+    String value() default "hello";
+}
+
+//Creature.java 父类
+public class Creature<T> implements Serializable {
+    private char gender;
+    public double weight;
+
+    private void breath(){
+        System.out.println("creature is breath");
     }
 
-    //MyAnnotation.java 自定义注解
-    @Target({TYPE, FIELD,METHOD, PARAMETER, CONSTRUCTOR, LOCAL_VARIABLE})
-    @Retention(RetentionPolicy.RUNTIME)
-    public @interface MyAnnotation {
-        String value() default "hello";
+    public void eat(){
+        System.out.println("creature is eatting");
+    }
+}
+
+//@MyAnnotation(value="personclass")
+public class Person extends Creature<String> implements Comparable<String>, MyInterface{
+    public static int X=10;
+    private String name;
+    int age;
+    public int id;
+
+    public Person() {
     }
 
-    //Creature.java 父类
-    public class Creature<T> implements Serializable {
-        private char gender;
-        public double weight;
-
-        private void breath(){
-            System.out.println("creature is breath");
-        }
-
-        public void eat(){
-            System.out.println("creature is eatting");
-        }
+    @MyAnnotation(value="abc")
+    private Person(String name) {
+        this.name = name;
     }
 
-    //@MyAnnotation(value="personclass")
-    public class Person extends Creature<String> implements Comparable<String>, MyInterface{
-        public static int X=10;
-        private String name;
-        int age;
-        public int id;
-
-        public Person() {
-        }
-
-        @MyAnnotation(value="abc")
-        private Person(String name) {
-            this.name = name;
-        }
-
-        Person(String name, int age) {
-            this.name = name;
-            this.age = age;
-        }
-
-        @MyAnnotation
-        private String show(String nation){
-            System.out.println("nation = " + nation);
-            return nation;
-        }
-
-        public String display(String interest){
-            return interest;
-        }
-
-        @Override
-        public int compareTo(String o) {
-            return 0;
-        }
-
-        @Override
-        public void info() {
-            System.out.println("this is a Person");
-        }
-
-        private static void showDesc(){
-            System.out.println("this is showDesc");
-        }
-
-        @Override
-        public String toString() {
-            return "Person{" +
-                    "name='" + name + '\'' +
-                    ", age=" + age +
-                    ", id=" + id +
-                    '}';
-        }
+    Person(String name, int age) {
+        this.name = name;
+        this.age = age;
     }
-    ```
+
+    @MyAnnotation
+    private String show(String nation){
+        System.out.println("nation = " + nation);
+        return nation;
+    }
+
+    public String display(String interest){
+        return interest;
+    }
+
+    @Override
+    public int compareTo(String o) {
+        return 0;
+    }
+
+    @Override
+    public void info() {
+        System.out.println("this is a Person");
+    }
+
+    private static void showDesc(){
+        System.out.println("this is showDesc");
+    }
+
+    @Override
+    public String toString() {
+        return "Person{" +
+                "name='" + name + '\'' +
+                ", age=" + age +
+                ", id=" + id +
+                '}';
+    }
+}
+```
 #### 获取运行时类的属性
 * getFields() 获取当前运行时类及其父类中声明为public的属性
     ```java

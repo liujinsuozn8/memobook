@@ -4086,6 +4086,10 @@ class Discount {
 - 使用新的`java.time.ZoneId`替代了`java.util.TimeZone`
 - `ZoneId`的对象是不可修改的
 - `ZondRules`这个类中包含了40个时区的实例，可以通过`ZondId`的`getRules`来获取指定时区的规则
+- 获取默认时区
+    ```java
+    ZoneId.systemDefault();
+    ```
 - 每个`ZoneId`对象都由一个地区ID标识
     - 地区ID的格式：`区域/城市`，这些地区集合的设定有英特网编号分配机构的**时区数据库提供**
         ```java
