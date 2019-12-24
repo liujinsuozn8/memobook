@@ -13,7 +13,19 @@
     - [帮助命令](#帮助命令)
     - [镜像命令](#镜像命令)
     - [容器命令](#容器命令)
-- [Docker镜像原理](#Docker镜像原理)
+- [Docker镜像](#Docker镜像)
+    - [Docker镜像原理](#docker镜像原理)
+    - [镜像commit操作](#镜像commit操作)
+- [Docker容器数据卷Volume](#docker容器数据卷volume)
+    - [数据卷的基本概念](#数据卷的基本概念)
+    - [数据卷的使用](#数据卷的使用)
+    - [数据卷容器](#数据卷容器)
+- [DockerFile](#dockerfile)
+    - [DockerFile简介](#dockerfile简介)
+    - [DockerFile的解析过程](#dockerfile的解析过程)
+    - [DockerFile保留字指令](#DockerFile保留字指令)
+    - [自定义centos](#自定义centos)
+    - [自定义tomcat9](#自定义tomcat9)
 - [](#)
 - [](#)
 - [](#)
@@ -195,7 +207,7 @@
 
 ## 镜像命令
 [top](#catalog)
-- 列出**本地主机**上的镜像：`docker images [options]`
+- 列出**本地主机**上的镜像：`docker images [options] [镜像名]`
     - 列出的内容
         - REPOSITORY:镜像在仓库中的名称
         - TAG:镜像的标签
@@ -228,6 +240,7 @@
     - 删除多个镜像：`docker rmi xxx yyy`
     - 删除全部镜像：`docker rmi -f $(docker images -q)`
         - 将所有`image`的ID作为参数传递给`docker rmi`指令，来完成全部删除
+- 查看镜像的变更历史：`docker history 镜像名`
 
 ## 容器命令
 [top](#catalog)
@@ -254,7 +267,7 @@
             - STATUS：当前容器的状态
                 - UP:正在运行
                 - Exit:退出
-            - PORTS：??????????
+            - PORTS：容器与宿主机的端口映射
             - NAMES:
                 - 如果使用了`--name`,会显示指定的名字；如果没有使用，docker会随机分配一个容器名
         - 常用`options`
@@ -302,7 +315,7 @@
             - `docker exec -it 容器 /bin/bash`，也可以进入终端
 
 - 从容器内部拷贝文件到宿主机上
-    - `docker cp 容器ID：容器内路径 宿主机路径`
+    - `docker cp 容器ID:容器内路径 宿主机路径`
 
 - 守护式启动
     - `docker run -d 镜像名`
@@ -319,8 +332,320 @@
         - 离开但不关闭当前`centos`容器：`ctrl+P+Q`
 
 # Docker镜像原理
+## 镜像原理
 [top](#catalog)
+- Docker镜像的概念：镜像是一种轻量级、可执行的独立软件包，可以**打包软件运行环境和基于运行环境开发的软件**
+    - 它包含运行某个软件所需的所有内容，包括：
+        - 代码
+        - 库
+        - 环境变量
+        - 配置文件
 
+- 镜像的**基础**：`UnionFs`--联合文件系统
+    - 一种分层、轻量级并且高性能的文件系统
+    - 它支持**对文件系统的修改作为一次提交来一层层叠加**，同时**可以将不同目录挂在到同一个虚拟文件系统下**
+    - UnionFs是镜像的基础，镜像可以通过分层来进行**继承**，**基于基础镜像可以制作各种具体的应用镜像**
+    - UnionFs的特性：
+        - 一次加载多个文件系统，但从外部只能看到一个文件系统，**联合加载**会把各层文件系统叠加起来，最终文件系统会包含所有底层的文件和目录
+
+- Docker镜像加载原理
+    - docker镜像由一层层UnionFs组成
+    - 两个主要的部分
+        - `bootfs`--boot file system
+            - **在Docker镜像的最底层是`bootfs`**
+            - 主要包含`bootloader`和`kernel`
+            - `bootloader`
+                - 负责引导和加载`kernel`
+                - Linux刚启动时会加载bootfs文件系统，加载完成之后，整个`kernel`就都在内存中了，并将内存的使用权有bootfs交给`kernel`，然后系统会卸载bootfs
+            - `kernel`
+        - `rootfs`--root file system
+            - 在`bootfs`之上，包含的是典型Linux系统中的/dev, /proc, /bin, /etc等标准目录和文件
+            - `rootfs`就是各种不同的操作系统发行版
+    - <label style="color:red">为什么操作系统的镜像很小</label>
+        - docker下的操作系统镜像是一个精简版的OS
+        - 对于这种精简的OS，`rootfs`可以很小，只需要包括最基本的命令、工具、程序库就可以了
+        - 底层直接使用宿主机的`kernel`，只需要提供`rootfs`就可以
+        - 对于不同的Linux发行版，`bootfs`基本是一致的，`rootfs`会有差别，因此不同的发行版可以**共用**`bootfs`
+
+- 镜像的分层结构
+    - 分层的镜像
+        - 示例：为什么docker的tomcat镜像有400M？
+            - tomcat是有多层UnionFs叠加而成
+                - kernel(bootfs)+centos(rootfs)+jdk+tomcat
+    - 为什么Docker镜像要采用分层结构
+        - **可以共享资源，包括存储资源和运行时资源**
+        - 如：多个镜像都是从相同的base镜像构建的
+            - 存储资源: 在宿主机上只需要在磁盘上保存一份base镜像
+            - 运行时资源: 运行时，内存中也只需要加载一份base镜像，就可以为所有容器服务了，**而且镜像的每一层都可以被共享**
+
+- Docker镜像的特点
+    - Docker镜像都是<label style="color:red">只读的</label>
+        - 所有的修改只能是容器层面上的
+    - 当容器启动时，一个**新的可写层**会被加载到**镜像的顶部**，这一层通常被称为**容器层**，容器层之下的都是镜像层
+
+## 镜像commit操作
+[top](#catalog)
+- `docker commit -m='描述信息' -a='作者' 容器ID 包名/镜像名:[TAG]`
+    - 提交容器副本，作为一个新的镜像
+
+- 示例：启动tomcat容器，并在容器中进行修改，就可以`commit`，来得到一个新的自定义镜像
+    - 获取镜像：`docker pull tomcat`
+    - 启动容器：`docker run -it -p 8888:8080 tomcat`，`docker run -d -p 8888:8080 tomcat`
+        - 8080是docker中运行的tomcat的端口，8888是映射到宿主机的端口，在宿主机上通过`localhost:8888`来访问
+        - `-p`，主机端口:docker容器端口
+        - `-P`，随机分配端口
+            - 通过`docker ps`后的PORT自动来查看
+    - 进入容器：`docker exec -it tomcat容器ID /bin/bash`
+        - 直接进入`tomcat`的执行目录下
+    - 修改容器
+        1. `cd webapps`
+        2. `rm -rf doc`，删除tomcat的说明文档
+    - 提交：`docker commit -m='no doc tomcat' -a='xxxx' 容器ID 包名/tomcat:1`
+
+# Docker容器数据卷Volume
+## 数据卷的基本概念
+[top](#catalog)
+- 数据卷是什么
+    - 卷就是目录或文件，存在于一个或多个容器中，由docker挂载到容器，但**不属于UnionFs**，所以可以绕过UnionFs提供一些用于持续存储或共享数据的特性
+    - 卷的设计目的是数据持久化，完全独立于容器的生存周期，因此Docker不会在删除容器时删除其挂载的数据卷
+- 特点
+    - 数据卷可以在容器之间共享或重用数据，也可以在容器和宿主机直接共享数据(可以互相拷贝)
+    - 卷中的更改可以直接生效
+    - 数据卷中的更改不会包含在镜像的更新中
+    - **数据卷的生命周期一直持续到没有容器使用它为止**
+- 能做什么
+    - 容器的持久化
+    - 容器间继承，共享数据
+## 数据卷的使用
+[top](#catalog)
+- 容器内添加数据卷
+    - 使用命令添加
+        - 添加：`docker run -it -v /宿主机绝对路径:/容器内目录 镜像名`
+            - 如果路径不存在，docker会自动新建
+        - 查看数据卷是否挂载成功:`docker inspect 容器ID`
+            1. `Volumes`中会显示挂在结果
+                - `"容器中的挂载位置":"宿主机的目录"`
+            2. `HostConfig`查看数据是否绑定
+                - `/宿主机路径 /容器中的路径`
+            3. `VolumesRM`显示`true`,当前容器对数据卷是可读可写的
+        - 如果出现:cannot open directory .:Permission denied，可以在指令后添加参数`--privileged=true`
+    - 使用带有读写权限的命令添加
+        - 添加只读数据卷：`docker run -it -v /宿主机绝对路径:/容器内目录:ro 镜像名`
+        - 查看数据卷是否挂载成功:`docker inspect 容器ID`
+            1. `Volumes`中会显示挂在结果
+                - `"容器中的挂载位置":"宿主机的目录"`
+            2. `HostConfig`查看数据是否绑定
+                - `/宿主机路径 /容器中的路径:ro`
+            3. `VolumesRM`显示`false`,当前容器对数据卷是可读的
+
+    - DockerFile添加
+        - 根目录下新建mydocker文件夹进入
+        - 可以在DockerFile中使用VOLUME指令给镜像添加一个或多个数据卷
+            - 出于可移植性和分析的考虑，`-v /宿主机绝对路径:/容器内目录 镜像名`的方式不能直接在DockerFile中使用
+            - 因为宿主机目录是依赖于特定主机的，并不能够保证在所有的宿主机上都存在这样的特定目录
+            ```
+            VOLUME["/数据卷绝对路径1", "/数据卷绝对路径2"......]
+            ```
+        - 构建DockerFile
+            ```
+            # volume test
+            FROM centos
+            VOLUME ["/dv1", "dv2"]
+            CMD echo "finshed......."
+            CMD /bin/bash
+            ```
+        - build后生成镜像
+            - `docker build -f DockerFile的保存路径 -t image的命名空间 .`
+                - `.`表示当前目录
+        - 启动容器:`docker run`
+        - 启动后可以查询到数据卷
+        - 因为没有指定和宿主机上的那个路径绑定，docker会自动分配
+            - 通过`docker inspect`来查看`HostConfig`
+
+- 在容器中的挂载目录下进行操作，操作结果将会同步到宿主机中
+- 容器关闭后，如果在宿主机中修改数据卷目录，容器重新启动后，也能够同步数据卷的修改内容
+- 示例
+    - `docker run -it -v /mydata:/centosMydata centos`
+    - `docker inspect 容器ID`
+
+## 数据卷容器
+[top](#catalog)
+- 挂载数据卷的容器，即数据卷容器
+    - 命名的容器挂载数据卷，其他容器通过挂载这个父容器实现数据共享
+- 创建方式
+    - 先创建一个挂在数据卷的容器:`docker run -it -name 一级容器名 容器A`
+    - 在一级数据卷容器上创建二级容器：`docker run it -name 二级容器名 --volumes-from 一级容器名 容器A`
+- 多个二级容器和一级容器之间可以**共享数据卷中的数据**，任何一个容器中的数据修改都可以在其他的容器中观测到
+    - 可以理解为
+        ```java
+        class 一级容器{
+            public 数据卷 data;
+            ...
+        }
+
+        class 二级容器A extend 一级容器{
+            ...
+        }
+
+        class 二级容器B extend 一级容器{
+            ...
+        }
+        ```
+- 容器之间配置信息会自动传递，**数据卷的生命周期会一直持续到没有容器使用它为止**
+    - 如，删除的父级容器，其他容器还是能够继续共享数据卷，直到没有容器再使用该容器
+
+# DockerFile
+## DockerFile简介
+[top](#catalog)
+- DockerFile是用来构建Docker镜像的构建文件，是由一系列命令和参数构成的脚本
+- DockerFile定义了进程需要的一切东西，Docker涉及的内容包括：
+    - 执行代码或文件
+    - 环境变量
+    - 依赖包
+    - 运行时环境
+    - 动态链接库
+    - 操作系统的发行版
+    - 服务进程
+    - 内核进程
+        - 当应用进程需要和系统服务、内核进程交互时，需要考虑如何设计`namespace`的权限控制
+- 从应用软件的角度来看，Dockerfile、Docker镜像、Docker容器分别代表软件的3个不同阶段
+    - DockerFile是软件的原材料
+    - Docker镜像是软件的交付品
+    - Docker容器则可以认为是软件的运行态
+- Dockerfile面向开发、Docker镜像是交付标准、Docker容器则设计部署于运维，三者缺一不可，是Docker体系的基石
+
+## DockerFile的解析过程
+[top](#catalog)
+- 构建步骤：编写DockerFile文件-->docker build-->docker run
+- DockerFile内容的基本知识
+    - 每条保留字指令必须为大写字母且后面要跟随至少一个参数
+    - 指令按照从上到下，顺序执行
+    - `#`表示注释
+    - 每条指令都会创建一个新的镜像层，并对镜像进行提交
+- Docker执行DockerFile的大致流程
+    1. docker从**基础镜像**运行一个容器
+    2. 执行一条指令并对容器作出修改
+    3. 执行类似`docker commit`的操作来提交一个新的镜像层
+    4. docker在基于刚提交的镜像运行一个新容器
+    5. 执行dockerfile中的下一条指令 
+
+## DockerFile保留字指令
+[top](#catalog)
+- FROM:基础镜像，当前新镜像是基于那个镜像的
+- MAINTAINER:镜像的作者+邮箱
+- RUN:容器构建时需要运行的额外的命令
+- EXPOSE:容器对外暴露的端口号
+- WORKDIR:创建容器后，终端默认登录的工作目录
+- ENV:在构建镜像过程中设置环境变量
+    - 使用后，可以在后续其他的指令中使用环境变量
+- ADD:拷贝+解压；将宿主机目录下的文件拷贝进镜像，ADD会自动处理URL和解压
+- COPY:拷贝
+    - 功能
+        - 拷贝文件和目录到镜像中
+        - 将从构建上下文目录中<源路径>的文件/目录复制到新的一层的镜像内的<目标路径>位置
+    - 指令
+        - COPY src dest
+        - COPY ["src", "dest"]
+- VOLUME:容器数据卷
+- CMD:
+    - 功能
+        - 指定一个容器启动时要运行的命令
+        - DockerFile中可以有多个CMD指令，但**只有最后一个生效**，CMD会被`docker run`之后的参数替换
+    - 指令
+        - shell格式：CMD<命令>
+        - exec格式：CMD["可执行文件", "参数1", "参数2",....]
+        - 参数列表格式：CMD["参数1", "参数2",....]，在指定了`ENTRYPOINT`指令后，用CMD指定具体的参数
+- ENTRYPOINT:
+    - 功能
+        - 指定一个容器启动时要运行的命令
+        - `ENTRYPOINT`的目的和CMD一样，都是在指定容器启动程序及参数
+        - `docker run`之后的参数会被当作参数传递给`ENTRYPOINT`，之后形成新的命令组合
+- ONBUILD:当构建一个被继承的DockerFile时运行命令，父镜像在被继承后，`build`子镜像时会触发`ONBUILD`
+
+## 自定义centos
+[top](#catalog)
+- Base镜像：scratch
+- 自定义1，功能
+    - 设定启动目录`/tmp`
+    - 安装vim编辑器
+    - 安装ifconfig查看网络配置
+
+    ```
+    FROM centos
+    ENV mypath /tmp
+    WORKDIR $mypath
+
+    RUN yum -y install vim
+    RUN yum -y install net-tools
+
+    EXPOSE 80
+    CMD /bin/bash
+    ```
+- 自定义2，功能：查询ip
+    - 通过执行:`curl http://ip.cn`来查询ip
+    - 镜像启动命令:`docker run -it 镜像名`
+        - myip
+            ```
+            FROM centos
+            RUN yum -y install curl
+            CMD ["curl", "-s", "http://ip.cn"]
+            ```
+    - 由于内部使用了`CMD`执行命令，导致无法在启动时传递`curl`指令的其他参数，使用`ENTRYPOINT`来改写
+        - myip
+            ```
+            FROM centos
+            RUN yum -y install curl
+            ENTRYPOINT ["curl", "-s", "http://ip.cn"]
+            ```
+- 自定义3：父镜像、子镜像
+    - 父镜像:myip_parent
+        ```
+        FROM centos
+        RUN yum -y install curl
+        ENTRYPOINT ["curl", "-s", "http://ip.cn"]
+        ONBUILD RUN echo "this is parent image"
+        ```
+    - 子镜像
+        ```
+        FROM myip_parent
+        RUN yum -y install curl
+        ENTRYPOINT ["curl", "-s", "http://ip.cn"]
+        ```
+
+## 自定义tomcat9
+[top](#catalog)
+- 创建编译目录
+- 将tomcat、jdk包拷贝到编译目录
+- 编写Dockerfile文件
+    ```
+    FROM centos
+    # maintainer xxx
+    
+    # 将tomcat和jdk添加到容器中
+    ADD tomcat /usr/local/
+    ADD jdk /usr/local/
+
+    # 安装vim
+    RUN yum -y install vim
+
+    # 设置工作目录
+    ENV MYPATH /usr/local
+    WORKDIR $MYPATH
+
+    # 将tomcat和jdk添加到容器中
+    ENV JAVA_HOME /usr/local/jdk???????
+    ENV CLASSPATH $JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar
+    ENV CATALINA_HOME /usr/local/apache-tomcat- ????????
+    ENV CATALINA_BASE /usr/local/apache-tomcat- ???????
+    ENV PATH $PATH:$JAVA_HOME/bin:$CATALINA_HOME/lib:$CATALINA_HOME/bin
+
+    #监听端口
+    EXPOSE 8080
+    #启动时运行tomcat
+    #ENTRYPOINT["/usr/local/apache-tomcat-?????/bin/startup.sh"]
+    #CMD["/usr/local/apache-tomcat-?????/bin/catalina.sh", "run"]
+    CMD /usr/local/apache-tomcat-?????/bin/startup.sh && tail -F /usr/local/apache-tomcat-?????/bin/logs/catalina.out
+    ```
 
 
 [top](#catalog)
@@ -347,11 +672,12 @@
 - 镜像命令
     - 增:`docker pull 镜像名[:TAG]`
     - 删:`docker rmi [options] 镜像ID[:TAG]`
-    - 改: ---
+    - 改:`docker commit -m='描述信息' -a='作者' 容器ID 包名/镜像名:[TAG]`
     - 查:
         - 查Hub:`docker search [options] 镜像名`
-        - 查本地:`docker images [options]`
-- 容器命令
+        - 查本地:`docker images [options] [镜像名]`
+        - 查看镜像的变更历史：`docker history 镜像名`
+- 容器基本命令
     - 新建+启动:`docker run [options] image [command][arg...]`
         - 常用:`docker run -it --name NewName 镜像名`
     - 查:`docker ps [options]`
@@ -371,9 +697,14 @@
     - 直接进入指定容器:`docker attach 容器ID`
     - 在外部执行指令`docker exec [-dit] 容器 指令 指令参数`
     - 从容器内部拷贝文件到宿主机上:`docker cp 容器ID：容器内路径 宿主机路径`
-
-
-
+- 数据卷操作
+    - `docker run -it -v /宿主机绝对路径:/容器内目录[:ro] 镜像名`
+- 数据卷容器
+    - `docker run -it -name 一级容器名 容器A`
+    - `docker run it -name 二级容器名 --volumes-from 一级容器名 容器A`
+- build后生成镜像
+    - `docker build -f DockerFile的保存路径 -t image的命名空间 生成目录`
+        - `.`表示当前目录
 - 列出**本地主机**上的镜像：
 
     - 检索镜像：
