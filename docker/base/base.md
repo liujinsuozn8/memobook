@@ -281,11 +281,12 @@
         - 退出方法1：`exit`
             - 容器停止退出
             - 直接在容器的交互式终端中使用
-        - 退出方式2：`ctrl+P+Q`
+        - 退出方式2：`ctrl+P, ctrl+Q`
             - 离开但不关闭当前容器
             - 使用后会退回宿主机
 
-    - 启动**已有容器**:`docker start 容器名/容器ID`
+    - 启动**已有容器**:`docker start [-i] 容器名/容器ID`
+        - `-i`，交互式运行
     - 重启**已有容器**:`docker restart 容器名/容器ID`
     - 停止正在运行的容器:`docker stop 容器名/容器ID`
     - 强制停止正在运行的容器:`docker kill 容器名/容器ID`
@@ -425,7 +426,7 @@
         - 查看数据卷是否挂载成功:`docker inspect 容器ID`
             1. `Volumes`中会显示挂在结果
                 - `"容器中的挂载位置":"宿主机的目录"`
-            2. `HostConfig`查看数据是否绑定
+            2. `HostConfig`下的`Binds`查看数据是否绑定
                 - `/宿主机路径 /容器中的路径`
             3. `VolumesRM`显示`true`,当前容器对数据卷是可读可写的
         - 如果出现:cannot open directory .:Permission denied，可以在指令后添加参数`--privileged=true`
@@ -461,6 +462,10 @@
         - 启动后可以查询到数据卷
         - 因为没有指定和宿主机上的那个路径绑定，docker会自动分配
             - 通过`docker inspect`来查看`HostConfig`
+            - mac 需要进入docker-desktop查找，本地没有:`screen ~/Library/Containers/com.docker.docker/Data/vms/0/tty`
+                - 进入之后再按以下enter
+                - control+a, control+k, 然后选择y离开窗口
+                - 暂离：control+a, control+d;再次进入`screen -dr`
 
 - 在容器中的挂载目录下进行操作，操作结果将会同步到宿主机中
 - 容器关闭后，如果在宿主机中修改数据卷目录，容器重新启动后，也能够同步数据卷的修改内容
@@ -473,8 +478,8 @@
 - 挂载数据卷的容器，即数据卷容器
     - 命名的容器挂载数据卷，其他容器通过挂载这个父容器实现数据共享
 - 创建方式
-    - 先创建一个挂在数据卷的容器:`docker run -it -name 一级容器名 容器A`
-    - 在一级数据卷容器上创建二级容器：`docker run it -name 二级容器名 --volumes-from 一级容器名 容器A`
+    - 先创建一个挂在数据卷的容器:`docker run -it --name 一级容器名 容器A`
+    - 在一级数据卷容器上创建二级容器：`docker run it --name 二级容器名 --volumes-from 一级容器名 容器A`
 - 多个二级容器和一级容器之间可以**共享数据卷中的数据**，任何一个容器中的数据修改都可以在其他的容器中观测到
     - 可以理解为
         ```java
@@ -700,8 +705,8 @@
 - 数据卷操作
     - `docker run -it -v /宿主机绝对路径:/容器内目录[:ro] 镜像名`
 - 数据卷容器
-    - `docker run -it -name 一级容器名 容器A`
-    - `docker run it -name 二级容器名 --volumes-from 一级容器名 容器A`
+    - `docker run -it --name 一级容器名 容器A`
+    - `docker run it --name 二级容器名 --volumes-from 一级容器名 容器A`
 - build后生成镜像
     - `docker build -f DockerFile的保存路径 -t image的命名空间 生成目录`
         - `.`表示当前目录
