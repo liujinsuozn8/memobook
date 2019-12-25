@@ -58,3 +58,110 @@
     * `smembers emails` 从集合中取出所有元素
     * `sismember key value` 判断是否是集合成员
     * `srem key value` 删除某个元素
+
+
+
+
+
+
+
+
+<span id="catalog"></span>
+
+- [NoSql入门](#NoSql入门)
+    - [为什么用nosql](为什么用nosql)
+
+# NoSql入门
+## 为什么用nosql
+[top](#catalog)
+- Cache缓存 + 垂直拆分(业务拆分) + MySql主从复制、读写分离 + 分表分库 + 水平拆分(数据量拆分) + mysql集群
+- web应用结构的变化
+    - 阶段1：单数据库实例
+        - web应用的构成
+            ```
+            app --> dao --> MySql Instance
+            ```
+        - 数据存储的瓶颈
+            - 访问量：访问量一个数据库实例无法接受
+            - 索引量：数据的索引(B+Tree)一个机器的内存放不下
+            - 数据量：数据量过多一台机器无法保存
+    - 阶段2：`Memcached`(缓存) + MySql + 垂直拆分
+        - **架构改进的原因：访问压力增大**
+        - web应用的构成
+            ```
+                                  --> MySql Instance
+            app --> dao --> Cache --> MySql Instance
+                                  --> MySql Instance
+            ```
+        - 垂直拆分--优化数据库的结构和索引
+            - 针对业务模块来拆分数据库
+            - 如：原来买家和卖家的数据都在同一个`MySql Instance`中，现在分别放到两个`MySql Instance`中
+        - 通过`Memcached`缓解数据库压力
+            - 使用缓存技术来缓解数据库的压力
+            - 通过文件缓存来缓解数据库压力，但有一些**缺点**
+                - 当访问量继续增大的时候，多台web机器通过文件缓存无法共享
+                - 大量的小文件缓存造成了比较高的IO压力
+            - 但是`Memcached`只能缓解数据库的**读取压力**
+    - 阶段3：MySql主从复制、读写分离
+        - **架构改进的原因：写入压力增大**
+        - web应用的构成
+            ```
+                                     读数据 -------------------> MySql Instance(从库 slave)
+            app --> dao --> Cache ---写数据---> MySql Instance(主库 master)
+                                     读数据 -------------------> MySql Instance(从库 slave)
+            ```
+
+        - 每个业务模块的数据库的读写集中在一个数据库， 但是`Memcached`只能缓解数据库的**读取压力**，数据库不堪重负
+        - 使用主从复制技术（MySql master-slave），来达到读写分离，来提高读写性能和读库的扩展性
+
+    - 阶段4：分表分库+水平拆分+mysql集群
+        - **架构改进的原因**
+            - 数据量仍然在增加，导致**主库的写压力开始出现瓶颈**
+            - 因为`MyISAM`使用锁表(读写都锁)，在高并发下会出现严重的锁问题，改成使用`InnoDB`引擎
+            - MySql推出了**高可靠性**的**MySql Cluster集群**，
+        - web应用的构成
+            ```
+                                        MySql Cluster 1
+                                            读数据 ------------> MySql Instance(从库 slave)
+                                ------->    写数据 --> MySql Instance(主库 master)
+                                            读数据 ------------> MySql Instance(从库 slave)
+
+                                        MySql Cluster 2
+                                            读数据 -----------> MySql Instance(从库 slave)
+            app --> dao --> Cache ----->    写数据 --> MySql Instance(主库 master)
+                                            读数据 -----------> MySql Instance(从库 slave)
+
+                                        MySql Cluster 3
+                                            读数据 ------------> MySql Instance(从库 slave)
+                                ------->    写数据 --> MySql Instance(主库 master)
+                                            读数据 ------------> MySql Instance(从库 slave)                         
+            ```
+        - 分区分库分表：
+            - 拆分方式1：紧耦合数据之间的关系，将不常修改的数据放在一个库，将经常修改的数据放在另一个库
+            - 拆分方式2：
+                1. 海量数据都保存到一个表中(tableX)压力会非常大，所以设定数据量的阀值：a\b\c...
+                2. 数据量达到阀值a时，数据进入库1的tableX
+                3. 数据量达到阀值b时，数据进入库2的tableX，以此类推
+                4. 将一个表的数据压力平分到各个数据库的表中
+    - 阶段5：MySql的扩展性能瓶颈
+        - 产生的问题在MySql层面无法很好的解决
+        - MySql会存储一些大文本字段(blob)，导致数据库表非常大，做**数据库恢复时会非常的慢，不容易快速恢复数据库**
+            - 如1000万4KB的文本=10_000_000 * 4KB / 1024 / 1024 = 38.147G
+        - **如果能将这些数据省去，MySql将变得非常小**
+        - MySql无法处理这种问题，导致MySql的扩展性差，海量数据下的IO压力大，表结构更改困难
+
+- 为什么使用nosql
+    - 传统的关系型数据库已经无法解决数据量增长的问题
+
+- nosql是什么
+    - **泛指非关系型数据库**
+    - nosql的产生就是为了解决大规模数据集合多重数据种类带来的挑战，尤其是海量数据应用难题，包括超大规模数据的存储
+    - **这些类型的数据存储不需要固定的模式，无需多余操作就可以横向扩展**
+
+## nosql能做什么
+[top](#catalog)
+- 易扩展
+    - nosql种类繁多，它们的共同特点是去掉关系数据库的关系特新
+
+
+[top](#catalog)
