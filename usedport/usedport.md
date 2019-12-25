@@ -1,0 +1,3 @@
+- mysql:3306
+- tomcat:8080
+- redis:6379
