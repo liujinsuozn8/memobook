@@ -26,10 +26,11 @@
     - [DockerFile保留字指令](#DockerFile保留字指令)
     - [自定义centos](#自定义centos)
     - [自定义tomcat9](#自定义tomcat9)
-- [](#)
-- [](#)
-- [](#)
-- [](#)
+- [常用应用安装](#常用应用安装)
+    - [安装mysql](#安装mysql)
+    - [安装redis](#安装redis)
+- [镜像推送](#镜像推送)
+- [总结](#总结)
 - [](#)
 
 # 基本概念
@@ -138,7 +139,8 @@
         - CentOS7(64-bit)，系统内核版本为`3.10`以上
         - CentOS6.5(64-bit) 或更高版本，系统内核版本为`2.6.32-431`以上
     - 查看当前内核版本:`uname -r`
-    - 查看安装的CentOS版本信息:`lsb_release -b`
+    - 查看安装的CentOS6.5版本信息:`lsb_release -b`
+
 - 安装步骤
     - CentOS6.5
         1. yum install -y epel-release
@@ -151,11 +153,32 @@
         6. 验证镜像:`ps -ef | grep docker`
 
     - CentOS7
-        - 按照部分相同
-        - 创建配置文件:`/etc/sysconfig/docker/docker.json`
-            - 添加加速器内容
-        - `systemctl daemon-reload`
-        - `systemctl restart docker`
+        1. yum安装gcc相关工具
+            - yum -y install gcc
+            - yum -y install gcc-c++
+        2. 卸载旧版本的docker ??????????????
+        3. 安装需要的软件包
+            - yum install -y yum-utils device-mapper-persistent-data lvm2
+        4. 设置stable镜像仓库
+            - yum-config-manager -add-repo 镜像地址/docker-ce/linux/centos/docker-ce.repo
+                - 官方镜像地址可能无法连接，最好使用镜像加速地址
+            - 执行后查看设置结果：`cat /etc/yum.repos.d/docker-cd.repo`
+        5. 更新yum软件包索引
+            - yum makecache fast
+        6. 安装DOCKER CE
+            - yum -y install docker-ce
+        7. 启动docker
+            - systemctl start docker
+        8. 测试
+        9. 配置镜像加速
+            - mkdir -p /etc/docker
+            - vim /etc/docker/daemon.json
+            - systemctl daemon.json
+            - systemctl restart docker
+        10. 卸载
+            - systemctl stop docker
+            - yum -y remove docker-ce
+            - rm -rf /var/lib/docker
         
 - 镜像加速
     - 阿里云镜像
@@ -241,6 +264,10 @@
     - 删除全部镜像：`docker rmi -f $(docker images -q)`
         - 将所有`image`的ID作为参数传递给`docker rmi`指令，来完成全部删除
 - 查看镜像的变更历史：`docker history 镜像名`
+- 编译镜像
+    - `docker build -f DockerFile的保存路径 -t image的命名空间 .`
+        - `.`表示当前目录
+        - 如果当前目录下存在名为:`DockerFile`的文件，则指令可以省略`-f`部分：- `docker build -t image的命名空间 .`
 
 ## 容器命令
 [top](#catalog)
@@ -257,6 +284,7 @@
                 - `id::containerPort`
                 - `hostPort:containerPort`
                 - `containerPort`
+            - `-e`，设置环境变量
         - 常用参数组合
             - `docker run -it --name NewName 镜像名`，交互式模式创建并启动容器
     - 列出当前所有正在运行的容器：`docker ps [options]`
@@ -281,12 +309,11 @@
         - 退出方法1：`exit`
             - 容器停止退出
             - 直接在容器的交互式终端中使用
-        - 退出方式2：`ctrl+P, ctrl+Q`
+        - 退出方式2：`ctrl+P+Q`
             - 离开但不关闭当前容器
             - 使用后会退回宿主机
 
-    - 启动**已有容器**:`docker start [-i] 容器名/容器ID`
-        - `-i`，交互式运行
+    - 启动**已有容器**:`docker start 容器名/容器ID`
     - 重启**已有容器**:`docker restart 容器名/容器ID`
     - 停止正在运行的容器:`docker stop 容器名/容器ID`
     - 强制停止正在运行的容器:`docker kill 容器名/容器ID`
@@ -315,8 +342,9 @@
                 - `-t` :分配一个伪终端
             - `docker exec -it 容器 /bin/bash`，也可以进入终端
 
-- 从容器内部拷贝文件到宿主机上
+- 容器内部和宿主机之间的文件拷贝
     - `docker cp 容器ID:容器内路径 宿主机路径`
+    - `docker cp 宿主机路径 容器ID:容器内路径`
 
 - 守护式启动
     - `docker run -d 镜像名`
@@ -384,6 +412,15 @@
         - 所有的修改只能是容器层面上的
     - 当容器启动时，一个**新的可写层**会被加载到**镜像的顶部**，这一层通常被称为**容器层**，容器层之下的都是镜像层
 
+- `docker run`做了什么
+    - 在本地找`image`
+        - 如果没有从`Hub`查找
+            - 如果找到，将镜像下载到本地
+            - 如果没有，则执行失败
+        - 如果本地有，则直接使用
+    - 使用`image`创建容器实例，并运行
+
+
 ## 镜像commit操作
 [top](#catalog)
 - `docker commit -m='描述信息' -a='作者' 容器ID 包名/镜像名:[TAG]`
@@ -426,7 +463,7 @@
         - 查看数据卷是否挂载成功:`docker inspect 容器ID`
             1. `Volumes`中会显示挂在结果
                 - `"容器中的挂载位置":"宿主机的目录"`
-            2. `HostConfig`下的`Binds`查看数据是否绑定
+            2. `HostConfig`查看数据是否绑定
                 - `/宿主机路径 /容器中的路径`
             3. `VolumesRM`显示`true`,当前容器对数据卷是可读可写的
         - 如果出现:cannot open directory .:Permission denied，可以在指令后添加参数`--privileged=true`
@@ -456,16 +493,10 @@
             CMD /bin/bash
             ```
         - build后生成镜像
-            - `docker build -f DockerFile的保存路径 -t image的命名空间 .`
-                - `.`表示当前目录
         - 启动容器:`docker run`
         - 启动后可以查询到数据卷
         - 因为没有指定和宿主机上的那个路径绑定，docker会自动分配
             - 通过`docker inspect`来查看`HostConfig`
-            - mac 需要进入docker-desktop查找，本地没有:`screen ~/Library/Containers/com.docker.docker/Data/vms/0/tty`
-                - 进入之后再按以下enter
-                - control+a, control+k, 然后选择y离开窗口
-                - 暂离：control+a, control+d;再次进入`screen -dr`
 
 - 在容器中的挂载目录下进行操作，操作结果将会同步到宿主机中
 - 容器关闭后，如果在宿主机中修改数据卷目录，容器重新启动后，也能够同步数据卷的修改内容
@@ -478,8 +509,8 @@
 - 挂载数据卷的容器，即数据卷容器
     - 命名的容器挂载数据卷，其他容器通过挂载这个父容器实现数据共享
 - 创建方式
-    - 先创建一个挂在数据卷的容器:`docker run -it --name 一级容器名 容器A`
-    - 在一级数据卷容器上创建二级容器：`docker run it --name 二级容器名 --volumes-from 一级容器名 容器A`
+    - 先创建一个挂在数据卷的容器:`docker run -it -name 一级容器名 容器A`
+    - 在一级数据卷容器上创建二级容器：`docker run it -name 二级容器名 --volumes-from 一级容器名 容器A`
 - 多个二级容器和一级容器之间可以**共享数据卷中的数据**，任何一个容器中的数据修改都可以在其他的容器中观测到
     - 可以理解为
         ```java
@@ -651,29 +682,48 @@
     #CMD["/usr/local/apache-tomcat-?????/bin/catalina.sh", "run"]
     CMD /usr/local/apache-tomcat-?????/bin/startup.sh && tail -F /usr/local/apache-tomcat-?????/bin/logs/catalina.out
     ```
+- 编译:`docker build -t mytomcat9`
+- 新建并启动容器
+    - `docker run -d -p 8888:8080 --name mytomcat901 -v /.../test:/usr/local/apache-tomcat-????/webadds/test -v /.../tomcat9log/:/usr/local/apache-tomcat-????/logs mytomcat9`
+        - 创建两个容器卷
 
 
+# 常用应用安装
+## 安装mysql
 [top](#catalog)
-- xxx
-    - 安装
-    - 配置加速
-    - 测试helloworld
-    - 测试docker命令
+- 拉取mysql镜像???????????????
+- 创建容器 
+    - `docker run -d -p 3333:3306 --name mysql -v /???/mysql/conf:/etc/mysql/conf.d -v /???/mysql/logs:/logs -v /???/mysql/data:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=1234 mysql:版本号`
+- 执行数据库备份
+    - `docker exec 容器ID sh -C 'mysqldump --all-databases -u root -p1234' >/tmp/all.sql`
 
+## 安装redis
+[top](#catalog)
+- 拉取???????????????
+- 创建容器
+    - `docker run -d -p 6379:6379 -v /???/myredis/data:/data -v /???/myredis/conf/redis.conf:/usr/lacal/etc/redis/redis.conf redis:版本号 redis-server /usr/local/etc/redis/redis.conf --appendonly yes`
+- 在宿主机的数据卷上添加配置文件
+    - 在主机`/???/myredis/conf/redis.conf`目录下新建`redis.conf`文件
+    - `/???/myredis/conf/redis.conf/redis.conf`,第一层的`redis.conf`是目录
+    - 添加基本配置，但是要注释`binds`部分，不绑定到本机
+- 测试：连接redis
+    - `docker exec -it 容器ID redis-cli`
+- 测试：持久化文件生成
+    - 容器内:`cd /data` ,存在文件`appendonly.aof`
 
-- hello-world:latest
-
-- `run`做了什么
-    - 在本地找`image`
-        - 如果没有从`Hub`查找
-            - 如果找到，将镜像下载到本地
-            - 如果没有，则执行失败
-        - 如果本地有，则直接使用
-    - 使用`image`创建容器实例，并运行
+# 镜像推送
+[top](#catalog)
+- 推送到阿里云
+    - 镜像列表
+        - 创建镜像仓库
+        - 选择本地仓库
+    - docker tag 目标镜像id 命名空间/镜像名:[版本号] ???????
+    - docker push 命名空间/镜像名:[版本号] ???????
 
 # 总结
 [top](#catalog)
 - 启动docker:`service docker start`
+- 指令使用`\`来换行连接
 - 镜像命令
     - 增:`docker pull 镜像名[:TAG]`
     - 删:`docker rmi [options] 镜像ID[:TAG]`
@@ -705,8 +755,8 @@
 - 数据卷操作
     - `docker run -it -v /宿主机绝对路径:/容器内目录[:ro] 镜像名`
 - 数据卷容器
-    - `docker run -it --name 一级容器名 容器A`
-    - `docker run it --name 二级容器名 --volumes-from 一级容器名 容器A`
+    - `docker run -it -name 一级容器名 容器A`
+    - `docker run it -name 二级容器名 --volumes-from 一级容器名 容器A`
 - build后生成镜像
     - `docker build -f DockerFile的保存路径 -t image的命名空间 生成目录`
         - `.`表示当前目录
