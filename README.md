@@ -8,7 +8,7 @@
 - jetbrains
     - [intellijIDEA](intellijIDEA/base_memo.md)
 - java
-[基本知识](java/base/memo.md)
+    - [基本知识](java/base/memo.md)
     - [java8实战](java/base/inAction.md)
     - [并发](java/base/thread.md)
     - [JDBC](java/jdbc/jdbc.md)
