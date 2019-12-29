@@ -1,3 +1,4 @@
 - mysql:3306
+- oracle:1521
 - tomcat:8080
 - redis:6379
