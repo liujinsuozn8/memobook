@@ -1,6 +1,7 @@
 - 内容来源于：
     - https://www.bilibili.com/video/av37383358
     - https://www.bilibili.com/video/av33608430
+    - http://www.zsythink.net/archives/tag/awk/
 - 测试内容：`cp /etc/passwd /tmp/passwd`
 
 <span id="catalog"></span>
@@ -10,6 +11,13 @@
 - [grep](#grep)
 - [sed](#sed)
 - [xargs参数替换](#xargs参数替换)
+- [awk](#awk)
+    - [awk基础](#awk基础)
+    - [awk分隔符](#awk分隔符)
+    - [awk变量](#awk变量)
+- [](#)
+- [](#)
+- [](#)
 - [](#)
 
 # find搜索文件
@@ -126,6 +134,7 @@
         - `-e`，多个匹配，相当于`or`
         - `-w`，匹配整个单词
         - `-F`，使用`fgrep`，不使用正则表达式
+        - `-r`，在指定目录下递归查找
 
     - 其他参数
         - `-o`，只输出匹配到的内容
@@ -226,8 +235,129 @@
     - 分解过多的参数
         - `echo f{1..10} | xargs -n1 echo`
 
+# awk
+## awk基础
 [top](#catalog)
+- 语法：
+    - `awk [options] 'program' file1, file2...`
+    - `program`再细分：`awk [options] 'Pattern{Action}' file1, file2...`
 
+- awk 是**按行处理**的
+    - 默认以换行符为标记识别每一行
+    - 默认使用**空格**作为分隔符，并且会将多个连续的分隔符当作一个分隔符
+- **awk内置变量对一行数据的划分**
+    - `$n` 结果中的第n列
+    - `$0`，表示当前行
+    - `$NF`，表示最后一个字段，`NF`表示当前行被分隔符切开以后，共有多少个字段
+        - 倒数第二行也可以写作：`$(NF-1)`
+    ```
+    |---------------------- $0 -----------------------|
+    |                                                 |
+    -rw-r--r-- 1 root root        0 Dec 28 10:02 333.sh    
+    
+       $1      $2 $3  $4          $5 $6 %7  $8     $9($NF)
+    ```
+- Action
+    - print，打印
+        - 输出指定列
+            - `ll|awk '{print $n}'`，直接输出结果的第n列，类似于`cut`
+            - `ll|awk '{print $1, $2, $3}'`，同时输出多列
+                - 如果某一列没有，则不输出任何文本
+            - 将字符串与列进行组合
+                - 混合输出：`ll|awk '{print "ccccc", $NF}'`
+                - 字符串拼接`ll|awk '{print "file_name:" $NF}'`
+        - 输出整行
+            - `ll|awk '{print}'`
+            - `ll|awk '{print $0}'`
+- Pattern
+    - 特殊模式
+        - 两种特殊模式
+            1. `BEGIN`:指定在开始处理文本之前执行的Action
+                - `ll|awk 'BEGIN{print "aaa", "bbb"}'`
+                    - 没有ll结果的输出，只会打印`aaa`和`bbb`
+                - `awk 'BEGIN{print "aaa", "bbb"}'`
+                    - 在这种模式下，可以不加数据输入源，可以直接打印`aaa`和`bbb`
+                - `ll|awk 'BEGIN{print "aaa", "bbb"} {print $NF}'`
+                    - 添加第二个`{Action}`来处理数据源
+                    - 先输出：`aaa bbb`，然后输出文件名
+            2. END::指定在处理文本之后执行的Action
+                - **END不能单独使用，必须要有数据源**
+                - `ll|awk '{print $NF} END{print "aaa", "bbb"}'`
+                    - 先输出文件名，再输出`aaa bbb`
+        - 特殊模式可以叠加
+            - `ll|awk '{print $NF} END{print "aaa", "bbb"} END{print "ccc", "ddd"}'`
+                - 先输出文件名，再输出`aaa bbb`，最后输出`ccc ddd`
+        - 组合`BEGIN`和`END`
+            - `ll|awk 'BEGIN{print "aaa", "bbb"} {print $NF} END{print "ccc", "ddd"}'`
+                - - 先输出：`aaa bbb`，然后输出文件名，最后输出`ccc ddd`
+- 应用
+    - 为`ll`的输出添加表头和表尾
+        - `ll|awk 'BEGIN{print "aaa", "bbb"} {print $NF} END{print "ccc", "ddd"}'`
+    - 输出行号和列数
+        - `ll|awk '{print NR,NF}'`
+
+## awk分隔符
+[top](#catalog)
+- 输入分隔符(FS, field separator)：分隔输入文本时使用的分隔符，默认是空格
+    - `-F分隔符`，指定输入分隔符
+        - `echo aaa#bbb#ccc|awk -F# '{print $1, $2, $3}'`
+        - `echo aaa---bbb---ccc|awk -F--- '{print $1, $2, $3}'`
+        - `echo aaa---bbb---ccc|awk -F"---" '{print $1, $2, $3}'`
+
+    - `-v FS=分隔符`，通过`-v`设定awk内置变量`FS`来修改分隔符，效果与`-F`相同
+        - `echo aaa#bbb#ccc|awk -v FS=# '{print $1, $2, $3}'`
+        - `echo aaa---bbb---ccc|awk -v FS="---" '{print $1, $2, $3}'`
+
+- 输出分隔符(OFS, output field separator)：输出到屏幕时使用的分隔符，默认时空格
+    - `-v OFS=分隔符`，通过`-v`设定awk内置变量`FS`来修改分隔符
+        - `ll|awk -v OFS=---- '{print $3, $4, $NF}'`
+
+- 混合输入和输出分隔符
+    - `echo aaa#bbb#ccc|awk -v FS=# -v OFS="---" '{print $1, $2, $3}'`
+        - 输出:`aaa---bbb---ccc`
+- `{$n,$m}`，中的分隔
+    - 使用：`ll|awk '{print $1,$NF}'`时，使用`,`分隔两个列，输出时会使用输出分隔符来分隔两列
+    - 使用：`ll|awk '{print $1 $NF}'`时，使用**空格**分隔两个列，输出时会自动连接两列
+
+## awk变量
+[top](#catalog)
+- 在awk中，**与bash不同**，只有在引用`$0`、`$1`等内置变量的值时，才使用`$`，引用其他变量时，无论时内置变量，还是自定义变量，都直接使用变量名
+- 通过`-v 变量=...`，来修改变量的值
+- 内置变量
+    - 常用内置变量
+        
+        |变量|含义|示例|
+        |-|-|-|
+        |FS|输入分隔符||
+        |OFS|输出分隔符||
+        |RS|输入换行符，**默认为回车换行**|`awk -v RS=" " '{print NR, $0}' number.txt `|
+        |ORS|输出换行符|`awk -v RS=" " -v ORS="----" '{print NR, $0}' number.txt`|
+        |NF|当前行的字段数量||
+        |NR|当前文本的行号||
+        |FNR|处理多个文件时，各文件分别显示各自的行号，否则会混在一起，从1到结束|`awk '{print FNR, $0}' passwd passwd.bk`|
+        |FILENAME|当前文件名，在处理多个文件时，通过使用FILENAME，可以显示当前显示行是来源于哪个文件|`awk '{print FILENAME, FNR, $0}' number.txt passwd`|
+        |ARGC|命令行参数的个数|`awk 'BEGIN{print ARGV[0], ARGV[1], ARGV[2], ARGC}' passwd number.txt`，输出`wk passwd number.txt 3`|
+        |ARGV|是一个数组，保存的是命令行给定的各参数<br/>通过`ARGV[n]`来调用，`n`从0开始<br/>0表示的是当前指定名，从1开始是输入的参数，即文件名<br/>如果n>参数个数，则不会输出任何内容|`awk 'BEGIN{print ARGV[0], ARGV[1], ARGV[2], ARGV[3]}' passwd number.txt`，输出`awk passwd number.txt`|
+
+    - `'Pattern{Action}'`**这部分在awk内部并不被当作参数**
+        
+- 自定义变量
+    - 定义方法1:`-v 变量名=值`，**变量名区分大小写**
+        - 使用方法
+            - `awk -v param="test" 'BEGIN{print param}'`，输出`test`
+        - 这个方法的优势是：引用shell变量比较方便
+            ```
+            aaa=Param
+            awk -v param=$aaa 'BEGIN{print param}'
+            ```
+    - 定义方法2:在`program`中定义，但是变量定义与Action直接要用`;`分隔
+        - 可以定义多个变量，每个变量之间都要用`;`分隔
+        - 使用方法
+            - `awk 'BEGIN{param="test"; print param}'`，输出`test`
+            - `awk 'BEGIN{param1="test1"; param2="test2"; print param1, param2}'`，输出`test1 test2`
+
+
+[top](#catalog)
 
 - sort
 - uniq
