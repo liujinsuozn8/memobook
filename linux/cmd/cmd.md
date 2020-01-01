@@ -15,9 +15,12 @@
     - [awk基础](#awk基础)
     - [awk分隔符](#awk分隔符)
     - [awk变量](#awk变量)
-- [](#)
-- [](#)
-- [](#)
+    - [awk中的printf](#awk中的printf)
+    - [awk的pattern](#awk的pattern)
+    - [awk动作](#awk动作)
+    - [awk数组](#awk数组)
+    - [awk内置函数](#awk内置函数)
+    - [awk的两个重要原则](#awk的两个重要原则)
 - [](#)
 
 # find搜索文件
@@ -193,8 +196,8 @@
 
     - 指定处理位置
         - `n-m`，从第n行开始，每次处理下面的第m行
-                - 打印奇数行：`seq 1 10|sed -n '1~2p'`
-                - 打印偶数行：`seq 1 10|sed -n '2~2p'`
+            - 打印奇数行：`seq 1 10|sed -n '1~2p'`
+            - 打印偶数行：`seq 1 10|sed -n '2~2p'`
         - `n,m`，只处理n到m行的内容
     - 关键字搜索
         - `sed -n '/关键字/p' file`
@@ -241,7 +244,11 @@
 - 语法：
     - `awk [options] 'program' file1, file2...`
     - `program`再细分：`awk [options] 'Pattern{Action}' file1, file2...`
-
+    - 如果指令过长，可以使用`\`来换行
+        ```
+        ll| awk '{print $1, $2,\
+        $NF}'
+        ```
 - awk 是**按行处理**的
     - 默认以换行符为标记识别每一行
     - 默认使用**空格**作为分隔符，并且会将多个连续的分隔符当作一个分隔符
@@ -357,8 +364,367 @@
             - `awk 'BEGIN{param1="test1"; param2="test2"; print param1, param2}'`，输出`test1 test2`
 
 
+## awk中的printf
 [top](#catalog)
+- awk中使用printf需要注意的3点
+    1. printf不会换行，需要手动添加`\n`
+    2. `输出格式`和文本之间需要使用`,`分隔
+        - `ll|awk '{printf "%s\n", $NF}'`
+    3. `输出格式`中的`格式替换符`必须与文本参数一一对应，否则会产生一次
+        - `ll|awk '{printf "%s\t\t%s\n", $1, $NF}'`
 
+- 应用
+    - 添加表头
+        - `ll|awk 'BEGIN{printf "%-10s\t%-10s\n", "type", "name"} {printf "%-10s\t%-10s\n", $1, $NF}'`
+
+
+## awk的pattern
+[top](#catalog)
+- 5中模式
+    - BEGIN/END模式
+    - 空模式
+    - 关系运算模式
+    - 正则模式
+    - 行范围模式
+
+- `空模式`：如果没有指定模式，如：`ll|awk '{print $NF}'`，这种情况成为**空模式**
+    - 空模式会匹配每一行，所以每一行都满足条件
+
+- `关系运算模式`：pattern可以理解为**条件**
+    - awk是一行一行处理文本的，如果指定了pattern，则只有满足条件的才会执行处理
+        - `awk 'NF==2{print $0}' number.txt`，输出文件中只有两列的行
+        - `awk 'NF>2{print $0}' number.txt`，输出文件中列数大于两列的行
+        - `awk '$1==123{print $0}' number.txt`，输出文件中第一列等于123的行
+        - 测试内容
+            ```
+            sfsofh 66666
+            123 444 dsfd
+            123 erertert iicvxv
+            777
+
+            345 4353
+
+            4444444 23rtrtrh
+            ```
+
+    - pattern中的关系运算符
+
+        |关系运算符|含义|示例|
+        |-|-|-|
+        |<|小于| x < y|
+        |<=|小于等于|x <= y|
+        |==|等于|x == y|
+        |!=|不等于|x != y|
+        |>=|大于等于|x >= y|
+        |>|大于|x > y|
+        |~|与对应的正则匹配则为真|x ~/正则/|
+        |!~|与对应的正则匹配则为真|x !~/正则/|
+
+    - 与正则表达式的匹配
+        - 测试内容:ip.txt
+            ```
+            aa 192.168.1.2
+            bb 192.168.67.2
+            cc 5.8.2.4
+            dd 192.168.1.43
+            ee 192.111.44.3
+            ff 192.168.34.2
+            gg 0.5.4.3
+            ```
+        - 搜索`192.168.0.0`网段的地址
+            - `awk '$2~/192\.168\.[0-9]{1,3}\.[0-9]{1,3}/{print $0}' ip.txt`，输出
+                ```
+                aa 192.168.1.2
+                bb 192.168.67.2
+                dd 192.168.1.43
+                ff 192.168.34.2
+                ```
+
+- `正则模式`
+    - 语法：`awk '/正则表达式/{action}' file...`
+        - 必须使用`//`将正则表达式扩起来
+        - 执行时之前，如果某一行与正则表达式不匹配，则会回执行
+    - 正则表达式中有`/`时需要转义：`\/`
+        - `awk '/\/bin\//{print $0}' /etc/passwd`
+    - 如果需要使用扩展正则表达式，则需要添加选项：`--posix` 或者 `--re-interval`
+        - `awk --re-interval '/ro{2}/{print $0}' /etc/passwd`
+
+- 行范围模式
+    - 语法：`awk '/正则1/,/正则2/{action}' file...`
+        - 正则1匹配到的行为开始行，正则2匹配到的行为结束行
+        - 行范围模式只会处理：`[开始行，结束行]`这个范围的行
+    - 测试内容:row.txt
+        ```
+        bbb aaa eee
+        ccc ddd sss rrr
+        rrr sss ccc
+        ttg hhh ddd
+        rrr www ooo
+        sss vvv xxx
+        ww ooxll ss
+        xxx ccc sss
+        ```
+    - `awk '/ddd/,/xxx/{print $0}' row.txt`，输出
+        ```
+        ccc ddd sss rrr
+        rrr sss ccc
+        ttg hhh ddd
+        rrr www ooo
+        sss vvv xxx
+        ```
+    - 使用`关系运算模式`替代
+        - 输出3-6行的内容
+            - `awk 'NR>=3 && NR<=6{print $0}' row.txt`
+
+## awk动作
+[top](#catalog)
+- 组合语句：`{}`
+    - 用来组合一个或多个语句，组合多个语句时，语句之间需要使用`;`分隔
+        - `ll|awk '{print $NF}'`，组合了`print`动作
+        - `ll|awk '{print $1; print $NF}'`，组合了多个动作
+        - 
+    - 可以同时并联多个`{}`
+        - `ll|awk '{print $1}{print $NF}'`，并联多个`{}`
+- 输出语句：`print`、`printf`
+- 控制语句
+    - if
+        - `ll|awk '{if(NR == 1){print $1; print $2}}'`，判断行号是否为1，即只输出第一行
+        - 如果if后只有一个执行语句，则`{}`可以省略
+            - `ll|awk '{ if(NR == 1) print $1 }'`
+        - 可以用`关系运算模式`来替换
+            - `ll|awk 'NR == 1 {print $1;print $2}'`
+    - if else if else
+        - `seq 10 20 |awk '{ if ($0 >= 10 && $0 < 13){print $0, "aaa"} else if ($0 >= 13 && $0 <16) {print $0, "bbb"} else {print $0, "ccc"} }'`
+            - 相当于
+                ```
+                if ($0 >= 10 && $0 < 13){
+                    print $0, "aaa"
+                } 
+                else if ($0 >= 13 && $0 <16) {
+                    print $0, "bbb"
+                } 
+                else {
+                    print $0, "ccc"
+                }
+                ```
+            - 输出
+                ```
+                10 aaa
+                11 aaa
+                12 aaa
+                13 bbb
+                14 bbb
+                15 bbb
+                16 ccc
+                17 ccc
+                18 ccc
+                19 ccc
+                20 ccc
+                ```
+    - 三元运算符:`? :`
+        - `awk -F: '{$3<500?a++:b++} END{print a,b}' /etc/passwd`
+    - 循环控制
+        - for
+            - `awk 'BEGIN{ for(i=1; i<5; i++){print i} }'`，输出1234
+        - while
+            - `awk 'BEGIN{ i=1; while(i<5){print i; i++} }'`，输出1234
+        - do while
+            - `awk 'BEGIN{ i=1; do{print i; i++}while(i<5)}'`，输出1234
+        - continue，跳出当前循环
+            - `awk 'BEGIN{ for(i=1; i<5; i++){ if(i%2==0){continue}; print i } }'`，输出13
+        - break，跳出整个循环
+            - `awk 'BEGIN{ for(i=1; i<5; i++){ if(i>3){break}; print i } }'`，输出123
+    - exit
+        - 结束后边的所有动作，如果有END则执行END中的动作
+            - `ll|awk 'BEGIN{print "start"; exit}{print $0} END{print "end"}'`，只输出：start、end
+    - next
+        - 跳过当前行的处理
+            - `seq 1 5 |awk '{ if($0==2){next}; print $0}'`，输出1345
+        - 与continue不同，continue用于循环中，跳出当前循环，而next直接跳过当前行的处理
+
+## awk数组
+[top](#catalog)
+- awk中的数组可以理解为字典，可以使用数字做下标，也可以使用字符串做下标
+- 创建数组
+    - `awk 'BEGIN{ list[0]="a"; list[1]="b"; list[2]="c"; print list[2]}'`，输出c
+    - `awk 'BEGIN{ list["first"]="a"; list["second"]="b"; list["third"]="c"; print list["second"]}'`，输出b
+- 数组中的**空值**
+    - awk数组中的元素值可以被设置为空：`list[0]=""`，打印时也是空值
+        - `awk 'BEGIN{ list[0]="a"; list[1]=""; print list[1]}'`，输出空
+    - 如果通过不存在的下标获取元素，awk将会自动创建这个元素，并设置为空字符串
+        - `awk 'BEGIN{ list[0]="a"; list[1]="b"; print list[5]}'`，输出空值
+- 判断元素**是否存在**，判断元素是**否为空值**
+    - 不能直接判断是否等于空值：`list[5]==""`，因为无法判断`list[5]`是空值，还是不存在
+    - 判断是否存在：`下标 in 数组`
+        - `awk 'BEGIN{ list[0]="a"; list[1]="b"; if(5 in list){print "has 5"} else {print "not 5"}}'`，输出：not 5
+- 删除数组中的元素
+    - `delete 数组[下标]`
+        - `awk 'BEGIN{ list[0]="a"; list[1]="b"; print list[1]; delete list[1]; print list[1]}'`，输出b和一个空值
+
+- 数组的遍历
+    - `for(i=0; i<xxx;i++)`，只限于使用**数字作为下标的数组**
+        - `awk 'BEGIN{ list[0]="a"; list[1]="b"; list[2]="c"; for(i=0;i<=2; i++){print list[i]} }'`，输出abc
+    - `for(i in 数组)`，数字下标、字符串下标数组都可以遍历，但是遍历的时候是无序的
+        - `awk 'BEGIN{ list["first"]="a"; list["second"]="b"; list["third"]="c"; list["fourty"]="d"; for(i in list){print list[i]}}'`
+
+- 数值运算
+    - 数值类型的计算
+        - `awk 'BEGIN{a=1; print a; a++; print a}'`，输出1和2
+    - 字符类型的计算，会先将该变量设为0然后进行计算
+        - `awk 'BEGIN{a="test"; print a; a++; print a}'`，输出test和1
+    - 对数组中位置元素的计算
+        - 首先awk会自动将不存在的元素设为`""`，然后做计算时会设为0再参与计算
+        - `awk 'BEGIN{print list["idx"]; list["idx"]++; print list["idx"]; list["idx"]++; print list["idx"];}'`，输出空行、1、2
+
+- 数组的应用：统计IP出现的次数
+    - 测试内容:ip.txt
+        ```
+        aa 192.168.1.2
+        df 192.168.1.2
+        rt 192.168.1.2
+        tyu 192.168.1.2
+        bcv 192.168.1.2
+        bb 192.168.67.2
+        cc 5.8.2.4
+        dd 192.168.1.43
+        cc 5.8.2.4
+        cc 5.8.2.4
+        ee 192.111.44.3
+        ff 192.168.34.2
+        gjh 192.168.34.2
+        opi 192.168.34.2
+        gg 0.5.4.3
+        ```
+    - `awk 'BEGIN{printf "%-15s\t%-5s\n", "ip", "count"}{ count[$2]++} END{for(ip in count){printf "%-15s\t%-5s\n", ip, count[ip]}}' ip.txt`，输出
+        ```
+        ip              count
+        5.8.2.4         3    
+        192.168.1.2     5    
+        192.111.44.3    1    
+        0.5.4.3         1    
+        192.168.1.43    1    
+        192.168.67.2    1    
+        192.168.34.2    3    
+        ```
+## awk内置函数
+[top](#catalog)
+- 常用算数函数
+    - rand，生成随机数，但只使用rand返回的值是不变的，需要配合srand函数，**生成的值都是小于1的小数**
+        - `awk 'BEGIN{print rand()}'`
+        - `awk 'BEGIN{srand(); print rand()}'`
+        - `awk 'BEGIN{srand(); print 100*rand()}'`，获得一个100以内的随机数
+    - int，获取数值的正数部分，不会做四舍五入
+        - `awk 'BEGIN{print int(100.9)}'`
+        - `awk 'BEGIN{srand(); print int(100*rand())}'`，获得一个100以内的随机整数
+
+- 常用字符串函数
+    - gsub(替换前字符串，替换后字符串，[数据，默认为$0])，**全局替换**
+        - 变量的替换
+            - `awk 'BEGIN{ a = "abacd"; gsub("a", "A", a); print a}'`，输出AbAcd
+        - 文件内容的替换
+            - `ll|awk '{gsub("r", "R"); print $0}'`
+            - `ll|awk '{gsub("r", "R", $0); print $0}'`，两者的输出相同
+        - 使用正则表达式
+            - `awk 'BEGIN{ a = "abcd01234"; gsub("[a-z]", "6", a); print a}'`，输出666601234
+    
+    - sub(替换前字符串，替换后字符串，[数据，默认为$0])，**单次替换**，其他功能与`gsub`相同
+        - `awk 'BEGIN{ a = "abacd"; sub("a", "A", a); print a}'`，输出Abacd
+    
+    - length([字符串，默认为$0])，获取字符串长度，参数默认
+        - `ll|awk '{print length($0)}'`
+        - `ll|awk '{print length()}'`
+    - index(字符串，目标字符串)，获取目标字符串的位置
+        - `echo abcdef|awk '{print index($0, "bcd")}'`
+
+    - split(字符串，保存数组，分隔符)，按照分隔符来拆分字符串，并将结果保存到数组中，返回值是数组的长度，数组的下标从1开始
+        - `awk -v str="aa bb cc dd ee" 'BEGIN{len=split(str, list, " ");for(i=1;i<=len;i++){print list[i]} }'`，输出
+            ```
+            aa
+            bb
+            cc
+            dd
+            ee
+            ```
+
+- 其他常用函数
+    - asort(数组)，对数组进行排序，排序后，下标会被重置从1开始，返回值是数组的长度
+        - `awk 'BEGIN{t["a"]=333;t["b"]=222;t["c"]=111; asort(t); for(i in t){print i, t[i]}}'`，输出
+            ```
+            1 111
+            2 222
+            3 333
+            ```
+    - asort(源数组，新数组)，对数组进行排序，排序后的结果保存在新数组中，下表从1开始，源数组不会被修改，返回值是数组的长度
+        - `awk 'BEGIN{t["a"]=333;t["b"]=222;t["c"]=111; asort(t, new); for(i in t){print i, t[i]}; for(j in new){print j, new[j]}}'`，输出
+            ```
+            a 333
+            b 222
+            c 111
+            1 111
+            2 222
+            3 333
+            ```
+        - `awk 'BEGIN{t["a"]="xxxx";t["b"]="ssss";t["c"]="zzz"; asort(t, new); for(i in t){print i, t[i]}; for(j in new){print j, new[j]}}'`，输出
+            ```
+            a xxxx
+            b ssss
+            c zzz
+            1 ssss
+            2 xxxx
+            3 zzz
+            ```
+
+    - asorti(源数组，新数组)，对字符串下标进行排序，排序结果保存到新数组中，如果是数字下标就没有排序的必要了，返回值是数组长度
+        - `awk 'BEGIN{t["b"]=333;t["d"]=222;t["a"]=111; len=asorti(t, new); for(i=1;i<=len;i++){print i, new[i]}}'`，输出
+            ```
+            1 a
+            2 b
+            3 d
+            ```
+        - `awk 'BEGIN{t["b"]=333;t["d"]=222;t["a"]=111; len=asorti(t, new); for(i=1;i<=len;i++){print i, new[i], t[new[i]]}}'`，按照排序后的index顺序输出
+            ```
+            1 a 111
+            2 b 333
+            3 d 222
+            ```
+## awk的两个重要原则
+[top](#catalog)
+- 两个原则
+    - 如果省略了Action，则当前行满足Pattern时，默认动作为：`{print $0}`
+    - 0、空字符表示false，非0、非空字符串表示true
+- 示例
+    - `seq 1 5|awk '1'`，因为pattern是1，所以所有行都满足条件，会全部输出，输出
+        ```
+        1
+        2
+        3
+        4
+        5
+        ```
+    - `seq 1 5|awk '0'`，因为pattern是0，默认为假，所以所有行都不会输出
+    - `seq 1 5|awk '!0'`，在0上取反，pattern为真，输出所有行，输出
+        ```
+        1
+        2
+        3
+        4
+        5
+        ```
+    - 打印奇数行
+        - `seq 1 5|awk 'i=!i'`
+        - 原理
+            1. 第一行
+                1. i被自动创建为空值
+                2. 空值被取反，变为true，并赋给i
+                3. 此时i=true，输出第一行
+            2. 第二行
+                1. i=true，对i取反，并赋给i
+                2. i=!true=false，跳过第二行
+            3. i在true/false间循环，输出所有奇数行
+    - 打印偶数行
+        - `seq 1 5|awk '!(i=!i)'`
+        - 原理与打印奇数行相同，只是有添加了一层取反，所以只输出偶数行
+[top](#catalog)
 - sort
 - uniq
 - seq 1 10

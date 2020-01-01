@@ -2,6 +2,7 @@
     - https://www.bilibili.com/video/av37383358
     - https://blog.csdn.net/weixin_34268843/article/details/93103820
     - https://blog.51cto.com/xuanwei/1844305
+    - http://www.zsythink.net/archives/1411
 
 <span id="catalog"></span>
 
@@ -13,6 +14,7 @@
     - [扩展正则](#扩展正则)
     - [posix方括号字符集](#posix方括号字符集)
     - [元字符](#元字符)
+- [转义字符](#转义字符)
 
 
 # 测试内容
@@ -168,5 +170,23 @@ never   ExperimentalThe ! type, also called "never".
 |\r|回车|\r 匹配回车|
 |\t|横向制表符|\t 匹配一个横向制表符|
 |\v|垂直制表符|\v 匹配一个垂直制表符|
+
+
+# 转义字符
+[top](#catalog)
+
+|符号|含义|
+|-|-|
+|\a|警告字符，通常为ASCII的`BEL字符`|
+|\b|后退|
+|\c|抑制(不显示)输出结果中任何结尾的换行字符|
+|\f|换页|
+|\n|换行|
+|\r|回车|
+|\t|tab，水平制表符|
+|\v|垂直制表符|
+|\\|`\`本身|
+|\ddd|表示1到3位数八进制值的字符，仅在格式字符串中有效|
+|\0ddd|表示1到3位的八进制值字符|
 
 [top](#catalog)

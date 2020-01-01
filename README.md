@@ -17,7 +17,7 @@
     - [maven](maven/maven_memo.md)
 - linux
     - [基本知识](linux/base/base.md)
-    - [通配符与正则表达式](linux/cmd/regular.md)
+    - [通配符、正则表达式、转义字符](linux/cmd/regular.md)
     - [文件处理指令](linux/cmd/cmd.md)
     - [压缩、解压缩、归档工具](#linux/cmd/zip.md)
 - mysql
