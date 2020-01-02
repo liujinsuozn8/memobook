@@ -697,6 +697,7 @@
     - 多行注释： 开头`:<<!`, 结尾`!`
     - 单行注释: `#`
 
+
 ## shell变量
 [top](#catalog)
 - shell变量
@@ -797,6 +798,13 @@
         then
             语句
         fi
+
+        if [ 条件判断式 ]
+        then
+            语句
+        else
+            语句
+        fi
         ```
 - case
     - 语法
@@ -881,6 +889,28 @@
         #调用
         funcname $参数1 $参数2
         ```
+
+## 结束shell
+[top](#catalog)
+- exit [结束码]
+    - shell执行结束后可以通过：`echo $?`，来查看shell的执行状况，`0`为正常结束
+
+## shell数组
+[top](#catalog)
+- 参考：https://www.codelast.com/tag/%E5%88%A4%E6%96%AD%E5%AD%97%E7%AC%A6%E4%B8%B2%E6%98%AF%E5%90%A6%E5%9C%A8shell%E6%95%B0%E7%BB%84%E4%B8%AD/
+- `@`表示所有元素
+- 查询字符串是否在数组中
+    ```
+    #!/bin/bash
+    SUBSYSTEM=("aa","bb","cc")
+
+    if !(echo "${SUBSYSTEM[@]}" | grep -w $1 &>/dev/null;) then
+        echo "Not Found"
+        exit 2
+    else
+        echo "Found"
+    fi
+    ```
 
 # 其他
 [top](#catalog)
