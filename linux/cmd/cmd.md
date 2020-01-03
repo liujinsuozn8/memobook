@@ -306,10 +306,11 @@
 ## awk分隔符
 [top](#catalog)
 - 输入分隔符(FS, field separator)：分隔输入文本时使用的分隔符，默认是空格
-    - `-F分隔符`，指定输入分隔符
+    - `-F分隔符`，指定输入分隔符，可以同时指定多个分隔符
         - `echo aaa#bbb#ccc|awk -F# '{print $1, $2, $3}'`
         - `echo aaa---bbb---ccc|awk -F--- '{print $1, $2, $3}'`
         - `echo aaa---bbb---ccc|awk -F"---" '{print $1, $2, $3}'`
+        - `ll *.txt|awk -F'[ .]' '{for(i=1;i<NF;i++){printf "%s\t", $i};printf "%s\n", $NF}'`，同时指定`空格`和`.`为分隔符
 
     - `-v FS=分隔符`，通过`-v`设定awk内置变量`FS`来修改分隔符，效果与`-F`相同
         - `echo aaa#bbb#ccc|awk -v FS=# '{print $1, $2, $3}'`
