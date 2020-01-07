@@ -1,4 +1,5 @@
 <span id="catalog"></span>
+
 - 基础
     - [基本流程](#基本流程)
     - [类文件](#类文件)
@@ -14,7 +15,6 @@
     - [package](#package)
     - [import](#import)
     - [内存解析](#内存解析)
-
 - OOP
     - [参数传递机制](#参数传递机制)
     - [权限修饰符](#权限修饰符)
@@ -3747,23 +3747,47 @@ class A {
 ### 反射-Class类
 [top](#catalog)
 * <label style="color:red">在Object中定义了方法：`public final Class getClass()`，被所有子类继承，是java反射的源头</label>
-* 运行时类的生成
-    * 执行javac.exe生成一个或多个字节码文件(.class文件)
-    * 使用java.exe运行某个字节码文件，将该文件导入内存中，即加载类到内存
-    * 加载到内存的类，称为**运行时类，并作为Class类的一个实例**
-* Class对象只能由系统建立对象
-* 一个Class对象对应一个JVM中的.class文件，即一个运行时类一个Class对象
-* 通过Class可以完整的得到一个类中所有被加载的结构
-* Class类是反射的源头，使用反射前必须获得相应的Class对象
-* Class类的常用方法
+- 对于每一个类, JRE都为它保留一个不变的Class类型的实例
+- 可以有Class实例的类型
+    - class
+        - 外部类、内部类(成员内部类、静态内部类)、局部内部类、匿名内部类
+    - interface
+    - enum
+    - annotation
+    - primitive type 基本类型
+    - void
+    - []
+- Class实例包含的内容
+    - 类的属性
+    - 类的方法
+    - 类的构造器
+    - 类实现了哪些接口
+- Class实例的特点
+    - Class本身也是一个类
+    - Class实例只能由系统创建
+    - **一个运行时类** 对应 **一个Class实例**
+        - 一个加载的类在JVM中只会有一个Class实例
+        - 一个Class实例对应一个JVM中的.class文件
+    - 每个类的实例都会记得自己是由哪个Class实例生成的
+    - 通过Class可以完整的得到一个类中的所有被加载结构
+
+- **Class类是反射的源头，动态加载类或运行类之前,必须获得相应的Class实例**
+
+- 运行时类的生成
+    - 执行javac.exe生成一个或多个字节码文件(.class文件)
+    - 使用java.exe运行某个字节码文件，将该文件导入内存中，即加载类到内存
+    - 加载到内存的类，称为**运行时类，并作为Class类的一个实例**
+
+
+- Class类的常用方法
 
     |方法名|功能说明|
     |-|-|
-    |static Class forName(Stringname)|返回指定类名name的Class对象|
-    |Object newInstance()|调用缺省构造函数，返回该Class对象的一个实例|
-    |getName()|返回此Class对象所表示的实体(类、接口、数组类、基本类型 或void)名称|
-    |Class getSuperClass()|返回当前Class对象的父类的Class对象|
-    |Class [] getInterfaces()|获取当前Class对象的接口|
+    |static Class forName(Stringname)|返回指定类名name的Class实例|
+    |Object newInstance()|调用缺省构造函数，返回该Class实例的一个实例|
+    |getName()|返回此Class实例所表示的实体(类、接口、数组类、基本类型 或void)名称|
+    |Class getSuperClass()|返回当前Class实例的父类的Class实例|
+    |Class [] getInterfaces()|获取当前Class实例的接口|
     |ClassLoader getClassLoader()|返回该类的类加载器|
     |Class getSuperclass()|返回表示此Class所表示的实体的超类的Class|
     |Constructor[] getConstructors()|返回一个包含某些Constructor对象的数组|
@@ -3775,7 +3799,7 @@ class A {
         Class cls = A.class;
         System.out.println(A); // class A
         ```
-    2. 通过类实例对象调用getClass()获取Class对象
+    2. 通过类实例对象调用getClass()获取Class实例
         ```java
         A a = new A();
         Class cls = a.getClass();
@@ -3792,23 +3816,15 @@ class A {
         Class<?> str = classLoader.loadClass("java.lang.String");
         System.out.println(str); // class java.lang.String
         ```
-* 拥有Class对象的类型
-    * class：外部类、内部类(成员内部类、静态内部类)、局部内部类、匿名内部类
-    * interface 接口
-    * 数组，**只要数组的类型和维度一样，就是同一个Class**
-    * enum 枚举
-    * annotation 注解
-    * 基本数据类型
-    * void
 
 ### 反射-类的加载
 [top](#catalog)
 * 当程序使用一个**未被加载到内存中的类**时，类的加载过程：
-    1. 类的加载Load：将类的*.class文件读入内存，创建Class对象，**此过程由类加载器完成**
+    1. 类的加载Load：将类的*.class文件读入内存，创建Class实例，**此过程由类加载器完成**
         * **导入内存**：将*.class文件(字节码内容)加载到内存
         * **构造数据结构**：将加载的静态数据转换成方法区的运行时数据结构
-        * **生成Class对象**：生成代表该类的java.lang.Class对象，并**作为方法区中类数据的访问入口(即引用地址)**
-            * 使用和访问该类数据必须通过这个Class对象
+        * **生成Class实例**：生成代表该类的java.lang.Class实例，并**作为方法区中类数据的访问入口(即引用地址)**
+            * 使用和访问该类数据必须通过这个Class实例
     2. 类的链接Link：将类的二进制数据合并到JRE中
         * **验证**：检查加载到内存的类信息符和JVM规范。如：以cafe开头，没有安全问题
         * **准备**：在**方法区**中，为**类的静态变量**分配内存并设置静态变量的默认初始值
