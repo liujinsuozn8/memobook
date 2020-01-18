@@ -82,8 +82,20 @@
     - [NoSql数据库的四大分类](#NoSql数据库的四大分类)
     - [MongoDB简介](#MongoDB简介)
     - [分布式数据库中CAP原理](#分布式数据库中CAP原理)
+    - [分布式数据库中BASE](#分布式数据库中BASE)
+    - [分布式与集群简介](#分布式与集群简介)
 
 - [Redis](#Redis)
+    - [Redis简介](#Redis简介)
+    - [Redis的安装](#Redis的安装)
+    - [redis启动后杂项基础知识](#redis启动后杂项基础知识)
+- [](#)
+- [](#)
+- [](#)
+- [](#)
+- [](#)
+- [](#)
+- [](#)
 - [](#)
 - [](#)
 
@@ -491,8 +503,36 @@
     - 数据库的写实时性和读实时性需求
         - 对关系数据库来说，插入一条数据之后立刻查询，是肯定可以对出这条数据的，**但是对于很多web应用来说，并不要这么高的实时性**，如发一条信息之后，过几秒乃至十几秒之后，订阅者才看到这条动态是完全可以接受的
     - 对复杂的SQL查询，特别是多表关联查询的需求
-        - <label style="color:red">任何大数据量的web系统，都非常忌讳多个大表的关联查询</l>
+        - <label style="color:red">任何大数据量的web系统，都非常忌讳多个大表的关联查询</label>
 
+## 分布式数据库中BASE
+[top](#catalog)
+- BASE是一种解决方案，是为了解决**关系数据库强一致性导致的问题而引起的可用性降低问题**
+- BASE是三个术语的缩写
+    - 基本可用：Basically Available
+    - 软状态：Soft state
+    - 最终一致性：Eventually consistent
+- BASE的思想
+    - **在某一时刻，通过让系统放松对数据一致性的要求，来换取系统整体伸缩性和性能**
+- 为什么需要BASE
+    - 大型系统往往由于地域分布对和极高性能的追求，不可能采用分布式事务来完成这些指标。如果想获得这些指标，必须采用另一种方式来完成，所以使用BASE
+
+## 分布式与集群简介
+[top](#catalog)
+- 分布式系统 （distributed system） 的概念
+    - <label style="color:red">由多台计算机和通信软件组件通过计算机网络连接(本地网/广域网)组成</label>
+    - 分布式系统是建立在网络之上的软件系统。
+        - 因为软件的特性，所以分布式系统具有**高度的内聚性和透明性**
+        - 网络和分布式系统之间的**区别**更多的在于**高层软件(特别是操作系统)，而不是硬件**
+    - 分布式系统可以应用在不同的平台上，如：PC、工作站、局域网、广域网等
+
+- **分布式** 的概念
+    - 不同的多台服务器上面部署<label style="color:red">不同</label>的服务模块(即工程)，他们之间**通过Rpc/Rmi通信和调用**，<label style="color:red">对外提供服务和组内协作</label>
+- **集群** 的概念
+    - 不同的多台服务器上面部署<label style="color:red">相同</label>的服务模块(即工程)，通过分布式调度软件进行统一的调度，<label style="color:red">对外提供服务和访问</label>
+
+
+- 负载均衡：平衡服务器压力
 
 ## MongoDB简介
 [top](#catalog)
@@ -500,9 +540,98 @@
 - MongoDB是一个介于关系数据库和非关系数据库之间的产品，是非关系数据库中功能最丰富，最想关系数据库的
 
 # Redis
+## Redis简介
 [top](#catalog)
-KV + Cache + Persisten
+- 是什么
+    - <label style="color:red">KV + Cache + Persisten</label>
+    - Redis： REmote DIcationary Server， 远程字典服务器
+    - Redis是完全开源免费的，用C语言编写的，遵守BSD协议，是一个高性能的（key/value）分布式内存数据库，基于内存运行，并支持持久化的NoSQL数据库，是当前最热门的NoSql数据库之一，也被人们称为**数据结构服务器**
+    - Redis与其他key-value缓存产品(如memcache)相比有以下三个特点
+        - 持久化：Redis支持数据的持久化，可以将内存中的数据保持在磁盘中，重启的时候可以再次加载进行使用
+        - 更多的数据类型：Redis不仅仅支持简单的key-value类型的数据，同时还提供list，set，zset，hash等数据结构的存储
+        - 备份：Redis支持数据的备份，即master-slave模式的数据备份
+- 能做什么
+    - 内存存储和持久化：redis支持**异步**将内存中的数据写到硬盘上，**同时不影响继续服务**
+    - 取最新N个数据的操作，如：可以将最新的10条评论的ID放在Redis的List集合里面
+    - 模拟类似于HttpSession这种需要设定过期时间的功能
+    - 发布、订阅消息系统
+    - 定时器、计数器
+- 下载
+    - redis.io
+    - www.redis.cn
+- 怎么使用
+    - 数据类型、基本操作和配置
+    - 持久化和复制，RDB/AOF
+    - 事务的控制
+    - 复制
+
+## Redis的安装
+[top](#catalog)
+- 下载redis-3.0.4.tar.gz，放入linux的`/opt`目录
+- /opt目录，解压：`tar -zxvf redis-3.0.4.tar.gz`
+- 解压完后出现文件夹：`redis-3.0.4`
+- 进入目录：`cd redis-3.0.4`
+- **编译**：在`redis-3.0.4`目录下执行`make`命令
+    - 肯能会有的问题
+        - 如果缺少gcc
+            - 安装gcc
+                - 能上网：安装 yum install gcc-c++
+                - 不能上网：使用光盘镜像 ??????vedio7
+            - 测试：gcc -v
+        - 2次make时，缺少某些目录
+            - 运行：`make distclean`，然后再执行：`make`
+    - 执行测试程序
+        - Redis Test
+        
+- **安装**：如果`make`完成后继续执行`make install`
+    - `redis-3.0.4`目录下会生成配置文件：`redis.conf`
+    - 备份`redis.conf`到其他目录，如：`/myredis`
+        - 通用配置部分：GENERAL
+            - daemonize no/yes：
+                - redis默认不会在后台按照守护进程来执行
+                - 如果需要以守护进程执行，则redis将会在文件：`/var/run.redis.pid`中添加进程ID
+        - **启动redis时，可以通过指定配置文件来启动**
+- 查看默认安装目录：`usr/local/bin`
+    - 该目录下的文件
+        -  redis-benchmark
+        -  redis-check-aof
+        -  redis-check-dump
+        -  redis-cli
+        -  redis-sentinel -> redis-server
+        -  redis-server
+- 启动
+    - 启动redis，指令：`redis-server /myredis/redis.conf`
+    - 进入reids，指令：`redis-cli -p 6379`
+    - 控制台会切换为：`127.0.0.1:6379`
+    - 测试Redis是否启动成功，指令:`ping`
+        - 输出`PONG`则表示启动成功
+    
+    - 在外部检查redis是否启动，指令：`ps -ef | grep redis`
+- 测试程序：helloworld
+    - 在redis控制台中输入：`set k1 hello`
+    - 获取输入值：`get k1 `
+
+- 关闭
+    - `shutdown`
+
+## redis启动后杂项基础知识
+[top](#catalog)
+- 单进程
+- 默认16个数据库，类似数组下标，从0开始，**初始默认使用0号库**
+- 数据库指令
+
+    |命令|作用|
+    |-|-|
+    |Select|切换数据库|
+    |Dbsize|查看当前数据库的**key数量**|
+    |Flushdb|清空当前数据库|
+    |Flushall|清空所有数据库|
+- 统一密码管理，16个库都是同一的密码，要
+    |||
+    |||
+    |||
 
 
+- 
 
 [top](#catalog)
