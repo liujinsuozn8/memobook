@@ -1,71 +1,3 @@
-* redis安装后，默认有16个数据库0~15
-* Redis的五大数据类型：
-    * String 字符串
-        * 一个key对应一个value
-        * 二进制安全的
-        * 除了字符串，还可以存放图片数据
-        * 字符串value最大是512M
-    * Hash 哈希
-        * 一个hash对应一个键值对集合，字段不可以重复
-        * 一个string类型的field和value的映射表
-        * 适合存储对象
-    * List 列表
-        * 列表是简单的字符串列表
-        * 按照插入顺序排序
-        * 可以在头部或尾部添加元素
-        * 本质是链表
-        * 列表有序、可以重复
-        * <label style="color:red">如果所有元素都被移除了，对应都键会消失</label>
-    * Set 集合
-        * Set是string类型的无序集合
-        * 底层是HashTable数据结构，set可以存放很多字符串元素，且元素无序不重复
-    * zset (sorted set) 有序集合
-* 基本操作
-    * 添加key：`set key value`
-    * 查看当前redis的所有key: `keys *`
-    * 获取key对应的值：`get key`
-    * 查看当前数据库的key-val数量：`dbsize`
-    * 清空当前数据库：`flushdb`
-    * 清空所有数据库：`flushall`
-* string-CRUD操作
-    * set：key存在=修改，key不存在=添加
-    * get：取得
-    * del：删除
-    * setex(set with expire)：`setex key time value`超时删除key
-    * mset key value [key value ...] 一次性设置多个key value
-    * mget key [key...] 一次性获取多个value
-* hash-CRUD操作
-    * `hset key field value`，添加，可以重复对一个key添加多个字段
-    * `hget key field` 查询
-    * `hgetall key` 查询所有字段
-    * `hdel key` 删除
-    * `hmset key field value [field value ...]` 对一个key一次性添加多个字段
-    * `hmget key filed [field ...]`查询一个key的多个字段
-    * `hlen key` 查询有多少个字段
-    * `hexists key fidle` 检查是否存在指定字段
-* list-CRUD操作
-    * `lpush key node....` 从左边添加
-        * `lpush key a b c` 链表的内存结构 c-->b-->a，即从左边添加
-    * `rpush key node....` 从右边添加
-    * `lrange key start end` end=-1/-2... 表示取到最后一个/取到倒数第二个
-    * `lpop key` 从左侧弹出一个数据
-    * `rpop key` 从右侧弹出一个数据
-    * `del key` 删除key-value
-    * `lindex key index` 使用索引获取元素，如果index越界，则返回nil
-    * `llen key` 返回list的长度，如果key不存在，key被解释为空列表，返回0
-* set-CRUD操作
-    * `sadd key value [value...]` 添加元素
-    * `smembers emails` 从集合中取出所有元素
-    * `sismember key value` 判断是否是集合成员
-    * `srem key value` 删除某个元素
-
-
-
-
-
-
-
-
 <span id="catalog"></span>
 
 - [NoSql入门](#NoSql入门)
@@ -84,11 +16,17 @@
     - [分布式数据库中CAP原理](#分布式数据库中CAP原理)
     - [分布式数据库中BASE](#分布式数据库中BASE)
     - [分布式与集群简介](#分布式与集群简介)
-
-- [Redis](#Redis)
-    - [Redis简介](#Redis简介)
-    - [Redis的安装](#Redis的安装)
-    - [redis启动后杂项基础知识](#redis启动后杂项基础知识)
+- [Redis简介](#Redis简介)
+- [Redis的安装](#Redis的安装)
+- [Redis启动后的杂项基础知识](#Redis启动后的杂项基础知识)
+    - [杂项基础知识](#杂项基础知识)
+    - [数据库指令](#数据库指令)
+- [Redis的数据类型](#Redis的数据类型)
+    - [Redis的五大数据类型](#Redis的五大数据类型)
+    - [获得redis常见数据库类型操作指令](#获得redis常见数据库类型操作指令)
+    - [Redis键--key](#Redis键--key)
+    - [Redis字符串--String](#Redis字符串--String)
+    - [Redis列表--List](#Redis列表--List)
 - [](#)
 - [](#)
 - [](#)
@@ -98,6 +36,7 @@
 - [](#)
 - [](#)
 - [](#)
+- [总结](#总结)
 
 # NoSql入门
 ## web结构的演进
@@ -531,7 +470,6 @@
 - **集群** 的概念
     - 不同的多台服务器上面部署<label style="color:red">相同</label>的服务模块(即工程)，通过分布式调度软件进行统一的调度，<label style="color:red">对外提供服务和访问</label>
 
-
 - 负载均衡：平衡服务器压力
 
 ## MongoDB简介
@@ -539,12 +477,13 @@
 - MongoDB是一个**基于分布式文件存储的数据库**，由C++编写，是为了给WEB应用提供可扩展的改性数据存储解决方案
 - MongoDB是一个介于关系数据库和非关系数据库之间的产品，是非关系数据库中功能最丰富，最想关系数据库的
 
-# Redis
-## Redis简介
+
+# Redis简介
 [top](#catalog)
 - 是什么
     - <label style="color:red">KV + Cache + Persisten</label>
     - Redis： REmote DIcationary Server， 远程字典服务器
+    - **分布式数据库**
     - Redis是完全开源免费的，用C语言编写的，遵守BSD协议，是一个高性能的（key/value）分布式内存数据库，基于内存运行，并支持持久化的NoSQL数据库，是当前最热门的NoSql数据库之一，也被人们称为**数据结构服务器**
     - Redis与其他key-value缓存产品(如memcache)相比有以下三个特点
         - 持久化：Redis支持数据的持久化，可以将内存中的数据保持在磁盘中，重启的时候可以再次加载进行使用
@@ -565,7 +504,7 @@
     - 事务的控制
     - 复制
 
-## Redis的安装
+# Redis的安装
 [top](#catalog)
 - 下载redis-3.0.4.tar.gz，放入linux的`/opt`目录
 - /opt目录，解压：`tar -zxvf redis-3.0.4.tar.gz`
@@ -594,6 +533,7 @@
 - 查看默认安装目录：`usr/local/bin`
     - 该目录下的文件
         -  redis-benchmark
+            - 性能测试
         -  redis-check-aof
         -  redis-check-dump
         -  redis-cli
@@ -614,24 +554,290 @@
 - 关闭
     - `shutdown`
 
-## redis启动后杂项基础知识
+# Redis启动后的杂项基础知识
+## 杂项基础知识
 [top](#catalog)
-- 单进程
+- <label style="color:red">单进程</label>
+    - 单进程模型来处理客户端的请求，对读写等事件的**响应是通过对epoll函数的包装来做到的**
+    - Redis的实际处理速度**完全依靠主进程的执行效率**
+    - Epoll
+        - 是Linux内核为处理大批量文件描述符而做了改进的epoll，是Linux下多路复用IO接口select/poll的增强版本
+        - 它能显著**提高**程序**在大量并发连接中只有少量活跃**的情况下的系统CPU利用率
+
 - 默认16个数据库，类似数组下标，从0开始，**初始默认使用0号库**
+    - 数据库的下标从0开始
+    - 在`redis.conf`中，通过`databases`来设定DB的数量
+
+
+- 统一密码管理，16个库都是同一的密码，要么都OK要么都无法连接
+    - 在`redis.conf`中，通过`requirepass`来设定密码
+    - 如果设定了密码，启动后，需要输入指令：`auth 密码`来进入数据库
+
+- Redis的索引是从 0 开始的
+    - 包括数据库名和数据
+
+- 为什么默认端口6379
+    - `redis.conf`中，属性`port`的默认值是6379
+
+- redis的指令如果生效了会返回1、值的长度、OK，如果没生效会返回0、-1、error
+
+## 数据库指令
+[top](#catalog)
 - 数据库指令
 
-    |命令|作用|
+    |命令|作用|示例|
+    |-|-|-|
+    |select 数据库编号|切换数据库|`select 7`，切换到7号库|
+    |dbsize|查看当前数据库**key的数量**||
+    |flushdb|清空当前数据库||
+    |flushall|清空所有数据库||
+    |clear|清屏||
+
+# Redis的数据类型
+## Redis的五大数据类型
+[top](#catalog)
+- Sring-----字符串
+    - String类型是redis中最基本的类型，可以理解为与Memcached一模一样的类型，即**一个key一个value**
+    - String类型是**二进制安全的**，即redis的string可以包含任何数据，如jpg图片或者序列化的对象
+    - 一个字符串**最多可以是512M**
+
+- Hash-----哈希
+    - 列表的底层是 : <label style="color:red">链表</label>
+    - **列表是简单的字符串列表**，按照插入顺序排序，可以添加一个元素到列表的头部或尾部
+
+- List-----列表
+    - hash是一个键值对**集合**
+    - hash是一个string类型的field和value的映射表, 类似java的`Map<String, Object>`
+    - hash特别适合**用于存储对象**
+
+- Set-----集合
+    - set是string类型的**无序无重复集合**，它是通过HashTable实现的
+
+- Zset-----有序集合 `sorted set`
+    - Zset和Set一样也是string类型元素的集合，且成员不允许重复
+    - 与Set不同的是 : <label style="color:red">每个元素都会关联一个double类型的分数(score)</label>
+        - redis通过分数来为集合中的成员进行从大到小的排序
+        - **zset的成员是唯一的，但是分数(score)可以重复**
+
+## 获得Redis常见数据库类型操作指令
+[top](#catalog)
+- http://redisdoc.com/
+
+## Redis键--key
+[top](#catalog)
+- 命令
+
+    |命令|命令内容|
     |-|-|
-    |Select|切换数据库|
-    |Dbsize|查看当前数据库的**key数量**|
-    |Flushdb|清空当前数据库|
-    |Flushall|清空所有数据库|
-- 统一密码管理，16个库都是同一的密码，要
-    |||
-    |||
-    |||
+    |**exists key**|检查key是否存在|
+    |**expire key seconds**|为指定key设置过期时间，过期之后自动从内存中删除|
+    |**keys pattern**|查询所有符合给定模式(pattern)的key，可以使用通配符：`*`,`?`|
+    |**move key 数据库索引**|将当前数据库的key移动到指定的数据库中|
+    |**type key**|返回key所存储的value的类型|
+    |**ttl key**|以**秒为单位**返回key的剩余生存时间(TTL, time to live), -1表示永不过期，-2表示已过期|
+    |del key|如果key存在，则删除key|
+    |dump key|序列化key，并返回被序列化的值|
+    |expireat key milliseconds|EXPIREAT的作用和EXPIRE类似，都用于为key设置过期时间，不同在于 expireat 命令接受的时间参数是 UNIX 时间戳(unix timestamp)。|
+    |pexpire key milliseconds|设置key的过期，以毫秒计|
+    |pexpire key milliseconds-timestamp|设置key的过期时间戳(unix timestamp)，以毫秒计|
+    |persist key|移除key的过期时间，key将持久保持|
+    |pttl key|以**毫秒为单位**返回key的剩余的过期时间|
+    |randomkey|从当期数据库随机返回一个key|
+    |rename key newkey|修改key的名称|
+    |renamenx key newkey|**仅当newkey不存在时**，将key重命名为newkey|
+
+- 注意事项
+    - <label style="color:red">如果设定了某个key的过期时间，在过期时，key和value将会从内存中被清除</label>
+    - 一般情况下，应该为key设置过期时间，而不是手动删除。当key过期时，自动从内存中删除
+
+## Redis字符串--String
+[top](#catalog)
+- 命令
+    |操作类型|命令|命令内容|
+    |-|-|-|
+    |单取值|get key|获取指定 key 的值|
+    |多取值|mget key1 [key2..]|获取所有(一个或多个)给定 key 的值|
+    |单取值|getrange key start end|返回 key 中字符串值的子字符，范围:`[start, end]`。 如果end是`-1`,会返回后边的所有值|
+    |单取值|getbit key offset|对 key 所储存的字符串值，获取指定偏移量上的位(bit)|
+    |单设值|set key value|设置指定 key 的值|
+    |单设值|setnx key value|**只有在 key 不存在时设置** key 的值|
+    |单设值|setex key seconds value|将值 value 关联到 key ，并将 key 的过期时间设为 seconds (以秒为单位)|
+    |多设值|mset key value [key value ...]|同时设置一个或多个 key-value 对。没有的新建，有的覆盖|
+    |多设值|msetnx key value [key value ...]|同时设置一个或多个 key-value 对，当且仅当所有给定 key 都不存在|
+    |单设值|setrange key 偏移量 value|用 value 参数覆盖给定 key 所储存的字符串值，从偏移量开始覆盖，如果长度不足，会自动扩容|
+    |单设值|getset key value|将给定 key 的值设为 value ，并返回 key 的旧值(old value)|
+    |单设值|setbit key offset value|对 key 所储存的字符串值，设置或清除指定偏移量上的位(bit)|
+    |单设值|psetex key milliseconds value|这个命令和 SETEX 命令相似，但它以毫秒为单位设置 key 的生存时间，而不是像 SETEX 命令那样，以秒为单位|
+    |字符串|strlen key|返回 key 所储存的字符串值的长度|
+    |字符串|append key value|如果 key 已经存在并且是一个字符串， APPEND 命令将指定的 value 追加到该 key 原来值（value）的末尾|
+    |数值运算|incr key|数字 + 1|
+    |数值运算|incrby key increment|数字 + increment|
+    |数值运算|decr key|数字 - 1|
+    |数值运算|decrby key decrement|数字 - decrement|
+    |数值运算|incrbyfloat key increment|数字 + 浮点数increment|
+
+- 特点：单值单value
+
+- 实际应用
+    - 如果业务中有不停修改数值的逻辑，如点击量数据，可以放到redis中进行处理，避免对数据库进行频繁操作
+    - 通过`setex key seconds value`，来设定过期时间
+
+- 注意事项
+    - incr/decr/incrby/decrby，必须是数字才能进行加减，否则会产生异常
+        
+## Redis列表--List
+[top](#catalog)
+- 命令
+
+    |操作类型|命令|命令内容|
+    |-|-|-|
+    |添加元素/新建list|lpush key value1 [value2]|left push，将一个或多个值插入到队头，可以对一个list变量进行多次插入<br/>如果输入`lpush k1 1 2 3 4 5`<br/>`lrange k1 0 -1`的输出顺序是54321，<br/>即插入每个元素时都从队头插入|
+    |添加元素/新建list|rpush key value1 [value2]|rigth push，将一个或多个值插入到队尾，可以对一个list变量进行多次插入<br/>如果输入`rpush k2 1 2 3 4 5`<br/>`lrange k2 0 -1`的输出顺序是12345，<br/>即插入每个元素时都从队尾插入|
+    |list重置|ltrim key start stop|key = key[start:end], 包含end；<br/>如果`start >= length`，则list将**因为没有元素而被删除**<br/>如果`end >= length`, 则只截取到length-1，不会异常，不会扩容|
+    |修改元素|lset key index value|通过索引设置列表元素的值|
+    |list切片|lrange key start stop|从对头方向，获取列表指定范围内的元素|
+    |弹出元素|lpop key|移出并返回队头元素|
+    |弹出元素|rpop key|移出并返回队尾元素|
+    |获取元素|lindex key index|通过索引获取列表中的元素|
+    |获取列表长度|llen key|获取列表长度|
+    |删除|lrem key count value|**从队头开始，至多删除count个value**，指定值的数量不足时，不会报错|
+    |list间元素移动|rpoplpush list01 list02|v = rpop list01; lpush list02 v|
+    |插入元素|linsert key BEFORE/AFTER pivot value|在pivot前/后插入value<br/>如果pivot有重复的值，则使用从队头开始找到的第一个pivot<br/>如果pivot不存在，则会返回`-1`|
+    |阻塞式弹出元素|blpop key1 [key2 ] timeout|移出并获取列表的第一个元素， 如果列表没有元素会阻塞列表直到等待超时或发现可弹出元素为止|
+    |阻塞式弹出元素|brpop key1 [key2 ] timeout|移出并获取列表的最后一个元素， 如果列表没有元素会阻塞列表直到等待超时或发现可弹出元素为止|
+    |阻塞式list间元素移动|brpoplpush source destination timeout|从列表中弹出一个值，将弹出的元素插入到另外一个列表中并返回它； 如果列表没有元素会阻塞列表直到等待超时或发现可弹出元素为止|
+    |检查式添加元素|lpushx key value|将一个值添加到已存在的list的队头|
+    |检查式添加元素|rpushx key value|将一个值添加到已存在的list的队尾|
+
+- 特点：单值多value
+
+- list的使用规则
+    - list是一个字符串链表，队头/left和队尾/right都可以添加
+    - 如果键不存在，则创建新的链表
+    - 如果键已存在，则在指定方向添加内容
+
+- list的性能
+    - 链表的操作无论是在对头还是在队尾，效率都极高
+    - 操作list中间的元素时，效率不是很好
+
+- 注意事项
+    - 如果list中的元素被全部移除，则这个list的key将会被删除
+        - 使用ltrim时如果list没有元素了，这个key就会被删除
+        - 使用lrange来查看不存在的key时，不会产生异常，只会提示：`(empty list or set)`
+
+## Redis集合--Set
+[top](#catalog)
+- 命令
+
+|操作类型|命令|命令内容|
+|-|-|-|
+|添加元素/新建|sadd key member1 [member2]|向集合中插入一个或多个元素<br/>插入时会对多个元素进行自动去重，不会报错<br/>`sadd set01 1 1 2 2 3 3`，最后只会添加： 1、2、3|
+|获取元素的个数|scard key|获取集合的成员数<br/>获取一个不存在的set的元素数量时，不会引发异常，**会返回0**|
+|删除元素|srem key value1 [vlaue2...]|删除集合中一个或多个元素<br/>从不存在的set中删除元素时，不会引发一场，**会返回0**|
+|随机获取元素|srandmember key [count]|返回集合中一个或多个随机数，默认返回1个<br/>如果count >= length,则返回length个元素，不会引发异常|
+|获取所有元素|smembers key|返回集合中的所有成员|
+
+||sdiff key1 [key2]|返回给定所有集合的差集|
+||sdiffstore destination key1 [key2]|返回给定所有集合的差集并存储在 destination 中|
+||sinter key1 [key2]|返回给定所有集合的交集|
+||sinterstore destination key1 [key2]|返回给定所有集合的交集并存储在 destination 中|
+||sismember key member|判断 member 元素是否是集合 key 的成员|
+||smove source destination member|将 member 元素从 source 集合移动到 destination 集合|
+||spop key|移除并返回集合中的一个随机元素|
+||sunion key1 [key2]|返回所有给定集合的并集|
+||sunionstore destination key1 [key2]|所有给定集合的并集存储在 destination 集合中|
+||sscan key cursor [MATCH pattern] [COUNT count]|迭代集合中的元素|
+
+- 特点：单值多value
+
+- 应用场景
+    - 高并发下的，随机用户抽奖，将用户ID或用户名写到一个set中，作为另一个随机数池，然后通过`srandmember key count`来返回count个中奖用户
+
+- 注意事项
+    - 如果set中的元素被全部删除，则这个set的key将会被删除
+
+## Redis哈希--Hash
+[top](#catalog)
 
 
-- 
+## Redis有序集合Zset--sorted set
+[top](#catalog)
+
+
+# 总结
+[top](#catalog)
+- 登录 : `auth 密码`
+- 切换DB : `select DB索引`
+
+|命令|作用|示例|
+|-|-|-|
+|select 数据库编号|切换数据库|`select 7`，切换到7号库|
+|dbsize|查看当前数据库**key的数量**||
+|flushdb|清空当前数据库||
+|flushall|清空所有数据库||
+
+
+* redis安装后，默认有16个数据库0~15
+* Redis的五大数据类型：
+    * String 字符串
+        * 一个key对应一个value
+        * 二进制安全的
+        * 除了字符串，还可以存放图片数据
+        * 字符串value最大是512M
+    * Hash 哈希
+        * 一个hash对应一个键值对集合，字段不可以重复
+        * 一个string类型的field和value的映射表
+        * 适合存储对象
+    * List 列表
+        * 列表是简单的字符串列表
+        * 按照插入顺序排序
+        * 可以在头部或尾部添加元素
+        * 本质是链表
+        * 列表有序、可以重复
+        * <label style="color:red">如果所有元素都被移除了，对应都键会消失</label>
+    * Set 集合
+        * Set是string类型的无序集合
+        * 底层是HashTable数据结构，set可以存放很多字符串元素，且元素无序不重复
+    * zset (sorted set) 有序集合
+* 基本操作
+    * 添加key：`set key value`
+    * 查看当前redis的所有key: `keys *`
+    * 获取key对应的值：`get key`
+    * 查看当前数据库的key-val数量：`dbsize`
+    * 清空当前数据库：`flushdb`
+    * 清空所有数据库：`flushall`
+* string-CRUD操作
+    * set：key存在=修改，key不存在=添加
+    * get：取得
+    * del：删除
+    * setex(set with expire)：`setex key time value`超时删除key
+    * mset key value [key value ...] 一次性设置多个key value
+    * mget key [key...] 一次性获取多个value
+* hash-CRUD操作
+    * `hset key field value`，添加，可以重复对一个key添加多个字段
+    * `hget key field` 查询
+    * `hgetall key` 查询所有字段
+    * `hdel key` 删除
+    * `hmset key field value [field value ...]` 对一个key一次性添加多个字段
+    * `hmget key filed [field ...]`查询一个key的多个字段
+    * `hlen key` 查询有多少个字段
+    * `hexists key fidle` 检查是否存在指定字段
+* list-CRUD操作
+    * `lpush key node....` 从左边添加
+        * `lpush key a b c` 链表的内存结构 c-->b-->a，即从左边添加
+    * `rpush key node....` 从右边添加
+    * `lrange key start end` end=-1/-2... 表示取到最后一个/取到倒数第二个
+    * `lpop key` 从左侧弹出一个数据
+    * `rpop key` 从右侧弹出一个数据
+    * `del key` 删除key-value
+    * `lindex key index` 使用索引获取元素，如果index越界，则返回nil
+    * `llen key` 返回list的长度，如果key不存在，key被解释为空列表，返回0
+* set-CRUD操作
+    * `sadd key value [value...]` 添加元素
+    * `smembers emails` 从集合中取出所有元素
+    * `sismember key value` 判断是否是集合成员
+    * `srem key value` 删除某个元素
+
+
 
 [top](#catalog)
