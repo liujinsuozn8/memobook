@@ -602,13 +602,13 @@
     - 一个字符串**最多可以是512M**
 
 - Hash-----哈希
-    - 列表的底层是 : <label style="color:red">链表</label>
-    - **列表是简单的字符串列表**，按照插入顺序排序，可以添加一个元素到列表的头部或尾部
-
-- List-----列表
     - hash是一个键值对**集合**
     - hash是一个string类型的field和value的映射表, 类似java的`Map<String, Object>`
     - hash特别适合**用于存储对象**
+
+- List-----列表
+    - 列表的底层是 : <label style="color:red">链表</label>
+    - **列表是简单的字符串列表**，按照插入顺序排序，可以添加一个元素到列表的头部或尾部
 
 - Set-----集合
     - set是string类型的**无序无重复集合**，它是通过HashTable实现的
@@ -630,7 +630,7 @@
     |命令|命令内容|
     |-|-|
     |**exists key**|检查key是否存在|
-    |**expire key seconds**|为指定key设置过期时间，过期之后自动从内存中删除|
+    |**expire key seconds**|为指定key设置过期时间，**过期之后自动从内存中删除**|
     |**keys pattern**|查询所有符合给定模式(pattern)的key，可以使用通配符：`*`,`?`|
     |**move key 数据库索引**|将当前数据库的key移动到指定的数据库中|
     |**type key**|返回key所存储的value的类型|
@@ -695,7 +695,7 @@
     |添加元素/新建list|rpush key value1 [value2]|rigth push，将一个或多个值插入到队尾，可以对一个list变量进行多次插入<br/>如果输入`rpush k2 1 2 3 4 5`<br/>`lrange k2 0 -1`的输出顺序是12345，<br/>即插入每个元素时都从队尾插入|
     |list重置|ltrim key start stop|key = key[start:end], 包含end；<br/>如果`start >= length`，则list将**因为没有元素而被删除**<br/>如果`end >= length`, 则只截取到length-1，不会异常，不会扩容|
     |修改元素|lset key index value|通过索引设置列表元素的值|
-    |list切片|lrange key start stop|从对头方向，获取列表指定范围内的元素|
+    |list切片|lrange key start stop|从对头方向，获取列表指定范围内的元素， [0 , 1]表示全部元素|
     |弹出元素|lpop key|移出并返回队头元素|
     |弹出元素|rpop key|移出并返回队尾元素|
     |获取元素|lindex key index|通过索引获取列表中的元素|
@@ -727,26 +727,30 @@
 
 ## Redis集合--Set
 [top](#catalog)
-- 命令
+- 基本命令
 
 |操作类型|命令|命令内容|
 |-|-|-|
 |添加元素/新建|sadd key member1 [member2]|向集合中插入一个或多个元素<br/>插入时会对多个元素进行自动去重，不会报错<br/>`sadd set01 1 1 2 2 3 3`，最后只会添加： 1、2、3|
 |获取元素的个数|scard key|获取集合的成员数<br/>获取一个不存在的set的元素数量时，不会引发异常，**会返回0**|
 |删除元素|srem key value1 [vlaue2...]|删除集合中一个或多个元素<br/>从不存在的set中删除元素时，不会引发一场，**会返回0**|
-|随机获取元素|srandmember key [count]|返回集合中一个或多个随机数，默认返回1个<br/>如果count >= length,则返回length个元素，不会引发异常|
+|随机获取元素|srandmember key [count]|返回集合中一个或多个随机数，默认返回1个<br/>如果count >= length,则返回全部元素，不会引发异常，并且这种情况下，每次的输出元素顺序都是相同的|
 |获取所有元素|smembers key|返回集合中的所有成员|
+|随机出栈|spop key|**移除**并返回集合中的一个随机元素|
+|元素移动|smove set1 set2 set1中的一个值|将set1中的某个值**移动到**set2中|
+|存在判断|sismember key member|判断 member 元素是否是集合 key 的成员|
+|??????|sscan key cursor [MATCH pattern] [COUNT count]|迭代集合中的元素|
 
-||sdiff key1 [key2]|返回给定所有集合的差集|
-||sdiffstore destination key1 [key2]|返回给定所有集合的差集并存储在 destination 中|
-||sinter key1 [key2]|返回给定所有集合的交集|
-||sinterstore destination key1 [key2]|返回给定所有集合的交集并存储在 destination 中|
-||sismember key member|判断 member 元素是否是集合 key 的成员|
-||smove source destination member|将 member 元素从 source 集合移动到 destination 集合|
-||spop key|移除并返回集合中的一个随机元素|
-||sunion key1 [key2]|返回所有给定集合的并集|
-||sunionstore destination key1 [key2]|所有给定集合的并集存储在 destination 集合中|
-||sscan key cursor [MATCH pattern] [COUNT count]|迭代集合中的元素|
+- 数学集合操作
+
+|操作类型|命令|命令内容|
+|-|-|-|
+|求差集|sdiff key1 [key2...]|返回给定所有集合的差集，**在key1中，不再key2中**|
+|求交集|sinter key1 [key2]|返回给定所有集合的交集|
+|求并集|sunion key1 [key2]|返回所有给定集合的并集|
+|求差集并保存|sdiffstore destination key1 [key2]|返回给定所有集合的差集并存储在 destination 中|
+|求交集并保存|sinterstore destination key1 [key2]|返回给定所有集合的交集并存储在 destination 中|
+|求并集并保存|sunionstore destination key1 [key2]|所有给定集合的并集存储在 destination 集合中|
 
 - 特点：单值多value
 
@@ -758,10 +762,67 @@
 
 ## Redis哈希--Hash
 [top](#catalog)
+- 命令
+
+|操作类型|命令|命令内容|
+|-|-|-|
+|设定单个字段|<label style="color:red">hset key field value</label>|将哈希表 key 中的字段 field 的值设为 value|
+|设定多个字段|<label style="color:red">hmset key field1 value1 [field2 value2 ]</label>|同时将多个 field-value (域-值)对设置到哈希表 key 中|
+|获取一个字段|<label style="color:red">hget key field</label>|获取存储在哈希表中指定字段的值|
+|获取多个字段|<label style="color:red">hmget key field1 [field2]</label>|获取所有给定字段的值|
+|获取指定key下的所有字段和值|<label style="color:red">hgetall key</label>|获取在哈希表中指定 key 的所有字段和值|
+|删除一个字段|<label style="color:red">hdel key field1 [field2]</label>|删除一个或多个哈希表字段|
+|获取字段的数量|hlen key|获取哈希表中字段的数量|
+|字段存在检查|hexists key field|查看哈希表 key 中，指定的字段是否存在|
+|获取全部字段名|<label style="color:red">hkeys key</label>|获取所有哈希表中的字段|
+|获取全部字段值|<label style="color:red">hvals key</label>|获取哈希表中所有值|
+|整数计算|hincrby key field increment|key[field] += increment|
+|浮点计算|hincrbyfloat key field increment|key[field] += increment， **字段对应的值和增加的值，只要有一个是小数就需要使用hincrbyfloat**|
+|不存在设置|hsetnx key field value|只有在字段 field **不存在时**，设置哈希表字段的值|
+|???????|hscan key cursor [MATCH pattern] [COUNT count]|迭代哈希表中的键值对|
+
+- 存储方式
+    - KV模式不变：仍然是一个key对应一个value
+    - value在这里是一个键值对
+
+- 使用场景
+    - 对象的存储
+        - value中的多个键值对构成一个对象，并通过key来标识这个对象；在java中对象通过class来创建，在redis中通过Hash来创建
+
 
 
 ## Redis有序集合Zset--sorted set
 [top](#catalog)
+- zset就是在set的基础上，加上一个score值
+    - set是：k1 v1 v2 v3
+    - zset是：k1 score1 v1 score2 v2 score3 v3
+
+- 命令
+
+|操作类型|命令|命令内容|
+|-|-|-|
+||zadd key score1 member1 [score2 member2]|向有序集合添加一个或多个成员，或者更新已存在成员的分数|
+||zcard key|获取有序集合的成员数|
+||zcount key min max|计算在有序集合中指定区间分数的成员数|
+||zincrby key increment member|有序集合中对指定成员的分数加上增量 increment|
+||zinterstore destination numkeys key [key ...]|计算给定的一个或多个有序集的交集并将结果集存储在新的有序集合 key 中|
+||zlexcount key min max|在有序集合中计算指定字典区间内成员数量|
+||zrange key start stop [WITHSCORES]|通过索引区间返回有序集合指定区间内的成员|
+||zrangebylex key min max [LIMIT offset count]|通过字典区间返回有序集合的成员|
+||zrangebyscore key min max [WITHSCORES] [LIMIT]|通过分数返回有序集合指定区间内的成员|
+||zrank key member|返回有序集合中指定成员的索引|
+||zrem key member [member ...]|移除有序集合中的一个或多个成员|
+||zremrangebylex key min max|移除有序集合中给定的字典区间的所有成员|
+||zremrangebyrank key start stop|移除有序集合中给定的排名区间的所有成员|
+||zremrangebyscore key min max|移除有序集合中给定的分数区间的所有成员|
+||zrevrange key start stop [WITHSCORES]|返回有序集中指定区间内的成员，通过索引，分数从高到低|
+||zrevrangebyscore key max min [WITHSCORES]|返回有序集中指定分数区间内的成员，分数从高到低排序|
+||zrevrank key member|返回有序集合中指定成员的排名，有序集成员按分数值递减(从大到小)排序|
+||zscore key member|返回有序集中，成员的分数值|
+||zunionstore destination numkeys key [key ...]|计算给定的一个或多个有序集的并集，并存储在新的 key 中|
+||zscan key cursor [MATCH pattern] [COUNT count]|迭代有序集合中的元素（包括元素成员和元素分值）|
+
+
 
 
 # 总结
