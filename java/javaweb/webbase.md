@@ -60,8 +60,15 @@
 - [MVC设计模式](#MVC设计模式)
     - [MVC模式的架构演进](#MVC模式的架构演进)
     - [MVC的概念](#MVC的概念)
-- [](#)
-- [](#)
+    - [MVC示例](#MVC示例)
+- [维持会话](#维持会话)
+    - [会话的基本知识](#会话的基本知识)
+    - [Cookie](#Cookie)
+        - [Cookie机制](#Cookie机制)
+        - [JavaWeb中Cookie的基本使用方法](#JavaWeb中Cookie的基本使用方法)
+        - [Cookie的作用域](#Cookie的作用域)
+        - [示例-利用Cookie完成自动登陆](#示例-利用Cookie完成自动登陆)
+        - [示例-利用Cookie显示最近浏览的商品](#示例-利用Cookie显示最近浏览的商品)
 - [](#)
 - [](#)
 - [](#)
@@ -2325,6 +2332,7 @@ pageContext, request, session, application
     - 参考
         - [配置错误的响应页面](#配置错误的响应页面)
         - [配置示例](#配置示例)
+- 配置方式3：重定向到WEB-INF下的异常页面
     
 
 ## 解决jsp中文乱码问题
@@ -2642,6 +2650,573 @@ pageContext, request, session, application
 - Controller，控制器
     - 控制器接受用户的输入并调用模型和视图去完成用户的需求
     - 控制器接受请求并决定调用那个模型组件去处理请求，然后决定调用那个视图来显示请求处理的结果
+
+## MVC示例
+[top](#catalog)
+
+- 参考：[/java/mylearn/weblearn/src/main/java/com/ljs/mvc](/java/mylearn/weblearn/src/main/java/com/ljs/mvc)
+- 入口：`http://localhost:8080/weblearn_war_exploded/mvc/query.do`
+- MVC划分
+    - V：`mylearn/weblearn/src/main/webapp/mvc`
+    - C：`mylearn/weblearn/src/main/java/com/ljs/mvc/controller/ControllerServlet.java`
+    - M：
+        - `mylearn/weblearn/src/main/java/com/ljs/mvc/dao`
+        - `mylearn/weblearn/src/main/java/com/ljs/mvc/bean`
+
+- 转发/重定向原则：如果需要使用域对象中的属性，则进行转发，否则使用重定向
+- 可以获取参数信息的位置
+    - `request.getParameter`
+    - `request.getAttribute`
+- 多个处理共用一个Servler做为Controller的方法
+    1. 在每个请求上添加处理方式，并在Controller中进行解析
+        - 缺点：get请求中无法防止处理内容被修改
+    2. 在web.xml配置Controller响应所有的`*.do`请求，并在Controll中解析`*`的内容，并通过反射来调用Controller内部的方法
+        - web.xml
+            ```xml
+            <servlet>
+                <servlet-name>ControllerServlet</servlet-name>
+                <servlet-class>com.ljs.mvc.controller.ControllerServlet</servlet-class>
+            </servlet>
+            <servlet-mapping>
+                <servlet-name>ControllerServlet</servlet-name>
+                <url-pattern>*.do</url-pattern>
+            </servlet-mapping>
+            ```
+        - 反射分析：[/java/mylearn/weblearn/src/main/java/com/ljs/mvc/controller/ControllerServlet.java](/java/mylearn/weblearn/src/main/java/com/ljs/mvc/controller/ControllerServlet.java)
+            ```java
+            private void controller(HttpServletRequest req, HttpServletResponse resp){
+                String[] split = req.getServletPath().split("/");
+                String actionPath = split[split.length - 1];
+                // /action.do ,将action截取出来
+                String action = actionPath.substring(0, actionPath.length() - 3);
+                try {
+                    Method method = getClass().getDeclaredMethod(action, HttpServletRequest.class, HttpServletResponse.class);
+                    method.invoke(this, req, resp);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    // 如果action异常，则跳转到异常页面
+                    try {
+                        req.getRequestDispatcher("/WEB-INF/mvc/noAction.jsp").forward(req,resp);
+                    } catch (ServletException ex) {
+                        ex.printStackTrace();
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+
+                }
+
+            }
+            ```
+- 内部流程
+    - 查询
+        - `query.do`
+        - 执行模糊检索，并转发到`mylearn/weblearn/src/main/webapp/mvc/index.jsp`
+        - 可以在页面执行 检索、删除、跳转添加页面，跳转更新页面
+
+    - 添加
+        - `insert.do`
+        - 自动转发到：`mylearn/weblearn/src/main/webapp/mvc/insert.jsp`
+        - 页面上的信息，都从：`request.getParameter`中获取，如果是第一次从`index.jsp`转发过来，则显示空字符串
+        - 如果用户名已经存在，则重新转发到`mylearn/weblearn/src/main/webapp/mvc/insert.jsp`，并显示错误信息
+        - 添加成功，则重定向到:`mylearn/weblearn/src/main/webapp/mvc/insertSuccess.jsp`
+
+    - 更新
+        - `edit.do`、`update.do`
+        - 自动转发到：`mylearn/weblearn/src/main/webapp/mvc/edit.jsp`
+        - 如果用户名修改了，则检索数据库，检查用户名是否已被使用
+            - 如果使用过，则再次转发到`mylearn/weblearn/src/main/webapp/mvc/edit.jsp`，并显示错误信息
+        - 没有异常，则进行更新，更新后重定向到：`query.do`，重新进行执行检索，并转发到`mylearn/weblearn/src/main/webapp/mvc/insert.jsp`显示
+
+    - 删除
+        - `delete.do`
+        - 删除后，重定向到：`mylearn/weblearn/src/main/webapp/mvc/deleteSuccess.jsp`
+
+- 通过配置文件来解耦Controller内部Dao对象的获取方法
+    - 在配置文件中规定使用Dao的实现对象：xml或jdbc
+        - 参考：[/java/mylearn/weblearn/src/main/webapp/WEB-INF/classes/config/dao.properties](/java/mylearn/weblearn/src/main/webapp/WEB-INF/classes/config/dao.properties)
+    - 创建一个Dao工厂，根据配置文件中的对象类型来创建Dao对象
+        - 在工厂内部，不主动设定Dao对象的类型：type，而是通过初始化Servlet来设定
+        - 参考：[/java/mylearn/weblearn/src/main/java/com/ljs/mvc/dao/CustomerDaoFactory.java](/java/mylearn/weblearn/src/main/java/com/ljs/mvc/dao/CustomerDaoFactory.java)
+        - 实现
+            ```java
+            public class CustomerDaoFactory {
+                // 使用单例模式
+                private static CustomerDaoFactory instance = new CustomerDaoFactory();
+                private Map<String, CustomerDao> daoMap= new HashMap<>();
+
+                // 私有化构造器，只能在类内部示例化对象
+                private CustomerDaoFactory(){
+                    // 初始化时，构造所有可能类型的对象
+                    daoMap.put("jdbc", new CustomerDaoImpl());
+                    daoMap.put("xml", new CustomerXmlImpl());
+                }
+
+                // 在外部获取工厂的单例对象
+                public static CustomerDaoFactory getInstance(){
+                    return instance;
+                }
+                
+                // 根据类型来获取真实的Dao对象
+                private String type = null;
+                public void setType(String type){
+                    this.type = type;
+                }
+
+                public CustomerDao getDao(){
+                    return daoMap.get(type);
+                }
+            }
+            ```
+    - 创建一个初始化Servlet，通过web.xml配置的`load-on-startup`参数在整个服务器启动时读取配置，并设定工厂中Dao对象的真是类型
+        - 参考：[/java/mylearn/weblearn/src/main/java/com/ljs/mvc/controller/InitServlet.java](/java/mylearn/weblearn/src/main/java/com/ljs/mvc/controller/InitServlet.java)
+        - 实现
+            ```java
+            public class InitServlet extends HttpServlet {
+                // 初始化时读取配置文件
+                @Override
+                public void init() throws ServletException {
+                    InputStream is = getServletContext().getResourceAsStream("WEB-INF/classes/config/dao.properties");
+                    Properties ps = new Properties();
+                    try {
+                        ps.load(is);
+                        String type = ps.getProperty("type");
+                        CustomerDaoFactory.getInstance().setType(type);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+            ```
+        - 配置web.xml
+            ```xml
+            <servlet>
+                <servlet-name>initServlet</servlet-name>
+                <servlet-class>com.ljs.mvc.controller.InitServlet</servlet-class>
+                <load-on-startup>1</load-on-startup>
+            </servlet>
+            ```
+
+- 数据库
+    - 表 customers
+        ```sql
+        CREATE TABLE `customers` (
+            `id` int(10) NOT NULL AUTO_INCREMENT,
+            `name` varchar(15) DEFAULT NULL,
+            `email` varchar(20) DEFAULT NULL,
+            `birth` date DEFAULT NULL,
+            `photo` mediumblob,
+            PRIMARY KEY (`id`)
+        ) ENGINE=InnoDB AUTO_INCREMENT=40 DEFAULT CHARSET=gb2312
+        ```
+# 维持会话
+## 会话的基本知识
+[top](#catalog)
+- HTTP协议是一种无状态的协议，WEB服务器本身不能识别出哪些请求是同一个浏览器发出的，浏览器的每一次请求都是完全孤立的
+- 即使HTTP1.1支持持续连接，但当用户有一段时间没有提交请求，连接也会关闭
+- 作为web服务器，必须能够采用一种机制来唯一的标识一个用户，同时记录该用户的状态
+
+- 会话和会话状态
+    - WEB应用中的会话是指：**一个客户端浏览器与WEB服务器之间连续发生的一系列请求和响应过程**
+    - WEB应用中的会话状态是指：WEB服务器与浏览器在会话过程中产生的状态信息，
+    - 通过会话状态，WEB服务器能够把属于**同一会话中的**一系列的请求和响应过程关联起来
+    
+- 如何实现有状态的会话
+    - 通过SessionID来标识会话，Web服务器端程序通过SessionID来区分
+    - 属于同一个会话中的请求消息都附带同样的SessionID，不同会话的SessionID不同
+    
+- 在Servlet规范中，常用以下两种机制完成会话跟踪
+    - Cookie
+    - Session
+    
+## Cookie
+### Cookie机制
+[top](#catalog)
+- 参考[memo.md#Cookie机制](/http/memo.md#Cookie机制)
+- 两个要点
+    1. Cookie机制是在**客户端**保持HTTP状态信息的方案，<label style="color:red">是一种会话跟踪机制</label>
+    2. <label style="color:red">如果WEB浏览器保持了某个Cookie，那么它在以后每次访问该WEB服务器时，都会自动在HTTP请求头中添加这个Cookie，然后回传给WEB服务器</label>
+
+### JavaWeb中Cookie的基本使用方法
+[top](#catalog)
+- <label style="color:red">tomcat中默认会生成一个Cookie:JSESSIONID=xxxxx</label>
+
+- ServletAPI中提供了一个javax.servlet.http.Cookie类来封装Cookie信息，它包含有生成Cookie信息和提取Cookie信息的各个属性的方法
+
+- Cookie类的核心方法
+
+    |方法|执行内容|
+    |-|-|
+    |`public Cookie(String name, String value)`|构造方法|
+    |getName|获取Cookie的名称|
+    |setValue、getValue|设定获取Cookie的值|
+    |setMaxAge、getMaxAge|设定获取Cookie的存活时间|
+    |setPath、getPath|设定获取Cookie的作用域|
+    |response.addCookie()|向响应头中添加一个Cookie信息|
+    |request.getCookie()|向请求头中获取所有Cookie信息|
+
+- <label style="color:red">会话Cookie和持久Cookie</label>
+    - 会话Cookie
+        - 如果创建了一个Cookie，并将它发送到浏览器，默认情况下他是一个**会话Cookie**，**存储在浏览器的内存中**，
+    - 持久Cookie
+        - 若希望浏览器将该Cookie存储在磁盘上，则需要使用`Cookie.setMaxAge(int seonds)`，并设定一个个以秒为单位的保存时间
+        - 参考：[/java/mylearn/weblearn/src/main/webapp/cookie/maxage.jsp](/java/mylearn/weblearn/src/main/webapp/cookie/maxage.jsp)
+    - 不可保存的Cookie
+        - 将最大时效设为0：`Cookie.setMaxAge(0)`，浏览器会自动删除该Cookie
+        - 参考：[/java/mylearn/weblearn/src/main/webapp/cookie/zerocookie.jsp](/java/mylearn/weblearn/src/main/webapp/cookie/zerocookie.jsp)
+
+- 写Cookie：服务器-->浏览器
+    - 发送流程
+        1. 创建Cookie对象
+        2. 设置最大时效
+        3. 将Cookie放入到HTTP响应头
+    - HttpServletResponse接口中的`public void addCookie(Cookie cookie);`
+        - 用于在发送给浏览器的HTTP响应消息中增加一个Set-Cookie响应头字段
+        - 该方法并不修改其他的Set-Cookie头信息，而是创建新的头信息
+    - 示例
+        - Servlet的实现：[/java/mylearn/weblearn/src/main/webapp/cookie/cookie01.jsp](/java/mylearn/weblearn/src/main/webapp/cookie/cookie01.jsp)
+            ```html
+            <html>
+            <head>
+                <title>Title</title>
+            </head>
+            <body>
+
+            <%
+                //在JavaWEB规范中使用Cookie类代表cookie
+
+                // 服务器-->浏览器
+                // 1. 创建一个Cooke对象（在服务端创建）
+                Cookie newCookie = new Cookie("name", "ljs");
+
+                // 2. 调用response的一个方法把Cookie传给客户端
+                response.addCookie(newCookie);
+            %>
+
+            </body>
+            </html>
+            ```
+        - 页面的捕获结果
+            - ![http_client_cookie_from_server](./imgs/webbase/session_cookie/http_client_cookie_from_server.png)
+
+- 删除Cookie
+    - <label style="style:red">通过将Cookie保存时长设为0、并重新发送来删除Cookie</label>
+    - 示例：
+        ```java
+        deleteCookie.setMaxAge(0);
+        response.addCookie(deleteCookie);
+        ```
+
+- 读Cookie：浏览器-->服务器
+    - HttpServletRequest接口中的：`public Cookie[] getCookies();`
+        - 在服务端，用于从HTTP请求消息的Cookie请求头字段中读取**所有**Cookie项
+    - 示例
+        - 实现：[/java/mylearn/weblearn/src/main/webapp/cookie/cookie02.jsp](/java/mylearn/weblearn/src/main/webapp/cookie/cookie02.jsp)
+            ```html
+            <html>
+            <head>
+                <title>Title</title>
+            </head>
+            <body>
+
+            <%
+                // 1. 获取cookie
+                Cookie[] cookies = request.getCookies();
+
+                // tomcat中默认会生成一个Cookie:JSESSIONID=xxxxx
+                if (cookies != null && cookies.length > 1){
+                    // 浏览器-->服务器
+                    for (Cookie cookie : cookies) {
+                        out.print(cookie.getName() + ":" + cookie.getValue());
+                        out.print("<br>");
+                    }
+                } else {
+                    // 服务器-->浏览器
+                    out.print("no cookie, creating");
+                    // 2. 如果没有Cookie则创建一个Cookie
+                    Cookie cookie = new Cookie("name", "ljs");
+                    // 3. 使用response将Cookie发送到浏览器
+                    response.addCookie(cookie);
+                }
+            %>
+
+            </body>
+            </html>
+            ```
+        - 第一次请求，请求头中没有cookie信息，响应头中有Cookie信息
+            - ![getCookie_01](./imgs/webbase/session_cookie/getCookie_01.png)
+        - 第二次请求，请求头中有cookie信息，响应头中没有Cookie信息
+            - ![getCookie_02](./imgs/webbase/session_cookie/getCookie_02.png)
+
+
+### Cookie的作用域
+[top](#catalog)
+- 默认情况下的作用域规则：
+    - <label style="color:red">在当前目录中设定的Cookie可以在子目录和同级目录之间进行访问，但是不能被上级目录被访问</label>
+- 如果需要Cookie可以被上级目录访问到，需要通过`Cookie.setPath()`手动设定Cookie的作用域
+    - 设定整个Web应用为有效作用域：`cookie.setPath(request.getContextPath());`
+    - 设定整个Web站点为有效作用域：`cookie.setPath("/");`
+- 示例
+    - 示例中各页面的设定内容
+        - `out.jsp`
+            - 访问`test/inner01.jsp`中设定的Cookie：cookiePathFromInner01、cookieAllPath
+            - 设定可以在子目录中访问的Cookie：cookiePathFromOut
+        - `test/inner01.jsp`
+            - 设定只在当前目录下可以访问的Cookie：cookiePathFromInner01
+            - 设定可以在当前应用全局访问的Cookie：cookieAllPath
+        - `test/inner02.jsp`
+            - 访问`test/inner01.jsp`中设定的Cookie：cookiePathFromInner01、cookieAllPath
+            - 访问`out.jsp`中设定的Cookie：cookiePathFromOut
+    
+    - 访问顺序
+        - localhost:8080/weblearn_war_exploded/cookie/cookiepath/test/inner01.jsp
+            - 设定只在当前目录下可以访问的Cookie：cookiePathFromInner01
+            - 设定可以在当前应用全局访问的Cookie：cookieAllPath
+            
+        - localhost:8080/weblearn_war_exploded/cookie/cookiepath/out.jsp
+            - 访问`test/inner01.jsp`中设定的Cookie：cookiePathFromInner01、cookieAllPath
+            - 设定可以在子目录中访问的Cookie：cookiePathFromOut
+            
+        - localhost:8080/weblearn_war_exploded/cookie/cookiepath/test/inner02.jsp
+            - 访问`test/inner01.jsp`中设定的Cookie：cookiePathFromInner01、cookieAllPath
+            - 访问`out.jsp`中设定的Cookie：cookiePathFromOut
+    
+    - 实现：
+        - `test/inner01.jsp`：[/java/mylearn/weblearn/src/main/webapp/cookie/cookiepath/test/inner01.jsp](/java/mylearn/weblearn/src/main/webapp/cookie/cookiepath/test/inner01.jsp)
+            ```java
+            // 添加一个只能在当前目录使用Cookie
+            Cookie cookie = new Cookie("cookiePathFromInner01", "cookiePathFromInner02Value");
+            response.addCookie(cookie);
+
+            // 添加一个在当前应用范围内都可以使用的Cookie
+            Cookie all = new Cookie("cookieAllPath", "cookieAllPathValue");
+            all.setPath(request.getContextPath());
+            response.addCookie(all);
+            ```
+
+        - `out.jsp`：[/java/mylearn/weblearn/src/main/webapp/cookie/cookiepath/out.jsp](/java/mylearn/weblearn/src/main/webapp/cookie/cookiepath/out.jsp)
+            ```java
+            Cookie newcookie = new Cookie("cookiePathFromOut", "cookiePathFromOutValue");
+            response.addCookie(newcookie);
+
+            Cookie[] cookies = request.getCookies();
+            String cookiePathFromInner01 = null;
+            String cookieAllPath = null;
+            for (Cookie cookie : cookies) {
+                String cookieName = cookie.getName();
+
+                // 获取子目录中添加的Cookie：cookiePathFromInner01
+                if ("cookiePathFromInner01".equals(cookieName)){
+                    cookiePathFromInner01 = cookie.getValue();
+                }
+
+                // 获取子目录中添加的全局Cookie：cookieAllPath
+                if ("cookieAllPath".equals(cookieName)){
+                    cookieAllPath = cookie.getValue();
+                }
+            }
+
+            out.println("cookiePathFromInner01 : " + cookiePathFromInner01);
+            out.println("<br>");
+            out.println("cookieAllPath : " + cookieAllPath);
+            ```
+
+        - `test/inner02.jsp`：[/java/mylearn/weblearn/src/main/webapp/cookie/cookiepath/test/inner02.jsp](/java/mylearn/weblearn/src/main/webapp/cookie/cookiepath/test/inner02.jsp)
+            ```java
+            Cookie[] cookies = request.getCookies();
+            String cookiePathFromInner01 = null;
+            String cookieAllPath = null;
+            String cookiePathFromOut = null;
+
+            for (Cookie cookie : cookies) {
+                String cookieName = cookie.getName();
+
+                // 获取子目录中添加的Cookie：cookiePathFromInner01
+                if ("cookiePathFromInner01".equals(cookieName)){
+                    cookiePathFromInner01 = cookie.getValue();
+                }
+
+                // 获取子目录中添加的全局Cookie：cookieAllPath
+                if ("cookieAllPath".equals(cookieName)){
+                    cookieAllPath = cookie.getValue();
+                }
+
+                // 获取上级目录中添加的Cookie：cookiePathFromOut
+                if ("cookiePathFromOut".equals(cookieName)){
+                    cookiePathFromOut = cookie.getValue();
+                }
+            }
+
+            out.println("cookiePathFromInner01 : " + cookiePathFromInner01);
+            out.println("<br>");
+            out.println("cookieAllPath : " + cookieAllPath);
+            out.println("<br>");
+            out.println("cookiePathFromOut : " + cookiePathFromOut);
+            out.println("<br>");
+            ```
+    - 执行结果
+        - `test/inner01.jsp`
+            - ![cookiepath_01](./imgs/webbase/session_cookie/cookiepath_01.png)
+        - `out.jsp`，无法访问内部的的Cookie:cookiePathFromInner01，但是可以访问全部的Cookie：获取子目录中添加的全局Cookie：cookieAllPath
+            - ![cookiepath_02](./imgs/webbase/session_cookie/cookiepath_02.png)
+        - `test/inner02.jsp`，所有的Cookie都可以访问
+            - ![cookiepath_03](./imgs/webbase/session_cookie/cookiepath_03.png)
+
+### 示例-利用Cookie完成自动登陆
+[top](#catalog)
+- 自动登录的需求
+    - 进入页面时，如果没有登录过，则需要进行登录
+    - 进入页面时，如果登录过，且在有效的登录时间内，则自动登录并直接显示页面内容
+        - 不需要填写用户名和密码信息，可以自动登录到系统
+
+- 实现方式
+    - 通过`hello.jsp`作为入口，来控制是在当前页面显示内容，还是重定向login.jsp
+    - 若可以从url中获取到请求参数username，则打印出欢迎信息
+        - 即从login.jsp画面submit来的
+        - 把登录信息存储到Cookie中，并设置Cookie的最大时效为30s
+    - 从Cookie中读取用户信息，若存在则打印欢迎信息
+    - 若没有请求参数，也没有Cookie，则重定向到login.jsp
+- 实现
+    - hello.jsp： [/java/mylearn/weblearn/src/main/webapp/cookie/autologin/hello.jsp](/java/mylearn/weblearn/src/main/webapp/cookie/autologin/hello.jsp)
+        ```java
+        String username = request.getParameter("username");
+
+        // - 若可以从url中获取到请求参数username
+        if (username != null && !username.trim().equals("")){
+            // - 把登录信息存储到Cookie中，并设置Cookie的最大时效为30s
+            Cookie cookie = new Cookie("username", username);
+            cookie.setMaxAge(30);
+            response.addCookie(cookie);
+        } else {
+            // - 从Cookie中读取用户信息
+            Cookie[] cookies = request.getCookies();
+            if (cookies != null && cookies.length > 0){
+                for (Cookie cookie : cookies) {
+                    String cookieName = cookie.getName();
+                    if ("username".equals(cookieName)){
+                        username = cookie.getValue();
+                        break;
+                    }
+                }
+            }
+        }
+
+        //若username存在,则打印欢迎信息
+        if (username != null  && !username.trim().equals("")){
+            out.print("username :" + username);
+        } else {
+            // - 若没有请求参数，也没有Cookie，则重定向到login.jsp
+            response.sendRedirect("login.jsp");
+        }
+        ```
+    - login.jsp：[/java/mylearn/weblearn/src/main/webapp/cookie/autologin/login.jsp](/java/mylearn/weblearn/src/main/webapp/cookie/autologin/login.jsp)
+        ```html
+        <html>
+        <head>
+            <title>Title</title>
+        </head>
+        <body>
+
+        <form action="hello.jsp" method="post">
+            name：<input type="text" name="username">
+            <br>
+            <input type="submit" value="Login">
+        </form>
+
+        </body>
+        </html>
+        ```
+
+### 示例-利用Cookie显示最近浏览的商品
+[top](#catalog) 
+- 实现方式
+    - books.jsp显示所书的列表，列表底部显示最近浏览的5本书
+        - 从Cookie中获取所有以`BOOK_`开头的Cookies，并显示
+    - book.jsp
+        - 从Cookie中获取所有的以`BOOK_`开头的Cookie，并保存在List中
+        - 遍历Cookie，检查是否有Cookie的Value与当前的bookName相同
+            - 如果有相同的，则记录下来，作为待删除的Cookie
+        - 如果没有待删除的Cookie，则List的长度是否等于5
+            - 如果等于5，则删除第一个Cookie
+        - 在末尾将当前书名插入Cookie
+- 实现
+    - books.jsp：[/java/mylearn/weblearn/src/main/webapp/cookie/autoshow/books.jsp](/java/mylearn/weblearn/src/main/webapp/cookie/autoshow/books.jsp)
+        ```html
+        <html>
+        <head>
+            <title>Title</title>
+        </head>
+        <body>
+
+        <a href="book.jsp?book=AAA">AAA</a><br>
+        <a href="book.jsp?book=BBB">BBB</a><br>
+        <a href="book.jsp?book=CCC">CCC</a><br>
+        <a href="book.jsp?book=DDD">DDD</a><br>
+        <a href="book.jsp?book=EEE">EEE</a><br>
+        <a href="book.jsp?book=FFF">FFF</a><br>
+        <a href="book.jsp?book=GGG">GGG</a><br>
+        <a href="book.jsp?book=HHH">HHH</a><br>
+        <a href="book.jsp?book=III">III</a><br>
+        <a href="book.jsp?book=JJJ">JJJ</a><br>
+        <br>
+        <%
+            //- 从Cookie中获取所有以`BOOK_`开头的Cookies，并显示
+
+            Cookie[] cookies = request.getCookies();
+            if (cookies != null && cookies.length > 0){
+                for (Cookie cookie : cookies) {
+                    String cookieName = cookie.getName();
+                    if (cookieName.startsWith("BOOK_")){
+                        out.println(cookie.getValue());
+                        out.println("<br>");
+                    }
+                }
+            }
+        %>
+
+        </body>
+        </html>
+        ```
+    - book.jsp：[/java/mylearn/weblearn/src/main/webapp/cookie/autoshow/book.jsp](/java/mylearn/weblearn/src/main/webapp/cookie/autoshow/book.jsp)
+        ```java
+        String nowBookName = request.getParameter("book");
+        Cookie[] cookies = request.getCookies();
+
+        if (cookies != null && cookies.length >0) {
+            ArrayList<Cookie> bookCookies = new ArrayList<>(5);
+            Cookie deleteCookie = null;
+
+            for (Cookie cookie : cookies) {
+                String cookieName = cookie.getName();
+
+                // - 从Cookie中获取所有的以`BOOK_`开头的Cookie，并保存在List中
+                if (cookieName.startsWith("BOOK_")){
+                    bookCookies.add(cookie);
+                    // - 遍历Cookie，检查是否有Cookie的Value与当前的bookName相同
+                    if (nowBookName.equals(cookie.getValue())){
+                        // - 如果有相同的，则记录下来，作为待删除的Cookie
+                        deleteCookie = cookie;
+                        break;
+                    }
+                }
+            }
+
+                // - 如果没有待删除的Cookie，则List的长度是否等于5,
+            if (deleteCookie == null && bookCookies.size() == 5) {
+                // - 如果等于5，则删除第一个Cookie
+                deleteCookie = bookCookies.get(0);
+            }
+
+            if (deleteCookie != null){
+                // 删除Cookie
+                deleteCookie.setMaxAge(0);
+                response.addCookie(deleteCookie);
+            }
+
+            // - 在末尾将当前书名插入Cookie
+            Cookie newCookie = new Cookie("BOOK_" + nowBookName, nowBookName);
+            response.addCookie(newCookie);
+        }
+        ```
 
 
 # 其他

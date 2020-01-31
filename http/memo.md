@@ -11,7 +11,7 @@
     - [post请求](#post请求)
     - [get和post传递参数方式](#get和post传递参数方式)
     - [重定向问题](#重定向问题)
-- [Cookie](#cookie)
+- [Cookie机制](#Cookie机制)
 - [Referer防盗链](#referer防盗链)
 - [HTTP协议缓存控制](#http协议缓存控制)
 - [HTTP与内容压缩](#http与内容压缩)
@@ -29,6 +29,9 @@
     - HTTP/1.0
     - HTTP/1.1
     - HTTP-NG
+
+- HTTP协议是一种无状态的协议，WEB服务器本身不能识别出哪些请求是同一个浏览器发出的，浏览器的每一次请求都是完全孤立的
+    - 即使HTTP1.1支持持续连接，但当用户有一段时间没有提交请求，连接也会关闭
 
 # HTTP的会话方式
 [top](#catalog)
@@ -194,10 +197,47 @@
     - 可以使用状态码：**307**，在重定向中保持原有的请求数据
         - 使用307后，原始请求和重定向请求都是POST请求
     
-# Cookie
+# Cookie机制
 [top](#catalog)
-- 客户端-->服务器：请求头附加`cookies:value`
-- 服务器-->客户端：响应头：Set-Cookie
+- Cookie机制是在客户端保持HTTP状态信息的方案，<label style="color:red">是一种会话跟踪机制</label>
+- Cookie机制的表现
+    - 服务器-->浏览器：浏览器访问Web服务器的某个资源时，WEB服务器会在**HTTP响应消息头**中附带传送一个**小文本文件**作为Cookie
+    - 浏览器-->服务器：<label style="color:red">如果WEB浏览器保持了某个Cookie，那么它在以后每次访问该WEB服务器时，都会自动在HTTP请求头中添加这个Cookie，然后回传给WEB服务器</label>
+    - 浏览器中的显示内容
+        - ![http_client_cookie](./imgs/cookie/http_client_cookie.png)
+- 底层的实现原理：
+    - 服务器-->浏览器：WEB服务器在HTTP响应消息中增加`Set-Cookie:name=value`响应头字段，来将Cookie信息发送给浏览器
+    - 浏览器-->服务器：浏览器通过在HTTP请求消息中增加`Cookie:name=value`请求头字段，来将Cookie回传给Web服务器
+    - 示意图
+        - ![cookie_principle](./imgs/cookie/cookie_principle.png)
+    
+- 一个Cookie只能标识一种信息，它至少含有一个标识该信息的名称(Name)和值(Value)
+
+- Cookie的发送量
+    - 服务器-->浏览器：可以发送多个Cookie
+
+- 浏览器的Cookie存储量
+    - 一个WEB浏览器也可以存储多个WEB站点提供的Cookie
+    - 浏览器一般只允许存放300个Cookie
+    - 每个站点最多存放20个Cookie
+    - 每个Cookie的大小限制为4KB
+        - 如果都是会话Cookie，全部保存在内存中将会消耗1M的内存
+
+- <label style="color:red">会话Cookie和持久Cookie</label>
+    - 不可保存的Cookie
+        - 如果Cookie的最大时效被设为0，浏览器会自动删除该Cookie
+    - 会话Cookie
+        - 会话cookie生命周期为浏览器会话期间，只要关闭浏览器窗口，Cookie就消失了，这种就称为会话Cookie
+        - 会话Cookie不设置过期时间
+        - 会话Cookie一般不保存在硬盘上，而是**保存在内存里**
+    - 持久Cookie
+        - 如果设置了过期时间，浏览器就会把Cookie保存在硬盘上
+        - 关闭后再次打开浏览器，这些Cookie依然有效，直到超过过期时间
+
+- Cookie能否跨浏览器窗口使用
+    - 存储在硬盘上的Cookie可以在不同的浏览器进程间共享，如两个IE窗口
+    - 保存在内存的Cookie，不同的浏览器有不同的处理方式
+        - ???????
 
 # Referer防盗链
 [top](#catalog)
