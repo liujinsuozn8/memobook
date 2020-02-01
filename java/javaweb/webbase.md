@@ -69,6 +69,18 @@
         - [Cookie的作用域](#Cookie的作用域)
         - [示例-利用Cookie完成自动登陆](#示例-利用Cookie完成自动登陆)
         - [示例-利用Cookie显示最近浏览的商品](#示例-利用Cookie显示最近浏览的商品)
+    - [Session](#Session)
+        - [Session机制](#Session机制)
+        - [SessionCookie](#SessionCookie)
+        - [HttpSession接口中的常用方法](#HttpSession接口中的常用方法)
+        - [HttpSession的生命周期](#HttpSession的生命周期)
+- [](#)
+- [](#)
+- [](#)
+- [](#)
+- [](#)
+- [](#)
+- [](#)
 - [](#)
 - [](#)
 - [](#)
@@ -112,7 +124,7 @@
         - 在浏览器中输入地址：`localhost:8080`
         - 使用`bin/shutdown.sh`关闭
     - 修改Tomcat默认端口号
-        - `.../conf/server.xml`，修改`port`属性
+        - `apache-tomcat-9.0.30/conf/server.xml`，修改`port`属性
             ```xml
             <Connector port="8080" protocol="HTTP/1.1"
                connectionTimeout="20000"
@@ -2015,7 +2027,7 @@ pageContext, request, session, application
     - 自动重新编译
         - Tomcat5.X在访问JSP页面时，可以检测它所引入的其他文件是否发生了修改，如果发生了修改，则重写编译当前JSP页面
         
-- 尽量不要使用的操作：**跨文件使用变量**
+- <label style="color:red">尽量不要使用的操作：跨文件使用变量</label>
     - 在编译后，当前JSP页面，和其他多个引入的页面最终会合并成一个整体，所以，各页面中声明的变量，在其他页面中也可以使用
         - 只能在合并后的页面中会生效，单独使用时，会因为Servlet中没有定义而产生异常
     - 最好不要这样使用
@@ -2833,7 +2845,7 @@ pageContext, request, session, application
 [top](#catalog)
 - 参考[memo.md#Cookie机制](/http/memo.md#Cookie机制)
 - 两个要点
-    1. Cookie机制是在**客户端**保持HTTP状态信息的方案，<label style="color:red">是一种会话跟踪机制</label>
+    1. Cookie机制是在<label style="color:red">客户端</label>保持HTTP状态信息的方案，<label style="color:red">是一种会话跟踪机制</label>
     2. <label style="color:red">如果WEB浏览器保持了某个Cookie，那么它在以后每次访问该WEB服务器时，都会自动在HTTP请求头中添加这个Cookie，然后回传给WEB服务器</label>
 
 ### JavaWeb中Cookie的基本使用方法
@@ -2953,8 +2965,8 @@ pageContext, request, session, application
 - 默认情况下的作用域规则：
     - <label style="color:red">在当前目录中设定的Cookie可以在子目录和同级目录之间进行访问，但是不能被上级目录被访问</label>
 - 如果需要Cookie可以被上级目录访问到，需要通过`Cookie.setPath()`手动设定Cookie的作用域
-    - 设定整个Web应用为有效作用域：`cookie.setPath(request.getContextPath());`
-    - 设定整个Web站点为有效作用域：`cookie.setPath("/");`
+    - 设定整个Web**应用**为有效作用域：`cookie.setPath(request.getContextPath());`
+    - 设定整个Web**站点**为有效作用域：`cookie.setPath("/");`
 - 示例
     - 示例中各页面的设定内容
         - `out.jsp`
@@ -3217,6 +3229,265 @@ pageContext, request, session, application
             response.addCookie(newCookie);
         }
         ```
+## Session
+### Session机制
+[top](#catalog)
+- Session机制采用的是在<label style="color:red">服务器</label>端保持HTTP状态信息的方案
+- Session在Web开发中指：用来在客户端与服务端之间保持状态的解决方案，有时候Session也用来指这种解决方案的存储结构
+- 在服务器端，使用一种类似于散列表的结构来保存信息
+
+- 某个程序为客户端的请求创建Session的过程
+    - 基本流程
+        1. 服务器首先检查这个客户端的请求里是否包含了一个sessionID
+        2. 如果已经包含了一个sessionID,则说明以前已经为此客户创建过session，服务器通过sessionID把session检索出来使用
+            - 如果检索不到，可能会新建一个，这种情况可能出现在服务端已经删除了该用户的session对象，但用户人为的在请求的URL后面附加了一个JSESSION的参数
+        3. 如果客户请求不包含sessionID，则为此客户创建一个session并且生成一个sessionID，**这个sessionID将在本次响应中返回给客户端保存**
+    - 示意图
+        - ![flow_creat_session](./imgs/webbase/session_cookie/flow_creat_session.png)
+
+### SessionCookie
+[top](#catalog)
+- 什么是session cookie
+    - session通过SessionID来区分不同的客户，系统会创造一个名为`JSESSIONID`的cookie，称为session cookie
+    - session cookie存储于浏览器内存中
+    - session cookie只针对某一次会话，会话结束时session cookie也就消失了
+    - 关闭浏览器，只会使浏览器内存里的session cookie消失，**但不会使保存在服务器端的session对象消失，这些对象只能等待GC进行处理**
+
+- 保存Session cookie（SessionID）的方法
+    1. <label style="color:red">默认方式：采用cookie，这样在交互过程中浏览器就可以自动的按照规则把sessionID发送给服务器</label>
+    2. URL重写
+        - 使用的场景：cookie被人为禁用，无法通过自动添加到请求头带回
+        - 基本思路：将sessionID附加在URL路径的后面，有两种附加方法
+            1. 作为URL路径的附加信息
+            2. 作为查询字符串附加在URL后面
+        - 缺点：如果想在整个交互过程中始终保持状态，就必须在每个客户端可能请求的路径后面都附加这个sessionID
+
+- **通过设定存活时间来持久化session cookie**
+    - 实现：[/java/mylearn/weblearn/src/main/webapp/session/session.jsp](/java/mylearn/weblearn/src/main/webapp/session/session.jsp)
+        ```java
+        // 命名为同名的Cookie
+        Cookie cookie = new Cookie("JSESSIONID", session.getId());
+        // 设定存活时间来持久化cookie
+        cookie.setMaxAge(40);
+        response.addCookie(cookie);
+        ```
+
+### HttpSession接口中的常用方法
+[top](#catalog)
+- <label style="color:red">常用方法</label>
+
+    |方法名|内容|
+    |-|-|
+    |getId|获取sessionID|
+    |getCreationTime|获取session对象的创建时间|
+    |getLastAccessedTime|获取session对象的上一次访问时间|
+    |setMaxInactiveInterval|设置过期时间|
+    |getMaxInactiveInterval|获取过期时间|
+    |isNew|检查当前Servlet中使用的HttpSession对象是不是新的<br><br>如果客户端请求消息中的sessionID与Servlet程序中获得的HttpSession对象的sessionId相同时则认为这个HttpSession对象不是新建的|
+    |invalidate|将session对象无效化|
+    |serAttribute|设置属性|
+    |getAttribute|获取属性|
+    |removeAttribute|删除属性|
+    |getAttributeNames|获取所有属性的名称列表|
+    |getServletContext||
+
+- 示例：通过HttpSession在不同页面中传递信息
+    - 实现方法
+        - 将username保存在session中，来在各个页面中进行传递
+        - 页面间的跳转
+            - 从login.jsp页面登录，并跳转到hello.jsp页面，显示登录的username
+            - 可以从hello.jsp页面跳转到login.jsp页面，进行重新登录，同时在文本框中显示之前登录的username
+            - 可以从hello.jsp页面跳转到logout.jsp页面，显示注销的用户，可以跳转到login.jsp页面进行重新登录
+                - 注销时，销毁当前正在使用的HttpSession
+    - 基本实现内容
+        - login.jsp：[/java/mylearn/weblearn/src/main/webapp/session/method/login.jsp](/java/mylearn/weblearn/src/main/webapp/session/method/login.jsp)
+            ```html
+            <%
+                //如果是第一次登录，则在文本框中显示空白，
+                // 如果是从hell.jsp的重新登录连接跳转过来的，则在文本框中显示之前登录的username
+                Object username = session.getAttribute("username");
+                if (username == null)
+                    username = "";
+            %>
+
+            <form action="hello.jsp" method="post">
+                username: <input name="username" value="<%=username%>">
+                <input type="submit" value="登录">
+            </form>
+            ```
+
+        - hello.jsp：[/java/mylearn/weblearn/src/main/webapp/session/method/hello.jsp](/java/mylearn/weblearn/src/main/webapp/session/method/hello.jsp)
+            ```html
+            <%
+                String username = request.getParameter("username");
+            %>
+            username: <%=username%>
+
+            <%--跳转到登录页面进行重新登录，并且在username处显示登录的username--%>
+            <%--通过HttpSession在一次会话中，在多个页面之间传递值--%>
+            <%
+                session.setAttribute("username", username);
+            %>
+
+            <br>
+            <br>
+
+            <a href="login.jsp">重新登录</a>
+            <br>
+            <a href="logout.jsp">注销</a>
+            ```
+
+        - login.jsp：[/java/mylearn/weblearn/src/main/webapp/session/method/login.jsp](/java/mylearn/weblearn/src/main/webapp/session/method/loginout.jsp)
+            ```html
+            username：<%=session.getAttribute("username")%>
+            <br>
+
+            <%--销毁session--%>
+            <%
+            session.invalidate();
+            %>
+            <a href="login.jsp">重新登录</a>
+            ```
+    - 页面结果
+        - 入口：`http://localhost:8080/weblearn_war_exploded/session/method/login.jsp`
+        - 进入登录页面login.jsp，会新建一个HttpSession对象
+            - ![session_method_test_01](./imgs/webbase/session_cookie/session_method_test_01.png)
+        - 执行登录，跳转到hello.jsp，和login.jsp中使用的是同一个HttpSession对象。点击重新登录
+            - ![session_method_test_02](./imgs/webbase/session_cookie/session_method_test_02.png)
+        - 跳转到login.jsp页面，并且在文本框中显示之前登录过的username。点击登录
+            - ![session_method_test_03](./imgs/webbase/session_cookie/session_method_test_03.png)
+        - 再次登录，仍然使用同一个HttpSession对象。点击注销
+            - ![session_method_test_04](./imgs/webbase/session_cookie/session_method_test_04.png)
+        - 跳转到logout.out页面，在该页面中**销毁了一直使用的HttpSession对象**
+            - ![session_method_test_05](./imgs/webbase/session_cookie/session_method_test_05.png)
+        - 刷新logout.out页面，JSP会新建一个HttpSession对象。因为旧的HttpSession对象已经被销毁了，所以无法获取指定的属性值，显示null
+            - ![session_method_test_06](./imgs/webbase/session_cookie/session_method_test_06.png)
+        - 点击重新登录，跳转到login.jsp页面，再次创建一个新的HttpSession对象
+            - ![session_method_test_07](./imgs/webbase/session_cookie/session_method_test_07.png)
+### HttpSession的生命周期 
+[top](#catalog)
+- 什么时候创建HttpSession对象
+    - 对于JSP
+        - 基本规则
+            - 第一次访问某个JSP时会创建一个session
+            - 如果在第一次访问的JSP中已经设定：`<%@ page session="false" %>`，则服务器不会创建session，
+                - session="false"，表示当前JSP页面禁用session隐含变量，但可以使用其他的显示HttpSession对象，如：``request.getSession(true)``
+            - 如果当前JSP不是客户端访问的当前WEB应用的第一个资源，且其他页面已经创建一个HttpSession对象，则当前JSP页面会返回一个相关联的HttpSession对象，而不会创建一个新的HttpSession对象
+        - 示例
+            - 实现：[/java/mylearn/weblearn/src/main/webapp/session/lifecycle.jsp](/java/mylearn/weblearn/src/main/webapp/session/lifecycle.jsp)
+                ```html
+                <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+                <%@ page session="false" %>
+                <html>
+                <head>
+                    <title>Title</title>
+                </head>
+                <body>
+
+                <%--如果有和当前JSP关联session则返回，没有则返回null--%>
+                <%= request.getSession(false)%>
+
+                </body>
+                </html>
+                ```
+            - 页面显示
+                1. 启动新的浏览器，第一次进入`lifecycle.jsp`，没有session：`http://localhost:8080/weblearn_war_exploded/session/lifecycle.jsp`
+                    - ![session_lifecycle_jsp_01](./imgs/webbase/session_cookie/session_lifecycle_create_jsp_01.png)
+                2. 进入`index.jsp`，创建session：`http://localhost:8080/weblearn_war_exploded`
+                    - ![session_lifecycle_jsp_02](./imgs/webbase/session_cookie/session_lifecycle_create_jsp_02.png)
+                3. 再次进入`lifecycle.jsp`，获得一个已存在的session，且与第二部的sessionID相同：`http://localhost:8080/weblearn_war_exploded/session/lifecycle.jsp`
+                    - ![session_lifecycle_jsp_03](./imgs/webbase/session_cookie/session_lifecycle_create_jsp_03.png)
+    - 对于Servlet
+        - 基本原则
+            - 如果Servlet是第一个被访问的WEB应用资源
+                - 只有调用了`request.getSession()`，或`request.getSession(true)`的才会创建HttpSession对象
+                - 调用`request.getSession(false)`的不会创建HttpSession对象，只会返回`null`
+        - 示例
+            - 实现
+                - hasSession: [/java/mylearn/weblearn/src/main/java/com/ljs/test/session/hasSession.java](/java/mylearn/weblearn/src/main/java/com/ljs/test/session/hasSession.java)
+                    ```java
+                    @Override
+                    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+                        HttpSession session = req.getSession();
+                        PrintWriter out = resp.getWriter();
+                        out.println(session);
+                    }
+                    ```
+                - hasSession: [/java/mylearn/weblearn/src/main/java/com/ljs/test/session/noSession.java](/java/mylearn/weblearn/src/main/java/com/ljs/test/session/noSession.java)
+                    ```java
+                    @Override
+                    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+                        HttpSession session = req.getSession(false);
+                        PrintWriter out = resp.getWriter();
+                        out.println(session);
+                    }
+                    ```
+            - 页面显示
+                - 启动新的浏览器，第一次进入noSession：`http://localhost:8080/weblearn_war_exploded/session/noSession`
+                    - ![session_lifecycle_create_servlet_01](./imgs/webbase/session_cookie/session_lifecycle_create_servlet_01.png)
+                - 进入hasSession，创建HttpSession对象：`http://localhost:8080/weblearn_war_exploded/session/hasSession`
+                    - ![session_lifecycle_create_servlet_02](./imgs/webbase/session_cookie/session_lifecycle_create_servlet_02.png)
+                - 再进入noSession，获得了一个相关的HttpSession对象，且与第二部创建的对象相同：`http://localhost:8080/weblearn_war_exploded/session/noSession`
+                    - ![session_lifecycle_create_servlet_03](./imgs/webbase/session_cookie/session_lifecycle_create_servlet_03.png)
+
+- 什么时候销毁HttpSession对象
+    1. 直接调用`HttpSession.invalidate()`方法，该方法会使HttpSession失效
+        - 示例
+            - 参考实现：[/java/mylearn/weblearn/src/main/webapp/session/invalidate.jsp](/java/mylearn/weblearn/src/main/webapp/session/invalidate.jsp)
+                ```java
+                // 创建一个session
+                HttpSession session = request.getSession(true);
+                out.println(session.getId());
+
+                // 然后将session销毁
+                session.invalidate();
+                ```
+            - 页面结果：每次都在jsp中，创建一个session并销毁，所以每次页面都会显示一个不同的HttpSession对象
+
+    2. 服务器卸载了当前WEB应用
+    3. 超过HttpSession的过期时间
+
+- 设置session对象过期时间的两种方法
+    1. 在jsp/servlet中进行设置：`session.setMaxInactiveInterval(5);`，单位为秒
+        - HttpSession的默认过期时间是1800s，即30分钟
+        - 示例
+            - 实现：[/java/mylearn/weblearn/src/main/webapp/session/maxtime.jsp](/java/mylearn/weblearn/src/main/webapp/session/maxtime.jsp)
+                ```java
+                // 创建一个session
+                HttpSession session = request.getSession(true);
+                out.println(session.getId());
+                out.println("<br><br>");
+
+                // 默认以秒为单位
+                out.println(session.getMaxInactiveInterval());
+
+                // 重新设定session的过期时间：5s
+                session.setMaxInactiveInterval(5);
+
+                // 默认以秒为单位
+                out.println(session.getMaxInactiveInterval());
+                ```
+    2. 在web.xml文件中设置HttpSession的过期时间，单位为分钟
+        - 配置内容
+            ```xml
+            <!-- ==================== Default Session Configuration ================= -->
+            <!-- You can set the default session timeout (in minutes) for all newly   -->
+            <!-- created sessions by modifying the value below.                       -->
+            
+            <session-config>
+                <session-timeout>30</session-timeout>
+            </session-config>
+            ```
+        - 配置的作用域
+            - 全局配置：通过修改：`apache-tomcat-9.0.30/conf/web.xml`，来进行全局配置
+            - 应用级别配置：对某个应用的web.xml文件进行单独设置
+
+- 注意事项
+    - 关闭浏览器与HttpSession对象的销毁没有直接关系
+    - 即使浏览器关闭，也可以通过持久化SessionCookie和URL重写来复用
+
+
+
 
 
 # 其他
