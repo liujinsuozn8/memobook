@@ -52,6 +52,7 @@
         - [3.JSP标签-\<jsp:forward\>](#3.JSP标签-<jsp:forward>)
     - [异常页面的配置](#异常页面的配置)
     - [解决jsp中文乱码问题](#解决jsp中文乱码问题)
+    - [在JSP中使用JavaBean(开发中很少使用)](#在JSP中使用JavaBean)
 - [转发重定向](#转发重定向)
     - [forward和redirect的四种区别](#forward和redirect的四种区别)
     - [转发的流程示意图](#转发的流程示意图)
@@ -76,12 +77,11 @@
         - [HttpSession的生命周期](#HttpSession的生命周期)
         - [Session避免表单的重复提交](#Session避免表单的重复提交)
         - [利用Session实现一次性验证码](#利用Session实现一次性验证码)
-- [](#)
-- [](#)
-- [](#)
-- [](#)
-- [](#)
-- [](#)
+- [EL表达式](#EL表达式)
+    - [EL的基本知识](#EL的基本知识)
+    - [EL的基本语法](#EL的基本语法)
+    - [EL运算符](#EL运算符)
+    - [EL隐含对象](#EL隐含对象)
 - [](#)
 - [](#)
 - [JavaWeb开发中的路径问题](#JavaWeb开发中的路径问题)
@@ -2396,9 +2396,11 @@ pageContext, request, session, application
     - JavaBean的属性名是根据setter和getter方法名称来生成的，属性名的一个字母必须小写
 
 - 在JSP中如何使用JavaBean（已经过时，只作为了解内容，开发时几乎不用）
-    - `<jsp:useBean>`标签
-    - `<jsp:setProperty>`标签
-    - `<jsp:getProperty>`标签
+    - `<jsp:useBean>`，获取javaBean实例对象
+    - `<jsp:setProperty>`为javaBean实例对象设值
+    - `<jsp:getProperty>`从javaBean实例对象中取值
+
+- <label style="color:red">在当前页面使用`<jsp:setProperty>`或者`<jsp:getProperty>`之前，必须使用`<jsp:useBean>`在JSP内部获取到相应的JavaBean对象，无论该对象在哪个域中，否则直接使用setProperty或getProperty会导致页面异常</label>
 
 - `<jsp:useBean>`标签
     - 用于在某个域范围(application, session, request, pageContext等)中查找一个指定名称的JavaBean对象，如果存在则返回该JavaBean对象的引用，如果不存在则实例化一个新的JavaBean对象并将它按指定的名称存储在指定的域范围中
@@ -3825,6 +3827,237 @@ pageContext, request, session, application
 - 示例
     - ????????
 
+# EL表达式
+## EL的基本知识
+[top](#catalog)
+- EL (Expression Language)，原本是JSTL1.0为了方便取数据所自定义的语言。JSP2.0之后，EL已经成为标准规范之一
+- 使用EL表达式的前提
+    - 支持Servlet2.4/JSP2.0的Container
+    - JSP的page指令中允许使用EL表达式： `<%@ page isELIgnored="false" %>`
+- EL表达式中没有指定范围时，如`${username}`，默认会按照：`page、request、session、application`的顺序查找
+    - 如果找到就停止并返回值
+    - 如果所有范围都没有找到，就返回**null**
+
+- EL本身没有遍历的能力，需要借助JSTL
+
+## EL的基本语法
+[top](#catalog)
+- EL语法结构：`${expression}`
+- 示例
+    - `${sessionScop.user.sex}`
+- 相当于
+    ```java
+    User user = (User)session.getAttribute("user");
+    String sex = user.getSex();
+        ```
+- <label style="color:red">EL取值的过程实际上就是在不断的调用类对象中相应的只读方法，如get等</label>
+
+## EL运算符
+[top](#catalog)
+- EL提供：`.`、`[""]` 来存取数据
+    - 以下两者所代表的意思是一样的
+        - `${sessionScop.user.sex}`
+        - `${sessionScop.user["sex"]}`
+    - 当域对象属性名不规范时，应该使用`[""]`来取值
+        - 参考示例部分说明
+- 算数运算符：`+、-、*、/、%`
+- 关系运算符：
+    - 关系运算符必须写在`${}`内部，如：`${score > 60}`
+- 逻辑运算符：`&&、||、! `
+- 其他运算符
+    - 条件运算符
+    - `()`括号运算符，用于改变运算优先级
+    - empty运算符：${empty expression}
+        - 对于变量，如果变量不存在，则结果为true，否则为false
+        - 对于集合，如果集合中没有元素，则结果为true，否则为false
+        - 对于字符串，如果是空字符串`""`，则结果为true，否则为false
+        - 对于数组，无论数组长度是不是0，结果都为false
+            - 应该是将数组作为一般变量看待，即使长度为0，单数数组对象本身还是存在的
+        - - 参考示例部分说明
+
+- 示例：
+    - 实现内容， operator.jsp：[/java/mylearn/weblearn/src/main/webapp/el/grammar/operator.jsp](/java/mylearn/weblearn/src/main/webapp/el/grammar/operator.jsp)
+        ```html
+        <%
+            // 1.关系运算符测试
+            request.setAttribute("score", 60);
+
+            // 2.集合测试
+            List<String> list1 = new ArrayList<>();
+            list1.add("aaa");
+            request.setAttribute("list1", list1);
+
+            List<String> list2 = new ArrayList<>();
+            request.setAttribute("list2", list2);
+
+            // 3. 字符串测试
+            //保存一个空字符串
+            request.setAttribute("str1", "");
+
+            //保存一个非空的字符串
+            request.setAttribute("str2", "abcd");
+
+            // 4. 数组测试
+            int[] intArray1 = new int[0];
+            request.setAttribute("intArray1", intArray1);
+
+            int[] intArray2 = new int[]{1,2,3,4,5};
+            request.setAttribute("intArray2", intArray2);
+        %>
+
+        <%--域对象属性名不标准时使用：[""]--%>
+        <%
+            Customer customer2 = new Customer();
+            customer2.setName("customer2");
+            session.setAttribute("com.ljs.customer2", customer2);
+        %>
+
+        <h3>域对象属性名不标准时使用[""]获取</h3>
+        customer2.name: ${sessionScope["com.ljs.customer2"].name}
+        <br>
+
+        <h3>1. 关系运算符测试</h3>
+        "score > 60?" : ${score >= 60}<br>
+        "score > 60?" : ${score >= 60 ? "及格":"不及格"}<br>
+
+        <h3>2. 集合测试</h3>
+        list1 value: ${requestScope.list1}<br>
+        empty list1: ${empty requestScope.list1}<br>
+
+        list2 value : ${requestScope.list2}<br>
+        empty list2: ${empty requestScope.list2}<br>
+
+        <h3>3. 空对象测试</h3>
+        null Object: ${empty requestScope.xxxx}<br>
+
+        <h3>4. 空字符串测试</h3>
+        str1 value : ${requestScope.str1}<br>
+        empty str1 : ${empty requestScope.str1}<br>
+        str2 value: ${requestScope.str2}<br>
+        not empty str2 : ${empty requestScope.str2}<br>
+
+        <h3>5. 数组测试</h3>
+        intArray1 value : ${requestScope.intArray1}<br>
+        empty intArray1 : ${empty requestScope.intArray1}<br>
+
+        intArray2 value : ${requestScope.intArray2}<br>
+        not empty intArray2 : ${empty requestScope.intArray2}<br>
+        ```
+    - 页面结果
+        - `http://localhost:8080/weblearn_war_exploded/el/grammar/operator.jsp`
+        - ![grammar_operator_result](./imgs/webbase/el/grammar/grammar_operator_result.png)
+
+## EL的自动类型转换
+[top](#catalog)
+- 获取值时，EL表达式可以自动进行类型转换 
+- 示例：
+    - 实现内容，step2.jsp:[/java/mylearn/weblearn/src/main/webapp/el/grammar/step2.jsp](/java/mylearn/weblearn/src/main/webapp/el/grammar/step2.jsp)
+    
+        ```java
+        score from el : ${param.score}
+        
+        score from el + 10  : ${param.score + 10}
+        
+        score from requset : <%=request.getParameter("score")%>
+        
+        score from requset + 10 : <%=request.getParameter("score") + 10%>
+        ```
+    - 页面结果
+        - 附加请求参数：`http://localhost:8080/weblearn_war_exploded/el/grammar/step2.jsp?score=12`
+        - el表达式可以自动进行类型转换并进行数值运算，得到：`12 + 10 = 22`
+        - 通过`request.getParameter`获取到的是String类型，无法进行数值运算，只能进行字符串连接，得到：`"12" + 11 --> 1210`
+        - ![grammar_auto_data_type](./imgs/webbase/el/grammar/grammar_auto_data_type.png)
+
+
+## EL隐含对象
+[top](#catalog)
+- 与范围有关的隐含对象
+    
+    |EL中的隐含对象|属性范围|
+    |-|-|
+    |pageScope|page|
+    |requestScope|request|
+    |sessionScope|session|
+    |applicationScope|application|
+
+- 与输入有关的隐含对象
+    
+    |EL中的隐含对象|含义|
+    |-|-|
+    |param|获取一个请求参数
+    |paramValues|获取一组请求参数|
+    
+- <label style="color:red">pageContext，非常重要的对象</label>
+    - 可以通过pageContext来取得其他有关用户要求或页面的详细信息
+    - 常用的部分
+        
+        |表达式|内容|
+        |-|-|
+        |${pageContext.request.queryString}|取得请求的参数字符串|
+        |${pageContext.request.requestURL}|取得请求的URL，但不包括请求的参数字符串|
+        |${pageContext.request.contextPath}|服务的web应用的名称|
+        |${pageContext.request.method}|获取HTTP的方法（GET、POST）|
+        |${pageContext.request.protocol}|获取使用的协议（HTTP/1.1、HTTP/1.0）|
+        |${pageContext.request.remoteUser}|取得用户名称 ?????|
+        |${pageContext.request.remoteAddr}|获取用户的IP地址|
+        |${pageContext.session.new}|判断session是否是新的|
+        |${pageContext.session.id}|获取sessionID|
+        |${pageContext.servletContext.serverInfo}|取得主机端的服务信息|
+        
+        
+- 其他隐含对象
+    |EL中的隐含对象|含义|
+    |cookie|可以从中获取Cookie对象|
+    |header|获取请求头信息 (很少使用)|
+    |headerValues|获取一组请求头信息 (很少使用)|
+    |initParam|获取web.xml中设定的web应用的初始化参数：`<context-param>`|
+
+- 示例
+    - 实现内容，elobject.jsp ：[/java/mylearn/weblearn/src/main/webapp/el/grammar/elobject.jsp](/java/mylearn/weblearn/src/main/webapp/el/grammar/elobject.jsp)
+        ```html
+        <%--- 1. 与范围有关的隐含对象--%>
+        <h4>1. 与范围有关的隐含对象</h4>
+        <%
+            request.setAttribute("testkey", "requestTestValue");
+            session.setAttribute("testkey", "sessionTestValue");
+        %>
+
+        <%--搜索到request时停止，并返回值--%>
+        requestTestKey: ${testkey}<br>
+        requestTestKey: ${requestScope.testkey}<br>
+        sessionTestKey: ${sessionScope.testkey}<br>
+
+
+        <br>
+        <%--- 2. 与输入有关的隐含对象--%>
+        <h4>2. 与输入有关的隐含对象</h4>
+
+        param: ${param.name}<br>
+        paramValues: ${paramValues.scores}<br>
+
+        <%--- 3. 其他隐含对象--%>
+        <h3>3. 其他隐含对象</h3>
+        <%--获取cookie对象--%>
+        cookie.JSESSIONID : ${cookie.JSESSIONID.value} <br>
+
+        Request Header Accept-Language : ${header["Accept-Language"]} <br>
+
+        initParam jdbcUrl : ${initParam.jdbcUrl}<br>
+
+        <%--4. pageContext--%>
+        <h3>4.pageContext</h3>
+        请求的参数字符串 : ${pageContext.request.queryString}<br>
+        请求的URL : ${pageContext.request.requestURL}<br>
+        Web应用的路径 : ${pageContext.request.contextPath}<br>
+        SessionID : ${pageContext.session.id}<br>
+        remoteUser : ${pageContext.request.remoteUser}<br>
+        用户的IP地址 : ${pageContext.request.remoteAddr}<br>
+        主机端的服务信息 : ${pageContext.servletContext.serverInfo}<br>
+
+        ```
+    - 页面结果
+        - 入口：`http://localhost:8080/weblearn_war_exploded/el/grammar/elobject.jsp?name=newName&scores=10&scores=11&scores=12&scores=13`
+        - ![grammar_elobject](./imgs/webbase/el/grammar/grammar_elobject.png)
 
 # JavaWeb开发中的路径问题
 [top](#catalog)
@@ -3892,4 +4125,6 @@ pageContext, request, session, application
         ...
     }
     ```
+
+-  什么时候会创建新的session
 [top](#catalog)
