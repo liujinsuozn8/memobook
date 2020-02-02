@@ -74,8 +74,8 @@
         - [SessionCookie](#SessionCookie)
         - [HttpSession接口中的常用方法](#HttpSession接口中的常用方法)
         - [HttpSession的生命周期](#HttpSession的生命周期)
-        - [HttpSession避免表单的重复提交](#HttpSession避免表单的重复提交)
-- [](#)
+        - [Session避免表单的重复提交](#Session避免表单的重复提交)
+        - [利用Session实现一次性验证码](#利用Session实现一次性验证码)
 - [](#)
 - [](#)
 - [](#)
@@ -590,7 +590,7 @@
     - web应用程序之间的访问
     - 获取当前web应用的名称
         - `String getContextPath();`
-        - 可以通过该方法来修改路径 ???????
+        - 可以通过该方法来动态的构造绝对路径
     - 获取当前web应用的某一个文件对应的输入流
         - `InputStream getResourceAsStream(String name)`
     - 获取attribute的相关信息
@@ -1724,7 +1724,11 @@ pageContext, request, session, application
 - JSP脚本片段中的Java代码**会拷贝到生成的Servlet对象的_jspService方法中**
     - 所以在脚本片段中，可以执行所有普通Java程序
     - 多个脚本片段可以相互访问，因为最终都是在同一个方法中执行
-- 在JSP脚本片段中可以直接使用JSP提供的隐式对象来完成WEB应用程序特有的功能 ?????
+- 在JSP脚本片段中可以直接使用JSP提供的隐式对象来完成WEB应用程序特有的功能，如：
+    - [示例-利用Cookie完成自动登陆](#示例-利用Cookie完成自动登陆)
+    - [示例-利用Cookie显示最近浏览的商品](#示例-利用Cookie显示最近浏览的商品)
+    - [Session避免表单的重复提交](#Session避免表单的重复提交)
+    - 其他功能 ???
     
 ### 4.JSP基本语法-JSP声明
 [top](#catalog)
@@ -1751,14 +1755,6 @@ pageContext, request, session, application
     - request
     - session
     - application
-    
-- 域对象中和属性相关的方法
-    |函数声明|用途|
-    |-|-|
-    |Object getAttribute(String name)|获取指定的属性|
-    |void setAttribute(String name， object o)|设置属性|
-    |removeAttribute(String name)|移除指定的属性|
-    |Enumeration getAttributeNames()|获取所有的**属性名字**组成的Enumeration对象|
 
 - 各域对象的属性作用范围
 
@@ -1768,6 +1764,14 @@ pageContext, request, session, application
     |request|同一个请求，如果是forward则可以跨页面获取属性值|
     |session|一次会话，浏览器打开-->关闭为一次会话(在此期间会话不失效)|
     |application|当前web应用，是范围最大的属性作用范围<br/>只要在一处设置属性，在其他的JSP或Servlet中都可以获取到|
+    
+- 域对象中和属性相关的方法
+    |函数声明|用途|
+    |-|-|
+    |Object getAttribute(String name)|获取指定的属性|
+    |void setAttribute(String name， object o)|设置属性|
+    |removeAttribute(String name)|移除指定的属性|
+    |Enumeration getAttributeNames()|获取所有的**属性名字**组成的Enumeration对象|
     
 - 示例
     - 第一个页面：`/attribute/attr1.jsp`
@@ -2380,6 +2384,161 @@ pageContext, request, session, application
                connectionTimeout="20000"
                redirectPort="8443" useBodyEncodingForURI="true"/>
             ```
+
+## 在JSP中使用JavaBean
+[top](#catalog)
+- JavaBean的基本规则
+    - 用作JavaBean的类必须具有一个公共的、无参数的构造方法
+    - JavaBean的属性与普通Java类的属性的概念不一样，**JavaBean的属性是以方法定义的形式出现的**
+    - 用于对属性赋值的方法是setter方法，用于读取属性值的方法是getter方法
+        - setter必须以小写的set前缀开始，后跟属性名，且属性名的第一个字母要大写
+        - getter必须以小写的get前缀开始，后跟属性名，且属性名的第一个字母要大写
+    - JavaBean的属性名是根据setter和getter方法名称来生成的，属性名的一个字母必须小写
+
+- 在JSP中如何使用JavaBean（已经过时，只作为了解内容，开发时几乎不用）
+    - `<jsp:useBean>`标签
+    - `<jsp:setProperty>`标签
+    - `<jsp:getProperty>`标签
+
+- `<jsp:useBean>`标签
+    - 用于在某个域范围(application, session, request, pageContext等)中查找一个指定名称的JavaBean对象，如果存在则返回该JavaBean对象的引用，如果不存在则实例化一个新的JavaBean对象并将它按指定的名称存储在指定的域范围中
+    
+    - 语法
+        1. `<jsp:useBean id="beanInstanceName" class="package.class" scope="域对象(application, session, request, page)">`
+            - class属性用于指定JavaBean的完整类，必须带有包名
+            - id属性用于指定JavaBean实例对象的引用名称和其存储在域范围中的名称
+            - scope属性用于指定JavaBean实例对象所存储的域范围，其取值只能是：`application、session、request、page`中的一个，某人为page
+        
+        2. `<jsp:useBean id="beanInstanceName" beanName="反射实例化对象时使用的类型" type="创建JSP内部对象时使用的类型" scope="域对象(application, session, request, page)"/>`
+
+    - 两种语法都会先从域对象中获取bean对象，如果获取失败，则进行实例化，但是实例化的方式不同
+
+    - 两种语法的实例化对象方式
+        - 第一种语法会直接将class引入编译后的Servlet中，并用class直接创建
+            - `<jsp:useBean id="customer1" class="com.ljs.test.useJavaBean.Customer" scope="request"/>`
+            ```java
+            com.ljs.test.useJavaBean.Customer customer1 = null;
+            // 先从域对象的属性中获取，没有获取到时，再创建
+            customer1 = (com.ljs.test.useJavaBean.Customer) _jspx_page_context.getAttribute("customer1", javax.servlet.jsp.PageContext.REQUEST_SCOPE);
+            if (customer1 == null){
+                // 使用class直接实例化对象
+                customer1 = new com.ljs.test.useJavaBean.Customer();
+                _jspx_page_context.setAttribute("customer1", customer1, javax.servlet.jsp.PageContext.REQUEST_SCOPE);
+            }
+            ```
+        - 第二种语语法会通过反射来实例化对象
+            - 不同的type会导致不同类型的JSP内部对象
+            - `<jsp:useBean id="customer3" beanName="com.ljs.test.useJavaBean.Customer" type="com.ljs.test.useJavaBean.Customer" scope="request"/>`
+                ```java
+                // 使用type：com.ljs.test.useJavaBean.Customer创建内部对象
+                com.ljs.test.useJavaBean.Customer customer3 = null;
+              // 从域对象中获取指定的bean对象
+                customer3 = (com.ljs.test.useJavaBean.Customer) _jspx_page_context.getAttribute("customer3", javax.servlet.jsp.PageContext.REQUEST_SCOPE);
+                if (customer3 == null){
+                    try {
+                      // 无法获取到时，使用反射来实例化对象
+                      customer3 = (com.ljs.test.useJavaBean.Customer) java.beans.Beans.instantiate(this.getClass().getClassLoader(), "com.ljs.test.useJavaBean.Customer");
+                    } catch (java.lang.ClassNotFoundException exc) {
+                      throw new InstantiationException(exc.getMessage());
+                    } catch (java.lang.Exception exc) {
+                      throw new javax.servlet.ServletException("Cannot create bean of class " + "com.ljs.test.useJavaBean.Customer", exc);
+                    }
+              
+                    _jspx_page_context.setAttribute("customer3", customer3, javax.servlet.jsp.PageContext.REQUEST_SCOPE);
+                }
+                ```
+            - `<jsp:useBean id="customer4" beanName="com.ljs.test.useJavaBean.Customer" type="java.lang.Object" scope="request"/>`
+                ```java
+                // 使用type：java.lang.Object创建内部对象
+                java.lang.Object customer4 = null;
+                 // 从域对象中获取指定的bean对象
+                customer4 = (java.lang.Object) _jspx_page_context.getAttribute("customer4", javax.servlet.jsp.PageContext.REQUEST_SCOPE);
+                if (customer4 == null){
+                    // 无法获取到时，使用反射来实例化对象
+                    try {
+                      customer4 = (java.lang.Object) java.beans.Beans.instantiate(this.getClass().getClassLoader(), "com.ljs.test.useJavaBean.Customer");
+                    } catch (java.lang.ClassNotFoundException exc) {
+                      throw new InstantiationException(exc.getMessage());
+                    } catch (java.lang.Exception exc) {
+                      throw new javax.servlet.ServletException("Cannot create bean of class " + "com.ljs.test.useJavaBean.Customer", exc);
+                    }
+              
+                    _jspx_page_context.setAttribute("customer4", customer4, javax.servlet.jsp.PageContext.REQUEST_SCOPE);
+                }
+                ```
+   
+- `<jsp:setProperty>`标签
+    - 语法
+        - 设定某个Javabean中的某个属性值
+            - `<jsp:setProperty property="属性名" value="属性值" name="javabeanID">`
+        - 使用请求参数为beanInstance的所有属性赋值
+            - `<jsp:setProperty property="*" name="javabeanID">`
+
+- `<jsp:getProperty>`标签
+    - 获取某个Javabean中的某个属性值
+    - 语法
+        - `<jsp:getProperty property="属性名" name="javabeanID">`
+    - 相当于JSP表达式：`<%=beanInstance.getXXX() %>`
+
+- 示例
+    - index.jsp : [/java/mylearn/weblearn/src/main/webapp/useJavaBean/index.jsp](/java/mylearn/weblearn/src/main/webapp/useJavaBean/index.jsp)
+        ```html
+        <h3>useJavaBean Test</h3>
+
+        <%--1. 第一种语法：实例化一个对象并设值和取值--%>
+        javaBean:customer1 <br>
+        <%--实例化一个JavaBean对象--%>
+        <jsp:useBean id="customer1" class="com.ljs.test.useJavaBean.Customer" scope="request"/>
+
+        <%--为javaBean对象设值--%>
+        <jsp:setProperty name="customer1" property="age" value="11"/>
+        <jsp:setProperty name="customer1" property="name" value="newCustomer11"/>
+
+        <%--从javaBean对象取值--%>
+        name：<jsp:getProperty name="customer1" property="name"/> <br>
+        age：<jsp:getProperty name="customer1" property="age"/> <br>
+
+        <br><br>
+        <%--2. 使用所有请求参数来为JavaBean设值--%>
+        javaBean:customer2 <br>
+
+        <jsp:useBean id="customer2" class="com.ljs.test.useJavaBean.Customer" scope="request"/>
+        <jsp:setProperty name="customer2" property="*"/>
+
+        id:<jsp:getProperty name="customer2" property="id"/><br>
+        name:<jsp:getProperty name="customer2" property="name"/><br>
+        age:<jsp:getProperty name="customer2" property="age"/><br>
+
+        <br><br>
+        <%--3. 第二种语法：实例化一个对象并设值和取值--%>
+        javaBean:customer3 <br>
+        <%--实例化一个JavaBean对象--%>
+        <jsp:useBean id="customer3" beanName="com.ljs.test.useJavaBean.Customer" type="com.ljs.test.useJavaBean.Customer" scope="request"/>
+
+        <%--为javaBean对象设值--%>
+        <jsp:setProperty name="customer3" property="age" value="33"/>
+        <jsp:setProperty name="customer3" property="name" value="newCustomer33"/>
+
+        <%--从javaBean对象取值--%>
+        name：<jsp:getProperty name="customer3" property="name"/> <br>
+        age：<jsp:getProperty name="customer3" property="age"/> <br>
+
+
+        <br><br>
+        <%--4. 第二种语法：type测试--%>
+        javaBean:customer4 <br>
+        <%--实例化一个JavaBean对象--%>
+        <jsp:useBean id="customer4" beanName="com.ljs.test.useJavaBean.Customer" type="java.lang.Object" scope="request"/>
+        ```
+    
+    - 编译后的Servlet：[/java/mylearn/weblearn/src/main/java/com/complied/jsp/useJavaBean/index_jsp.java](/java/mylearn/weblearn/src/main/java/com/complied/jsp/useJavaBean/index_jsp.java)
+
+    - 页面结果
+        - 直接进入：`http://localhost:8080/weblearn_war_exploded/useJavaBean/index.jsp`
+            - ![](./imgs/webbase/jsp_javabean/no_param.png)
+        - 附加请求参数：`http://localhost:8080/weblearn_war_exploded/useJavaBean/index.jsp?age=13&name=aaaa&id=34eee&other=other`
+            - 附加多余的请求参数不会有副作用
+            - ![](./imgs/webbase/jsp_javabean/with_param.png)
 
 
 # 转发重定向
@@ -3536,7 +3695,7 @@ pageContext, request, session, application
     - 关闭浏览器与HttpSession对象的销毁没有直接关系
     - 即使浏览器关闭，也可以通过持久化SessionCookie和URL重写来复用
 
-### HttpSession避免表单的重复提交
+### Session避免表单的重复提交
 [top](#catalog)
 
 - 会导致重复提交的情况
@@ -3566,6 +3725,7 @@ pageContext, request, session, application
     - <label style="color:red">可行方案</label>
         - 把标记放在session对象中
             1. 在表单页面，生成一个随机值token
+                - <label style="color:red">token必须足够随机，才能保证安全性</label>
             2. 在表单页面，将token放入session对象和form的隐藏域中
             3. 提交表单
             4. 在目标Servlet中，获取session和隐藏域中的token
@@ -3648,9 +3808,27 @@ pageContext, request, session, application
             - Servlet第一次接收了请求，并清除了session对象中的token。后续的重复提交被阻止并跳转到提示页面
                 - ![session_resubmit_04](./imgs/webbase/session/resubmit/session_resubmit_04.png)
 
+    
+### 利用Session实现一次性验证码
+[top](#catalog)
+- 基本原理：与防止表单重复提交的原理相似
+    - 在表单页面，生成一个验证码图片。生成图片时，把该图片中的租房次放入到session
+    - 在表单页面，定义一个文本框用于输入验证码
+    - 提交表单，并在Servlet中从session中获取验证码和文本框中输入的验证码，然后进行比较
+    - 如果两个值相同，则接收请求
+    - 如果不同，则重定向到表单页面，并提示验证码错误
+
+- 与Session防止重复提交的区别
+    - 防止重复提交时，使用的是隐藏域来保存token
+    - 验证码需要手动输入token
+
+- 示例
+    - ????????
+
+
 # JavaWeb开发中的路径问题
 [top](#catalog)
-- 实际开发时尽量使用绝对路径
+- 实际开发时尽量使用绝对路径，写绝对路径不会有问题，写相对路径有时会有问题
 
 - 相对路径的问题
     - 由Servlet**转发**到JSP页面时，此时地址栏上显示的时Servlet的路径。如果此时JSP页面中的超链接还是相对于JSP页面的地址，则可能会出现路径混乱的问题
