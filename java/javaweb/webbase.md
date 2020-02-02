@@ -82,6 +82,13 @@
     - [EL的基本语法](#EL的基本语法)
     - [EL运算符](#EL运算符)
     - [EL隐含对象](#EL隐含对象)
+- [自定义标签](#自定义标签)
+    - [自定义标签库需要的maven支持](#自定义标签库需要的maven支持)
+    - [为什么需要自定义标签](#为什么需要自定义标签)
+    - [自定义标签的简介](#自定义标签的简介)
+    - [自定义标签的开发](#自定义标签的开发)
+- [](#)
+- [](#)
 - [](#)
 - [](#)
 - [JavaWeb开发中的路径问题](#JavaWeb开发中的路径问题)
@@ -4058,6 +4065,193 @@ pageContext, request, session, application
     - 页面结果
         - 入口：`http://localhost:8080/weblearn_war_exploded/el/grammar/elobject.jsp?name=newName&scores=10&scores=11&scores=12&scores=13`
         - ![grammar_elobject](./imgs/webbase/el/grammar/grammar_elobject.png)
+
+
+# 自定义标签
+## 自定义标签库需要的maven支持
+[top](#catalog)
+
+```xml
+<!--taglibs依赖1-->
+<!-- https://mvnrepository.com/artifact/javax.servlet.jsp.jstl/jstl-api -->
+<dependency>
+<groupId>javax.servlet.jsp.jstl</groupId>
+<artifactId>jstl-api</artifactId>
+<version>1.2</version>
+</dependency>
+
+<!--taglibs依赖2-->
+<!-- https://mvnrepository.com/artifact/org.apache.taglibs/taglibs-standard-impl -->
+<dependency>
+    <groupId>org.apache.taglibs</groupId>
+    <artifactId>taglibs-standard-impl</artifactId>
+    <version>1.2.5</version>
+</dependency>
+```
+
+## 为什么需要自定义标签
+[top](#catalog)
+- 自定义标签可以降低jsp开发的复杂的和维护量，从html角度看，可以使用html不用去过多的关注那些比较复杂的业务逻辑
+- 利用自定义标签，可以让软件开发和页面设计人员合理的分工
+    - 页面设计人员可以集中使用标签创建网站
+    - 开发人员可以集中实现底层功能
+- 将具有共用特性的tag库应用于不同的项目中，体现了软件复用的思想
+
+## 自定义标签的简介
+[top](#catalog)
+- 自定义标签是一种用户自定义的**jsp标记**
+- 当一个含有自定义标签的jsp页面被jsp引擎编译成Servlet时，tag标签被转化为对**标签处理器类**的操作。<label style="color:red">所以开发自定义标签的核心就是要编写处理器类<label>
+
+- 标签、标签处理器类、标签库之间的关系
+    - ![tag_tagclass_tarlib](./imgs/webbase/tag/introduction/tag_tagclass_tarlib.png)
+
+- 标签库API定义在`javax.servlet.jsp.tagext`包中
+- 标签库API中的主要类、接口的继承关系
+    - 所有标签处理器类都要实现JspTag接口，该接口中没有定义任何方法，主要作为Tag和SimpleTag接口的父接口
+    - <img src="./imgs/webbase/tag/introduction/tag_api_uml.png" width=60% height=60% />
+
+- 传统标签和简单标签
+    - JSP2.0之前，所有标签处理器类都必须实现Tag接口，这样的标签称为传统标签
+    - JSP2.0规范又定义了一种新的类型的标签，称为简单标签，其对应的处理器类型要实现SimpaleTag接口
+    
+- 标签的形式
+    - 空标签：`<hello/>`
+    - 带有属性的空标签：`<max num1="3" num2="5"/>`
+    - 带有内容的标签
+        ```html
+        <greeting>
+          hello
+        </greeting>
+        ```
+    - 带有内容和属性的标签
+        ```html
+        <greeting name="Tom">
+          hello
+        </greeting>
+        ```
+
+## 自定义标签的开发
+[top](#catalog)
+- 基本开发步骤
+    1. 创建一个标签处理器类，实现SimpleTag接口
+    2. 在WEB—INF目录下，创建标签库描述文件--tld文件
+    3. 拷贝tld文件中固定的部分
+    4. 修改`short-name`和`URI`
+        ```xml
+        <?xml version="1.0" encoding="UTF-8" ?>
+        <taglib xmlns="http://java.sun.com/xml/ns/javaee"
+                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-jsptaglibrary_2_1.xsd"
+                version="2.1">
+        
+            <!--描述tld文件-->
+            <description>JSTL 1.2 core library</description>
+            <display-name>JSTL core</display-name>
+            <tlib-version>1.2</tlib-version>
+        
+            <short-name>建议在JSP页面上使用的JSP标签前缀</short-name>
+            <!--作为tld文件的id，用来唯一表示当前的tld文件，多个tld文件的url不能重复
+            通过JSP-taglib指令的 uri属性来引用-->
+            <uri>http://xxxxxxxxxxx</uri>
+        </taglib>
+        ```
+    6. 添加自定义标签的描述，如
+        ```xml
+        <tag>
+            <name>标签名</name>
+            <tag-class>标签所在的全类名</tag-class>
+            <body-content>标签体的类型</body-content>
+        </tag>
+        ```
+        
+    6. 添加tld文件后，最好重启服务器
+    7. 在JSP页面中导入：`<%@ taglib uri="tld文件中的uri" prefix="标签前缀，最好使用short-name" %>`
+    8. 在JSP页面中使用自定义标签：`<prefix:自定义标签名>`
+
+- 示例
+    - 创建标签处理器，实现SimpleTag接口，在个方法中添加控制台输出来观察调用结果，[/java/mylearn/weblearn/src/main/java/com/ljs/test/tag/HelloTag.java](/java/mylearn/weblearn/src/main/java/com/ljs/test/tag/HelloTag.java)
+        ```java
+        public class HelloTag implements SimpleTag {
+            @Override
+            public void doTag() throws JspException, IOException {
+                System.out.println("doTag");
+            }
+
+
+            @Override
+            public JspTag getParent() {
+                System.out.println("getParent");
+                return null;
+            }
+
+            @Override
+            public void setParent(JspTag jspTag) {
+                System.out.println("setParent");
+            }
+
+            @Override
+            public void setJspContext(JspContext jspContext) {
+                System.out.println("setJspContext");
+            }
+
+            @Override
+            public void setJspBody(JspFragment jspFragment) {
+                System.out.println("setJspBody");
+            }
+        }
+        ```
+    - 编写tld文件，[/java/mylearn/weblearn/src/main/webapp/WEB-INF/mytag.tld](/java/mylearn/weblearn/src/main/webapp/WEB-INF/mytag.tld)
+        ```xml
+        <!--建议在JSP页面上使用的JSP标签前缀-->
+        <short-name>ljs</short-name>
+        <!--作为tld文件的id，用来唯一表示当前的tld文件，多个tld文件的url不能重复
+        通过JSP-taglib指令的 uri属性来引用-->
+        <uri>http://www.ljs.com/mytag/core</uri>
+
+        <!--描述自定义HelloSimpleTag标签-->
+        <tag>
+            <!--标签名-->
+            <name>hello</name>
+            <!--标签所在的全类名-->
+            <tag-class>com.ljs.test.tag.HelloTag</tag-class>
+            <!--标签体的类型-->
+            <body-content>empty</body-content>
+        </tag>
+        ```
+    - 测试JSP，[/java/mylearn/weblearn/src/main/webapp/tag/hellotag.jsp](/java/mylearn/weblearn/src/main/webapp/tag/hellotag.jsp)
+        ```html
+        <%--导入自定义标签库--%>
+        <%@ taglib uri="http://www.ljs.com/mytag/core" prefix="ljs" %>
+        <html>
+        <head>
+            <title>Title</title>
+        </head>
+        <body>
+
+        <ljs:hello/>
+
+        </body>
+        </html>
+        ```
+    - 控制台输出
+        - ![hellotagJsp_console_output](./imgs/webbase/tag/defineTag/hellotagJsp_console_output.png)
+
+- SimpleTag接口
+    
+    |接口方法|处理内容|
+    |-|-|
+    |setJspCntext|该方法把代表JSP页面的pageContext对象传递给标签处理器对象|
+    |setParent|把父标签处理器对象传递给当前标签处理器对象|
+    |getParent|获取标签的父标签处理器对象|
+    |setJspBody|把代表标签体的JspFragment对象传递给标签处理器对象|
+    |doTag|用于完成所有的标签逻辑<br>该方法可以抛出`javax.servlet.jsp.SkipPageException`异常，用于通知web容器不再执行Jsp页面中谓语结束标记后面的内容|
+    
+    
+
+
+
+
+
 
 # JavaWeb开发中的路径问题
 [top](#catalog)
