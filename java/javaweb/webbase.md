@@ -74,6 +74,7 @@
         - [SessionCookie](#SessionCookie)
         - [HttpSession接口中的常用方法](#HttpSession接口中的常用方法)
         - [HttpSession的生命周期](#HttpSession的生命周期)
+        - [HttpSession避免表单的重复提交](#HttpSession避免表单的重复提交)
 - [](#)
 - [](#)
 - [](#)
@@ -83,8 +84,7 @@
 - [](#)
 - [](#)
 - [](#)
-- [](#)
-- [](#)
+- [JavaWeb开发中的路径问题](#JavaWeb开发中的路径问题)
 - [其他](#其他)
 
 # JavaWeb应用的概念
@@ -2908,7 +2908,7 @@ pageContext, request, session, application
             </html>
             ```
         - 页面的捕获结果
-            - ![http_client_cookie_from_server](./imgs/webbase/session_cookie/http_client_cookie_from_server.png)
+            - ![http_client_cookie_from_server](./imgs/webbase/cookie/http_client_cookie_from_server.png)
 
 - 删除Cookie
     - <label style="style:red">通过将Cookie保存时长设为0、并重新发送来删除Cookie</label>
@@ -2955,9 +2955,9 @@ pageContext, request, session, application
             </html>
             ```
         - 第一次请求，请求头中没有cookie信息，响应头中有Cookie信息
-            - ![getCookie_01](./imgs/webbase/session_cookie/getCookie_01.png)
+            - ![getCookie_01](./imgs/webbase/cookie/getCookie_01.png)
         - 第二次请求，请求头中有cookie信息，响应头中没有Cookie信息
-            - ![getCookie_02](./imgs/webbase/session_cookie/getCookie_02.png)
+            - ![getCookie_02](./imgs/webbase/cookie/getCookie_02.png)
 
 
 ### Cookie的作用域
@@ -3067,11 +3067,11 @@ pageContext, request, session, application
             ```
     - 执行结果
         - `test/inner01.jsp`
-            - ![cookiepath_01](./imgs/webbase/session_cookie/cookiepath_01.png)
+            - ![cookiepath_01](./imgs/webbase/cookie/cookiepath_01.png)
         - `out.jsp`，无法访问内部的的Cookie:cookiePathFromInner01，但是可以访问全部的Cookie：获取子目录中添加的全局Cookie：cookieAllPath
-            - ![cookiepath_02](./imgs/webbase/session_cookie/cookiepath_02.png)
+            - ![cookiepath_02](./imgs/webbase/cookie/cookiepath_02.png)
         - `test/inner02.jsp`，所有的Cookie都可以访问
-            - ![cookiepath_03](./imgs/webbase/session_cookie/cookiepath_03.png)
+            - ![cookiepath_03](./imgs/webbase/cookie/cookiepath_03.png)
 
 ### 示例-利用Cookie完成自动登陆
 [top](#catalog)
@@ -3243,7 +3243,7 @@ pageContext, request, session, application
             - 如果检索不到，可能会新建一个，这种情况可能出现在服务端已经删除了该用户的session对象，但用户人为的在请求的URL后面附加了一个JSESSION的参数
         3. 如果客户请求不包含sessionID，则为此客户创建一个session并且生成一个sessionID，**这个sessionID将在本次响应中返回给客户端保存**
     - 示意图
-        - ![flow_creat_session](./imgs/webbase/session_cookie/flow_creat_session.png)
+        - ![flow_creat_session](./imgs/webbase/session/flow_creat_session.png)
 
 ### SessionCookie
 [top](#catalog)
@@ -3274,6 +3274,7 @@ pageContext, request, session, application
 
 ### HttpSession接口中的常用方法
 [top](#catalog)
+- <label style="color:red">通过HttpSession可以在不同的页面传递信息</label>
 - <label style="color:red">常用方法</label>
 
     |方法名|内容|
@@ -3351,19 +3352,68 @@ pageContext, request, session, application
     - 页面结果
         - 入口：`http://localhost:8080/weblearn_war_exploded/session/method/login.jsp`
         - 进入登录页面login.jsp，会新建一个HttpSession对象
-            - ![session_method_test_01](./imgs/webbase/session_cookie/session_method_test_01.png)
+            - ![session_method_test_01](./imgs/webbase/session/method/session_method_test_01.png)
         - 执行登录，跳转到hello.jsp，和login.jsp中使用的是同一个HttpSession对象。点击重新登录
-            - ![session_method_test_02](./imgs/webbase/session_cookie/session_method_test_02.png)
+            - ![session_method_test_02](./imgs/webbase/session/method/session_method_test_02.png)
         - 跳转到login.jsp页面，并且在文本框中显示之前登录过的username。点击登录
-            - ![session_method_test_03](./imgs/webbase/session_cookie/session_method_test_03.png)
+            - ![session_method_test_03](./imgs/webbase/session/method/session_method_test_03.png)
         - 再次登录，仍然使用同一个HttpSession对象。点击注销
-            - ![session_method_test_04](./imgs/webbase/session_cookie/session_method_test_04.png)
+            - ![session_method_test_04](./imgs/webbase/session/method/session_method_test_04.png)
         - 跳转到logout.out页面，在该页面中**销毁了一直使用的HttpSession对象**
-            - ![session_method_test_05](./imgs/webbase/session_cookie/session_method_test_05.png)
+            - ![session_method_test_05](./imgs/webbase/session/method/session_method_test_05.png)
         - 刷新logout.out页面，JSP会新建一个HttpSession对象。因为旧的HttpSession对象已经被销毁了，所以无法获取指定的属性值，显示null
-            - ![session_method_test_06](./imgs/webbase/session_cookie/session_method_test_06.png)
+            - ![session_method_test_06](./imgs/webbase/session/method/session_method_test_06.png)
         - 点击重新登录，跳转到login.jsp页面，再次创建一个新的HttpSession对象
-            - ![session_method_test_07](./imgs/webbase/session_cookie/session_method_test_07.png)
+            - ![session_method_test_07](./imgs/webbase/session/method/session_method_test_07.png)
+
+### URL重写
+[top](#catalog)
+- Servlet规范中引入了一种补充的会话管理机制，它允许不支持Cookie的浏览器也可以与WEB服务器保持连续的会话，并将sessionID作为超链接的URL地址的一个特殊参数
+
+- `HttpServletResponse`接口中定义了两个用于完成URL重写的方法，用哪一个都可以实现URL重写???????
+    - encodeURL(请求路径)
+    - encodeRedirectURL(请求路径) 
+
+- 执行URL重写处理之后，url会在末尾添加jsessionID参数
+    - 如：`http://localhost:8080/weblearn_war_exploded/session/url/login.jsp`**;jsessionid=xxxxxxxxx**
+
+- 示例
+    - 实现方法
+        - 通过URL重写来保证可以重用session对象
+        - 将username保存在session中，来在各个页面中进行传递
+        - 页面间的跳转
+            - 从login.jsp页面登录，并跳转到hello.jsp页面，显示登录的username
+            - 可以从hello.jsp页面跳转到login.jsp页面，进行重新登录，同时在文本框中显示之前登录的username
+            - 可以从hello.jsp页面跳转到logout.jsp页面，显示注销的用户，可以跳转到login.jsp页面进行重新登录
+                - 注销时，销毁当前正在使用的HttpSession
+    - 基本实现内容
+        - login.jsp：[/java/mylearn/weblearn/src/main/webapp/session/url/login.jsp](/java/mylearn/weblearn/src/main/webapp/session/url/login.jsp)
+            ```html
+            <form action="<%= response.encodeURL("hello.jsp")%>" method="post">
+                username: <input name="username" value="<%=username%>">
+                <input type="submit" value="登录">
+            </form>
+            ```
+
+        - hello.jsp：[/java/mylearn/weblearn/src/main/webapp/session/url/hello.jsp](/java/mylearn/weblearn/src/main/webapp/session/url/hello.jsp)
+            ```html
+            <a href="<%=response.encodeURL("login.jsp")%>">重新登录</a>
+            <br>
+            <a href="<%=response.encodeURL("logout.jsp")%>">注销</a>
+            ```
+
+        - logout.jsp：[/java/mylearn/weblearn/src/main/webapp/session/url/logout.jsp](/java/mylearn/weblearn/src/main/webapp/session/url/logout.jsp)
+    
+    - 页面内容及html
+        - 入口：`http://localhost:8080/weblearn_war_exploded/session/url/login.jsp`
+        - 进入登录页面：login.jsp，**每次刷新都会创建一个新的HttpSession对象**
+            - ![session_url_test_01](./imgs/webbase/session/rewriteUrl/session_url_test_01.png)
+        - 登录并跳转到hello.jps，url中附带了jsessionID，使得JSP可以找到HttpSession对象
+            - ![session_url_test_02](./imgs/webbase/session/rewriteUrl/session_url_test_02.png)
+        - 回到登录画面，url中仍然附带jsessionID
+            - ![session_url_test_03](./imgs/webbase/session/rewriteUrl/session_url_test_03.png)
+
+
 ### HttpSession的生命周期 
 [top](#catalog)
 - 什么时候创建HttpSession对象
@@ -3392,11 +3442,11 @@ pageContext, request, session, application
                 ```
             - 页面显示
                 1. 启动新的浏览器，第一次进入`lifecycle.jsp`，没有session：`http://localhost:8080/weblearn_war_exploded/session/lifecycle.jsp`
-                    - ![session_lifecycle_jsp_01](./imgs/webbase/session_cookie/session_lifecycle_create_jsp_01.png)
+                    - ![session_lifecycle_jsp_01](./imgs/webbase/session/lifecycle/session_lifecycle_create_jsp_01.png)
                 2. 进入`index.jsp`，创建session：`http://localhost:8080/weblearn_war_exploded`
-                    - ![session_lifecycle_jsp_02](./imgs/webbase/session_cookie/session_lifecycle_create_jsp_02.png)
+                    - ![session_lifecycle_jsp_02](./imgs/webbase/session/lifecycle/session_lifecycle_create_jsp_02.png)
                 3. 再次进入`lifecycle.jsp`，获得一个已存在的session，且与第二部的sessionID相同：`http://localhost:8080/weblearn_war_exploded/session/lifecycle.jsp`
-                    - ![session_lifecycle_jsp_03](./imgs/webbase/session_cookie/session_lifecycle_create_jsp_03.png)
+                    - ![session_lifecycle_jsp_03](./imgs/webbase/session/lifecycle/session_lifecycle_create_jsp_03.png)
     - 对于Servlet
         - 基本原则
             - 如果Servlet是第一个被访问的WEB应用资源
@@ -3424,11 +3474,11 @@ pageContext, request, session, application
                     ```
             - 页面显示
                 - 启动新的浏览器，第一次进入noSession：`http://localhost:8080/weblearn_war_exploded/session/noSession`
-                    - ![session_lifecycle_create_servlet_01](./imgs/webbase/session_cookie/session_lifecycle_create_servlet_01.png)
+                    - ![session_lifecycle_create_servlet_01](./imgs/webbase/session/lifecycle/session_lifecycle_create_servlet_01.png)
                 - 进入hasSession，创建HttpSession对象：`http://localhost:8080/weblearn_war_exploded/session/hasSession`
-                    - ![session_lifecycle_create_servlet_02](./imgs/webbase/session_cookie/session_lifecycle_create_servlet_02.png)
+                    - ![session_lifecycle_create_servlet_02](./imgs/webbase/session/lifecycle/session_lifecycle_create_servlet_02.png)
                 - 再进入noSession，获得了一个相关的HttpSession对象，且与第二部创建的对象相同：`http://localhost:8080/weblearn_war_exploded/session/noSession`
-                    - ![session_lifecycle_create_servlet_03](./imgs/webbase/session_cookie/session_lifecycle_create_servlet_03.png)
+                    - ![session_lifecycle_create_servlet_03](./imgs/webbase/session/lifecycle/session_lifecycle_create_servlet_03.png)
 
 - 什么时候销毁HttpSession对象
     1. 直接调用`HttpSession.invalidate()`方法，该方法会使HttpSession失效
@@ -3486,7 +3536,159 @@ pageContext, request, session, application
     - 关闭浏览器与HttpSession对象的销毁没有直接关系
     - 即使浏览器关闭，也可以通过持久化SessionCookie和URL重写来复用
 
+### HttpSession避免表单的重复提交
+[top](#catalog)
 
+- 会导致重复提交的情况
+    1. Servlet调用`RequestDispatcher.forward()`转发到其他JSP页面时，浏览器所保留的URL是之前表单提交Servlet的URL，此时点击**刷新**，浏览器将再次提交用户之前输入的数据，引起重复提交
+    2. (网络等原因导致的)在响应页面没有到达服务器时，页面没有切换还停留在表单页面，**重复点击提交按钮**
+    3. 点击后退，再点击提交
+        - 点击后退时，没有刷新页面，使用的是浏览器的缓存
+
+- 不会导致重复提交的情况
+    1. 点击后退，刷新表单，再提交
+        - 刷新操作相当于重新打开了一个浏览器
+    2. 采用HttpServletResponse.sendRedirect()方法将客户端重定向到成功页面，刷新页面时不会导致重复提交的问题
+        
+- 如何避免表单的重复提交
+    - 基本思路：标记匹配
+        1. 在表单中做一个标记，提交到Servlet
+        2. 在Servlet获取标记，检查标记是否存在，并且是否和预定义的标记一致
+        3. 若一致，则接收请求并**销毁标记**
+            - <label style="color:red">通过销毁标记来防止重复提交</lable>
+        4. 若不一致或没有标记，则响应提示信息或跳转到提示页面
+    - 不可行方案
+        - 在form中提供一个隐藏域：`<input type="hidden" name="xxx" value="..."`
+            - 不能使用form的隐藏域，因为提交后HttpServletRequest无法删除请求参数
+            - 返回之后，隐藏域仍然可以使用，无法阻止重复提交
+        - 把标记放在request中
+            - 提交请求后，使用的是新的request，两个页面之间无法共享request对象
+    - <label style="color:red">可行方案</label>
+        - 把标记放在session对象中
+            1. 在表单页面，生成一个随机值token
+            2. 在表单页面，将token放入session对象和form的隐藏域中
+            3. 提交表单
+            4. 在目标Servlet中，获取session和隐藏域中的token
+            5. 比较两个值是否一致
+            6. 若一致则接收请求，并清楚session对象中的token
+            7. 若不一致则到重复`提交页面`
+
+- 示例
+    - 基本实现
+        - index.jsp: [/java/mylearn/weblearn/src/main/webapp/session/resubmit/index.jsp](/java/mylearn/weblearn/src/main/webapp/session/resubmit/index.jsp)
+            ```html
+            <%--主动请求页或刷新时会执行JSP脚本片段，
+            后退时使用浏览器缓存则JSP脚本片段不会执行--%>
+            <%
+                // 构造随机值token
+                String token = new Date().getTime() + "";
+
+                // 将token保存到session中
+                session.setAttribute("token", token);
+            %>
+
+            <form action="<%=request.getContextPath()%>/resubmitTest" method="post">
+            <%--    将token保存到form的隐藏域，一同提交到Servlet，进行验证--%>
+                <input type="hidden" name="token" value="<%=token%>">
+
+                name: <input type="text" name="name">
+                <input type="submit" value="submit">
+            </form>
+            ```
+        
+        - ReSubmitTestServlet.java: [/java/mylearn/weblearn/src/main/java/com/ljs/test/session/resubmit/ReSubmitTestServlet.java](/java/mylearn/weblearn/src/main/java/com/ljs/test/session/resubmit/ReSubmitTestServlet.java)
+            ```java
+            @Override
+            protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+                // 模拟网络延迟
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+                //从session获取token
+                HttpSession session = req.getSession();
+                Object sessionToken = session.getAttribute("token");
+
+                // 从request获取token
+                String requestToken = req.getParameter("token");
+
+                System.out.println("sessionToken=" + sessionToken);
+                System.out.println("requestToken=" + requestToken);
+
+                //如果sessionToken存在，并且与requestToken相同，则接收请求
+                //并从session中清除token，防止重复提交
+                //否则跳转到提示页面
+                if (sessionToken != null && requestToken.equals(sessionToken)){
+                    session.removeAttribute("token");
+                } else {
+                    resp.sendRedirect(req.getContextPath() + "/session/resubmit/info.jsp");
+                    return;
+                }
+
+                String name = req.getParameter("name");
+                System.out.println(name);
+
+                // 转发到success页面
+                req.getRequestDispatcher("/session/resubmit/success.jsp").forward(req, resp);
+                // resp.sendRedirect(req.getContextPath() + "/session/resubmit/success.jsp");
+            }
+            ```
+
+    - 页面显示
+        - 单次提交
+            - 点击登录(模拟网络延迟中)
+                - ![session_resubmit_01](./imgs/webbase/session/resubmit/session_resubmit_01.png)
+            - Servlet接收请求
+                - ![session_resubmit_02](./imgs/webbase/session/resubmit/session_resubmit_02.png)
+        - 重复提交
+            - 重复点击登录(模拟网络延迟中)
+                - ![session_resubmit_03](./imgs/webbase/session/resubmit/session_resubmit_03.png)
+            - Servlet第一次接收了请求，并清除了session对象中的token。后续的重复提交被阻止并跳转到提示页面
+                - ![session_resubmit_04](./imgs/webbase/session/resubmit/session_resubmit_04.png)
+
+# JavaWeb开发中的路径问题
+[top](#catalog)
+- 实际开发时尽量使用绝对路径
+
+- 相对路径的问题
+    - 由Servlet**转发**到JSP页面时，此时地址栏上显示的时Servlet的路径。如果此时JSP页面中的超链接还是相对于JSP页面的地址，则可能会出现路径混乱的问题
+    - 示例
+        - 目录结构
+           ```
+            - a.jsp
+                - path
+                    - b.jsp，内部包含一个超链接可以跳转到同目录下的：c.jsp
+                    - c.jsp
+           ```
+        - 跳转
+            - a.jsp -> /Servlet -> 转发 -> b.jsp -> 点击链接跳转到c.jsp -> 此时无法跳转
+            - 因为是通过转发到达b.jsp页面，所以url的路径是/Servlet，在其所属的目录下无法找到c.jsp，所以无法跳转
+
+- 绝对路径
+    - 在JavaWeb中什么是绝对路径：当前Web**应用**的根路径，即`localhost:8080/应用名/`
+        - 任何一个路径都应该有`应用名`
+    - 应用名可以由：`request.getContextPath()` 获得
+        - 在form中：`<form action="<%=request.getContextPath()%>/processStep2" method="post">`
+        - 在Servlet中：`resp.sendRedirect(req.getContextPath() + "/session/shopping/step3.jsp");`
+        
+- JavaWeb开发中的`/`
+    - <label style="color:red">若`/`需要由Servlet容器来处理</label>，则表示当前Web应用的根路径
+        1. 转发的路径
+        2. web.xml配置中的`servlet-mapping`
+            ```xml
+            <servlet-mapping>
+                <servlet-name>processStep1</servlet-name>
+                <url-pattern>/processStep1</url-pattern>
+            </servlet-mapping>
+            ```
+        3. 自定义标签中的`/`
+    - <label style="color:red">若`/`需要由浏览器来处理</label>，表示当前Web站点的根路径
+        1. 重定向的路径
+            - 第二次请求相当于由浏览器来处理
+        2. 超链接：<a href="/servlet">
+        3. form中action的路径
 
 
 
@@ -3494,7 +3696,22 @@ pageContext, request, session, application
 [top](#catalog)
 - 查看占用端口的进程，并杀死进程：`sudo lsof -i:8080`, `kill -9 进程ID`
 - form中action的路径
-    - `/xxx`，其中`/`表示当前web站点的路径，即：`localhost:8080/`
-    - `../xxx`，其中`../`表示的是当前Web应用的路径，即`localhost:8080/weblearn_war_exploded`
-    - `xxx`，在当前目录下进行搜索
+        - `/xxx`，其中`/`表示当前web站点的路径，即：`localhost:8080/`
+        - `../xxx`，其中`../`表示的是当前Web应用的路径，即`localhost:8080/weblearn_war_exploded`
+        - `xxx`，在当前目录下进行搜索
+- 为什么网络延迟会导致页面不能立刻刷新
+    ```java
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        // 模拟网络延迟
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        ...
+        ...
+        ...
+    }
+    ```
 [top](#catalog)
