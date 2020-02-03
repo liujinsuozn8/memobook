@@ -82,17 +82,26 @@
     - [EL的基本语法](#EL的基本语法)
     - [EL运算符](#EL运算符)
     - [EL隐含对象](#EL隐含对象)
+    - [EL函数](#EL函数)
 - [自定义标签](#自定义标签)
     - [自定义标签库需要的maven支持](#自定义标签库需要的maven支持)
     - [为什么需要自定义标签](#为什么需要自定义标签)
     - [自定义标签的简介](#自定义标签的简介)
     - [简单标签的SimpleTag接口](#简单标签的SimpleTag接口)
-    - [标签库定义文件tld](#标签库定义文件tld)
+    - [标签库描述文件tld](#标签库描述文件tld)
     - [自定义标签的基本开发步骤](#自定义标签的基本开发步骤)
     - [SimpleTag实现类、tld文件、JSP文件之间的配合](#SimpleTag实现类、tld文件、JSP文件之间的配合)
-    - [示例-开发一个空标签](#示例-开发一个空标签)
-    - [示例-开发一个带属性的空标签](#示例-开发一个带属性的空标签)
-
+    - [示例-使用SimpleTag接口开发一个空标签](#示例-使用SimpleTag接口开发一个空标签)
+    - [示例-使用SimpleTag接口开发一个带属性的空标签](#示例-使用SimpleTag接口开发一个带属性的空标签)
+    - [使用辅助类SimpleTagSupport来提高标签开发效率](#使用辅助类SimpleTagSupport来提高标签开发效率)
+    - [示例-使用SimpleTagSupport开发带属性的空标签](#示例-使用SimpleTagSupport开发带属性的空标签)
+    - [开发带有标签体的自定义标签](#开发带有标签体的自定义标签)
+    - [示例-带有标签体的标签-循环打印集合](#示例-带有标签体的标签-循环打印集合)
+    - [开发具有父子关系标签的方法](#开发具有父子关系标签的方法)
+    - [示例-父子关系标签](#示例-父子关系标签)
+- [](#)
+- [](#)
+- [](#)
 - [](#)
 - [](#)
 - [](#)
@@ -4071,6 +4080,100 @@ pageContext, request, session, application
         - 入口：`http://localhost:8080/weblearn_war_exploded/el/grammar/elobject.jsp?name=newName&scores=10&scores=11&scores=12&scores=13`
         - ![grammar_elobject](./imgs/webbase/el/grammar/grammar_elobject.png)
 
+## EL函数
+[top](#catalog)
+- 实际开发中，一般都会使用JSTL提供的el函数，很少会自定义el函数
+- 使用之前必须在JSP页面中导入标准函数的声明
+    - 如使用JSTL提供的el函数
+        ```xml
+        <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+        ```
+- 使用el函数的语法：`${标签库前缀:方法名(参数列表)}`
+    - 如`${fn:length(requestScope.name)}`
+    
+- el函数：在el表达式中调用的某个java类的**静态方法**，这个静态方法需要在web应用程序**进行配置**才可以被el表达式调用
+- el函数可以扩展el表达式的功能，让el表达式完成普通java程序代码所能完成的功能
+
+- JSTL提供的一些el函数
+    - 字符串操作函数
+    
+    |函数|描述|
+    |-|-|
+    |fn:contains(string, substring)|判断string中是否包含参数substring，返回true/false|
+    |fn:containsIgnoreCase(string, substring)|忽略大小写，判断string中是否包含参数substring，返回true/false|
+    |fn:endWith(string, suffix)|判断string是否以suffix结尾，返回true/false|
+    |fn:startWith(string, prefix)|判断string是否以prefix开头，返回true/false|
+    |fn:escapeXml(string)|将有特殊意义的XML和HTML转换为对应的XML character entity code，并返回|
+    |fn:indexOf(string, substring)|返回substring在string中第一次出现的位置|
+    |fn:join(array, separator)|将数组array用separator连接成一个字符串并返回|
+    |fn:length(item)|返回item的元素数量；item可以是：数组，collection，String；String时，返回字符数|
+    |fn:replace(string, before, after)|将string中的before替换成after，返回新字符串|
+    |fn:split(string，separator)|使用separator分割字符串，返回一个数组|
+    |fn:substring(string, begin, end)|截取字符串|
+    |fn:substringAfter(string, substring)|返回substring在string中后面的部分|
+    |fn:substringBefore(string, substring)|返回substring在string中前面的部分|
+    |fn:toLowerCase(string)|小写转换，并返回新字符串|
+    |fn:toUpperCase(string)|大写转换，并返回新字符串|
+    |fn:trim(string)|去除字符串的首尾空格|
+
+- 自定义el函数开发步骤
+    - 编写el函数所需的Java类静态方法
+        - 类必须是public类
+        - 方法必须是public static方法
+    - 编写标签库描述文件，tld文件，在tld文件中描述自定义函数
+        - tld文件写法参考： [标签库描述文件tld](#标签库描述文件tld)
+    - 在JSP页面中导入和使用自定义函数
+    
+- 示例：自定义el函数
+    - 函数类
+        - MyELFunction.java：[/java/mylearn/weblearn/src/main/java/com/ljs/test/el/function/MyELFunction.java](/java/mylearn/weblearn/src/main/java/com/ljs/test/el/function/MyELFunction.java)
+            ```java
+            public class MyELFunction {
+                public static String concat(String str1, String str2){
+                    return str1 + str2;
+                }
+            }
+            ```
+        
+    - tld配置
+        - [/java/mylearn/weblearn/src/main/webapp/WEB-INF/mytag.tld](/java/mylearn/weblearn/src/main/webapp/WEB-INF/mytag.tld)
+
+            ```xml
+            <!--描述EL自定义函数-->
+            <function>
+                <name>concat</name>
+                <function-class>com.ljs.test.el.function.MyELFunction</function-class>
+                <function-signature>java.lang.String concat(java.lang.String,java.lang.String)</function-signature>
+            </function>
+            ```
+    - jsp页面
+        - function.jsp : [/java/mylearn/weblearn/src/main/webapp/el/function/function.jsp](/java/mylearn/weblearn/src/main/webapp/el/function/function.jsp)
+            ```html
+            <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+            <%@ taglib prefix="ljs" uri="http://www.ljs.com/mytag/core" %>
+
+            <%
+                String name = "abcdefg";
+                request.setAttribute("name", name);
+
+                String name2 = "123456";
+                request.setAttribute("name2", name2);
+            %>
+
+            <%--使用JSTL核心库提供的el函数--%>
+            ${fn:length(requestScope.name)}
+            <br>
+            ${fn:toUpperCase(requestScope.name)}
+            <br>
+
+            <%--测试自定义的el函数--%>
+            ${ljs:concat(requestScope.name, requestScope.name2)}
+            ```
+    - 页面结果
+        - 入口：http://localhost:8080/weblearn_war_exploded/el/function/function.jsp
+        - ![el_function_html_result](./imgs/webbase/el/function/el_function_html_result.png)
+
+
 
 # 自定义标签
 ## 自定义标签库需要的maven支持
@@ -4170,9 +4273,17 @@ pageContext, request, session, application
 - 如果标签包含属性，最好都设置成String型，防止类型异常
 
 
-## 标签库定义文件tld
+## 标签库描述文件tld
 [top](#catalog)
 - 参考配置：[/java/mylearn/weblearn/src/main/webapp/WEB-INF/mytag.tld](/java/mylearn/weblearn/src/main/webapp/WEB-INF/mytag.tld)
+
+- 每一个标签在配置时都必须注明标签实现类
+- 在`<body-content>标签类型</body-content>`配置当前标签的类型
+- 三种可用的标签类型
+    - empty，空标签，没有标签体
+    - scripless，标签体可以包含el表达式和JSP动作元素，但是不能包含JSP的脚本元素
+    - tagdependent，标签体中所有的代码JSP引擎不会进行解析，都直接交给标签处理器，需要在标签处理其中手动处理
+        - 如el表达式，会直接将`${expression}`传递给标签处理器
 
 - tld文件的固定内容
     ```xml
@@ -4183,8 +4294,8 @@ pageContext, request, session, application
             version="2.1">
     
         <!--描述tld文件-->
-        <description>JSTL 1.2 core library</description>
-        <display-name>JSTL core</display-name>
+        <description>Mytag 1.2 core library</description>
+        <display-name>Mytag core</display-name>
         <tlib-version>1.2</tlib-version>
     
         <short-name>建议在JSP页面上使用的JSP标签前缀</short-name>
@@ -4204,19 +4315,22 @@ pageContext, request, session, application
     <tag>
         <name>标签名</name>
         <tag-class>标签所在的全类名(SimpleTag接口的实现类)</tag-class>
-        <body-content>标签体的类型</body-content>
+        <body-content>empty</body-content>
     </tag>
     ```
 
-- 定义一个带属性的空标签
+- 配置的内容
     ```xml
+    <!-- 配置标签 -->
     <tag>
+        <!-- 标签的基本配置 -->
         <name>标签名</name>
         <tag-class>标签所在的全类名(SimpleTag接口的实现类)</tag-class>
-        <body-content>标签体的类型</body-content>
+        <body-content>标签类型</body-content> <!-- 配置当前标签的类型 -->
 
         <!-- 如果标签中有属性，需要添加属性 -->
-        <!--描述当前标签的属性-->
+
+        <!--描述当前标签的属性，一个属性一套-->
         <attribute>
             <name>属性名</name>
             <!--该属性是不是必须的-->
@@ -4226,12 +4340,17 @@ pageContext, request, session, application
             <rtexprvalue>true/false</rtexprvalue>
         </attribute>
     </tag>
-    ```
 
-- 注意事项
-    - 每一个标签都必须注明标签实现类
-    - 可用的标签体类型
-        - empty：空标签
+    <!-- 配置EL函数的映射 -->
+    <function>
+        <name>映射的函数名</name>
+        <function-class>函数所在的类的全路径</function-class>
+        <function-signature>函数签名</function-signature>
+        <!-- 示例：函数签名，需要注明：函数的返回值类型、参数类型、函数名-->
+        <!-- <function-signature>java.lang.String concat(java.lang.String,java.lang.String)</function-signature> -->
+
+    </function>
+    ```
 
 ## 自定义标签的基本开发步骤
 [top](#catalog)
@@ -4248,17 +4367,17 @@ pageContext, request, session, application
 ## SimpleTag实现类、tld文件、JSP文件之间的配合
 [top](#catalog)
 - 标签名
-    - 参考：[示例-开发一个空标签](#示例-开发一个空标签)
+    - 参考：[示例-使用SimpleTag接口开发一个空标签](#示例-使用SimpleTag接口开发一个空标签)
     - JSP中使用的标签名 == tld文件中定义的标签名
         - <img src="./imgs/webbase/tag/defineTag/config_match_tagname.png" width=60% height=60%>
 - 标签属性
-    - 参考：[示例-开发一个带属性的空标签](#示例-开发一个带属性的空标签)
+    - 参考：[示例-使用SimpleTag接口开发一个带属性的空标签](#示例-使用SimpleTag接口开发一个带属性的空标签)
     - JSP中的标签属性 == tld文件中定义的标签属性名:`<tag>/<attribute>/<name>` == 标签处理器类中的属性名(小写字母开头并且具有setter方法)
         <img src="./imgs/webbase/tag/defineTag/config_match_tagproperty.png" width=60% height=60%>
 - 标签的必须属性
     - 如果配置了标签的属性是必须的：`<required>true</required>`，则必须在JSP页面中使用
 
-## 示例-开发一个空标签
+## 示例-使用SimpleTag接口开发一个空标签
 [top](#catalog)
 - 创建标签处理器，实现SimpleTag接口，在个方法中添加控制台输出来观察调用结果，
     - 实现内容：[/java/mylearn/weblearn/src/main/java/com/ljs/test/tag/HelloTag.java](/java/mylearn/weblearn/src/main/java/com/ljs/test/tag/HelloTag.java)
@@ -4349,7 +4468,7 @@ pageContext, request, session, application
         - ![emptyTag_noproperty_html_result](./imgs/webbase/tag/defineTag/emptyTag_noproperty_html_result.png)
 
 
-## 示例-开发一个带属性的空标签
+## 示例-使用SimpleTag接口开发一个带属性的空标签
 [top](#catalog)
 - 创建标签处理器，实现SimpleTag接口，添加两个`String`型的标签属性：`value`，`count`
     - 实现内容：[/java/mylearn/weblearn/src/main/java/com/ljs/test/tag/ShowTag.java](/java/mylearn/weblearn/src/main/java/com/ljs/test/tag/ShowTag.java)
@@ -4444,6 +4563,381 @@ pageContext, request, session, application
         - http://localhost:8080/weblearn_war_exploded/tag/showtag.jsp?name=newTest
         - ![emptyTag_hasproperty_html_result](./imgs/webbase/tag/defineTag/emptyTag_hasproperty_html_result.png)
 
+## 使用辅助类SimpleTagSupport来提高标签开发效率
+[top](#catalog)
+- 通过实现`SimpleTag`接口进行开发的问题
+    1. `SimpleTag`接口的实现类中会产生大量的空方法
+    2. 基本上每次都需要添加私有变量`PageContext pageContext`，并在`setJspContext`方法中进行保存，导致各个接口实现类中产生了很多相同的代码
+
+- `SimpleTagSupport`类在代码级别上为开发上提供的优化
+    - 类代码参考 `SimpleTagSupport.java`：[/java/mylearn/weblearn/src/main/java/com/complied/tagext/SimpleTagSupport.java](/java/mylearn/weblearn/src/main/java/com/complied/tagext/SimpleTagSupport.java)
+
+    - `SimpleTagSupport`类提供的优化
+        1. `SimpleTagSupport`类也是`SimpleTag`接口的实现类
+        2. 使用私有变量分别保存了：`JspTag`、`JspContext`、`JspFragment`，这三个对象，并提供了getter来在子类中获取、使用
+        3. 提供了空的：`doTag()`方法，需要子类进行重写
+
+    - 主要实现内容
+        ```java
+        public class SimpleTagSupport implements SimpleTag {
+            // 使用私有成员变量来保存生命周期中的重要变量
+            private JspTag parentTag;
+            private JspContext jspContext;
+            private JspFragment jspBody;
+
+            // 空方法需要子类进行重写
+            public void doTag() throws JspException, IOException {
+            }
+
+            // 获取/设置父标签处理器
+            public void setParent(JspTag parent) {
+                this.parentTag = parent;
+            }
+
+            public JspTag getParent() {
+                return this.parentTag;
+            }
+
+            // 获取/设置PageContext对象
+            public void setJspContext(JspContext pc) {
+                this.jspContext = pc;
+            }
+
+            protected JspContext getJspContext() {
+                return this.jspContext;
+            }
+
+            // 获取/设置标签体
+            public void setJspBody(JspFragment jspBody) {
+                this.jspBody = jspBody;
+            }
+
+            protected JspFragment getJspBody() {
+                return this.jspBody;
+            }
+
+            ...
+        }
+        ```
+
+## 示例-使用SimpleTagSupport开发带属性的空标签
+[top](#catalog)
+- 标签处理器：读取服务器上的文件
+    - `ReadFileTag.java` :[/java/mylearn/weblearn/src/main/java/com/ljs/test/tag/ReadFileTag.java](/java/mylearn/weblearn/src/main/java/com/ljs/test/tag/ReadFileTag.java)
+    - 添加标签属性src
+    - 实现内容
+        ```java
+        public class ReadFileTag extends SimpleTagSupport {
+            private String src;
+
+            public void setSrc(String src) {
+                this.src = src;
+            }
+
+            @Override
+            public void doTag() throws JspException, IOException {
+                //获取输入流
+                PageContext pageContext = (PageContext) getJspContext();
+                InputStream is = pageContext.getServletContext().getResourceAsStream(src);
+
+                //通过转换流将字节流转换为字符流，并创建处理流
+                BufferedReader br = new BufferedReader(new InputStreamReader(is));
+
+                //按行读取并输出到html
+                JspWriter out = pageContext.getOut();
+                String text = null;
+                while ((text = br.readLine()) != null){
+                    //转译 < >
+                    text = text.replaceAll("\\<","&lt;")
+                            .replaceAll("\\>","&gt;");
+                    out.println(text);
+                    out.println("<br>");
+                }
+
+            }
+        }
+        ```
+
+- tld文件配置
+    - [/java/mylearn/weblearn/src/main/webapp/WEB-INF/mytag.tld](/java/mylearn/weblearn/src/main/webapp/WEB-INF/mytag.tld)
+    - 配置内容
+    ```xml
+    <tag>
+        <name>readFile</name>
+        <tag-class>com.ljs.test.tag.ReadFileTag</tag-class>
+        <body-content>empty</body-content>
+
+        <attribute>
+            <name>src</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+    </tag>
+    ```
+
+- JSP页面
+    - `readFiletag.jsp`: [/java/mylearn/weblearn/src/main/webapp/tag/readFiletag.jsp](/java/mylearn/weblearn/src/main/webapp/tag/readFiletag.jsp)
+
+        ```html
+        <%@ page isELIgnored="false" %>
+        <%@ taglib prefix="ljs" uri="http://www.ljs.com/mytag/core" %>
+        <html>
+        <head>
+            <title>Title</title>
+        </head>
+        <body>
+
+        <ljs:readFile src="/WEB-INF/tagtest/test.txt"/>
+        ```
+
+- 页面结果
+    - 入口：http://localhost:8080/weblearn_war_exploded/tag/readFiletag.jsp
+    - ![emptyTag_hasproperty_SimpleTagSupport_html_result](./imgs/webbase/tag/defineTag/emptyTag_hasproperty_SimpleTagSupport_html_result.png)
+
+
+## 开发带有标签体的自定义标签
+[top](#catalog)
+- 标签体的未知：`<prefix:标签名>标签体</prefix:标签名>`
+
+- 在自定义标签的标签处理器中使用JspFragment对象封装标签体信息
+
+- 如果配置了标签包含标签体，则：
+    - JSP引擎会调用`setJspBody()`方法把`JspFragment对象`传递给标签处理器类
+    - SimpleTagSupport中还定义了一个getJspBody()方法，用于返回JspFragment对象
+
+- 通过`JspFragment.invoke(Writer)`方法，输出标签体信息
+    - 不同配置的输出结果
+        - 如果配置的是：`<body-content>scriptless</body-content>`，则执行时会自动解析标签体中的el表达式和JSP动作元素，并将解析结果输出到参数`Writer`中
+        - 如果配置的是：`<body-content>tagdependent</body-content>`，则直接将标签体信息输出到参数`Writer`中
+    - 如果参数`Writer`是`null`，则直接将标签体解析结果输出到html
+        - `invoke(null)`相当于：`invoke(getJspContext().getOut())`
+    - 使用时，可以借助`StringWriter`来获取标签体中的值，然后再进行处理
+
+## 示例-带有标签体的标签-循环打印集合
+[top](#catalog)
+- 基本的实现与使用方法与JSTL核心库的`c:foreach`类似
+- 开发思路
+    - 标签属性：`items`，设定需要遍历的集合
+    - 标签属性：`var`
+        - 遍历时，将集合中的每个元素都保存到域对象`pageContext`中，这样在调用`JspFrament.invoke()`方法，解析标签体中的表达式时就能够从`pageContext`中获取到
+        - var的值将作为元素保存到`pageContext`时的key
+    - 在标签体中添加输出的格式
+        - 通过el表达式来设定输出格式
+- JSP页面
+    - foreach.jsp : [/java/mylearn/weblearn/src/main/webapp/tag/foreach.jsp](/java/mylearn/weblearn/src/main/webapp/tag/foreach.jsp)
+        ```html
+        <%
+            List<Customer> customers = new ArrayList<>();
+            request.setAttribute("customers", customers);
+            customers.add(new Customer("1", "aaa", 11));
+            customers.add(new Customer("2", "bbb", 22));
+            customers.add(new Customer("3", "ccc", 33));
+            customers.add(new Customer("4", "ddd", 44));
+            customers.add(new Customer("5", "eee", 55));
+        %>
+
+        <ljs:foreach items="${requestScope.customers}" var="node">
+            id: ${node.id}, name: ${node.name}, age: ${node.age}<br>
+        </ljs:foreach>
+        ```
+- 标签处理器实现
+    - ForeachTag.java : [/java/mylearn/weblearn/src/main/java/com/ljs/test/tag/ForeachTag.java](/java/mylearn/weblearn/src/main/java/com/ljs/test/tag/ForeachTag.java)
+        ```java
+        public class ForeachTag extends SimpleTagSupport {
+            private Collection<?> items;
+            private String var;
+
+            public void setItems(Collection<?> items) {
+                this.items = items;
+            }
+
+            public void setVar(String var) {
+                this.var = var;
+            }
+
+            @Override
+            public void doTag() throws JspException, IOException {
+                JspFragment jspBody = getJspBody();
+                JspContext pc = getJspContext();
+
+                for (Object item : items) {
+                    //将元素保存到域对象中
+                    pc.setAttribute(var, item);
+
+                    //解析标签体内容，并打印到html
+                    jspBody.invoke(null);
+                }
+            }
+        }
+        ```
+- tld配置内容
+    - [/java/mylearn/weblearn/src/main/webapp/WEB-INF/mytag.tld](/java/mylearn/weblearn/src/main/webapp/WEB-INF/mytag.tld)
+        ```xml
+        <tag>
+            <name>foreach</name>
+            <tag-class>com.ljs.test.tag.ForeachTag</tag-class>
+            <body-content>scriptless</body-content>
+
+            <attribute>
+                <name>items</name>
+                <required>true</required>
+                <rtexprvalue>true</rtexprvalue>
+            </attribute>
+
+            <attribute>
+                <name>var</name>
+                <required>true</required>
+                <rtexprvalue>true</rtexprvalue>
+            </attribute>
+        </tag>
+        ```
+
+## 开发具有父子关系标签的方法
+[top](#catalog)
+- 父标签无法获取子标签的引用，**父标签仅把子标签作为标签体来使用**，所以配置tld文件时，必须使用`<body-content>scriptless</body-content>`
+- 无法通过tld配置文件来表示触标签间的父子关系
+- 唯一的表示手段：在子标签的标签处理器中获取引用，两种方式
+    1. 如果继承了`SimpleTagSupport`，可以通过`getParent()`获取父标签的引用
+    2. 如果父标签是实现了传统标签或简单标签接口的实现类
+        - 两种接口实现类的父接口都是JspTag类型，该接口是一个空接口，是用来统一简单标签SimpleTag和传统标签Tag  
+        - 使用前更具需要进行类型强转  
+        - 然后获取父标签的引用
+
+## 示例-父子关系标签
+[top](#catalog)
+- 需求：
+    - 基本的使用方法
+        ```
+        choose
+            when
+            when
+            otherwise
+        ```
+    - 在choose下编写逻辑分支，如果某个when分支是true，就停止后续的分支，并输出这个when的标签体内容
+
+- 开发思路
+    - 创建三个标签：choose、when、otherwise
+    - choose是父标签，when、otherwise是子标签
+    - choose无法意识到when、otherwise是其子标签，所以在choose中设置一个标记：`flg`，来辅助判断
+    - when中有一个`boolean`属性`test`，表示当前分支是否匹配
+    - when内部的判断方法
+        1. 从choose中获取标记`flg`，如果`flg==false`，则表示之前有when是true，则停止当前when的匹配
+        2. 如果`flg==true`表示还没有分支是true，则检查当前when的test值，
+        3. 如果`test==true`，则将choose的`flg`设为false，阻止后续的when，并输出当前when的标签体内容
+        4. 如果`test==false`，则不做处理
+    - 都无法匹配时，即choose的`flg=true`时，直接输出otherwise的标签体内容
+    - 因为子标签when、otherwise的结果对于choose来说都是标签体内容，所以choose内部不做特殊处理，直接输出标签体内容
+
+- 标签体实现
+    1. ChooseTag.java： [/java/mylearn/weblearn/src/main/java/com/ljs/test/tag/choose/ChooseTag.java](/java/mylearn/weblearn/src/main/java/com/ljs/test/tag/choose/ChooseTag.java)
+        ```java
+        public class ChooseTag extends SimpleTagSupport {
+            //如果父标签的flg=false，则表示匹配成功，否则继续匹配
+            private boolean flg = true;
+
+            public boolean getFlg() {
+                return flg;
+            }
+
+            public void setFlg(boolean flg) {
+                this.flg = flg;
+            }
+
+            @Override
+            public void doTag() throws JspException, IOException {
+                //输出标签体
+                JspFragment jspBody = getJspBody();
+                jspBody.invoke(null);
+            }
+        }
+        ```
+    2. WhenTag.java: [/java/mylearn/weblearn/src/main/java/com/ljs/test/tag/choose/WhenTag.java](/java/mylearn/weblearn/src/main/java/com/ljs/test/tag/choose/WhenTag.java)
+        ```java
+        public class WhenTag extends SimpleTagSupport {
+            boolean test;
+
+            public void setTest(boolean test) {
+                this.test = test;
+            }
+
+            @Override
+            public void doTag() throws JspException, IOException {
+                // 获取父标签的引用
+                ChooseTag parentTag = (ChooseTag) getParent();
+
+                // 父标签中的变量还处于未匹配的状态
+                if (parentTag.getFlg()) {
+                    // 当前子标签的状态是true，则表示条件匹配成功，输出子标签的标签体内容
+                    // 并将父标签中的匹配状态设为false，阻止后续的匹配
+                    if (test) {
+                        getJspBody().invoke(null);
+                        parentTag.setFlg(false);
+                    }
+                }
+            }
+        }
+        ```
+
+    3. OtherwiseTag.java : [/java/mylearn/weblearn/src/main/java/com/ljs/test/tag/choose/OtherwiseTag.java](/java/mylearn/weblearn/src/main/java/com/ljs/test/tag/choose/OtherwiseTag.java)
+        ```java
+        public class OtherwiseTag extends SimpleTagSupport {
+            @Override
+            public void doTag() throws JspException, IOException {
+                // 获取父标签的引用
+                ChooseTag parent = (ChooseTag) getParent();
+                // 如果父标签仍然未匹配成功，则输出子标签的标签体内容
+                if (parent.getFlg()){
+                    getJspBody().invoke(null);
+                }
+            }
+        }
+        ```
+
+- tld配置
+    - [/java/mylearn/weblearn/src/main/webapp/WEB-INF/mytag.tld](/java/mylearn/weblearn/src/main/webapp/WEB-INF/mytag.tld)
+        ```xml
+        <!--父子关系标签：choose, when, otherwise-->
+        <tag>
+            <name>choose</name>
+            <tag-class>com.ljs.test.tag.choose.ChooseTag</tag-class>
+            <body-content>scriptless</body-content>
+        </tag>
+
+        <tag>
+            <name>when</name>
+            <tag-class>com.ljs.test.tag.choose.WhenTag</tag-class>
+            <body-content>scriptless</body-content>
+
+            <attribute>
+                <name>test</name>
+                <required>true</required>
+                <rtexprvalue>true</rtexprvalue>
+            </attribute>
+        </tag>
+
+        <tag>
+            <name>otherwise</name>
+            <tag-class>com.ljs.test.tag.choose.OtherwiseTag</tag-class>
+            <body-content>scriptless</body-content>
+        </tag>
+        ```
+
+- JSP页面
+    - choosetag.jsp : [/java/mylearn/weblearn/src/main/webapp/tag/choosetag.jsp](/java/mylearn/weblearn/src/main/webapp/tag/choosetag.jsp)
+        ```html
+        <ljs:choose>
+            <ljs:when test="${param.score > 60}">level A</ljs:when>
+            <ljs:when test="${param.score > 40}">level B</ljs:when>
+            <ljs:when test="${param.score > 20}">level C</ljs:when>
+            <ljs:otherwise>others</ljs:otherwise>
+        </ljs:choose>
+        ```
+
+- 页面结果
+    - 需要附加请求参数score
+    - 入口：http://localhost:8080/weblearn_war_exploded/tag/choosetag.jsp?score=55
+    - ![parent_son_tag_choose_html_result](./imgs/webbase/tag/defineTag/parent_son_tag_choose_html_result.png)
+
 # JavaWeb开发中的路径问题
 [top](#catalog)
 - 实际开发时尽量使用绝对路径，写绝对路径不会有问题，写相对路径有时会有问题
@@ -4512,4 +5006,5 @@ pageContext, request, session, application
     ```
 
 -  什么时候会创建新的session
+- StringWriter ?????
 [top](#catalog)
