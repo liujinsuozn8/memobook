@@ -86,8 +86,13 @@
     - [自定义标签库需要的maven支持](#自定义标签库需要的maven支持)
     - [为什么需要自定义标签](#为什么需要自定义标签)
     - [自定义标签的简介](#自定义标签的简介)
-    - [自定义标签的开发](#自定义标签的开发)
-- [](#)
+    - [简单标签的SimpleTag接口](#简单标签的SimpleTag接口)
+    - [标签库定义文件tld](#标签库定义文件tld)
+    - [自定义标签的基本开发步骤](#自定义标签的基本开发步骤)
+    - [SimpleTag实现类、tld文件、JSP文件之间的配合](#SimpleTag实现类、tld文件、JSP文件之间的配合)
+    - [示例-开发一个空标签](#示例-开发一个空标签)
+    - [示例-开发一个带属性的空标签](#示例-开发一个带属性的空标签)
+
 - [](#)
 - [](#)
 - [](#)
@@ -1550,7 +1555,7 @@
                 out.println("ddd");
                 %>
                 ```
-    8. page：指向当前JSP对应的Servlet对象的引用，是Object类型，只能嗲用Object类的方法
+    8. page：指向当前JSP对应的Servlet对象的引用，是Object类型，只能调用Object类的方法
         - 几乎不使用
         - page 与 this 相同
 
@@ -1561,7 +1566,7 @@
 - 9个隐式对象 对属性的作用域的范围从小到大排列
 pageContext, request, session, application
 
-- 隐式对象的使用示例：`weblearn/src/main/webapp/jspobject/hello.jsp`
+- 隐式对象的使用示例：[/java/mylearn/weblearn/src/main/webapp/jspobject/hello.jsp](/java/mylearn/weblearn/src/main/webapp/jspobject/hello.jsp)
     ```html
     <%@ page import="java.util.Date" %>
     <%@ page contentType="text/html;charset=UTF-8" language="java" %>
@@ -1638,7 +1643,7 @@ pageContext, request, session, application
     2. 将字符串插进整个JSP页面输出结果的相应位置
 - 显示JSP表达式结果的本质：JSP表达式被翻译成Servlet程序中的一条`out.println(...)`语句
 - 注意事项
-    - JSP表达式中的变量或表达式**后面不能有分号(;)**
+    - JSP表达式中的变量或表达式**后面不能有分号`;`**
     
 - 示例
     - JSP代码
@@ -1711,7 +1716,7 @@ pageContext, request, session, application
     - 一个JSP页面中可以有多个脚本片段，两个脚本片段之间可以载入文本、HTML等内容
     - 多个脚本片段中的代码可以相互访问
     - **单个片段可以不完整，但是多个片段组合后必须完整**
-        - 示例：`weblearn/src/main/webapp/jspgrammar/hello.jsp`
+        - 示例：[/java/mylearn/weblearn/src/main/webapp/jspgrammar/hello.jsp](/java/mylearn/weblearn/src/main/webapp/jspgrammar/hello.jsp)
             ```java
             <%
                 String ageStr = request.getParameter("age");
@@ -1781,7 +1786,7 @@ pageContext, request, session, application
     |Enumeration getAttributeNames()|获取所有的**属性名字**组成的Enumeration对象|
     
 - 示例
-    - 第一个页面：`/attribute/attr1.jsp`
+    - 第一个页面：[/java/mylearn/weblearn/src/main/webapp/attribute/attr1.jsp](/java/mylearn/weblearn/src/main/webapp/attribute/attr1.jsp)
         ```html
         <%@ page import="java.util.Date" %>
         <%@ page contentType="text/html;charset=UTF-8" language="java" %>
@@ -1816,7 +1821,7 @@ pageContext, request, session, application
         <a href="testAttr">To testAttr page</a>
         </html>
         ```
-    - 跳转页面1：`/attribute/attr2.jsp`
+    - 跳转页面1：[/java/mylearn/weblearn/src/main/webapp/attribute/attr2.jsp](/java/mylearn/weblearn/src/main/webapp/attribute/attr2.jsp)
         ```html
         <%@ page import="java.util.Date" %>
         <%@ page contentType="text/html;charset=UTF-8" language="java" %>
@@ -1839,7 +1844,7 @@ pageContext, request, session, application
         </body>
         </html>
         ```
-    - 跳转页面2，Servlet：`TestAttr`
+    - 跳转页面2，Servlet：[/java/mylearn/weblearn/src/main/java/com/ljs/test/attribute/TestAttr.java](/java/mylearn/weblearn/src/main/java/com/ljs/test/attribute/TestAttr.java)
         - Servlet
             ```java
             public class TestAttr extends HttpServlet {
@@ -4130,77 +4135,176 @@ pageContext, request, session, application
         </greeting>
         ```
 
-## 自定义标签的开发
+## 简单标签的SimpleTag接口
 [top](#catalog)
-- 基本开发步骤
-    1. 创建一个标签处理器类，实现SimpleTag接口
-    2. 在WEB—INF目录下，创建标签库描述文件--tld文件
-    3. 拷贝tld文件中固定的部分
-    4. 修改`short-name`和`URI`
-        ```xml
-        <?xml version="1.0" encoding="UTF-8" ?>
-        <taglib xmlns="http://java.sun.com/xml/ns/javaee"
-                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-jsptaglibrary_2_1.xsd"
-                version="2.1">
-        
-            <!--描述tld文件-->
-            <description>JSTL 1.2 core library</description>
-            <display-name>JSTL core</display-name>
-            <tlib-version>1.2</tlib-version>
-        
-            <short-name>建议在JSP页面上使用的JSP标签前缀</short-name>
-            <!--作为tld文件的id，用来唯一表示当前的tld文件，多个tld文件的url不能重复
-            通过JSP-taglib指令的 uri属性来引用-->
-            <uri>http://xxxxxxxxxxx</uri>
-        </taglib>
-        ```
-    6. 添加自定义标签的描述，如
-        ```xml
-        <tag>
-            <name>标签名</name>
-            <tag-class>标签所在的全类名</tag-class>
-            <body-content>标签体的类型</body-content>
-        </tag>
-        ```
-        
-    6. 添加tld文件后，最好重启服务器
-    7. 在JSP页面中导入：`<%@ taglib uri="tld文件中的uri" prefix="标签前缀，最好使用short-name" %>`
-    8. 在JSP页面中使用自定义标签：`<prefix:自定义标签名>`
+- 参考示例：[/java/mylearn/weblearn/src/main/webapp/tag/showtag.jsp](/java/mylearn/weblearn/src/main/webapp/tag/showtag.jsp)
 
-- 示例
-    - 创建标签处理器，实现SimpleTag接口，在个方法中添加控制台输出来观察调用结果，[/java/mylearn/weblearn/src/main/java/com/ljs/test/tag/HelloTag.java](/java/mylearn/weblearn/src/main/java/com/ljs/test/tag/HelloTag.java)
-        ```java
-        public class HelloTag implements SimpleTag {
-            @Override
-            public void doTag() throws JspException, IOException {
-                System.out.println("doTag");
-            }
+- <label stlye="color:red">所有简单标签都必须实现SimpleTag接口</label>
+
+- SimpleTag接口的方法
+
+    |接口方法|处理内容|
+    |-|-|
+    |setJspCntext|该方法把代表JSP页面的pageContext对象传递给标签处理器对象|
+    |setParent|把父标签处理器对象传递给当前标签处理器对象|
+    |getParent|获取标签的父标签处理器对象|
+    |setJspBody|把代表标签体的JspFragment对象传递给标签处理器对象|
+    |doTag|用于完成所有的标签逻辑<br>该方法可以抛出`javax.servlet.jsp.SkipPageException`异常，用于通知web容器不再执行Jsp页面中谓语结束标记后面的内容|
+
+- 实现SimpleTag接口的处理器类的调用过程
+    - ![simpletag_run](./imgs/webbase/tag/simpleTag/simpletag_run.png)
+
+- `void setJspContext(JspContext jspContext)`是JSP引擎调用的一个方法，会传入pageContext对象，这个对象非常重要，可以获得其他8个JSP的隐含对象，可以使用私有成员变量进行保存
+    ```java
+    private PageContext pageContext;
+
+    @Override
+    public void setJspContext(JspContext jspContext) {
+        // 测试参数类型
+        System.out.println(jspContext instanceof PageContext);
+        // 保存pageContext参数
+        this.pageContext = (PageContext) jspContext;
+    }
+    ```
+
+- 如果标签包含属性，最好都设置成String型，防止类型异常
 
 
-            @Override
-            public JspTag getParent() {
-                System.out.println("getParent");
-                return null;
-            }
+## 标签库定义文件tld
+[top](#catalog)
+- 参考配置：[/java/mylearn/weblearn/src/main/webapp/WEB-INF/mytag.tld](/java/mylearn/weblearn/src/main/webapp/WEB-INF/mytag.tld)
 
-            @Override
-            public void setParent(JspTag jspTag) {
-                System.out.println("setParent");
-            }
+- tld文件的固定内容
+    ```xml
+    <?xml version="1.0" encoding="UTF-8" ?>
+    <taglib xmlns="http://java.sun.com/xml/ns/javaee"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-jsptaglibrary_2_1.xsd"
+            version="2.1">
+    
+        <!--描述tld文件-->
+        <description>JSTL 1.2 core library</description>
+        <display-name>JSTL core</display-name>
+        <tlib-version>1.2</tlib-version>
+    
+        <short-name>建议在JSP页面上使用的JSP标签前缀</short-name>
+        <!--作为tld文件的id，用来唯一表示当前的tld文件，多个tld文件的url不能重复
+        通过JSP-taglib指令的 uri属性来引用-->
+        <uri>http://xxxxxxxxxxx</uri>
 
-            @Override
-            public void setJspContext(JspContext jspContext) {
-                System.out.println("setJspContext");
-            }
+        ...
+        ...
+        ...
+    </taglib>
+    ```
 
-            @Override
-            public void setJspBody(JspFragment jspFragment) {
-                System.out.println("setJspBody");
-            }
+- 定义一个空标签
+    ```xml
+    <!-- 定义一个空标签 -->
+    <tag>
+        <name>标签名</name>
+        <tag-class>标签所在的全类名(SimpleTag接口的实现类)</tag-class>
+        <body-content>标签体的类型</body-content>
+    </tag>
+    ```
+
+- 定义一个带属性的空标签
+    ```xml
+    <tag>
+        <name>标签名</name>
+        <tag-class>标签所在的全类名(SimpleTag接口的实现类)</tag-class>
+        <body-content>标签体的类型</body-content>
+
+        <!-- 如果标签中有属性，需要添加属性 -->
+        <!--描述当前标签的属性-->
+        <attribute>
+            <name>属性名</name>
+            <!--该属性是不是必须的-->
+            <required>true/false</required>
+            <!--runtime expression value :
+            当前属性是否可以接受运行时表达式(EL表达式)的动态值-->
+            <rtexprvalue>true/false</rtexprvalue>
+        </attribute>
+    </tag>
+    ```
+
+- 注意事项
+    - 每一个标签都必须注明标签实现类
+    - 可用的标签体类型
+        - empty：空标签
+
+## 自定义标签的基本开发步骤
+[top](#catalog)
+1. 创建一个标签处理器类，实现SimpleTag接口
+    - 如果标签有属性，需要在处理器类内部添加私有成员变量和setter方法
+2. 在WEB—INF目录下，创建标签库描述文件--tld文件
+    - 拷贝tld文件的固定内容
+    - 修改`short-name`和`URI`
+    - 添加自定义标签的描述，包括定义、属性等
+    - 添加tld文件后，最好重启服务器
+3. 在JSP页面中导入：`<%@ taglib uri="tld文件中的uri" prefix="标签前缀，最好使用short-name" %>`
+4. 在JSP页面中使用自定义标签：`<prefix:自定义标签名 属性名=值>`
+
+## SimpleTag实现类、tld文件、JSP文件之间的配合
+[top](#catalog)
+- 标签名
+    - 参考：[示例-开发一个空标签](#示例-开发一个空标签)
+    - JSP中使用的标签名 == tld文件中定义的标签名
+        - <img src="./imgs/webbase/tag/defineTag/config_match_tagname.png" width=60% height=60%>
+- 标签属性
+    - 参考：[示例-开发一个带属性的空标签](#示例-开发一个带属性的空标签)
+    - JSP中的标签属性 == tld文件中定义的标签属性名:`<tag>/<attribute>/<name>` == 标签处理器类中的属性名(小写字母开头并且具有setter方法)
+        <img src="./imgs/webbase/tag/defineTag/config_match_tagproperty.png" width=60% height=60%>
+- 标签的必须属性
+    - 如果配置了标签的属性是必须的：`<required>true</required>`，则必须在JSP页面中使用
+
+## 示例-开发一个空标签
+[top](#catalog)
+- 创建标签处理器，实现SimpleTag接口，在个方法中添加控制台输出来观察调用结果，
+    - 实现内容：[/java/mylearn/weblearn/src/main/java/com/ljs/test/tag/HelloTag.java](/java/mylearn/weblearn/src/main/java/com/ljs/test/tag/HelloTag.java)
+    ```java
+    public class HelloTag implements SimpleTag {
+        private PageContext pageContext;
+
+        // 执行标签体实际逻辑
+        @Override
+        public void doTag() throws JspException, IOException {
+            System.out.println("doTag");
+
+            //获取HttpRequest对象，并获取请求参数name
+            String name = pageContext.getRequest().getParameter("name");
+
+            //获取out对象，并在页面上打印：Hello : 请求参数name
+            pageContext.getOut().println("Hello : " + name);
         }
-        ```
-    - 编写tld文件，[/java/mylearn/weblearn/src/main/webapp/WEB-INF/mytag.tld](/java/mylearn/weblearn/src/main/webapp/WEB-INF/mytag.tld)
+
+        @Override
+        public JspTag getParent() {
+            System.out.println("getParent");
+            return null;
+        }
+
+        @Override
+        public void setParent(JspTag jspTag) {
+            System.out.println("setParent");
+        }
+
+        @Override
+        public void setJspContext(JspContext jspContext) {
+            System.out.println(jspContext instanceof PageContext);
+            this.pageContext = (PageContext) jspContext;
+            System.out.println("setJspContext");
+        }
+
+        @Override
+        public void setJspBody(JspFragment jspFragment) {
+            System.out.println("setJspBody");
+        }
+    }
+    ```
+
+- 编写tld文件
+    - [/java/mylearn/weblearn/src/main/webapp/WEB-INF/mytag.tld](/java/mylearn/weblearn/src/main/webapp/WEB-INF/mytag.tld)
         ```xml
         <!--建议在JSP页面上使用的JSP标签前缀-->
         <short-name>ljs</short-name>
@@ -4218,7 +4322,9 @@ pageContext, request, session, application
             <body-content>empty</body-content>
         </tag>
         ```
-    - 测试JSP，[/java/mylearn/weblearn/src/main/webapp/tag/hellotag.jsp](/java/mylearn/weblearn/src/main/webapp/tag/hellotag.jsp)
+
+- JSP调用标签
+    - [/java/mylearn/weblearn/src/main/webapp/tag/hellotag.jsp](/java/mylearn/weblearn/src/main/webapp/tag/hellotag.jsp)
         ```html
         <%--导入自定义标签库--%>
         <%@ taglib uri="http://www.ljs.com/mytag/core" prefix="ljs" %>
@@ -4233,25 +4339,110 @@ pageContext, request, session, application
         </body>
         </html>
         ```
-    - 控制台输出
+
+- 控制台输出
+    - 无请求参数
+        - 入口：http://localhost:8080/weblearn_war_exploded/tag/hellotag.jsp
         - ![hellotagJsp_console_output](./imgs/webbase/tag/defineTag/hellotagJsp_console_output.png)
-
-- SimpleTag接口
-    
-    |接口方法|处理内容|
-    |-|-|
-    |setJspCntext|该方法把代表JSP页面的pageContext对象传递给标签处理器对象|
-    |setParent|把父标签处理器对象传递给当前标签处理器对象|
-    |getParent|获取标签的父标签处理器对象|
-    |setJspBody|把代表标签体的JspFragment对象传递给标签处理器对象|
-    |doTag|用于完成所有的标签逻辑<br>该方法可以抛出`javax.servlet.jsp.SkipPageException`异常，用于通知web容器不再执行Jsp页面中谓语结束标记后面的内容|
-    
-    
+    - 附加请求参数:`name=testUser`
+        - 入口：http://localhost:8080/weblearn_war_exploded/tag/hellotag.jsp?name=testUser
+        - ![emptyTag_noproperty_html_result](./imgs/webbase/tag/defineTag/emptyTag_noproperty_html_result.png)
 
 
+## 示例-开发一个带属性的空标签
+[top](#catalog)
+- 创建标签处理器，实现SimpleTag接口，添加两个`String`型的标签属性：`value`，`count`
+    - 实现内容：[/java/mylearn/weblearn/src/main/java/com/ljs/test/tag/ShowTag.java](/java/mylearn/weblearn/src/main/java/com/ljs/test/tag/ShowTag.java)
+        ```java
+        public class ShowTag implements SimpleTag {
+            private PageContext pageContext;
 
+            // 添加两个标签属性
+            private String value;
+            private String count;
 
+            public void setValue(String value) {
+                this.value = value;
+            }
 
+            public void setCount(String count) {
+                this.count = count;
+            }
+
+            @Override
+            public void doTag() throws JspException, IOException {
+                // 打印两个参数
+                System.out.println("value = " + value);
+                System.out.println("count = " + count);
+
+                // 循环打印value
+                int countInt = Integer.parseInt(count);
+
+                // 从pageContext中获取out对象，并循环打印value
+                JspWriter out = pageContext.getOut();
+                for (int i = 0; i < countInt; i++) {
+                    out.println(i + " : " + value);
+                    out.println("<br>");
+                }
+            }
+
+            @Override
+            public void setJspContext(JspContext jspContext) {
+                // 保存pageContext对象
+                this.pageContext = (PageContext) jspContext;
+            }
+
+            ...
+            ...
+        }
+        ```
+
+- 编写tld文件
+    - [/java/mylearn/weblearn/src/main/webapp/WEB-INF/mytag.tld](/java/mylearn/weblearn/src/main/webapp/WEB-INF/mytag.tld)
+        ```xml
+        <tag>
+            <name>show</name>
+            <tag-class>com.ljs.test.tag.ShowTag</tag-class>
+            <body-content>empty</body-content>
+
+            <!--描述当前标签的属性-->
+            <attribute>
+                <!--属性名-->
+                <name>value</name>
+                <!--该属性是不是必须的-->
+                <required>true</required>
+                <!--runtime expression value :
+                当前属性是否可以接受运行时表达式(EL表达式)的动态值-->
+                <rtexprvalue>true</rtexprvalue>
+            </attribute>
+            
+            <attribute>
+                <name>count</name>
+                <required>false</required>
+                <rtexprvalue>false </rtexprvalue>
+            </attribute>
+        </tag>
+        ```
+
+- JSP调用标签
+    - [/java/mylearn/weblearn/src/main/webapp/tag/showtag.jsp](/java/mylearn/weblearn/src/main/webapp/tag/showtag.jsp)
+        ```html
+        <%--导入自定义标签库--%>
+        <%@ taglib prefix="ljs" uri="http://www.ljs.com/mytag/core" %>
+        <html>
+        <head>
+            <title>Title</title>
+        </head>
+        <body>
+
+        <!-- 循环打印value10次 -->
+        <ljs:show value="${param.name}" count="10"/>
+        ```
+
+- 页面结果
+    - 入口，附加请求参数：`name=newTest`
+        - http://localhost:8080/weblearn_war_exploded/tag/showtag.jsp?name=newTest
+        - ![emptyTag_hasproperty_html_result](./imgs/webbase/tag/defineTag/emptyTag_hasproperty_html_result.png)
 
 # JavaWeb开发中的路径问题
 [top](#catalog)
