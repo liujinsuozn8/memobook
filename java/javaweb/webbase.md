@@ -12,6 +12,7 @@
 - [web.xml的配置方法](#web.xml的配置方法)
     - [配置当前web应用的初始化参数](#配置当前web应用的初始化参数)
     - [配置Servlet](#配置Servlet)
+    - [配置Filter过滤器](#配置Filter过滤器)
     - [配置错误的响应页面](#配置错误的响应页面)
     - [配置示例](#配置示例)
 - [Servlet的使用](#Servlet的使用)
@@ -62,6 +63,7 @@
     - [MVC模式的架构演进](#MVC模式的架构演进)
     - [MVC的概念](#MVC的概念)
     - [MVC示例](#MVC示例)
+    - [使用JSTL来简化MVC架构中的JSP页面](#使用JSTL来简化MVC架构中的JSP页面)
 - [维持会话](#维持会话)
     - [会话的基本知识](#会话的基本知识)
     - [Cookie](#Cookie)
@@ -107,11 +109,18 @@
         - [JSTL核心标签库-流程控制](#JSTL核心标签库-流程控制)
         - [JSTL核心标签库-迭代操作](#JSTL核心标签库-迭代操作)
         - [JSTL核心标签库-URL操作](#JSTL核心标签库-URL操作)
-- [](#)
-- [](#)
-- [](#)
-- [](#)
-- [](#)
+
+- [Filter过滤器](#Filter过滤器)
+    - [Filter过滤器简介](#Filter过滤器简介)
+    - [Filter程序的开发](#Filter程序的开发)
+        - [如何创建并运行一个Filter类](#如何创建并运行一个Filter类)
+        - [Filter组件-Filter接口](#Filter组件-Filter接口)
+        - [Filter组件-FilterConfig接口](#Filter组件-FilterConfig接口)
+        - [Filter组件-FilterChain接口对象](#Filter组件-FilterChain接口对象)
+    - [Filter链的执行顺序](#Filter链的执行顺序)
+    - [示例-使用Filter链拦截登录](#示例-使用Filter链拦截登录)
+    - [自定义HttpFilter来提高开发效率](#自定义HttpFilter来提高开发效率)
+    - [Filter配置的dispatcher节点](#Filter配置的dispatcher节点)
 - [](#)
 - [](#)
 - [](#)
@@ -343,6 +352,41 @@
     - 如果映射的URL为：`/*.html`，启动Servlet容器时会产生异常
         - 即 `/`和`*`不能共存
 
+## 配置Filter过滤器
+[top](#catalog)
+- 配置方法基本上与Servlet类似
+- 配置Filter节点
+    - `<filter>`
+        - `<filter-name>`，节点名
+        - `<filter-class>`，节点对应的Filter类的全类名
+        - `<init-param>`， 配置Filter对象的初始化参数
+            - `<param-name>`， 初始化参数名
+            - `<param-value>`， 初始化参数值
+     </init-param>
+- 配置Filter节点的映射
+    - `<filter-mapping>`
+        - `<filter-name>`，映射的节点名
+        - `<url-pattern>`，配置需要拦截的url，即那些url可以访问到该Filter
+        - `<dispatcher>`指定过滤器所拦截的资源被Servlet容器调用的方法
+            - 可以是以下4种，默认是`request`
+                1. REQUEST，请求
+                    - 通过GET或POST请求访问时，过滤器会被调用
+                2. INCLUDE，使用的比较小
+                    - 只有当目标资源是通过`RequestDispatcher.include()`访问时，过滤器会被调用
+                3. FORWARD，转发
+                    - `<jsp:forward>`
+                    - JSP页面中配置的异常页面被触发时，是通过转发进行跳转
+                    - 调用`RequestDispatcher.forward()`
+                4. ERROR
+                    - 如果目标资源是通过声明式异常处理机制调用时，过滤器会被调用
+                        - 即通过web.xml进行配置的异常
+            - 可以设置多个`<dispatcher>`子元素来指定Filter对资源的多种调用方式进行拦截
+
+
+- Filter配置的细节
+    - 一个Filter节点可以对应多个Filter映射
+    - <label style="color:red">多个拦截相同url的Filter映射会自动构成Filter链，并且：`<filter-mapping>`的顺序决定了整个Filter链的顺序</label>
+
 ## 配置错误的响应页面
 [top](#catalog)
 - 指定出错的代码
@@ -357,7 +401,7 @@
 [top](#catalog)
 
 ```xml
-<!--配置当前web应用的初始化参数-->
+<!--1. 配置当前web应用的初始化参数-->
 <context-param>
     <param-name>user</param-name>
     <param-value>1234</param-value>
@@ -367,7 +411,7 @@
     <param-value>qwer</param-value>
 </context-param>
 
-<!--配置和映射servlet-->
+<!--2. 配置和映射servlet-->
 <!-- 配置一个Servlet类 -->
 <servlet>
     <!--注册Servlet的名字-->
@@ -393,7 +437,7 @@
 </servlet-mapping>
 
 
-<!--将JSP文件配置为Servlet-->
+<!--3. 将JSP文件配置为Servlet-->
 <servlet>
     <servlet-name>hellojsp</servlet-name>
     <jsp-file>/hello.jsp</jsp-file>
@@ -408,7 +452,7 @@
     <url-pattern>/hellojsp</url-pattern>
 </servlet-mapping>
 
-<!--异常页面配置-->
+<!--4. 异常页面配置-->
 <error-page>
     <error-code>404</error-code>
     <location>/error.jsp</location>
@@ -418,7 +462,53 @@
     <error-type>...</error-type>
     <location>/error.jsp</location>
 </error-page>
+
+<!-- 5. 配置两个Filter，拦截同一个请求，构成一各Filter链 -->
+
+<!--注册Filter-->
+<!--创建一个个Filter节点-->
+<filter>
+    <filter-name>helloFilter</filter-name>
+    <filter-class>com.ljs.test.filter.introduct.HelloFilter</filter-class>
+    <!-- 配置初始化参数 -->
+    <init-param>
+       <param-name>name</param-name>
+       <param-value>root</param-value>
+     </init-param>
+</filter>
+<!-- 配置Filter节点的映射 -->
+<filter-mapping>
+    <filter-name>helloFilter</filter-name>
+    <!--配置需要拦截的url-->
+    <url-pattern>/filter/introduct/test.jsp</url-pattern>
+</filter-mapping>
+
+<filter>
+    <filter-name>secondFilter</filter-name>
+    <filter-class>com.ljs.test.filter.introduct.SecondFilter</filter-class>
+</filter>
+
+<!--配置Filter节点的映射-->
+<!--配置多个拦截相同url的filter映射，来构成一个filter链-->
+<filter-mapping>
+    <filter-name>secondFilter</filter-name>
+    <url-pattern>/filter/introduct/test.jsp</url-pattern>
+</filter-mapping>
+
+<!--6. dispatcher 配置测试-->
+<filter>
+    <filter-name>testPatcherFilter</filter-name>
+    <filter-class>com.ljs.test.filter.dispatcher.TestPatcherFilter</filter-class>
+</filter>
+
+<filter-mapping>
+    <filter-name>testPatcherFilter</filter-name>
+    <url-pattern>/filter/dispatcher/test.jsp</url-pattern>
+    <dispatcher>REQUEST</dispatcher>
+    <dispatcher>FORWARD</dispatcher>
+</filter-mapping>
 ```
+
 
 # Servlet的使用
 ## Servlet的maven依赖
@@ -3065,7 +3155,12 @@ pageContext, request, session, application
             - <img src="./imgs/webbase/mvcSample/delete_02.png" height=30% width=30%>
         - 点击链接，回到检索页面，用户已经被删除
             - <img src="./imgs/webbase/mvcSample/delete_03.png" height=30% width=30%>
-        
+
+## 使用JSTL来简化MVC架构中的JSP页面
+[top](#catalog)
+- 参考：[/java/mylearn/weblearn/src/main/webapp/mvcjstl](/java/mylearn/weblearn/src/main/webapp/mvcjstl)
+- 入口：http://localhost:8080/weblearn_war_exploded/mvcjstl/query.do
+
 
 # 维持会话
 ## 会话的基本知识
@@ -5326,6 +5421,426 @@ pageContext, request, session, application
                 - ![curl_withCookie_html_result](./imgs/webbase/jstl/core/curl_withCookie_html_result.png)
             - 禁用Cookie
                 - ![curl_noCookie_html_result](./imgs/webbase/jstl/core/curl_noCookie_html_result.png)
+
+
+# Filter过滤器
+## Filter过滤器简介
+[top](#catalog)
+- Filter是JavaWeb的一个重要组件，可以对发送到Servlet的请求进行拦截，并对响应也进行拦截，从而**在Servlet进行响应处理的前后实现一些特殊的功能**
+- <label style="color:red">ilter对象是单例的。容器将在同一个过滤器实例上运行多个线程，来为多个请求服务，所以开发时需要注意线程安全</label>
+- Filter的过滤过程
+    - ![filter_workflow](./imgs/webbase/filter/introduction/filter_workflow.png)
+- Filter程序本质是一个实现了Filter接口的Java类
+- 在ServletAPI中定义了**三个接口**来供开发人员编写Filter程序：
+    1. Filter
+    2. FilterChain
+    3. FilterConfig
+- <label style="color:red">由多个拦截相同url的Filter类会自动构成Filter链，并且：`<filter-mapping>`的顺序决定了整个Filter链的顺序</label>
+
+- Filter程序与Servlet程序相似，它<label style="color:red">由Servlet容器进行调用和执行</label>
+    
+## Filter程序的开发
+### 如何创建并运行一个Filter类
+[top](#catalog)
+1. 创建Filter类
+    -　创建一个类，并实现一个Filter接口，包括：`Filter`，`FilterChain`，`FilterConfig`
+2. 配置Filter类
+    - Filter程序需要在web.xml文件中进行注册和设置它所能拦截的资源
+        - Filter可以拦截Jsp、Servlet、静态图片文件、静态html文件
+    - 配置方法，参考：[配置Filter过滤器](#配置Filter过滤器)
+    - <label style="color:red">多个拦截相同url的Filter映射会自动构成Filter链，并且：`<filter-mapping>`的顺序决定了整个Filter链的顺序</label>
+3. 执行
+    - 有Servlet容器负责执行
+
+### Filter组件-Filter接口
+[top](#catalog)
+- `init()`，与Servlet的init方法类似
+    1. 在Filter对象被创建后，立即被调用，且只被调用一次，并对当前的Filter进行初始化
+    2. 但是<label style="color:red">Filter对象只在Servlet容器加载当前Web应用时被创建</label>，所以Filter没有`<load-on-startup>`配置
+    3. 可以在此处保存FilterConfig接口对象的引用
+- `doFilter()`，当客户端请求目标资源的时候，容器会调用与这个资源相关联的过滤器的`doFilter()`方法
+    - 默认情况下，该方法会主动拦截请求，并且不放行
+    - 需要手动调用：`FilterChain.doFilter(ServletRequest, ServletResponse)`，才能放行，将请求发送到目标资源、或者下一个Filter链中的下一个Filter
+- `destroy()`，释放当前Filter所占用的资源，在Filter被**销毁之前**，只调用一次
+- 接口代码
+    ```java
+    public interface Filter {
+        public void init(FilterConfig filterConfig) throws ServletException;
+        
+        public void doFilter ( ServletRequest request, ServletResponse response, FilterChain chain ) throws IOException, ServletException;
+    
+        public void destroy();
+    }
+    ```
+
+### Filter组件-FilterConfig接口
+[top](#catalog)
+- 与ServletConfig对象类似
+- 可以在web.xml文件中配置当前Filter的初始化参数，配置方式也和Servlet类似
+- 接口代码
+    ```java
+    public interface FilterConfig {
+        
+        public String getFilterName();
+    
+        public ServletContext getServletContext();
+    
+        public String getInitParameter(String name);
+    
+        public Enumeration getInitParameterNames();
+    }
+    ```
+
+### Filter组件-FilterChain接口对象
+[top](#catalog)
+- Filter链，多个Filter可以构成一个Filter链
+- `doFilter()`，方法会把请求传给Filter链的下一个Filter，若当前Filter是Filter链的最后一个Filter，将把请求发送给目标资源(Servle，JSP，静态资源等)
+- <label style="color:red">多个拦截相同url的Filter映射会自动构成Filter链，并且：`<filter-mapping>`的顺序决定了整个Filter链的顺序</label>
+- 接口代码
+    ```java
+    public interface FilterChain {
+        public void doFilter ( ServletRequest request, ServletResponse response ) throws IOException, ServletException;
+    }
+    ```
+
+## Filter链的执行顺序
+[top](#catalog)
+- <label style="color:red">在多个Filter链中，每次调用`chain.doFilter(req, resp)`时，不会结束当前的`Filter.doFilter()`方法，而是将程序挂起，当响应返回时，再继续执行`Filter.doFilter()`中剩余的内容</label>
+- 响应返回时，会按照**逆序**唤醒每个Filter，并执行余下的操作
+- 测试
+    - 过滤器
+        - HelloFilter.java : [/java/mylearn/weblearn/src/main/java/com/ljs/test/filter/introduct/HelloFilter.java](/java/mylearn/weblearn/src/main/java/com/ljs/test/filter/introduct/HelloFilter.java)
+
+            ```java
+            @Override
+            public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+                System.out.println("1. before HelloFilter.doFilter");
+                // 放行请求
+                chain.doFilter(request,response);
+                System.out.println("2. after HelloFilter.doFilter");
+            }
+            ```
+        - SecondFilter.java : [/java/mylearn/weblearn/src/main/java/com/ljs/test/filter/introduct/SecondFilter.java](/java/mylearn/weblearn/src/main/java/com/ljs/test/filter/introduct/SecondFilter.java)
+
+            ```java
+            @Override
+            public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+                System.out.println("3. before Filter.doFilter");
+                chain.doFilter(request, response);
+                System.out.println("4. after Filter.doFilter");
+            }
+            ```
+    - JSP页面
+        - test.jsp : [/java/mylearn/weblearn/src/main/webapp/filter/introduct/test.jsp](/java/mylearn/weblearn/src/main/webapp/filter/introduct/test.jsp)
+
+            ```html
+            <h3>test page</h3>
+
+            <%
+                System.out.println("5. test.jsp");
+            %>
+            ```
+    - web.xml
+        - Filter链的顺序：helloFilter --> secondFilter 
+        - [/java/mylearn/weblearn/src/main/webapp/WEB-INF/web.xml](/java/mylearn/weblearn/src/main/webapp/WEB-INF/web.xml)
+
+            ```xml
+            <filter>
+                <filter-name>helloFilter</filter-name>
+                <filter-class>com.ljs.test.filter.introduct.HelloFilter</filter-class>
+                <init-param>
+                    <param-name>name</param-name>
+                    <param-value>root</param-value>
+                </init-param>
+            </filter>
+            <filter-mapping>
+                <filter-name>helloFilter</filter-name>
+                <!--配置需要拦截的url-->
+                <url-pattern>/filter/introduct/test.jsp</url-pattern>
+            </filter-mapping>
+
+            <filter>
+                <filter-name>secondFilter</filter-name>
+                <filter-class>com.ljs.test.filter.introduct.SecondFilter</filter-class>
+            </filter>
+
+            <!--配置Filter节点的映射-->
+            <!--配置多个拦截相同url的filter映射，来构成一个filter链-->
+            <filter-mapping>
+                <filter-name>secondFilter</filter-name>
+                <url-pattern>/filter/introduct/test.jsp</url-pattern>
+            </filter-mapping>
+            ```
+    - 控制台输出
+        - 入口：http://localhost:8080/weblearn_war_exploded/filter/introduct/test.jsp
+        - 执行顺序分析
+            1. 先经过`HelloFilter`，所以打印了：`1. before HelloFilter.doFilter`，然后到下一个Filter，当前Filter被挂起
+            2. 再经过`SecondFilter`,所以打印了：`3. before Filter.doFilter`，然后跳转到JSP页面，当前Filter被挂起
+            3. 处理JSP，打印了JSP脚本片段：`5. test.jsp`，然后将响应返回
+            4. 响应返回，唤醒`SecondFilte`，执行剩余操作，所以打印了：`4. after Filter.doFilter`，结束方法，并返回响应
+            5. 响应返回，唤醒`HelloFilter`，执行剩余操作，所以打印了：`2. after HelloFilter.doFilter`，结束方法，并返回响应
+            6. 响应返回浏览器，解析并显示
+        - ![filterchain_output_sequence](./imgs/webbase/filter/introduction/filterchain_output_sequence.png)
+
+
+## 示例-使用Filter链拦截登录
+[top](#catalog)
+- 需求
+    - 在login.jsp页面输入username、password登录
+    - 先使用UsernameFilter拦截，如果输入的username等于Filter的初始化参数username，则放行，否则**转发**回login.jsp页面并显示错误信息
+    - 再使用PasswordFilter拦截，如果输入的password等于web应用的初始化参数password则放行，否则**转发**回login.jsp页面并显示错误信息
+    - 发生异常重新转发回login.jsp时需要重新显示之前输入的username
+
+- Filter
+    - UserNameFilter.java [/java/mylearn/weblearn/src/main/java/com/ljs/test/filter/sample/login/UserNameFilter.java](/java/mylearn/weblearn/src/main/java/com/ljs/test/filter/sample/login/UserNameFilter.java)
+
+        ```java
+        private String username;
+
+        @Override
+        public void init(FilterConfig filterConfig) throws ServletException {
+            username = filterConfig.getInitParameter("username");
+        }
+
+        @Override
+        public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+            System.out.println("UserNameFilter.doFilter");
+
+            //如果用户名相同，则请求放行
+            if (username.equals(request.getParameter("username"))){
+                chain.doFilter(request,response);
+            } else {
+                //用户名不同，则转发到login.jsp，并显示错误信息
+                request.setAttribute("msg", "error username");
+                request.getRequestDispatcher("/filter/sample/login/login.jsp").forward(request,response);
+            }
+        }
+        ```
+    - PasswordFilter.java : [/java/mylearn/weblearn/src/main/java/com/ljs/test/filter/sample/login/PasswordFilter.java](/java/mylearn/weblearn/src/main/java/com/ljs/test/filter/sample/login/PasswordFilter.java)
+
+        ```java
+        private String password;
+
+        @Override
+        public void init(FilterConfig filterConfig) throws ServletException {
+            password = filterConfig.getServletContext().getInitParameter("password");
+        }
+
+        @Override
+        public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+            System.out.println("PasswordFilter.doFilter");
+
+            // 密码等于1234时，请求放行
+            if (password.equals(request.getParameter("password"))){
+                chain.doFilter(request,response);
+            } else{
+                //密码不同，则转发到login.jsp，并显示错误信息
+                request.setAttribute("msg", "error password");
+                request.getRequestDispatcher("/filter/sample/login/login.jsp").forward(request,response);
+            }
+        }
+        ```
+
+- jsp
+    - login.jsp : [/java/mylearn/weblearn/src/main/webapp/filter/sample/login/login.jsp](/java/mylearn/weblearn/src/main/webapp/filter/sample/login/login.jsp)
+
+        ```html
+        <h3> login page </h3>
+        <%--如果被Filter拦截并转发回来，则输出错误信息--%>
+        <c:if test="${!empty requestScope.msg}">
+            <label style="color: red">${requestScope.msg}</label>
+            <br>
+        </c:if>
+
+        <form action="${pageContext.request.contextPath}/filter/sample/login/hello.jsp"
+            method="post">
+
+            username:<input type="text" name="username" value="${param.username}"><br>
+            password:<input type="password" name="password"><br>
+            <input type="submit" value="Login">
+        </form>
+        ```
+    - hello.jsp : [/java/mylearn/weblearn/src/main/webapp/filter/sample/login/hello.jsp](/java/mylearn/weblearn/src/main/webapp/filter/sample/login/hello.jsp)
+
+        ```html
+        <h3>hello page</h3>
+
+        username = ${param.username}
+        ```
+
+- web.xml配置
+    - [/java/mylearn/weblearn/src/main/webapp/WEB-INF/web.xml](/java/mylearn/weblearn/src/main/webapp/WEB-INF/web.xml)
+        ```xml
+        <!-- web应用 初始化参数配置 -->
+        <context-param>
+            <param-name>password</param-name>
+            <param-value>qwer</param-value>
+        </context-param>
+
+        <!-- Filter配置 -->
+        <filter>
+            <filter-name>userNameFilter</filter-name>
+            <filter-class>com.ljs.test.filter.sample.login.UserNameFilter</filter-class>
+            <init-param>
+                <param-name>username</param-name>
+                <param-value>root</param-value>
+            </init-param>
+        </filter>
+
+        <filter>
+            <filter-name>passwordFilter</filter-name>
+            <filter-class>com.ljs.test.filter.sample.login.PasswordFilter</filter-class>
+        </filter>
+
+        <filter-mapping>
+            <filter-name>userNameFilter</filter-name>
+            <url-pattern>/filter/sample/login/hello.jsp</url-pattern>
+        </filter-mapping>
+
+        <filter-mapping>
+            <filter-name>passwordFilter</filter-name>
+            <url-pattern>/filter/sample/login/hello.jsp</url-pattern>
+        </filter-mapping>
+        ```
+
+- 页面内容
+    - 入口：localhost:8080/weblearn_war_exploded/filter/sample/login/login.jsp
+    - 进入登录页面
+        - ![login_page](./imgs/webbase/filter/sample/login/login_page.png)
+    - 输入错误的用户
+        - ![username_error](./imgs/webbase/filter/sample/login/username_error.png)
+    - 输入错误的密码
+        - ![password_error](./imgs/webbase/filter/sample/login/password_error.png)
+    - 登录成功
+        - ![login_success](./imgs/webbase/filter/sample/login/login_success.png)
+
+## 自定义HttpFilter来提高开发效率
+[top](#catalog)
+- 直接使用Filter接口开发的问题
+    - 有时会存在空方法，`init`、`destroy`
+    - 主要的逻辑都集中在`doFilter`中，使用时会需要将request和response强转为HttpServletRequest和HttpServletResponse
+    - 使用filterConfig对象时，需要在init方法中进行保存
+- 自定义抽象类实现 : HttpFilter.java
+    - [/java/mylearn/weblearn/src/main/java/com/ljs/test/filter/help/HttpFilter.java](/java/mylearn/weblearn/src/main/java/com/ljs/test/filter/help/HttpFilter.java)
+
+        ```java
+        public abstract class HttpFilter implements Filter {
+            private FilterConfig filterConfig;
+
+            // 对外提供一个可以获取filterConfig引用的方法
+            public FilterConfig getFilterConfig() {
+                return filterConfig;
+            }
+
+            @Override
+            public void init(FilterConfig filterConfig) throws ServletException {
+                //保存 filterConfig对象的引用
+                this.filterConfig = filterConfig;
+                init();
+            }
+
+            // 供子类重写初始化方法
+            public void init() {
+            }
+
+            @Override
+            public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+                //参数类型强转
+                HttpServletRequest req = (HttpServletRequest) request;
+                HttpServletResponse resp = (HttpServletResponse) response;
+
+                doFilter(req, resp, chain);
+            }
+
+            // 抽象方法，让子类来提供具体的实现
+            public abstract void doFilter(HttpServletRequest req, HttpServletResponse resp, FilterChain chain) throws IOException, ServletException;
+
+            @Override
+            public void destroy() {
+
+            }
+        }
+        ```
+
+## Filter配置的dispatcher节点
+[top](#catalog)
+- dispatcher节点的配置参考：[配置Filter过滤器](#配置Filter过滤器)
+- 默认只配置了`<dispatcher>REQUEST</dispatcher>`，所以通过其他方式调用时，Filter会失效
+- 失效的示例
+    - 测试思路
+        - 在`index2.jsp`中通过链接跳转到`dispatcher2.jsp`
+        - 在`dispatcher2.jsp`中通过`<jsp:forward>`转发到`test2.jsp`
+        - `test2.jsp`通过`TestPatcherFilter`进行拦截
+    - jsp
+        - index2.jsp : [/java/mylearn/weblearn/src/main/webapp/filter/dispatcher/index2.jsp](/java/mylearn/weblearn/src/main/webapp/filter/dispatcher/index2.jsp)
+        - dispatcher2.jsp : [/java/mylearn/weblearn/src/main/webapp/filter/dispatcher/dispatcher2.jsp](/java/mylearn/weblearn/src/main/webapp/filter/dispatcher/dispatcher2.jsp)
+        - test2.jsp :[/java/mylearn/weblearn/src/main/webapp/filter/dispatcher/test2.jsp](/java/mylearn/weblearn/src/main/webapp/filter/dispatcher/test2.jsp)
+    - Filter
+        - TestPatcherFilter.java : [/java/mylearn/weblearn/src/main/java/com/ljs/test/filter/dispatcher/TestPatcherFilter.java](/java/mylearn/weblearn/src/main/java/com/ljs/test/filter/dispatcher/TestPatcherFilter.java)
+
+            ```java
+            @Override
+            public void doFilter(HttpServletRequest req, HttpServletResponse resp, FilterChain chain) throws IOException, ServletException {
+                System.out.println("before TestPatcherFilter.doFilter");
+
+                chain.doFilter(req,resp);
+
+                System.out.println("after TestPatcherFilter.doFilter");
+            }
+            ```
+
+    - web.xml
+        ```xml
+        <filter-mapping>
+            <filter-name>testPatcherFilter</filter-name>
+            <url-pattern>/filter/dispatcher/test2.jsp</url-pattern>
+        </filter-mapping>
+        ```
+
+    - 测试结果
+        - 入口：http://localhost:8080/weblearn_war_exploded/filter/dispatcher/index2.jsp
+        - 进入`index2.jsp`
+            - ![index2_html](./imgs/webbase/filter/dispatcher/index2_html.png)
+        - 结果：通过转发方式调用`test2.jsp`，所以**控制台没有任何输出**
+            - ![test2_console](./imgs/webbase/filter/dispatcher/test2_console.png)
+            
+- 通过配置`<dispatcher>`，在forward调用时来触发Filter
+    - 测试思路
+        - 在`index.jsp`中通过链接跳转到`dispatcher.jsp`
+        - 在`dispatcher.jsp`中通过`<jsp:forward>`转发到`test.jsp`
+        - `test.jsp`通过`TestPatcherFilter`进行拦截
+    - jsp
+        - index.jsp : [/java/mylearn/weblearn/src/main/webapp/filter/dispatcher/index.jsp](/java/mylearn/weblearn/src/main/webapp/filter/dispatcher/index.jsp)
+        - dispatcher.jsp : [/java/mylearn/weblearn/src/main/webapp/filter/dispatcher/dispatcher.jsp](/java/mylearn/weblearn/src/main/webapp/filter/dispatcher/dispatcher.jsp)
+        - test.jsp :[/java/mylearn/weblearn/src/main/webapp/filter/dispatcher/test.jsp](/java/mylearn/weblearn/src/main/webapp/filter/dispatcher/test.jsp)
+    - Filter
+        - TestPatcherFilter.java : [/java/mylearn/weblearn/src/main/java/com/ljs/test/filter/dispatcher/TestPatcherFilter.java](/java/mylearn/weblearn/src/main/java/com/ljs/test/filter/dispatcher/TestPatcherFilter.java)
+
+            ```java
+            @Override
+            public void doFilter(HttpServletRequest req, HttpServletResponse resp, FilterChain chain) throws IOException, ServletException {
+                System.out.println("before TestPatcherFilter.doFilter");
+
+                chain.doFilter(req,resp);
+
+                System.out.println("after TestPatcherFilter.doFilter");
+            }
+            ```
+    - web.xml
+        ```xml
+        <filter-mapping>
+            <filter-name>testPatcherFilter</filter-name>
+            <url-pattern>/filter/dispatcher/test.jsp</url-pattern>
+            <dispatcher>REQUEST</dispatcher>
+            <dispatcher>FORWARD</dispatcher>
+        </filter-mapping>
+        ```
+    - 测试结果
+        - 入口：http://localhost:8080/weblearn_war_exploded/filter/dispatcher/index.jsp
+        - 进入`index.jsp`
+            - ![index_html](./imgs/webbase/filter/dispatcher/index_html.png)
+        - 结果：通过转发方式调用`test.jsp`，**控制台正常输出**
+            - ![test_console](./imgs/webbase/filter/dispatcher/test_console.png)
 
 # JavaWeb开发中的路径问题
 [top](#catalog)
