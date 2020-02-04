@@ -2918,29 +2918,6 @@ pageContext, request, session, application
 
             }
             ```
-- 内部流程
-    - 查询
-        - `query.do`
-        - 执行模糊检索，并转发到`mylearn/weblearn/src/main/webapp/mvc/index.jsp`
-        - 可以在页面执行 检索、删除、跳转添加页面，跳转更新页面
-
-    - 添加
-        - `insert.do`
-        - 自动转发到：`mylearn/weblearn/src/main/webapp/mvc/insert.jsp`
-        - 页面上的信息，都从：`request.getParameter`中获取，如果是第一次从`index.jsp`转发过来，则显示空字符串
-        - 如果用户名已经存在，则重新转发到`mylearn/weblearn/src/main/webapp/mvc/insert.jsp`，并显示错误信息
-        - 添加成功，则重定向到:`mylearn/weblearn/src/main/webapp/mvc/insertSuccess.jsp`
-
-    - 更新
-        - `edit.do`、`update.do`
-        - 自动转发到：`mylearn/weblearn/src/main/webapp/mvc/edit.jsp`
-        - 如果用户名修改了，则检索数据库，检查用户名是否已被使用
-            - 如果使用过，则再次转发到`mylearn/weblearn/src/main/webapp/mvc/edit.jsp`，并显示错误信息
-        - 没有异常，则进行更新，更新后重定向到：`query.do`，重新进行执行检索，并转发到`mylearn/weblearn/src/main/webapp/mvc/insert.jsp`显示
-
-    - 删除
-        - `delete.do`
-        - 删除后，重定向到：`mylearn/weblearn/src/main/webapp/mvc/deleteSuccess.jsp`
 
 - 通过配置文件来解耦Controller内部Dao对象的获取方法
     - 在配置文件中规定使用Dao的实现对象：xml或jdbc
@@ -3007,6 +2984,34 @@ pageContext, request, session, application
             </servlet>
             ```
 
+- 内部流程
+    - 查询
+        - `query.do`
+        - 执行模糊检索
+        - 转发到`mylearn/weblearn/src/main/webapp/mvc/index.jsp`，进行显示
+        - 可以在`index.jsp`页面执行:检索、删除、跳转添加页面，跳转更新页面
+
+    - 添加
+        - `insert.do`
+        - 跳转到该页面的两种情况
+            1. 可以在`query.do`页面通过链接跳转到：`mylearn/weblearn/src/main/webapp/mvc/insert.jsp`，并显示
+            2. 提交时，如果用户名已经存在，则重新转发到`mylearn/weblearn/src/main/webapp/mvc/insert.jsp`，并显示错误信息
+        - 页面上的信息来源
+            1. 通过链接跳转的时候，页面显示空白
+            2. 添加信息发生异常时，是从`request.getParameter`中获取的
+        - 添加成功时，重定向到:`mylearn/weblearn/src/main/webapp/mvc/insertSuccess.jsp`，并显示结果
+
+    - 更新
+        - `edit.do`、`update.do`
+        - Servlet会转发到：`mylearn/weblearn/src/main/webapp/mvc/edit.jsp`，进行显示
+        - 如果用户名修改了，则检索数据库，检查用户名是否已被使用
+            - 如果使用过，则再次**转发**到`mylearn/weblearn/src/main/webapp/mvc/edit.jsp`，并显示错误信息
+        - 没有异常，则进行更新，更新后重定向到：`query.do`，重新进行执行检索，并将结果转发到`mylearn/weblearn/src/main/webapp/mvc/insert.jsp`进行显示
+
+    - 删除
+        - `delete.do`
+        - 删除后，重定向到：`mylearn/weblearn/src/main/webapp/mvc/deleteSuccess.jsp`
+
 - 数据库
     - 表 customers
         ```sql
@@ -3019,6 +3024,49 @@ pageContext, request, session, application
             PRIMARY KEY (`id`)
         ) ENGINE=InnoDB AUTO_INCREMENT=40 DEFAULT CHARSET=gb2312
         ```
+
+- 页面结果
+    1. 入口：http://localhost:8080/weblearn_war_exploded/mvc/query.do
+    2. 检索
+        - 初始化无条件检索
+            - <img src="./imgs/webbase/mvcSample/query_01.png" height=40% width=40%>
+        - 输入条件进行模糊检索
+            - <img src="./imgs/webbase/mvcSample/query_02.png" height=40% width=40%>
+    3. 更新
+        - 点击更新链接
+            - <img src="./imgs/webbase/mvcSample/update_01.png" height=40% width=40%>
+        - 跳转到更新页面
+            - <img src="./imgs/webbase/mvcSample/update_02.png" height=40% width=40%>
+        - 更新为一个已经存在的用户：updateTest
+            - <img src="./imgs/webbase/mvcSample/update_03.png" height=40% width=40%>
+        - 更新，发生异常，重新转发到`edit.jsp`
+            - <img src="./imgs/webbase/mvcSample/update_04.png" height=40% width=40%>
+        - 修改成一个新用户：other
+            - <img src="./imgs/webbase/mvcSample/update_05.png" height=40% width=40%>
+        - 更新成功
+            - <img src="./imgs/webbase/mvcSample/update_06.png" height=40% width=40%>
+    4. 添加
+        - 点击添加链接
+            - <img src="./imgs/webbase/mvcSample/insert_01.png" height=40% width=40%>
+        - 跳转到添加页面，添加一个已经存在的用户：other
+            - <img src="./imgs/webbase/mvcSample/insert_02.png" height=40% width=40%>
+        - 发生添加异常
+            - <img src="./imgs/webbase/mvcSample/insert_03.png" height=40% width=40%>
+        - 将用户名修改成一个未使用的用户名：123456
+            - <img src="./imgs/webbase/mvcSample/insert_04.png" height=40% width=40%>
+        - 添加成功，跳转到提示信息页面
+            - <img src="./imgs/webbase/mvcSample/insert_05.png" height=40% width=40%>
+        - 点击链接，回到检索页面，添加成功
+            - <img src="./imgs/webbase/mvcSample/insert_06.png" height=30% width=30%>
+    5. 删除
+        - 在检索页面，点击用户的删除链接
+            - <img src="./imgs/webbase/mvcSample/delete_01.png" height=30% width=30%>
+        - 删除成功，跳转到提示信息页面
+            - <img src="./imgs/webbase/mvcSample/delete_02.png" height=30% width=30%>
+        - 点击链接，回到检索页面，用户已经被删除
+            - <img src="./imgs/webbase/mvcSample/delete_03.png" height=30% width=30%>
+        
+
 # 维持会话
 ## 会话的基本知识
 [top](#catalog)
