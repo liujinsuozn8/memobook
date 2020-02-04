@@ -379,13 +379,16 @@
                     - 调用`RequestDispatcher.forward()`
                 4. ERROR
                     - 如果目标资源是通过声明式异常处理机制调用时，过滤器会被调用
-                        - 即通过web.xml进行配置的异常
+                        - 即通过web.xml进行配置的异常页面
+                    - **路径需要和`<error-page>`下`<location>`中的路径相同**
             - 可以设置多个`<dispatcher>`子元素来指定Filter对资源的多种调用方式进行拦截
 
 
 - Filter配置的细节
     - 一个Filter节点可以对应多个Filter映射
     - <label style="color:red">多个拦截相同url的Filter映射会自动构成Filter链，并且：`<filter-mapping>`的顺序决定了整个Filter链的顺序</label>
+    - 配置
+    
 
 ## 配置错误的响应页面
 [top](#catalog)
@@ -395,7 +398,9 @@
         - `</error-type>`，java中的异常类型
         - `<location>`，响应页面的路径
 
-- 如果响应页面的路径为：`/WEB-INF/xxx.jsp`，则**不能使用**jsp中的`exception`对象 ??????????? 
+- 出现异常后，虽然跳转到了指定的`error-page`，实际看到的url仍然是请求的url，是请求的目标被替换了，内部没有使用转发
+
+- ~~如果响应页面的路径为：`/WEB-INF/xxx.jsp`，则**不能使用**jsp中的`exception`对象~~
 
 ## 配置示例
 [top](#catalog)
@@ -506,6 +511,19 @@
     <url-pattern>/filter/dispatcher/test.jsp</url-pattern>
     <dispatcher>REQUEST</dispatcher>
     <dispatcher>FORWARD</dispatcher>
+</filter-mapping>
+
+<!--7. 配置error页面 的dispatcher-->
+<error-page>
+    <exception-type>java.lang.ArithmeticException</exception-type>
+    <location>/WEB-INF/error.jsp</location>
+</error-page>
+<!--配置显示声明error的Filter-->
+<filter-mapping>
+    <filter-name>testPatcherFilter</filter-name>
+    <!-- 路径需要和 error-page的location中的路径相同 -->
+    <url-pattern>/WEB-INF/error.jsp</url-pattern> 
+    <dispatcher>ERROR</dispatcher>
 </filter-mapping>
 ```
 
@@ -2084,45 +2102,6 @@ pageContext, request, session, application
             - JSP编译后Servlet需要继承的类
             - 一般不使用
 
-- 示例
-    - 普通页面，并配置异常页面
-        ```html
-        <%@ page import="java.util.Date" %>
-        <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-        <%--<%@ page session="false" %>--%>
-        <%@ page errorPage="/WEB-INF/error.jsp" %>
-        <%@ page pageEncoding="UTF-8" %>
-
-        <html>
-        <head>
-            <title>Title</title>
-        </head>
-        <body>
-
-        <%= session.getId()%>
-        <%= new Date()%>
-        <%
-            int a =1/ 0;
-        %>
-
-        </body>
-        </html>
-        ```
-    - 错误页面
-        ```html
-        <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-        <%@ page isErrorPage="true" %>
-        <html>
-        <head>
-            <title>Title</title>
-        </head>
-        <body>
-
-        <h4>webinf error page</h4>
-        Error Message : <%= exception.getMessage()%>
-        </body>
-        </html>
-        ```
 
 ### JSP指令-include指令
 [top](#catalog)
@@ -2464,20 +2443,88 @@ pageContext, request, session, application
     - html结果
         - ![jspforward_html](./imgs/webbase/jsptag/jspforward_html.png)
 
-
-
 ## 异常页面的配置
 [top](#catalog)
-- 为了不让用户直接访问某个页面，通常将错误页面放在WEB-INF下。WEB-INF下的文件是不能通过在浏览器中直接输入地址来访问的，但是通过**转发**来访问
-- 配置方式1：通过JSP指令
-    - 在普通页面中配置`<%@ page errorPage="/WEB-INF/错误页面的子路径" %>`
-    - 在错误页面中配置`<%@ page isErrorPage="true" %>`
-- 配置方式2：配置web.xml
-    - 参考
-        - [配置错误的响应页面](#配置错误的响应页面)
-        - [配置示例](#配置示例)
-- 配置方式3：重定向到WEB-INF下的异常页面
-    
+- 为了不让用户直接访问某个页面，通常将错误页面放在WEB-INF下。WEB-INF下的文件是不能通过在浏览器中直接输入地址来访问的，但是可以通过**转发**来访问
+- 两种配置方式
+    - 配置方式1：通过JSP指令
+        - 在普通页面中配置`<%@ page errorPage="/WEB-INF/错误页面的子路径" %>`
+        - 在错误页面中配置`<%@ page isErrorPage="true" %>`
+        - 内部通过请求转发来实现
+
+    - 配置方式2：配置web.xml，显示声明error
+        - 参考
+            - [配置错误的响应页面](#配置错误的响应页面)
+            - [配置示例](#配置示例)
+        - 这种配置方式下的JSP页面中可以添加JSP指令：`<%@ page isErrorPage="true" %>`，添加后才可以在页面中使用JSP的内部对象`exception`
+
+- ~~配置方式3：重定向到WEB-INF下的异常页面 ???????~~
+
+- 两种配置方式的不同点
+    - 方式1的内部使用转发实现
+    - 方式2的内部是替换的请求目标
+- 两种配置方式的相同点
+    - 最终的url都是原始的url
+
+- 示例：方式1
+    - JSP
+        - 入口页面，testerror.jsp：[/java/mylearn/weblearn/src/main/webapp/jspcmd/testerror.jsp](/java/mylearn/weblearn/src/main/webapp/jspcmd/testerror.jsp)
+
+            ```html
+            <%@ page errorPage="error.jsp" %>
+            <html>
+            <head>
+                <title>Title</title>
+            </head>
+            <body>
+
+            <h3>test error</h3>
+            <%
+                System.out.println("request = " + request);
+                System.out.println("sessionID = " + session.getId());
+                session.setAttribute("testSessionParam","testSessionParamValue");
+                request.setAttribute("testRequestParam","testRequestParamValue");
+                int a = 10 / 0;
+            %>
+
+            </body>
+            </html>
+            ```
+
+        - 错误页面，error.jsp：[/java/mylearn/weblearn/src/main/webapp/jspcmd/error.jsp](/java/mylearn/weblearn/src/main/webapp/jspcmd/error.jsp)
+
+            ```xml
+            <%@ page isErrorPage="true" %>
+            <html>
+            <head>
+                <title>Title</title>
+            </head>
+            <body>
+
+            <h4>error page</h4>
+            Error Message = <%= exception.getMessage()%>
+            <br>
+            exception object = <%=exception%>
+            <br>
+            request = <%=request%>
+            <br>
+            sessionID = <%=session.getId()%>
+            <br>
+            testSessionParam = <%=session.getAttribute("testSessionParam")%>
+            <br>
+            testRequestParam =  <%=request.getParameter("testRequestParam")%>
+            <br>
+            param.name = <%=request.getParameter("name")%>
+
+            </body>
+            </html>
+            ```
+    - 页面结果
+        - 入口：http://localhost:8080/weblearn_war_exploded/jspcmd/testerror.jsp?name=testName
+        - 需要附加请求参数：`name`
+        - sessionId相同，请求参数可以在error页面获取，但是request中添加的属性在error页面中无法获取????????
+            - ![jsp_errorPage_result](./imgs/webbase/errorpage/jsp_errorPage_result.png)
+
 
 ## 解决jsp中文乱码问题
 [top](#catalog)
@@ -5766,7 +5813,7 @@ pageContext, request, session, application
 [top](#catalog)
 - dispatcher节点的配置参考：[配置Filter过滤器](#配置Filter过滤器)
 - 默认只配置了`<dispatcher>REQUEST</dispatcher>`，所以通过其他方式调用时，Filter会失效
-- 失效的示例
+- **失效的示例**
     - 测试思路
         - 在`index2.jsp`中通过链接跳转到`dispatcher2.jsp`
         - 在`dispatcher2.jsp`中通过`<jsp:forward>`转发到`test2.jsp`
@@ -5804,7 +5851,7 @@ pageContext, request, session, application
         - 结果：通过转发方式调用`test2.jsp`，所以**控制台没有任何输出**
             - ![test2_console](./imgs/webbase/filter/dispatcher/test2_console.png)
             
-- 通过配置`<dispatcher>`，在forward调用时来触发Filter
+- **通过配置`<dispatcher>`，在forward调用时来触发Filter**
     - 测试思路
         - 在`index.jsp`中通过链接跳转到`dispatcher.jsp`
         - 在`dispatcher.jsp`中通过`<jsp:forward>`转发到`test.jsp`
@@ -5841,6 +5888,71 @@ pageContext, request, session, application
             - ![index_html](./imgs/webbase/filter/dispatcher/index_html.png)
         - 结果：通过转发方式调用`test.jsp`，**控制台正常输出**
             - ![test_console](./imgs/webbase/filter/dispatcher/test_console.png)
+
+- **配置声明式异常，即error-page的Filter**
+    - jsp
+        - 异常jsp，error.jsp : [/java/mylearn/weblearn/src/main/webapp/WEB-INF/error.jsp](/java/mylearn/weblearn/src/main/webapp/WEB-INF/error.jsp)
+
+            ```html
+            <%@ page isErrorPage="true" %>
+            <html>
+            <head>
+                <title>Title</title>
+            </head>
+            <body>
+
+            <h4>webinf error page</h4>
+            Error Message : <%= exception.getMessage()%>
+            <br>
+            <%=exception%>
+            </body>
+            </html>
+            ```
+
+        - 入口jsp，testerror.jsp : [/java/mylearn/weblearn/src/main/webapp/filter/dispatcher/testerror.jsp](/java/mylearn/weblearn/src/main/webapp/filter/dispatcher/testerror.jsp)
+
+            ```html
+            <h3>test error</h3>
+
+            <%
+                int a = 10 / 0;
+            %>
+            ```
+    - Filter
+        - TestPatcherFilter.java : [/java/mylearn/weblearn/src/main/java/com/ljs/test/filter/dispatcher/TestPatcherFilter.java](/java/mylearn/weblearn/src/main/java/com/ljs/test/filter/dispatcher/TestPatcherFilter.java)
+
+            ```java
+            @Override
+            public void doFilter(HttpServletRequest req, HttpServletResponse resp, FilterChain chain) throws IOException, ServletException {
+                System.out.println("before TestPatcherFilter.doFilter");
+
+                chain.doFilter(req,resp);
+
+                System.out.println("after TestPatcherFilter.doFilter");
+            }
+            ```
+
+    - web.xml
+        - [/java/mylearn/weblearn/src/main/webapp/WEB-INF/web.xml](/java/mylearn/weblearn/src/main/webapp/WEB-INF/web.xml)
+        ```xml
+        <!--配置error页面-->
+        <error-page>
+            <exception-type>java.lang.ArithmeticException</exception-type>
+            <location>/WEB-INF/error.jsp</location>
+        </error-page>
+        <!--配置显示声明error的Filter-->
+        <filter-mapping>
+            <filter-name>testPatcherFilter</filter-name>
+            <!-- 路径需要和error-page下location中的路径相同 -->
+            <url-pattern>/WEB-INF/error.jsp</url-pattern>
+            <dispatcher>ERROR</dispatcher>
+        </filter-mapping>
+        ```
+    - 页面入口
+        - http://localhost:8080/weblearn_war_exploded/filter/dispatcher/testerror.jsp
+    - 页面结果
+        - 进入异常页面，显示异常信息，并在控制台打印出Filter信息
+        - ![error_html](./imgs/webbase/filter/dispatcher/error_html.png)
 
 # JavaWeb开发中的路径问题
 [top](#catalog)
