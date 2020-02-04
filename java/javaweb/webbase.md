@@ -84,7 +84,6 @@
     - [EL隐含对象](#EL隐含对象)
     - [EL函数](#EL函数)
 - [自定义标签](#自定义标签)
-    - [自定义标签库需要的maven支持](#自定义标签库需要的maven支持)
     - [为什么需要自定义标签](#为什么需要自定义标签)
     - [自定义标签的简介](#自定义标签的简介)
     - [简单标签的SimpleTag接口](#简单标签的SimpleTag接口)
@@ -99,6 +98,24 @@
     - [示例-带有标签体的标签-循环打印集合](#示例-带有标签体的标签-循环打印集合)
     - [开发具有父子关系标签的方法](#开发具有父子关系标签的方法)
     - [示例-父子关系标签](#示例-父子关系标签)
+- [JSTL](#JSTL)
+    - [JSTL需要的maven支持](#JSTL需要的maven支持)
+    - [JSTL简介](#JSTL简介)
+    - [JSTL核心标签库](#JSTL核心标签库)
+        - [JSTL核心标签库-简介](#JSTL核心标签库-简介)
+        - [JSTL核心标签库-基本输入输出](#JSTL核心标签库-基本输入输出)
+        - [JSTL核心标签库-流程控制](#JSTL核心标签库-流程控制)
+        - [JSTL核心标签库-迭代操作](#JSTL核心标签库-迭代操作)
+        - [JSTL核心标签库-URL操作](#JSTL核心标签库-URL操作)
+- [](#)
+- [](#)
+- [](#)
+- [](#)
+- [](#)
+- [](#)
+- [](#)
+- [](#)
+- [](#)
 - [](#)
 - [](#)
 - [](#)
@@ -2179,7 +2196,7 @@ pageContext, request, session, application
 ### 2.JSP标签-\<jsp:include\>
 [top](#catalog)
 - `<jsp:include>`标签用于把另外一个资源的输出内容插入当前JSP页面的输出内容之中，这种在JSP页面执行是的引入方式称为**动态引入**
-    - <label style="color:red">引入的文件必须是一个能独立被Web容器调用和执行的资源</label>
+    - <label style="color:red">引入的文件必须是一个能独立被Web容器调用和执行的资源，并且该资源只能是当前web应用下的</label>
     - 最终的编译结果是多个Servlet源文件
     - 编译结果中的引入方式
         ```java
@@ -3418,6 +3435,9 @@ pageContext, request, session, application
 - Session在Web开发中指：用来在客户端与服务端之间保持状态的解决方案，有时候Session也用来指这种解决方案的存储结构
 - 在服务器端，使用一种类似于散列表的结构来保存信息
 
+- 每次打开一个新的浏览器都会是一个新的session，浏览器和服务器之间通过会话状态来关联多个请求和响应，一般会使用sessionID来进行标识
+    - <img src="./imgs/webbase/session/session_sessionStatus.png" height=50% width=50%/>
+
 - 某个程序为客户端的请求创建Session的过程
     - 基本流程
         1. 服务器首先检查这个客户端的请求里是否包含了一个sessionID
@@ -3501,6 +3521,7 @@ pageContext, request, session, application
 
         - hello.jsp：[/java/mylearn/weblearn/src/main/webapp/session/method/hello.jsp](/java/mylearn/weblearn/src/main/webapp/session/method/hello.jsp)
             ```html
+            <!-- 获取请求参数 -->
             <%
                 String username = request.getParameter("username");
             %>
@@ -3520,7 +3541,7 @@ pageContext, request, session, application
             <a href="logout.jsp">注销</a>
             ```
 
-        - login.jsp：[/java/mylearn/weblearn/src/main/webapp/session/method/login.jsp](/java/mylearn/weblearn/src/main/webapp/session/method/loginout.jsp)
+        - logout.jsp：[/java/mylearn/weblearn/src/main/webapp/session/method/logout.jsp](/java/mylearn/weblearn/src/main/webapp/session/method/loginout.jsp)
             ```html
             username：<%=session.getAttribute("username")%>
             <br>
@@ -3993,13 +4014,17 @@ pageContext, request, session, application
 ## EL隐含对象
 [top](#catalog)
 - 与范围有关的隐含对象
+    - 相关对象
     
-    |EL中的隐含对象|属性范围|
-    |-|-|
-    |pageScope|page|
-    |requestScope|request|
-    |sessionScope|session|
-    |applicationScope|application|
+        |EL中的隐含对象|属性范围|
+        |-|-|
+        |pageScope|page|
+        |requestScope|request|
+        |sessionScope|session|
+        |applicationScope|application|
+
+    - <label style="color:red">这些对象只是代表一个范围而不是对应的域对象。如果需要使用各个域对象，需要从`pageContext`中获取</label>
+        - 示例: 获取session中所有属性的名称列表`${pageContext.session.AttributeNames}`
 
 - 与输入有关的隐含对象
     
@@ -4027,7 +4052,9 @@ pageContext, request, session, application
         
         
 - 其他隐含对象
+
     |EL中的隐含对象|含义|
+    |-|-|
     |cookie|可以从中获取Cookie对象|
     |header|获取请求头信息 (很少使用)|
     |headerValues|获取一组请求头信息 (很少使用)|
@@ -4094,27 +4121,27 @@ pageContext, request, session, application
 - el函数：在el表达式中调用的某个java类的**静态方法**，这个静态方法需要在web应用程序**进行配置**才可以被el表达式调用
 - el函数可以扩展el表达式的功能，让el表达式完成普通java程序代码所能完成的功能
 
-- JSTL提供的一些el函数
+- JSTL库中提供的一些el函数
     - 字符串操作函数
     
-    |函数|描述|
-    |-|-|
-    |fn:contains(string, substring)|判断string中是否包含参数substring，返回true/false|
-    |fn:containsIgnoreCase(string, substring)|忽略大小写，判断string中是否包含参数substring，返回true/false|
-    |fn:endWith(string, suffix)|判断string是否以suffix结尾，返回true/false|
-    |fn:startWith(string, prefix)|判断string是否以prefix开头，返回true/false|
-    |fn:escapeXml(string)|将有特殊意义的XML和HTML转换为对应的XML character entity code，并返回|
-    |fn:indexOf(string, substring)|返回substring在string中第一次出现的位置|
-    |fn:join(array, separator)|将数组array用separator连接成一个字符串并返回|
-    |fn:length(item)|返回item的元素数量；item可以是：数组，collection，String；String时，返回字符数|
-    |fn:replace(string, before, after)|将string中的before替换成after，返回新字符串|
-    |fn:split(string，separator)|使用separator分割字符串，返回一个数组|
-    |fn:substring(string, begin, end)|截取字符串|
-    |fn:substringAfter(string, substring)|返回substring在string中后面的部分|
-    |fn:substringBefore(string, substring)|返回substring在string中前面的部分|
-    |fn:toLowerCase(string)|小写转换，并返回新字符串|
-    |fn:toUpperCase(string)|大写转换，并返回新字符串|
-    |fn:trim(string)|去除字符串的首尾空格|
+        |函数|描述|
+        |-|-|
+        |fn:contains(string, substring)|判断string中是否包含参数substring，返回true/false|
+        |fn:containsIgnoreCase(string, substring)|忽略大小写，判断string中是否包含参数substring，返回true/false|
+        |fn:endWith(string, suffix)|判断string是否以suffix结尾，返回true/false|
+        |fn:startWith(string, prefix)|判断string是否以prefix开头，返回true/false|
+        |fn:escapeXml(string)|将有特殊意义的XML和HTML转换为对应的XML character entity code，并返回|
+        |fn:indexOf(string, substring)|返回substring在string中第一次出现的位置|
+        |fn:join(array, separator)|将数组array用separator连接成一个字符串并返回|
+        |fn:length(item)|返回item的元素数量；item可以是：数组，collection，String；String时，返回字符数|
+        |fn:replace(string, before, after)|将string中的before替换成after，返回新字符串|
+        |fn:split(string，separator)|使用separator分割字符串，返回一个数组|
+        |fn:substring(string, begin, end)|截取字符串|
+        |fn:substringAfter(string, substring)|返回substring在string中后面的部分|
+        |fn:substringBefore(string, substring)|返回substring在string中前面的部分|
+        |fn:toLowerCase(string)|小写转换，并返回新字符串|
+        |fn:toUpperCase(string)|大写转换，并返回新字符串|
+        |fn:trim(string)|去除字符串的首尾空格|
 
 - 自定义el函数开发步骤
     - 编写el函数所需的Java类静态方法
@@ -4176,27 +4203,6 @@ pageContext, request, session, application
 
 
 # 自定义标签
-## 自定义标签库需要的maven支持
-[top](#catalog)
-
-```xml
-<!--taglibs依赖1-->
-<!-- https://mvnrepository.com/artifact/javax.servlet.jsp.jstl/jstl-api -->
-<dependency>
-<groupId>javax.servlet.jsp.jstl</groupId>
-<artifactId>jstl-api</artifactId>
-<version>1.2</version>
-</dependency>
-
-<!--taglibs依赖2-->
-<!-- https://mvnrepository.com/artifact/org.apache.taglibs/taglibs-standard-impl -->
-<dependency>
-    <groupId>org.apache.taglibs</groupId>
-    <artifactId>taglibs-standard-impl</artifactId>
-    <version>1.2.5</version>
-</dependency>
-```
-
 ## 为什么需要自定义标签
 [top](#catalog)
 - 自定义标签可以降低jsp开发的复杂的和维护量，从html角度看，可以使用html不用去过多的关注那些比较复杂的业务逻辑
@@ -4276,6 +4282,8 @@ pageContext, request, session, application
 ## 标签库描述文件tld
 [top](#catalog)
 - 参考配置：[/java/mylearn/weblearn/src/main/webapp/WEB-INF/mytag.tld](/java/mylearn/weblearn/src/main/webapp/WEB-INF/mytag.tld)
+
+- <label style="color:red">可以用来配置自定义标签和el函数</label>
 
 - 每一个标签在配置时都必须注明标签实现类
 - 在`<body-content>标签类型</body-content>`配置当前标签的类型
@@ -4938,6 +4946,339 @@ pageContext, request, session, application
     - 入口：http://localhost:8080/weblearn_war_exploded/tag/choosetag.jsp?score=55
     - ![parent_son_tag_choose_html_result](./imgs/webbase/tag/defineTag/parent_son_tag_choose_html_result.png)
 
+# JSTL
+## JSTL需要的maven支持
+[top](#catalog)
+```xml
+<!--taglibs依赖1-->
+<!-- https://mvnrepository.com/artifact/javax.servlet.jsp.jstl/jstl-api -->
+<dependency>
+<groupId>javax.servlet.jsp.jstl</groupId>
+<artifactId>jstl-api</artifactId>
+<version>1.2</version>
+</dependency>
+
+<!--taglibs依赖2-->
+<!-- https://mvnrepository.com/artifact/org.apache.taglibs/taglibs-standard-impl -->
+<dependency>
+    <groupId>org.apache.taglibs</groupId>
+    <artifactId>taglibs-standard-impl</artifactId>
+    <version>1.2.5</version>
+</dependency>
+```
+
+## JSTL简介
+[top](#catalog)
+- JSTL JavaServer Pages Standard Tag Libaray， JSP标准标签函数库，是有JCP所指定的标准规格，主要提供给Java Web开发人员一个标准通用的标签函数库
+- JSTL可以应用于各种场景，包括：基本输入输出、流程控制、循环、XML文件解析，数据库查询、国际化、文字格式化标准等
+- JSTL所提供的标签函数库主要分为5大类
+    
+    |JSTL|前置名称|URI|范例|
+    |-|-|-|-|
+    |核心标签库|c|`http://java.sum.com/jsp/jstl/core`|`<c:out>`|
+    |I18格式标签库<br>(国际化标签库)|fmt|`http://java.sum.com/jsp/jstl/fmt`|`<fmt:formatdate>`|
+    |SQL标签库|sql|`http://java.sum.com/jsp/jstl/sql`|`<sql:query>`|
+    |XML标签库|xml|`http://java.sum.com/jsp/jstl/xml`|`<x:forBach>`|
+    |函数标签库|fn|`http://java.sum.com/jsp/jstl/functions`|`<fn:split>`|
+
+- 使用前需要在JSP中导入标签库：`<%@ taglib prefix="前置名称" uri="URI" %>`
+
+- JSTL支持EL语法，如：`<c:out value="${userlist.user }">`
+
+## JSTL核心标签库
+### JSTL核心标签库-简介
+[top](#catalog)
+- 主要功能：基本输入输出、流程控制、迭代操作、URL操作
+- 功能分类
+    
+    |功能分类|标签名称|
+    |-|-|
+    |表达式操作|out<br>set<br>remove<br>catch|
+    |流程操作|if<br>choose<br>when<br>otherwise|
+    |迭代操作|forEach<br>forTokens|
+    |URL操作|Import<br>param<br>url<br>param<br>redirect<br>param|
+
+### JSTL核心标签库-基本输入输出
+[top](#catalog)
+- `<c:out>`
+    - 主要用来显示数据的内容，于JSP表达式/EL表达式类似，但是功能更强大，可以进行特殊字符的转换
+    - 基本语法：`<c:out value="需要显示的值">`
+    - 属性
+        
+        |名称|说明|EL|类型|必须|默认值|
+        |-|-|-|-|-|-|
+        |value|需要显示的值|YObject|Object|是|无|
+        |defalut|value==null时，显示default|YObject|Object|否|无|
+        |escapeXML|是否转换特殊字符，如：`<`转换成`&lt;`|Yboolean|boolean|否|true|
+        
+    - 示例
+        - cout.jsp 
+            - [/java/mylearn/weblearn/src/main/webapp/jstl/core/cout.jsp](/java/mylearn/weblearn/src/main/webapp/jstl/core/cout.jsp)
+
+            ```html
+            <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
+            <%
+                request.setAttribute("book", "<<tab test>>");
+            %>
+
+            book by el: ${requestScope.book}
+            <br>
+            book by jstl: <c:out value="${requestScope.book}"/>
+            ```
+        - 页面结果
+            - 入口：http://localhost:8080/weblearn_war_exploded/jstl/core/cout.jsp
+            - 使用jstl时，可以自动进行特殊字符转换
+            - ![cout_html_result](./imgs/webbase/jstl/core/cout_html_result.png)
+
+- `<c:set>`
+    - 将变量存储到JSP范围中或是JavaBean的属性中   
+    - 语法
+        - 将value的值存储到域范围对象的varName变量中
+            - `<c:set value="value" var="varName" [scope="page|request|session|application"] />`
+        - 将标签体内容存储到域范围对象的varName变量中
+            ```xml
+            <c:set var="varName" [scope="page|request|session|application"] >
+              标签体
+            </c:set>
+            ```
+        - 将值保存到JavaBean的某个属性中
+            - `<c:set target="javabean" property="属性名" value="属性值" />`
+
+    - 示例
+        - cset.jsp : [/java/mylearn/weblearn/src/main/webapp/jstl/core/cset.jsp](/java/mylearn/weblearn/src/main/webapp/jstl/core/cset.jsp)
+
+            ```html
+            <h4>c:set page</h4>
+
+            <%--1. 将name=testValue保存到pageContext域对象中--%>
+            <c:set value="testValue" var="name" scope="page" />
+                <%--打印name--%>
+            name = ${pageScope.name}
+            <br>
+
+            <%--2. 使用el表达式设置value值--%>
+            <%
+            request.setAttribute("elStr","elTestValue");
+            %>
+
+            <c:set value="${requestScope.elStr}" var="elTest" scope="page"/>
+            elTest = ${pageScope.elTest}
+            <br>
+            <br>
+
+            <%--3. 使用c:set 来设置JavaBean中的属性--%>
+            <%
+                Customer customer = new Customer("abcdef", "zxccv", 16);
+                request.setAttribute("customer", customer);
+            %>
+                <%--打印customer.id--%>
+            custome.id = ${customer.id}
+            <br>
+                <%--使用cset重新设置customer.id--%>
+            <c:set target="${requestScope.customer}" property="id" value="1233456"/>
+            custome.id = ${customer.id}
+            ```
+        
+        - 页面结果
+            - 入口：http://localhost:8080/weblearn_war_exploded/jstl/core/cset.jsp
+            - ![cset_html_result](./imgs/webbase/jstl/core/cset_html_result.png)
+
+- `<c:remove>`
+    - 从指定域对象中删除某个属性
+    - 语法：`<c:remove var="varName" scope="域对象"/>`
+    - 示例
+        - cremove.jsp : [/java/mylearn/weblearn/src/main/webapp/jstl/core/cremove.jsp](/java/mylearn/weblearn/src/main/webapp/jstl/core/cremove.jsp)
+
+### JSTL核心标签库-流程控制
+[top](#catalog)
+- `<c:if>`
+    - 与if语句的用途相同
+    - 语法
+        - 没有标签体：`<c:if test="判断内容" var="varName" [scope="page|request|session|application"]>`
+        - 有本体内容：
+            ```xml
+            <c:if test="判断内容" [scope="page|request|session|application"]>
+            ```
+    - 属性
+        
+        |名称|说明|EL|类型|必须|默认值|
+        |-|-|-|-|-|-|
+        |test|如果表达式的结果为true，则执行标签体内容，false则相反|Y|boolean|是|无|
+        |var|用来存储test运算后的结果|N|String|否|无|
+        |scope|保存var变量的域对象范围|N|String|否|page|
+    
+    - 缺点：只有c:if，没有else
+    - 优点：可以保存结果
+    - 示例
+        - cif.jsp : [/java/mylearn/weblearn/src/main/webapp/jstl/core/cif.jsp](/java/mylearn/weblearn/src/main/webapp/jstl/core/cif.jsp)
+            ```html
+            <h3>c:if page</h3>
+
+            <c:set value="19" var="age" scope="request"/>
+
+            <%--1. 判断并输出标签体内容--%>
+            <c:if test="${requestScope.age > 18}">a adult</c:if>
+            <br>
+            <%--2. 将判断结果保存在域对象中，在后续处理中使用--%>
+            <c:if test="${requestScope.age > 18}" var="isAdult" scope="request"/>
+            isAdult = ${requestScope.isAdult}
+            ```
+        - 页面结果
+            - 入口：http://localhost:8080/weblearn_war_exploded/jstl/core/cif.jsp
+            - ![cif_html_result](./imgs/webbase/jstl/core/cif_html_result.png)
+
+- c:choose, c:when, c:otherwise
+    - 可以实现if...else if ... else
+    - 多个when中必须只能有一个为true
+    - 在同一个c:choose中，c:otherwise必须为最后一个标签
+
+### JSTL核心标签库-迭代操作
+- `<c:forEach>`
+    - 迭代集合，并持续输出标签体内容
+    - 属性
+    
+        |名称|说明|EL|类型|必须|默认值|
+        |-|-|-|-|-|-|
+        |var|用来存放当前迭代的元素|N|String|否|无|
+        |items|被迭代的集合|Y|Array<br>Collection<br>Iterator<br>Enumeration<br>Map<br>String|否|无|
+        |varStatus|用来存放当前迭代元素的相关信息，包括：<br>当前元素的索引：index<br>当前迭代中已经迭代的数量：count<br>是否是当前迭代的第一个元素：first<br>是否是当前迭代的最后一个元素：last|N|String|否|无|
+        |begin|开始位置|Y|int|否|0|
+        |end|结束位置|Y|int|否|最后一个元素|
+        |step|每次迭代的间隔数|Y|int|否|1|
+        
+    - 每次迭代时都会把元素保存到page中，保存的key是var，所以在标签体中，可以直接在el表达式中通过var来获取元素
+    - 遍历Map时，需要从元素中先分别获取key、value才能使用；如果需要获取各元素对应的对象中的属性，必须先获取value，如
+        ```html
+        <c:forEach items="${custMap}" var="node">
+            node.key=${node.key}, node.value.id=${node.value.id}, node.value.name=${node.value.name}<br>
+        </c:forEach>
+        ```
+
+    - 示例
+        - cforeach.jsp : [/java/mylearn/weblearn/src/main/webapp/jstl/core/cforeach.jsp](/java/mylearn/weblearn/src/main/webapp/jstl/core/cforeach.jsp)
+
+            ```html
+            <h4>c:foreach Page</h4>
+
+            <%--1. 遍历Collection 遍历数组与遍历Collection相同--%>
+            <%--1.1. 不设定集合，只是进行迭代，并输出index--%>
+            <c:forEach begin="0" end="20" step="2" var="i">
+                index = ${i} <br>
+            </c:forEach>
+            <br>
+            <br>
+
+            <%
+                List<Customer> customers = new ArrayList<>();
+                request.setAttribute("customers", customers);
+                customers.add(new Customer("111", "aaa", 11));
+                customers.add(new Customer("222", "bbb", 22));
+                customers.add(new Customer("333", "ccc", 33));
+                customers.add(new Customer("444", "ddd", 44));
+                customers.add(new Customer("555", "eee", 55));
+            %>
+
+            <%--1.2. 从0开始打印值和信息--%>
+            <c:forEach items="${customers}" varStatus="status" var="node">
+                index=${status.index}, count=${status.count}, isfirst=${status.first}, islast=${status.last}, name=${node.name}<br>
+            </c:forEach>
+            <br>
+
+            <%--1.3. 从2开始打印值和信息--%>
+            <c:forEach items="${customers}" varStatus="status" var="node" begin="2">
+                index=${status.index}, count=${status.count}, isfirst=${status.first}, islast=${status.last}, name=${node.name}<br>
+            </c:forEach>
+            <br>
+            <br>
+
+            <%--2. 遍历Map--%>
+            <%
+                Map<String, Customer> custMap = new HashMap<>();
+                request.setAttribute("custMap", custMap);
+                custMap.put("a1", new Customer("111", "aaa", 11));
+                custMap.put("a2", new Customer("222", "bbb", 22));
+                custMap.put("a3", new Customer("333", "ccc", 33));
+                custMap.put("a4", new Customer("444", "ddd", 44));
+                custMap.put("a5", new Customer("555", "eee", 55));
+            %>
+
+            <c:forEach items="${custMap}" var="node">
+                node.key=${node.key}, node.value.id=${node.value.id}, node.value.name=${node.value.name}<br>
+            </c:forEach>
+            <br>
+
+            <%--3. 遍历Enumeration--%>
+            <%--必须通过pageContext.request来获取request对象
+                不能通过requestScope获取，这只是代表一个范围，不是真正的request对象--%>
+            <c:forEach items="${pageContext.request.attributeNames}" var="node">
+                attributeName = ${node}<br>
+            </c:forEach>
+            <br>
+            ```
+        - 页面结果
+            - 入口：http://localhost:8080/weblearn_war_exploded/jstl/core/cforeach.jsp
+            - ![cforeach_html_result](./imgs/webbase/jstl/core/cforeach_html_result.png)
+
+- `<c:forTokens>`
+    - 用delimiters分割字符串，类似于String.split()
+    - 语法
+        ```html
+        <c:forTokens items="字符串" delims="分隔符"
+             [var="保存元素的变量名" varStatus="保存元素信息的变量名"
+              begin="begin" end="end" step="step">
+          标签体
+        </c:forTokens>
+        ```
+    - 示例
+        - cfortokens.jsp : [/java/mylearn/weblearn/src/main/webapp/jstl/core/cfortokens.jsp](/java/mylearn/weblearn/src/main/webapp/jstl/core/cfortokens.jsp)
+
+            ```html
+            <%--使用`:`分割字符串并输出--%>
+            <c:forTokens items="${str}" delims=":" var="node">
+                node=${node}<br>
+            </c:forTokens>
+            ```
+        - 页面结果
+            - 入口：http://localhost:8080/weblearn_war_exploded/jstl/core/cfortokens.jsp
+            - ![cfortokens_html_result](./imgs/webbase/jstl/core/cfortokens_html_result.png)
+
+### JSTL核心标签库-URL操作
+[top](#catalog)
+- `<c:import>`
+    - 可以把其他静态或动态文件包含到当前JSP页面
+    - 与`<jsp:include>`不同的是可以引用当前web应用以外的资源
+- `<c:redirect>`
+    - 使当前JSP页面重定向到指定页面 
+- `<c:url>`
+    - 会产生一个url地址
+    - 可以根据Cookie是否可以使用来进行url重写，如果禁用了Cookie将会自动附加JSESSIONID
+    - 可以对GET请求的参数进行编码
+    - 语法
+        ```html
+        <c:url value="url" var="存储的变量" scope="保存的域对象">
+          <c:param name="附加的参数名" value="参数值" />
+        </c:url>
+        ```
+    - 示例
+        - curl.jsp : [/java/mylearn/weblearn/src/main/webapp/jstl/core/curl.jsp](/java/mylearn/weblearn/src/main/webapp/jstl/core/curl.jsp)
+            ```html
+            <h3>c:url page</h3>
+
+            <c:url value="/jstl/core/curl.jsp" var="testurl" scope="page">
+                <c:param name="name" value="中文测试" />
+            </c:url>
+
+            <%--打印生成的url--%>
+            ${pageScope.testurl}
+            ```
+        - 页面结果
+            - 入口：http://localhost:8080/weblearn_war_exploded/jstl/core/curl.jsp
+            - 使用Cookie
+                - ![curl_withCookie_html_result](./imgs/webbase/jstl/core/curl_withCookie_html_result.png)
+            - 禁用Cookie
+                - ![curl_noCookie_html_result](./imgs/webbase/jstl/core/curl_noCookie_html_result.png)
+
 # JavaWeb开发中的路径问题
 [top](#catalog)
 - 实际开发时尽量使用绝对路径，写绝对路径不会有问题，写相对路径有时会有问题
@@ -4974,6 +5315,7 @@ pageContext, request, session, application
             </servlet-mapping>
             ```
         3. 自定义标签中的`/`
+            - 如： `<c:redirect>`
     - <label style="color:red">若`/`需要由浏览器来处理</label>，表示当前Web站点的根路径
         1. 重定向的路径
             - 第二次请求相当于由浏览器来处理
@@ -5007,4 +5349,5 @@ pageContext, request, session, application
 
 -  什么时候会创建新的session
 - StringWriter ?????
+- curl的实现
 [top](#catalog)
