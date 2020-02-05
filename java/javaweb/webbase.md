@@ -25,6 +25,7 @@
     - [处理客户端请求](#处理客户端请求)
     - [ServletRequest接口](#ServletRequest接口)
     - [ServletResponse接口](#ServletResponse接口)
+    - [Request和Response的包装类HttpServletXXXXXWrapper](#Request和Response的包装类HttpServletXXXXXWrapper)
     - [抽象类GenericServlet](#抽象类GenericServlet)
         - [自定义Servlet抽象类MyGenericServlet](#自定义Servlet抽象类MyGenericServlet)
         - [使用GenericServlet](#使用GenericServlet)
@@ -1072,6 +1073,96 @@
     - html的结果
         - 因为设定了响应方式为`application/vnd.ms-excel`，所以没有http响应信息，**浏览器会自动下载一个excel文件**
         - ![servletResponse_html](./imgs/webbase/servlet/servletResponse_html.png)
+
+## Request和Response的包装类HttpServletXXXXXWrapper
+[top](#catalog)
+- 为什么要使用包装类：方便扩展对象的功能
+- 扩展对象产生的问题及分析：**以Request为例**
+    - 问题场景：在转发和重定向之前，需要操作请求参数，然后在做转发和重定向
+    - 出现的问题
+        1. reuqest中没有`setParamter`方法，无法重新设定请求参数
+        2. HttpServletRequset是一个接口，无法通过重写getParamter来改变获取方式
+        3. 在Tomcat中reuqest的实际类型是：`RequestFacade`，但是不能直接继承并重写，这样会和Servlet容器的实现相耦合，如果容器被替换了会导致服务会无法使
+
+    - 问题的解决方法：装饰现有的request对象
+        - 创建一个类，该类实现HttpServletRequest接口
+        - 把当前doFilter中的request传给该类，作为类的**成员变量**
+        - 使用这个成员变量来完成接口中的各种方法，并且可以在需要扩展的方法中添加处理代码
+
+    - 手动提供实现的问题：HttpServletRequest、HttpServletResponse接口中的方法过多，实现起来比较麻烦
+      
+- Servlet提供了装饰类`HttpServletRequestWrapper`、`HttpServletResponseWrapper`供开发使用
+    - 类实现了接口中的所有方法，并且实现内容也只是调用包装的request/response对象来实现的
+    - 开发时，直接继承包装类，提供构造器，并重写需要扩展的方法即可，比手动实现接口更方便
+
+- 示例：**以Request为例**
+    - 实现内容
+        - 通过继承包装类来扩展request的功能，在getParamter时，为原有的请求参数添加一些额外的字符
+    - 包装类
+        - MyHttpServletRequest.java : [/java/mylearn/weblearn/src/main/java/com/ljs/test/reqwrapper/MyHttpServletRequest.java](/java/mylearn/weblearn/src/main/java/com/ljs/test/reqwrapper/MyHttpServletRequest.java)
+
+            ```java
+            public class MyHttpServletRequest extends HttpServletRequestWrapper {
+                /**
+                * Constructs a request object wrapping the given request.
+                *
+                * @param request
+                * @throws IllegalArgumentException if the request is null
+                */
+                public MyHttpServletRequest(HttpServletRequest request) {
+                    super(request);
+                }
+
+                //修改获取paramter的方式，获取时，添加一些额外的文字
+                @Override
+                public String getParameter(String name) {
+                    String parameter = super.getParameter(name);
+                    return "before " + parameter + " end";
+                }
+            }
+            ```
+    - Servlet：需要在Servlet内部手动示例化包装类对象，才能使用
+        - WrapperServlet.java : [/java/mylearn/weblearn/src/main/java/com/ljs/test/reqwrapper/WrapperServlet.java](/java/mylearn/weblearn/src/main/java/com/ljs/test/reqwrapper/WrapperServlet.java)
+
+            ```java
+            @Override
+            protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+                //实例化自定义包装类
+                MyHttpServletRequest myreq = new MyHttpServletRequest(req);
+                //将请求转发到hello.jsp
+                req.getRequestDispatcher("/reqwrapper/hello.jsp").forward(myreq, resp);
+            }
+            ```
+    - JSP
+        - [/java/mylearn/weblearn/src/main/webapp/reqwrapper/login.jsp](/java/mylearn/weblearn/src/main/webapp/reqwrapper/login.jsp)
+
+            ```html
+            <%
+                String contextPath = request.getContextPath();
+            %>
+
+            <form action="<%=contextPath%>/reqwrapper/wrapperServlert" method="post">
+                username:<input type="text" name="username">
+                <br>
+                <input type="submit" value="Login">
+            </form>
+            ```
+        - [/java/mylearn/weblearn/src/main/webapp/reqwrapper/hello.jsp](/java/mylearn/weblearn/src/main/webapp/reqwrapper/hello.jsp)
+
+            ```html
+            <h3>hello page</h3>
+
+            username: <%=request.getParameter("username")%>
+            ```
+    - 测试结果
+        - 入口 : http://localhost:8080/weblearn_war_exploded/reqwrapper/login.jsp
+        - 进入登录页面，随意输入字符串并点击login
+            - ![request_wrapper_html_01](./imgs/webbase/reqwrapper/request_wrapper_html_01.png)
+        - 经过Servlet转发到hello.jsp，
+            - 在JSP中获取到的是自定义类型MyHttpServletRequest的实例
+            - 从request获取请求参数时，分别在首尾附加了字符串before和end
+            - ![request_wrapper_html_02](./imgs/webbase/reqwrapper/request_wrapper_html_02.png)
+
 
 ## 抽象类GenericServlet
 ### 自定义Servlet抽象类MyGenericServlet
@@ -6332,7 +6423,84 @@ pageContext, request, session, application
             - 因为session中没用用户数据，所以直接被重定向到login.jsp
             - <img src="./imgs/webbase/filter/sample/authority/filter_user_09.png" height="30%" width="30%">
 
+## Filter应用-为过滤字符
+[top](#catalog)
+- 开发论坛模块或发帖时要解决以下2个问题
+    1. 用户回复或发帖时，可能回输入HTML代码，这回破坏论坛的正常显示，也可能回带来安全隐患
+    2. 某些用户在回复时，可能会出现不雅文字，
     
+- 实现思路
+    1. 在Filter中重新包装request，扩展`getParamter`方法，在获取时对请求中的字符进行检查于替换
+    2. 使用包装后的request来放行请求
+
+- 实现内容
+    - 包装类
+        - TextFilterServletRequest.java : [/java/mylearn/weblearn/src/main/java/com/ljs/test/filter/sample/reqparam/TextFilterServletRequest.java](/java/mylearn/weblearn/src/main/java/com/ljs/test/filter/sample/reqparam/TextFilterServletRequest.java)
+
+            ```java
+            @Override
+            public String getParameter(String name) {
+                String parameter = super.getParameter(name);
+                //过滤字符：xxx
+                if (parameter.contains("xxx")){
+                    parameter = parameter.replaceAll("xxx", "***");
+                }
+                return parameter;
+            }
+            ```
+
+    - Filter
+        - TextFilter.java : [/Users/liujinsuo/myGit/memobook/java/mylearn/weblearn/src/main/java/com/ljs/test/filter/sample/reqparam/TextFilter.java](/Users/liujinsuo/myGit/memobook/java/mylearn/weblearn/src/main/java/com/ljs/test/filter/sample/reqparam/TextFilter.java)
+
+            ```java
+            @Override
+            public void doFilter(HttpServletRequest req, HttpServletResponse resp, FilterChain chain) throws IOException, ServletException {
+                //使用自定义HttpServletRequest类来包装req
+                chain.doFilter(new TextFilterServletRequest(req), resp);
+            }
+            ```
+
+    - JSP
+        - 文字输入页面，input.jsp : [/java/mylearn/weblearn/src/main/webapp/filter/sample/reqparam/input.jsp](/java/mylearn/weblearn/src/main/webapp/filter/sample/reqparam/input.jsp)
+
+            ```html
+            <h3>Input Page</h3>
+
+            <form action="show.jsp" method="post" >
+                input:<textarea rows="10" cols="10" name="text"></textarea>
+                <br>
+                <br>
+                <input type="submit" value="submit">
+            </form>
+            ```
+
+        - 显示页面，show.jsp : [/java/mylearn/weblearn/src/main/webapp/filter/sample/reqparam/show.jsp](/java/mylearn/weblearn/src/main/webapp/filter/sample/reqparam/show.jsp)
+
+            ```html
+            <h3>Show Page</h3>
+            input:
+            <br>
+            <%= request.getParameter("text") %>
+            ```
+    - web.xml
+        ```xml
+        <!--25-->
+        <!--过滤字符测试-->
+        <filter>
+            <filter-name>textFilter</filter-name>
+            <filter-class>com.ljs.test.filter.sample.reqparam.TextFilter</filter-class>
+        </filter>
+        <filter-mapping>
+            <filter-name>textFilter</filter-name>
+            <url-pattern>/filter/sample/reqparam/show.jsp</url-pattern>
+        </filter-mapping>
+        ```
+    - 执行结果
+        - 入口：http://localhost:8080/weblearn_war_exploded/filter/sample/reqparam/input.jsp
+        - 输入文字，并提交
+            - <img src="./imgs/webbase/filter/sample/reqparam/textfilter_html_request_01.png" height=20% width=20%/>
+        - 跳转到显示页面，替换了指定文字
+            - <img src="./imgs/webbase/filter/sample/reqparam/textfilter_html_request_02.png" height=30% width=30%/>
 
 # JavaWeb开发中的路径问题
 [top](#catalog)
