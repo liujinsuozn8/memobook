@@ -109,7 +109,6 @@
         - [JSTL核心标签库-流程控制](#JSTL核心标签库-流程控制)
         - [JSTL核心标签库-迭代操作](#JSTL核心标签库-迭代操作)
         - [JSTL核心标签库-URL操作](#JSTL核心标签库-URL操作)
-
 - [Filter过滤器](#Filter过滤器)
     - [Filter过滤器简介](#Filter过滤器简介)
     - [Filter程序的开发](#Filter程序的开发)
@@ -121,7 +120,10 @@
     - [示例-使用Filter链拦截登录](#示例-使用Filter链拦截登录)
     - [自定义HttpFilter来提高开发效率](#自定义HttpFilter来提高开发效率)
     - [Filter配置的dispatcher节点](#Filter配置的dispatcher节点)
-- [](#)
+    - [Filter的应用-字符编码过滤器](#Filter的应用-字符编码过滤器)
+    - [Filter的应用-使浏览器不缓存页面的过滤器](#Filter的应用-使浏览器不缓存页面的过滤器)
+    - [Filter的应用-Filter权限控制](#Filter的应用-Filter权限控制)
+
 - [](#)
 - [](#)
 - [](#)
@@ -5954,6 +5956,384 @@ pageContext, request, session, application
         - 进入异常页面，显示异常信息，并在控制台打印出Filter信息
         - ![error_html](./imgs/webbase/filter/dispatcher/error_html.png)
 
+## Filter的应用-字符编码过滤器
+[top](#catalog)
+- 如果请求参数中有中文，则在Servlet/JSP中获取时，需要先使用`request.setCharacterEncoding("UTF-8")`设定编码，如果页面很多维护会很麻烦
+- 可以使用Filter，通过`/*`的路径配置拦截所有页面，为所有页面设置调用`request.setCharacterEncoding("UTF-8")`
+- 为了修改方便一般会通过web.xml配置web应用参数来指定encoding
+- 示例
+    - Filter
+        - EncodingFilter.java [/java/mylearn/weblearn/src/main/java/com/ljs/test/filter/sample/encoding/EncodingFilter.java](/java/mylearn/weblearn/src/main/java/com/ljs/test/filter/sample/encoding/EncodingFilter.java)
+
+            ```java
+            public class EncodingFilter extends HttpFilter {
+                private String encoding;
+
+                @Override
+                public void init() {
+                    encoding = getFilterConfig().getServletContext().getInitParameter("encoding");
+                }
+
+                @Override
+                public void doFilter(HttpServletRequest req, HttpServletResponse resp, FilterChain chain) throws IOException, ServletException {
+                    System.out.println(encoding);
+                    // 为所有页面设置字符编码
+                    req.setCharacterEncoding(encoding);
+                    chain.doFilter(req, resp);
+                }
+            }
+            ```
+    - web.xml
+        - [/java/mylearn/weblearn/src/main/webapp/WEB-INF/web.xml](/java/mylearn/weblearn/src/main/webapp/WEB-INF/web.xml)
+
+            ```xml
+            <!--配置Web应用的编码-->
+            <context-param>
+                <param-name>encoding</param-name>
+                <param-value>UTF-8</param-value>
+            </context-param>
+            <!--编码过滤器-->
+            <filter>
+                <filter-name>encodingFilter</filter-name>
+                <filter-class>com.ljs.test.filter.sample.encoding.EncodingFilter</filter-class>
+            </filter>
+            <filter-mapping>
+                <filter-name>encodingFilter</filter-name>
+                <url-pattern>/filter/sample/encoding/*</url-pattern>
+            </filter-mapping>
+            ```
+    - JSP
+        - [/java/mylearn/weblearn/src/main/webapp/filter/sample/encoding/a.jsp](/java/mylearn/weblearn/src/main/webapp/filter/sample/encoding/a.jsp)
+            ```html
+            <h3>AAA page</h3>
+
+            param.name = ${param.name}
+            ```
+        - [/java/mylearn/weblearn/src/main/webapp/filter/sample/encoding/b.jsp](/java/mylearn/weblearn/src/main/webapp/filter/sample/encoding/b.jsp)
+            ```html
+            <h3>BBB page</h3>
+
+            param.name = ${param.name}
+            ```
+    - 测试URL
+        - 需要附加请求参数
+        - http://localhost:8080/weblearn_war_exploded/filter/sample/encoding/a.jsp?name=中文测试
+        - http://localhost:8080/weblearn_war_exploded/filter/sample/encoding/b.jsp?name=中文测试
+
+## Filter的应用-使浏览器不缓存页面的过滤器
+[top](#catalog)
+- 通过三个**响应头**字段来禁止浏览器缓存当前页面
+    - `response.serDateHeader("Expires", -1)`
+    - `response.setHeader("Cache-Control", "no-cache")`
+    - `response.setHeader("Pragma", "no-cache")`
+- 不是所有的浏览器都支持这三个字段，最好全都设定
+- 过滤器
+    - CacheFilter.java : [/java/mylearn/weblearn/src/main/java/com/ljs/test/filter/sample/cache/CacheFilter.java](/java/mylearn/weblearn/src/main/java/com/ljs/test/filter/sample/cache/CacheFilter.java)
+- JSP
+    - [/java/mylearn/weblearn/src/main/webapp/filter/sample/cache/a.jsp](/java/mylearn/weblearn/src/main/webapp/filter/sample/cache/a.jsp)
+    - [/java/mylearn/weblearn/src/main/webapp/filter/sample/cache/b.jsp](/java/mylearn/weblearn/src/main/webapp/filter/sample/cache/b.jsp)
+
+- 测试思路
+    1. 从a.jsp通过链接跳转到b.jsp，显示图片pic.png
+    2. 然后从b.jsp通过链接跳转到a.jsp
+    3. 修改b.jsp的图片为pic2.png
+    4. 再次进入b.jsp，没有使用缓存，重新获取了图片
+
+## Filter的应用-Filter权限控制
+[top](#catalog)
+- 基本需求分析
+    - 权限管理
+        - 管理权限
+            - 查看某人的权限
+            - 修改某人的权限
+        - 对访问进行权限控制：有权限则可以访问，否则提示：`没有权限，请返回`
+    - 权限过滤
+        - 从登录页面进行登录
+        - 登录后跳转到详细页面，显示所有的链接
+        - 点击链接进行跳转，使用Filter进行过滤，获取请求地址，并在用户详细中检查。
+            - 如果有权限，则放行
+            - 如果没有权限则重定向到异常页面
+
+- 实现思路
+    - 管理权限
+        - 辅助类
+            - 封装权限信息：Authority
+                - 包含：url、显示的权限名
+            - 封装用户信息：User
+                - 包含：用户名、所有的权限信息Authority
+            - 创建一个UserDao
+                - get 获取用户信息
+                - update(name，Authority) 更新
+                - 没有真是的数据库链接，全部使用静态数据
+        - 页面
+            - authority-manager.jsp:
+                - 两个form，分别负责检索，和更新
+                - 检索form
+                    - 有一个文本框，输入username后，提交检索
+                    - 解析返回的信息并显示在更新form中
+                        - 分别显示用户信息和权限信息
+                - 更新form
+                    - 通过checkbox显示权限信息，并进行更新
+                - 检查request中是否有user信息，若有，则显示 ：`用户名 的权限为：`，对应的权限的checkbox被选中，
+        - ControllerServlet
+            - authority-manager.jsp 提交表单后获取表单请求的uesrname，
+            再根据username获取user信息，把user放入到request中，再转发到authority-manager.jsp
+            - authority-manager.jsp 修改权限
+                - 提交表单后，获取请求参数：username，authority（多个值），把选项封装为List
+                - 调用UserDao的update()方法实现权限的修改，再重定向到authority-manager.jsp
+        
+- 权限过滤
+    - 页面
+        - 在login.jsp页面进行登录
+            - 成功则将用户信息保存到session中，在Filter中进行使用，并跳转到pageList.jsp
+            - 失败则转发回login.jsp，显示错误信息
+        - 在pageList.jsp页面显示所有的链接
+            - 点击链接可以进行跳转
+            - 也可以logout
+    - Filter
+        - 使用Filter对pageList.jsp中的链接进行拦截，检查当前用户是否具有访问权限
+        - 从session中获取用户信息
+        - **如果没有获取到说明，则表示还没有登录，重定向到登录画面**
+        - 检查当前请求的ServletPath在用户信息中是否具有访问权限
+            - 如果用户有权限，则响应
+            - 如果没有没有，则重定向到403.jsp
+
+- 实现内容
+    - 所有代码保存在
+        - /java/mylearn/weblearn/src/main/webapp/filter/sample/authority
+        - /java/mylearn/weblearn/src/main/java/com/ljs/test/filter/sample/authority
+    - ControllerServlet
+        - ControllerServlet.java : [/java/mylearn/weblearn/src/main/java/com/ljs/test/filter/sample/authority/controller/ControllerServlet.java](/java/mylearn/weblearn/src/main/java/com/ljs/test/filter/sample/authority/controller/ControllerServlet.java)
+
+            ```java
+            //获取用户信息
+            private void get(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+                //从请求参数中获取用户名
+                String username = req.getParameter("username");
+                User user = dao.get(username);
+                if (user == null){
+                    req.setAttribute("msg", "username is not exists");
+                } else {
+                    //如果用户数据获取成功，保存信息，并获取通用权限数据
+                    req.setAttribute("user", user);
+                    List<Authority> authorities = UserDao.getCommonAuthorities();
+                    req.setAttribute("commonAuthorities", authorities);
+                }
+
+                //重新转发到authorityManage页面
+                req.getRequestDispatcher("/filter/sample/authority/authorityManage.jsp").forward(req, resp);
+            }
+
+            //更新用户信息
+            private void update(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+                // 从req中获取请求参数
+                String username = req.getParameter("username");
+                String[] selectedUrls = req.getParameterValues("selectedUrls");
+
+                //获取通用权限信息
+                List<Authority> commonAuthorities = UserDao.getCommonAuthorities();
+
+                //根据请求参数，从通用权限信息中获取需要更新的数据
+                List<Authority> updateAuthorities = new ArrayList<>();
+                for (String url : selectedUrls) {
+                    for (Authority common : commonAuthorities) {
+                        //如果匹配则保存
+                        if (common.getUrl().equals(url)){
+                            updateAuthorities.add(common);
+                            break;
+                        }
+                    }
+                }
+
+                // 更新用户信息
+                dao.update(username, updateAuthorities);
+
+                //重新转发到authorityManage页面
+                req.getRequestDispatcher("/filter/sample/authority/authorityManage.jsp").forward(req, resp);
+            }
+
+            // 登录
+            public void login(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException{
+                String username = req.getParameter("username");
+                User userInfo = dao.get(username);
+
+                if (userInfo == null){
+                    // 失败则转发回login.jsp，显示错误信息
+                    req.setAttribute("msg", "user is not exists");
+                    req.getRequestDispatcher("/filter/sample/authority/login.jsp").forward(req, resp);
+                } else {
+                    // 成功则将用户信息保存到session中，并跳转到pageList.jsp
+                    HttpSession session = req.getSession();
+                    session.setAttribute("userInfo", userInfo);
+
+                    resp.sendRedirect(req.getContextPath() + "/filter/sample/authority/pageList.jsp");
+                }
+            }
+            ```
+    - Filter
+        - UserFilter.java : [/java/mylearn/weblearn/src/main/java/com/ljs/test/filter/sample/authority/filters/UserFilter.java](/java/mylearn/weblearn/src/main/java/com/ljs/test/filter/sample/authority/filters/UserFilter.java)
+
+            ```java
+            @Override
+            public void doFilter(HttpServletRequest req, HttpServletResponse resp, FilterChain chain) throws IOException, ServletException {
+                // 从session中获取用户信息
+                HttpSession session = req.getSession();
+                User userInfo = (User) session.getAttribute("userInfo");
+
+                //首先检查session是否存在信息，如果不存在则重定向到登录页面
+                if (userInfo == null){
+                    resp.sendRedirect(req.getContextPath() + "/filter/sample/authority/login.jsp");
+                    return;
+                }
+
+                //从请求中获取servlet路径
+                String servletPath = req.getServletPath();
+
+                //在用户的权限信息中搜索servlet路径
+                boolean hasAuthority = false;
+                for (Authority authority : userInfo.getAuthorities()) {
+                    if (authority.getUrl().equals(servletPath)){
+                        hasAuthority = true;
+                        break;
+                    }
+                }
+
+                // 如果存在，则放行
+                if (hasAuthority){
+                    chain.doFilter(req,resp);
+                } else {
+                    // 不存在则重定向到403.jsp
+                    resp.sendRedirect(req.getContextPath() + "/filter/sample/authority/403.jsp");
+                }
+            }
+            ```
+
+    - 主要JSP
+        - 权限管理，authorityManage.jsp：[/java/mylearn/weblearn/src/main/webapp/filter/sample/authority/authorityManage.jsp](/java/mylearn/weblearn/src/main/webapp/filter/sample/authority/authorityManage.jsp)
+
+            ```html
+            <h3>Manage Page</h3>
+
+            <%--1. 查询form--%>
+            <%--查询成功后，将结果显示在：更新form中--%>
+            <form action="${pageContext.request.contextPath}/authority/authorityController?method=get" method="post">
+            <%--    如果用户名异常则显示异常信息--%>
+                <c:if test="${!empty requestScope.msg}">
+                    <label style="color: red">${requestScope.msg}</label>
+                    <br>
+                </c:if>
+
+                username:<input type="text" name="username">
+                <br>
+                <input type="submit" value="Search">
+            </form>
+
+            <%--2. 更新form--%>
+            <%--判断是否获取成功--%>
+            <c:if test="${!empty requestScope.user}">
+                <form action="${pageContext.request.contextPath}/authority/authorityController?method=update" method="post">
+                    <input type="hidden" name="username" value="${requestScope.user.username}">
+                    authority of user: ${requestScope.user.username}
+                    <br>
+            <%--        循环user.authorities 获取有效的权限，并将对应权限的check选中--%>
+            <%--        先循环通用权限数据--%>
+                    <c:forEach items="${requestScope.commonAuthorities}" var="commonNode">
+
+            <%--            再循环用户权限数据，并和通用权限数据进行匹配--%>
+                        <c:set var="flg" value="false"/>
+                        <c:forEach items="${requestScope.user.authorities}" var="node">
+                            <c:if test="${commonNode.displayName == node.displayName}">
+                                <c:set var="flg" value="true"/>
+                            </c:if>
+                        </c:forEach>
+
+            <%--            如果权限数据之间匹配成功，则选中对应的checkbox--%>
+                        <c:if test="${flg == true}">
+                            <input type="checkbox" name="selectedUrls" value="${commonNode.url}" checked="checked"/>${commonNode.displayName}
+                        </c:if>
+                        <c:if test="${flg == false}">
+                            <input type="checkbox" name="selectedUrls" value="${commonNode.url}"/>${commonNode.displayName}
+                        </c:if>
+                        <br>
+                    </c:forEach>
+                    
+                    <input type="submit" value="Update">
+                </form>
+            </c:if>
+
+            <br>
+
+            <a href="${pageContext.request.contextPath}/filter/sample/authority/index.jsp">to index page</a>
+            ```
+
+    - web.xml
+        ```xml
+          <!--23-->
+        <!--权限管理测试-->
+        <servlet>
+            <servlet-name>authorityController</servlet-name>
+            <servlet-class>com.ljs.test.filter.sample.authority.controller.ControllerServlet</servlet-class>
+        </servlet>
+        <servlet-mapping>
+            <servlet-name>authorityController</servlet-name>
+            <url-pattern>/authority/authorityController</url-pattern>
+        </servlet-mapping>
+        <!--权限过滤测试-->
+        <filter>
+            <filter-name>userAuthorityFilter</filter-name>
+            <filter-class>com.ljs.test.filter.sample.authority.filters.UserFilter</filter-class>
+        </filter>
+        <filter-mapping>
+            <filter-name>userAuthorityFilter</filter-name>
+            <url-pattern>/filter/sample/authority/pages/*</url-pattern>
+        </filter-mapping>
+        ```
+
+- 页面结果
+    - 入口：http://localhost:8080/weblearn_war_exploded/filter/sample/authority/index.jsp
+    - 入口页面
+        - <img src="imgs/webbase/filter/sample/authority/index.png" height="30%" width="30%">
+    - 权限管理测试
+        - 点击链接进入权限管理页面
+            - <img src="imgs/webbase/filter/sample/authority/manage_01.png" height="30%" width="30%">
+        - 输入一个不存在的用户
+            - <img src="imgs/webbase/filter/sample/authority/manage_02.png" height="30%" width="30%">
+        - 页面输出异常信
+            - <img src="imgs/webbase/filter/sample/authority/manage_03.png" height="30%" width="30%">
+        - 输入一个存在的用户
+            - <img src="imgs/webbase/filter/sample/authority/manage_04.png" height="30%" width="30%">
+        - 输出用户的权限信息
+            - <img src="imgs/webbase/filter/sample/authority/manage_05.png" height="30%" width="30%">
+        - 修改权限信息
+            - <img src="imgs/webbase/filter/sample/authority/manage_06.png" height="30%" width="30%">
+        - 点击更新，重新检索
+            - <img src="imgs/webbase/filter/sample/authority/manage_07.png" height="30%" width="30%">
+        - 更新成功
+            - <img src="imgs/webbase/filter/sample/authority/manage_08.png" height="30%" width="30%">
+    - 权限过滤测试
+        - 点击链接进入用户登录页面
+            - <img src="./imgs/webbase/filter/sample/authority/filter_user_01.png" height="30%" width="30%">
+        - 输入一个不存在的用户
+            - <img src="./imgs/webbase/filter/sample/authority/filter_user_02.png" height="30%" width="30%">
+        - 输入一个存在的用户进行登录
+            - <img src="./imgs/webbase/filter/sample/authority/filter_user_03.png" height="30%" width="30%">
+        - 登录成功，当前用户BBB的权限是：page1，page3，page4 可用，page2不可用
+            - <img src="./imgs/webbase/filter/sample/authority/filter_user_04.png" height="30%" width="30%">
+        - 点击第一个链接，跳转成功
+            - <img src="./imgs/webbase/filter/sample/authority/filter_user_05.png" height="30%" width="30%">
+        - 点击第二个链接，没有权限，跳转到403.jsp
+            - <img src="./imgs/webbase/filter/sample/authority/filter_user_06.png" height="30%" width="30%">
+        - 点击第三个链接，跳转成功
+            - <img src="./imgs/webbase/filter/sample/authority/filter_user_07.png" height="30%" width="30%">
+        - 点击第四个链接，跳转成功
+            - <img src="./imgs/webbase/filter/sample/authority/filter_user_08.png" height="30%" width="30%">
+        - 通过logout**登出用户**，并通过地址直接访问page1
+            - http://localhost:8080/weblearn_war_exploded/filter/sample/authority/pages/page1.jsp
+            - 因为session中没用用户数据，所以直接被重定向到login.jsp
+            - <img src="./imgs/webbase/filter/sample/authority/filter_user_09.png" height="30%" width="30%">
+
+    
+
 # JavaWeb开发中的路径问题
 [top](#catalog)
 - 实际开发时尽量使用绝对路径，写绝对路径不会有问题，写相对路径有时会有问题
@@ -6025,4 +6405,9 @@ pageContext, request, session, application
 -  什么时候会创建新的session
 - StringWriter ?????
 - curl的实现
+- 服务器端页面的缺点
+    - 浏览器太闲，服务器太忙
+    - 很多数据在每次响应时，都需要重新并在页面上重新渲染，很浪费时间
+    - 当前的mvc框架中存在过多的内部转发与重定向
+    - JSP上的解析逻辑还是比较复杂
 [top](#catalog)
