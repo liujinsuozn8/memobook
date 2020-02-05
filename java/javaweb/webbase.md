@@ -124,8 +124,8 @@
     - [Filter的应用-字符编码过滤器](#Filter的应用-字符编码过滤器)
     - [Filter的应用-使浏览器不缓存页面的过滤器](#Filter的应用-使浏览器不缓存页面的过滤器)
     - [Filter的应用-Filter权限控制](#Filter的应用-Filter权限控制)
+    - [Filter应用-为过滤字符](#Filter应用-为过滤字符)
 
-- [](#)
 - [](#)
 - [](#)
 - [](#)
@@ -6501,6 +6501,68 @@ pageContext, request, session, application
             - <img src="./imgs/webbase/filter/sample/reqparam/textfilter_html_request_01.png" height=20% width=20%/>
         - 跳转到显示页面，替换了指定文字
             - <img src="./imgs/webbase/filter/sample/reqparam/textfilter_html_request_02.png" height=30% width=30%/>
+
+
+# Servlet监听器Listener
+## Servlet监听器简介
+[top](#catalog)
+- 监听器：用于对其他对象身上发生的事件或状态改变进行监听和相应处理的对象，当被监视对象发生某些情况时立即采取相应的行动
+- Servlet监听器：Servlet规范中定义的一种特殊类，
+    - 用于监听3个域对象：`ServletContext`、`HttpSession`、`ServletRequest`
+        - pageContext代表当前页面，监听的意义不大
+    - 监听器的分类
+        - 域对象`创建`、`销毁`的事件监听器
+        - 域对象`属性的添加和删除`的事件监听器
+        - 绑定到HttpSession域中的某个对象的状态的事件监听器
+
+## 编写监听器的步骤
+[top](#catalog)
+- 编写监听器
+    - 实现接口
+    - web.xml进行注册
+
+## 监听器接口分析
+[top](#catalog)
+- 各域对象的创建和销毁与其监听接口
+        
+    |域对象|监听接口|创建监听方法|监听|销毁监听方法|创建时机|销毁时机|
+    |-|-|-|-|-|-|
+    |ServletContext|ServlvetContextListener|`contextInitialize(ServletContextEvent sce)`|`contextDestroyed(ServletContextEvent sce)`|web服务器启动时为每个web应用程序创建相应的ServletContext对象|web服务器关闭时为每个web应用程序销毁相应的ServletContext对象|
+    |HttpSession|HttpSessionListener|`sessionCreated(HttpSessionEvent se)`<br>reuqest对象被创建之后触发|` sessionDestoryed(HttpSessionEvent se)`<br>reuqest对象被销毁之前触发|浏览器开始与服务器会话时创建|1. 调用`HttpSession.invalidate()`<br>超过最大存活事件<br>服务进程被停止|
+    |ServletRequest|ServletRequestListener|`requestInitialized(ServletRequestEvent sre)`|`requestDestoryed(ServletRequestEvent sre)`|每次请求开始时创建|每次访问结束后销毁|
+
+- 三节接口的功能基本相似，仅讨论最常用的`ServlvetContextListener`
+
+- ServlvetContextListener
+    - 最常用的监听器接口
+    - 监听ServletContext对象的创建、销毁
+    - 可以在Web应用加载时对当前Web应用的相关资源进行初始化操作，如
+        - 创建数据库连接池
+        - 创建Spring的IOC容器
+        - 读取当前Web应用的初始化参数
+    - 接口方法
+        - `contextInitialize(ServletContextEvent sce)`
+            - ServletContext对象被创建的时候，即当前Web应用被加载时(包括初始化，或者重新编译时)，Servlet容器调用该方法
+        - `contextDestroyed(ServletContextEvent sce)`
+            - ServletContext对象别销毁之前，即当前Web应用被卸载之前，Servlet容器调用该方法
+    - 事件参数：`HttpSessionEvent`类
+        - 类代码
+            ```java
+            public class ServletContextEvent extends java.util.EventObject { 
+            
+                public ServletContextEvent(ServletContext source) {
+                super(source);
+                }
+                
+                  // 获取ServletContext对象
+                public ServletContext getServletContext () { 
+            	return (ServletContext) super.getSource();
+                }
+            }
+            ```
+        
+    - 开发步骤：
+
 
 # JavaWeb开发中的路径问题
 [top](#catalog)
