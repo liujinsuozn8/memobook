@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<!--http请求learn-->
+<!--action需要与配置中的url-pattern相同-->
+<form action="loginServletHtml" method="post">
+<!--<form action="loginServletHtml" method="get">-->
+
+    <!--一个参数名对应一个参数-->
+    user: <input type="text" name="user">
+    password: <input type="password" name="password">
+
+    <br/><br/>
+    <!--一个参数名对应多个参数-->
+    interesting:
+    <input type="checkbox" name="interesting" value="reading"/>Reading
+    <input type="checkbox" name="interesting" value="game"/>Game
+    <input type="checkbox" name="interesting" value="party"/>party
+    <input type="checkbox" name="interesting" value="shopping"/>Shopping
+    <input type="checkbox" name="interesting" value="sport"/>Sport
+
+    <input type="submit" value="Submit">
+</form>
+</body>
+</html>

@@ -1,0 +1,15 @@
+- el表达式测试
+    - 语法测试
+    - step1.jsp，进行基本语法和el运算符的测试，可以跳转到step2.jsp，并附加请求参数score
+        - 入口:http://localhost:8080/weblearn_war_exploded/el/grammar/step1.jsp
+    - step2.jsp，进行基本语法的测试，和自动类型转换的测试
+        - 带参数的测试：http://localhost:8080/weblearn_war_exploded/el/grammar/step2.jsp?score=12
+    - elobject.jsp，el隐含对象测试
+        - 入口:http://localhost:8080/weblearn_war_exploded/el/grammar/elobject.jsp
+        - 带参数的测试：:http://localhost:8080/weblearn_war_exploded/el/grammar/elobject.jsp?name=newName&scores=10&scores=11&scores=12&scores=13
+    - operator.jsp，运算符测试
+        - 入口:http://localhost:8080/weblearn_war_exploded/el/grammar/operator.jsp
+
+- el 自定义函数测试
+    - el/function
+    - 入口：http://localhost:8080/weblearn_war_exploded/el/function/function.jsp

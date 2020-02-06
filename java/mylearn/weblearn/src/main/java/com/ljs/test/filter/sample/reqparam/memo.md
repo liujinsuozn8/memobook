@@ -1,0 +1,3 @@
+过滤并替换请求参数中的非法字符
+TextFilter 过滤器
+TextFilterServletRequest HttpServletRequest的包装类

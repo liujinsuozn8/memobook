@@ -1,0 +1,449 @@
+<!DOCTYPE web-app PUBLIC
+ "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
+ "http://java.sun.com/dtd/web-app_2_3.dtd" >
+
+<web-app>
+  <display-name>Archetype Created Web Application</display-name>
+  <!--配置当前web应用的初始化参数-->
+  <context-param>
+    <param-name>driver</param-name>
+    <param-value>con.mysql.jdbc.Driver</param-value>
+  </context-param>
+
+  <context-param>
+    <param-name>jdbcUrl</param-name>
+    <param-value>jdbc:mysq:127.0.0.1:3306</param-value>
+  </context-param>
+
+  <context-param>
+    <param-name>user</param-name>
+    <param-value>1234</param-value>
+  </context-param>
+  <context-param>
+    <param-name>password</param-name>
+    <param-value>qwer</param-value>
+  </context-param>
+
+  <!--配置和映射servlet-->
+
+  <!--配置一个servlet节点-->
+  <servlet>
+    <!--注册Servlet的名字-->
+    <servlet-name>helloServlet</servlet-name>
+    <!--Servlet的全类名-->
+    <servlet-class>com.ljs.test.HelloServlet</servlet-class>
+    <!--<load-on-startup>-1</load-on-startup>-->
+  </servlet>
+
+  <!--1-->
+  <!--映射-->
+  <servlet-mapping>
+    <!--需要和某个servlet节点的servlet-name相同-->
+    <servlet-name>helloServlet</servlet-name>
+    <!--'/'代表当前web应用的根目录,启动后通过localhost:8080/hs调用-->
+    <url-pattern>/hs</url-pattern>
+  </servlet-mapping>
+
+  <!--3-->
+  <!--一个Servlet多个映射-->
+  <!--url映射格式：*.扩展名-->
+  <servlet-mapping>
+    <!--需要和某个servlet节点的servlet-name相同-->
+    <servlet-name>helloServlet</servlet-name>
+    <!--'/'代表当前web应用的根目录,启动后通过localhost:8080/hs调用-->
+    <url-pattern>*.hs</url-pattern>
+  </servlet-mapping>
+
+  <!--2-->
+  <!--load-on-startup测试-->
+  <!--<servlet>-->
+  <!--  <servlet-name>secondServlet</servlet-name>-->
+  <!--  <servlet-class>com.ljs.test.SecondServlet</servlet-class>-->
+  <!--  <load-on-startup>2</load-on-startup>-->
+  <!--</servlet>-->
+
+  <!--<servlet-mapping>-->
+  <!--  <servlet-name>secondServlet</servlet-name>-->
+  <!--  <url-pattern>/ss</url-pattern>-->
+  <!--</servlet-mapping>-->
+
+
+  <!--4-->
+  <!--Servlet初始化参数-->
+  <servlet>
+    <servlet-name>paramInitServlet</servlet-name>
+    <servlet-class>com.ljs.test.ParamInitServlet</servlet-class>
+
+    <!--配置Servlet的初始化参数-->
+    <init-param>
+      <!--参数名-->
+      <param-name>user</param-name>
+      <!--参数值-->
+      <param-value>root</param-value>
+    </init-param>
+
+    <init-param>
+      <param-name>password</param-name>
+      <param-value>1234</param-value>
+    </init-param>
+
+    <load-on-startup>1</load-on-startup>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>paramInitServlet</servlet-name>
+    <url-pattern>/pis</url-pattern>
+  </servlet-mapping>
+
+  <!--5-->
+  <!--loginServlet-->
+  <servlet>
+    <servlet-name>loginServlet</servlet-name>
+    <servlet-class>com.ljs.test.myservlet.LoginServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>loginServlet</servlet-name>
+    <!--url和表单中的action名相同-->
+    <url-pattern>/myservlet/loginServletHtml</url-pattern>
+  </servlet-mapping>
+
+  <!--6-->
+  <!--GenericServlet 实现测试-->
+  <servlet>
+    <servlet-name>loginServlet2</servlet-name>
+    <servlet-class>com.ljs.test.myservlet.LoginServlet2</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>loginServlet2</servlet-name>
+    <url-pattern>/myservlet/loginResult2</url-pattern>
+  </servlet-mapping>
+
+  <!--7-->
+  <!--HttpServlet 实现测试-->
+  <servlet>
+    <servlet-name>loginServlet3</servlet-name>
+    <servlet-class>com.ljs.test.myservlet.LoginServlet3</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>loginServlet3</servlet-name>
+    <url-pattern>/myservlet/loginResult3</url-pattern>
+  </servlet-mapping>
+
+  <!--8-->
+  <!--将JSP文件配置为Servlet-->
+  <servlet>
+    <servlet-name>hellojsp</servlet-name>
+    <jsp-file>/hello.jsp</jsp-file>
+    <init-param>
+      <param-name>test</param-name>
+      <param-value>testValue</param-value>
+    </init-param>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>hellojsp</servlet-name>
+    <url-pattern>/hellojsp</url-pattern>
+  </servlet-mapping>
+
+  <!--9-->
+  <!--与对象属性作用域测试-->
+  <servlet>
+    <servlet-name>testAttr</servlet-name>
+    <servlet-class>com.ljs.test.attribute.TestAttr</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>testAttr</servlet-name>
+    <url-pattern>/attribute/testAttr</url-pattern>
+  </servlet-mapping>
+
+  <!--10-->
+  <!--转发和重定向测试-->
+  <!--目标Servlet-->
+  <servlet>
+    <servlet-name>testServlet</servlet-name>
+    <servlet-class>com.ljs.test.dispatcher.TestServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>testServlet</servlet-name>
+    <url-pattern>/dispatcher/testServlet</url-pattern>
+  </servlet-mapping>
+
+  <!--转发Servelt-->
+  <servlet>
+    <servlet-name>forwardServlet</servlet-name>
+    <servlet-class>com.ljs.test.dispatcher.ForwardServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>forwardServlet</servlet-name>
+    <url-pattern>/dispatcher/forwardServlet</url-pattern>
+  </servlet-mapping>
+
+  <!--重定向Servlet-->
+  <servlet>
+    <servlet-name>redirectServlet</servlet-name>
+    <servlet-class>com.ljs.test.dispatcher.RedirectServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>redirectServlet</servlet-name>
+    <url-pattern>/dispatcher/redirectServlet</url-pattern>
+  </servlet-mapping>
+
+  <!--11-->
+  <!--异常页面测试-->
+  <!--<error-page>-->
+  <!--  <error-code>404</error-code>-->
+  <!--  <location>/error.jsp</location>-->
+  <!--</error-page>-->
+
+
+  <!--12-->
+  <!--mvc 模式测试-->
+  <servlet>
+    <servlet-name>listAllStudents</servlet-name>
+    <servlet-class>com.ljs.test.mvc.ListAllStudents</servlet-class>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>listAllStudents</servlet-name>
+    <url-pattern>/mvc/listAllStudents</url-pattern>
+  </servlet-mapping>
+
+  <!--13-->
+  <!--mvc框架-->
+  <servlet>
+    <servlet-name>ControllerServlet</servlet-name>
+    <servlet-class>com.ljs.mvc.controller.ControllerServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>ControllerServlet</servlet-name>
+    <url-pattern>*.do</url-pattern>
+  </servlet-mapping>
+
+  <!--初始化配置读取-->
+  <servlet>
+    <servlet-name>initServlet</servlet-name>
+    <servlet-class>com.ljs.mvc.controller.InitServlet</servlet-class>
+    <load-on-startup>1</load-on-startup>
+  </servlet>
+
+  <!--14-->
+  <!--session 测试-->
+  <servlet>
+    <servlet-name>hasSession</servlet-name>
+    <servlet-class>com.ljs.test.session.hasSession</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>hasSession</servlet-name>
+    <url-pattern>/session/hasSession</url-pattern>
+  </servlet-mapping>
+
+  <servlet>
+    <servlet-name>noSession</servlet-name>
+    <servlet-class>com.ljs.test.session.noSession</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>noSession</servlet-name>
+    <url-pattern>/session/noSession</url-pattern>
+  </servlet-mapping>
+
+  <!--15-->
+  <!--session过期时间测试-->
+  <session-config>
+    <session-timeout>20</session-timeout>
+  </session-config>
+
+  <!--16-->
+  <!--session shopping 配置-->
+  <servlet>
+    <servlet-name>processStep1</servlet-name>
+    <servlet-class>com.ljs.test.session.shopping.ProcessStep1Servlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>processStep1</servlet-name>
+    <url-pattern>/processStep1</url-pattern>
+  </servlet-mapping>
+
+  <servlet>
+    <servlet-name>processStep2</servlet-name>
+    <servlet-class>com.ljs.test.session.shopping.ProcessStep2Servlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>processStep2</servlet-name>
+    <url-pattern>/processStep2</url-pattern>
+  </servlet-mapping>
+
+  <!--17-->
+  <!--重复提交 测试-->
+  <servlet>
+    <servlet-name>resubmitTest</servlet-name>
+    <servlet-class>com.ljs.test.session.resubmit.ReSubmitTestServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>resubmitTest</servlet-name>
+    <url-pattern>/resubmitTest</url-pattern>
+  </servlet-mapping>
+
+  <!--18-->
+  <!--注册Filter-->
+  <!--创建Filter节点-->
+  <filter>
+    <filter-name>helloFilter</filter-name>
+    <filter-class>com.ljs.test.filter.introduct.HelloFilter</filter-class>
+     <init-param>
+       <param-name>name</param-name>
+       <param-value>root</param-value>
+     </init-param>
+  </filter>
+  <filter-mapping>
+    <filter-name>helloFilter</filter-name>
+    <!--配置需要拦截的url-->
+    <url-pattern>/filter/introduct/test.jsp</url-pattern>
+  </filter-mapping>
+
+  <filter>
+    <filter-name>secondFilter</filter-name>
+    <filter-class>com.ljs.test.filter.introduct.SecondFilter</filter-class>
+  </filter>
+
+  <!--配置Filter节点的映射-->
+  <!--配置多个拦截相同url的filter映射，来构成一个filter链-->
+  <filter-mapping>
+    <filter-name>secondFilter</filter-name>
+    <url-pattern>/filter/introduct/test.jsp</url-pattern>
+  </filter-mapping>
+
+  <!--19-->
+  <filter>
+    <filter-name>userNameFilter</filter-name>
+    <filter-class>com.ljs.test.filter.sample.login.UserNameFilter</filter-class>
+    <init-param>
+      <param-name>username</param-name>
+      <param-value>root</param-value>
+    </init-param>
+  </filter>
+
+  <filter>
+    <filter-name>passwordFilter</filter-name>
+    <filter-class>com.ljs.test.filter.sample.login.PasswordFilter</filter-class>
+  </filter>
+
+  <filter-mapping>
+    <filter-name>userNameFilter</filter-name>
+    <url-pattern>/filter/sample/login/hello.jsp</url-pattern>
+  </filter-mapping>
+
+  <filter-mapping>
+    <filter-name>passwordFilter</filter-name>
+    <url-pattern>/filter/sample/login/hello.jsp</url-pattern>
+  </filter-mapping>
+
+  <!--dispatcher 配置测试-->
+  <filter>
+    <filter-name>testPatcherFilter</filter-name>
+    <filter-class>com.ljs.test.filter.dispatcher.TestPatcherFilter</filter-class>
+  </filter>
+
+  <filter-mapping>
+    <filter-name>testPatcherFilter</filter-name>
+    <url-pattern>/filter/dispatcher/test.jsp</url-pattern>
+    <dispatcher>REQUEST</dispatcher>
+    <dispatcher>FORWARD</dispatcher>
+  </filter-mapping>
+
+  <filter-mapping>
+    <filter-name>testPatcherFilter</filter-name>
+    <url-pattern>/filter/dispatcher/test2.jsp</url-pattern>
+  </filter-mapping>
+
+  <!--20-->
+  <!--配置error页面-->
+  <error-page>
+    <exception-type>java.lang.ArithmeticException</exception-type>
+    <location>/WEB-INF/error.jsp</location>
+  </error-page>
+  <!--配置显示声明error的Filter-->
+  <filter-mapping>
+    <filter-name>testPatcherFilter</filter-name>
+    <!-- 路径需要和error-page下location中的路径相同 -->
+    <url-pattern>/WEB-INF/error.jsp</url-pattern>
+    <dispatcher>ERROR</dispatcher>
+  </filter-mapping>
+
+  <!--21-->
+  <!--配置Web应用的编码-->
+  <context-param>
+    <param-name>encoding</param-name>
+    <param-value>UTF-8</param-value>
+  </context-param>
+  <!--编码过滤器-->
+  <filter>
+    <filter-name>encodingFilter</filter-name>
+    <filter-class>com.ljs.test.filter.sample.encoding.EncodingFilter</filter-class>
+  </filter>
+  <filter-mapping>
+    <filter-name>encodingFilter</filter-name>
+    <url-pattern>/filter/sample/encoding/*</url-pattern>
+  </filter-mapping>
+
+  <!--22-->
+  <!--使浏览器不缓存页面的过滤器-->
+  <filter>
+    <filter-name>cacheFilter</filter-name>
+    <filter-class>com.ljs.test.filter.sample.cache.CacheFilter</filter-class>
+  </filter>
+  <filter-mapping>
+    <filter-name>cacheFilter</filter-name>
+    <url-pattern>/sample/cache/*</url-pattern>
+  </filter-mapping>
+
+  <!--23-->
+  <!--权限管理测试-->
+  <servlet>
+    <servlet-name>authorityController</servlet-name>
+    <servlet-class>com.ljs.test.filter.sample.authority.controller.ControllerServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>authorityController</servlet-name>
+    <url-pattern>/authority/authorityController</url-pattern>
+  </servlet-mapping>
+  <!--权限过滤测试-->
+  <filter>
+    <filter-name>userAuthorityFilter</filter-name>
+    <filter-class>com.ljs.test.filter.sample.authority.filters.UserFilter</filter-class>
+  </filter>
+  <filter-mapping>
+    <filter-name>userAuthorityFilter</filter-name>
+    <url-pattern>/filter/sample/authority/pages/*</url-pattern>
+  </filter-mapping>
+
+  <!--24-->
+  <!--request包装类测试-->
+  <servlet>
+    <servlet-name>wrapperServlert</servlet-name>
+    <servlet-class>com.ljs.test.reqwrapper.WrapperServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>wrapperServlert</servlet-name>
+    <url-pattern>/reqwrapper/wrapperServlert</url-pattern>
+  </servlet-mapping>
+
+  <!--25-->
+  <!--过滤字符测试-->
+  <filter>
+    <filter-name>textFilter</filter-name>
+    <filter-class>com.ljs.test.filter.sample.reqparam.TextFilter</filter-class>
+  </filter>
+  <filter-mapping>
+    <filter-name>textFilter</filter-name>
+    <url-pattern>/filter/sample/reqparam/show.jsp</url-pattern>
+  </filter-mapping>
+
+  <!--26-->
+  <!--配置监听器-->
+  <listener>
+    <listener-class>com.ljs.test.listener.introduct.HelloServletContextListener</listener-class>
+  </listener>
+
+</web-app>
+
+

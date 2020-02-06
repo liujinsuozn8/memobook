@@ -1,0 +1,18 @@
+<%--
+  Created by IntelliJ IDEA.
+  User: ljs
+  Date: 2020/2/2
+  Time: 9:14 上午
+  To change this template use File | Settings | File Templates.
+--%>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<html>
+<head>
+    <title>Title</title>
+</head>
+<body>
+
+<h3>重复提交</h3>
+<a href="<%=request.getContextPath()%>/session/resubmit/index.jsp">to login</a>
+</body>
+</html>

@@ -1,0 +1,4 @@
+- javaBean标签测试
+    -  入口：
+        - http://localhost:8080/weblearn_war_exploded/useJavaBean/index.jsp
+        - 带有请求参数：http://localhost:8080/weblearn_war_exploded/useJavaBean/index.jsp?age=13&name=aaaa&id=34eee
