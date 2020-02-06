@@ -11,8 +11,9 @@
     - [Servlet容器的基本概念](#servlet容器的基本概念)
 - [web.xml的配置方法](#web.xml的配置方法)
     - [配置当前web应用的初始化参数](#配置当前web应用的初始化参数)
-    - [配置Servlet](#配置Servlet)
+    - [配置Servlet或JSP](#配置Servlet或JSP)
     - [配置Filter过滤器](#配置Filter过滤器)
+    - [配置监听器Listener](#配置监听器Listener)
     - [配置错误的响应页面](#配置错误的响应页面)
     - [配置示例](#配置示例)
 - [Servlet的使用](#Servlet的使用)
@@ -125,11 +126,15 @@
     - [Filter的应用-使浏览器不缓存页面的过滤器](#Filter的应用-使浏览器不缓存页面的过滤器)
     - [Filter的应用-Filter权限控制](#Filter的应用-Filter权限控制)
     - [Filter应用-为过滤字符](#Filter应用-为过滤字符)
-
-- [](#)
-- [](#)
-- [](#)
-- [](#)
+- [Servlet监听器Listener](#Servlet监听器Listener)
+    - [Servlet监听器简介](#Servlet监听器简介)
+    - [编写监听器的步骤](#编写监听器的步骤)
+    - [创建销毁监听器接口分析](#创建销毁监听器接口分析)
+    - [属性修改监听器分析](#属性修改监听器分析)
+    - [感知Session绑定的事件监听器](#感知Session绑定的事件监听器)
+        - [两种监听接口](#两种监听接口)
+        - [HttpSessionBingdingListener接口](#HttpSessionBingdingListener接口)
+        - [HttpSessionActivationListener接口](#HttpSessionActivationListener接口)
 - [](#)
 - [](#)
 - [](#)
@@ -325,7 +330,7 @@
     - `<param-name>`，初始化参数的参数名
     - `<param-value>`，初始化参数的参数值
 
-## 配置Servlet
+## 配置Servlet或JSP
 [top](#catalog)
 - 配置Servlet节点
     - `<servlet>`，注册一个Servlet节点
@@ -392,6 +397,19 @@
     - <label style="color:red">多个拦截相同url的Filter映射会自动构成Filter链，并且：`<filter-mapping>`的顺序决定了整个Filter链的顺序</label>
     - 配置
     
+## 配置监听器Listener
+[top](#catalog)
+- 共有三类Servlet监听器
+    - 域对象`创建`、`销毁`的事件监听器
+    - 域对象`属性的添加和删除`的事件监听器
+    - 绑定到HttpSession域中的某个对象的状态的事件监听器
+- 所有类型的监听器的配置方法都相同
+- 所有监听器都会监听所有的对象，并且无法将监听器与某个具体的Servlet对象绑定
+
+- 配置方法
+    - `<listener>`
+        - `<listener-class>`，监听器类的全类名
+
 
 ## 配置错误的响应页面
 [top](#catalog)
@@ -503,7 +521,7 @@
     <url-pattern>/filter/introduct/test.jsp</url-pattern>
 </filter-mapping>
 
-<!--6. dispatcher 配置测试-->
+<!--6. Filter 的 dispatcher 配置测试-->
 <filter>
     <filter-name>testPatcherFilter</filter-name>
     <filter-class>com.ljs.test.filter.dispatcher.TestPatcherFilter</filter-class>
@@ -516,18 +534,24 @@
     <dispatcher>FORWARD</dispatcher>
 </filter-mapping>
 
-<!--7. 配置error页面 的dispatcher-->
+<!--7. 配置error页面 Filter的dispatcher-->
+<!-- 7.1配置异常页面 -->
 <error-page>
     <exception-type>java.lang.ArithmeticException</exception-type>
     <location>/WEB-INF/error.jsp</location>
 </error-page>
-<!--配置显示声明error的Filter-->
+<!--7.2 配置显示声明error的Filter-->
 <filter-mapping>
     <filter-name>testPatcherFilter</filter-name>
     <!-- 路径需要和 error-page的location中的路径相同 -->
     <url-pattern>/WEB-INF/error.jsp</url-pattern> 
     <dispatcher>ERROR</dispatcher>
 </filter-mapping>
+
+<!-- 8. 配置监听器 -->
+<listener>
+<listener-c lass>com.ljs.test.listener.introduct.HelloServletContextListener</listener-class>
+</listener>
 ```
 
 
@@ -3325,7 +3349,7 @@ pageContext, request, session, application
 ## Cookie
 ### Cookie机制
 [top](#catalog)
-- 参考[memo.md#Cookie机制](/http/memo.md#Cookie机制)
+- 参考：[http/memo.md#Cookie机制](/http/memo.md#Cookie机制)
 - 两个要点
     1. Cookie机制是在<label style="color:red">客户端</label>保持HTTP状态信息的方案，<label style="color:red">是一种会话跟踪机制</label>
     2. <label style="color:red">如果WEB浏览器保持了某个Cookie，那么它在以后每次访问该WEB服务器时，都会自动在HTTP请求头中添加这个Cookie，然后回传给WEB服务器</label>
@@ -3363,7 +3387,7 @@ pageContext, request, session, application
         1. 创建Cookie对象
         2. 设置最大时效
         3. 将Cookie放入到HTTP响应头
-    - HttpServletResponse接口中的`public void addCookie(Cookie cookie);`
+    - `HttpServletResponse`接口中的`public void addCookie(Cookie cookie);`
         - 用于在发送给浏览器的HTTP响应消息中增加一个Set-Cookie响应头字段
         - 该方法并不修改其他的Set-Cookie头信息，而是创建新的头信息
     - 示例
@@ -3563,12 +3587,13 @@ pageContext, request, session, application
         - 不需要填写用户名和密码信息，可以自动登录到系统
 
 - 实现方式
-    - 通过`hello.jsp`作为入口，来控制是在当前页面显示内容，还是重定向login.jsp
-    - 若可以从url中获取到请求参数username，则打印出欢迎信息
-        - 即从login.jsp画面submit来的
-        - 把登录信息存储到Cookie中，并设置Cookie的最大时效为30s
-    - 从Cookie中读取用户信息，若存在则打印欢迎信息
-    - 若没有请求参数，也没有Cookie，则重定向到login.jsp
+    - 通过`hello.jsp`作为入口，来控制是在当前页面显示内容，还是重定向到login.jsp
+    - 读取username
+        - 如果可以从url中获取到请求参数username，则打印出欢迎信息
+            - 即从login.jsp画面submit来的
+            - 把登录信息存储到Cookie中，并设置Cookie的最大时效为30s
+        - 从Cookie中读取用户信息，若存在则打印欢迎信息
+    - 如果没有读取到username（既没有请求参数，也没有Cookie），则重定向到login.jsp
 - 实现
     - hello.jsp： [/java/mylearn/weblearn/src/main/webapp/cookie/autologin/hello.jsp](/java/mylearn/weblearn/src/main/webapp/cookie/autologin/hello.jsp)
         ```java
@@ -3623,9 +3648,10 @@ pageContext, request, session, application
 ### 示例-利用Cookie显示最近浏览的商品
 [top](#catalog) 
 - 实现方式
-    - books.jsp显示所书的列表，列表底部显示最近浏览的5本书
+    - books.jsp显示所有书的列表，列表底部显示最近浏览的5本书
         - 从Cookie中获取所有以`BOOK_`开头的Cookies，并显示
     - book.jsp
+        - 从请求参数中获取当前页面中需要显示的书名：bookName
         - 从Cookie中获取所有的以`BOOK_`开头的Cookie，并保存在List中
         - 遍历Cookie，检查是否有Cookie的Value与当前的bookName相同
             - 如果有相同的，则记录下来，作为待删除的Cookie
@@ -3905,9 +3931,9 @@ pageContext, request, session, application
 - 什么时候创建HttpSession对象
     - 对于JSP
         - 基本规则
-            - 第一次访问某个JSP时会创建一个session
+            - 第一次访问Web应用的某个JSP时会创建一个session
             - 如果在第一次访问的JSP中已经设定：`<%@ page session="false" %>`，则服务器不会创建session，
-                - session="false"，表示当前JSP页面禁用session隐含变量，但可以使用其他的显示HttpSession对象，如：``request.getSession(true)``
+                - `session="false"`，表示当前JSP页面禁用session隐含变量，但可以使用其他的显示HttpSession对象，如：`request.getSession(true)`
             - 如果当前JSP不是客户端访问的当前WEB应用的第一个资源，且其他页面已经创建一个HttpSession对象，则当前JSP页面会返回一个相关联的HttpSession对象，而不会创建一个新的HttpSession对象
         - 示例
             - 实现：[/java/mylearn/weblearn/src/main/webapp/session/lifecycle.jsp](/java/mylearn/weblearn/src/main/webapp/session/lifecycle.jsp)
@@ -3980,8 +4006,9 @@ pageContext, request, session, application
                 ```
             - 页面结果：每次都在jsp中，创建一个session并销毁，所以每次页面都会显示一个不同的HttpSession对象
 
-    2. 服务器卸载了当前WEB应用
-    3. 超过HttpSession的过期时间
+    2. 超过HttpSession的过期时间
+    3. 服务器卸载了当前WEB应用
+        - <label style="color:red">卸载时，服务器有可能会进行session的持久化，并保存在`/apache-tomcat-9.0.30/work/Catalina`目录下，重新启动时再读取，然后还可以继续使用</label>
 
 - 设置session对象过期时间的两种方法
     1. 在jsp/servlet中进行设置：`session.setMaxInactiveInterval(5);`，单位为秒
@@ -4003,7 +4030,7 @@ pageContext, request, session, application
                 // 默认以秒为单位
                 out.println(session.getMaxInactiveInterval());
                 ```
-    2. 在web.xml文件中设置HttpSession的过期时间，单位为分钟
+    2. 在web.xml文件中设置HttpSession的过期时间，单位为**分钟**
         - 配置内容
             ```xml
             <!-- ==================== Default Session Configuration ================= -->
@@ -4018,7 +4045,7 @@ pageContext, request, session, application
             - 全局配置：通过修改：`apache-tomcat-9.0.30/conf/web.xml`，来进行全局配置
             - 应用级别配置：对某个应用的web.xml文件进行单独设置
 
-- 注意事项
+- <label style="color:red">注意事项</label>
     - 关闭浏览器与HttpSession对象的销毁没有直接关系
     - 即使浏览器关闭，也可以通过持久化SessionCookie和URL重写来复用
 
@@ -6511,21 +6538,22 @@ pageContext, request, session, application
     - 用于监听3个域对象：`ServletContext`、`HttpSession`、`ServletRequest`
         - pageContext代表当前页面，监听的意义不大
     - 监听器的分类
-        - 域对象`创建`、`销毁`的事件监听器
-        - 域对象`属性的添加和删除`的事件监听器
-        - 绑定到HttpSession域中的某个对象的状态的事件监听器
+        1. 域对象`创建`、`销毁`的事件监听器
+        2. 域对象`属性的添加和删除`的事件监听器
+        3. 绑定到HttpSession域中的某个对象的状态的事件监听器
 
 ## 编写监听器的步骤
 [top](#catalog)
 - 编写监听器
     - 实现接口
     - web.xml进行注册
+- 监听器的注册方法，参考：[配置监听器Listener](#配置监听器Listener)
 
-## 监听器接口分析
+## 创建销毁监听器接口分析
 [top](#catalog)
 - 各域对象的创建和销毁与其监听接口
         
-    |域对象|监听接口|创建监听方法|监听|销毁监听方法|创建时机|销毁时机|
+    |域对象|监听接口|创建监听方法|销毁监听方法|创建时机|销毁时机|
     |-|-|-|-|-|-|
     |ServletContext|ServlvetContextListener|`contextInitialize(ServletContextEvent sce)`|`contextDestroyed(ServletContextEvent sce)`|web服务器启动时为每个web应用程序创建相应的ServletContext对象|web服务器关闭时为每个web应用程序销毁相应的ServletContext对象|
     |HttpSession|HttpSessionListener|`sessionCreated(HttpSessionEvent se)`<br>reuqest对象被创建之后触发|` sessionDestoryed(HttpSessionEvent se)`<br>reuqest对象被销毁之前触发|浏览器开始与服务器会话时创建|1. 调用`HttpSession.invalidate()`<br>超过最大存活事件<br>服务进程被停止|
@@ -6560,9 +6588,255 @@ pageContext, request, session, application
                 }
             }
             ```
-        
-    - 开发步骤：
 
+## 属性修改监听器分析
+[top](#catalog)
+- 属性修改监听器实际开发时使用的比较少
+- 各域对象对应的监听器
+    - servletContext，ServletContextAttributeListener
+    - request，ServletRequestAttributeListener
+    - session，HttpSessionAttributeListener
+
+- 三个监听器基本相同，以ServletContextAttributeListener为例讨论
+
+- 监听器接口代码
+    ```java
+    public interface ServletContextAttributeListener extends EventListener {
+        // 监听添加属性事件
+        public void attributeAdded(ServletContextAttributeEvent scab);
+        // 监听删除属性事件
+        public void attributeRemoved(ServletContextAttributeEvent scab);
+        // 监听属性覆盖事件
+        public void attributeReplaced(ServletContextAttributeEvent scab);
+    }
+    ```
+
+- 对于属性的删除操作，在监听器的`attributeRemoved`的方法中，可以通过`ServletContextAttributeEvent`对象获取被删除的属性名及属性值
+
+- ServletContextAttributeEvent类
+    - 该类继承自`ServletContextEvent`，所以可以通过`getServletContext()`来获取servletContext域对象
+    - 接口代码
+        ```java
+        public class ServletContextAttributeEvent extends ServletContextEvent { 
+            private String name;
+            private Object value;
+        
+            public ServletContextAttributeEvent(ServletContext source, String name, Object value) {
+                super(source);
+                this.name = name;
+                this.value = value;
+            }
+            
+            // 获取发生变化的属性名  
+            public String getName() {
+                return this.name;
+            }
+            
+            // 获取发生变化的属性值
+            public Object getValue() {
+                return this.value;   
+            }
+        }
+        ```
+ 
+
+## 感知Session绑定的事件监听器
+### 两种监听接口
+[top](#catalog)
+- 保存在Session域中的对象可以有多种状态
+    - 绑定到Session中
+    - 从Session域中解除绑定
+    - 随Session对象持久化到一个存储设备中
+    - 随Session对象从一个存储设备中恢复
+    
+- Servlet规范中定义了两个特殊的监听器接口来**帮助JavaBean对象**了解自己在Session域中的这些状态
+    - 两个接口
+        1. HttpSessionBingdingListener
+        2. HttpSessionActivationListener
+    - <label style="color:red">实现这两个接口的类不需要在web.xml文件中进行注册</label>
+
+### HttpSessionBingdingListener接口
+[top](#catalog)
+- 这个监听器使用的比较少
+- 负责监听
+    1. 对象绑定到Session中
+    2. 对象从Session域中解除绑定
+- 实现了这个接口的JavaBean对象可以感知自己被绑定到Session中和从Session中删除的事件
+- 接口代码
+    ```java        
+    public interface HttpSessionBindingListener extends EventListener {
+        //当对象被绑定到HttpSession对象时，web服务器调用该方法
+        public void valueBound(HttpSessionBindingEvent event);
+    
+        当对象从HttpSession中解除绑定时，web服务器调用该方法
+        public void valueUnbound(HttpSessionBindingEvent event);
+    }
+    ```
+    
+- HttpSessionBindingEvent类
+    - 通过该类可以获取session对象和绑定的属性名和属性值
+        - `HttpSession getSession()`
+        - `String getName()`
+        - `Object getValue()`
+
+    - 类代码
+        ```java
+        public class HttpSessionBindingEvent extends HttpSessionEvent {
+            // 绑定到session的属性名
+            private String name;
+            
+            // 绑定到session的属性值
+            private Object value;
+            
+            public HttpSessionBindingEvent(HttpSession session, String name) {
+            super(session);
+            this.name = name;
+            }
+            
+            public HttpSessionBindingEvent(HttpSession session, String name, Object value) {
+            super(session);
+            this.name = name;
+            this.value = value;
+            }
+            
+            // 返回session对象
+            public HttpSession getSession () { 
+            return super.getSession();
+            }
+         
+            // 返回被绑定或解绑的属性名
+            public String getName() {
+            return name;
+            }
+            
+            // 返回被绑定、解绑、替换的属性值
+            public Object getValue() {
+                return this.value;   
+            }
+        }
+        ```
+
+- 示例
+    - 接口实现类
+        - Customer.java : [java/mylearn/weblearn/src/main/java/com/ljs/test/listener/introduct/Customer.java](java/mylearn/weblearn/src/main/java/com/ljs/test/listener/introduct/Customer.java)
+
+            ```java
+            public class Customer implements HttpSessionBindingListener{
+                @Override
+                public void valueBound(HttpSessionBindingEvent event) {
+                    System.out.println("Customer.Bound");
+
+                    //获取绑定到session中的属性值，检查该属性值是否与当前对象相等
+                    Object value = event.getValue();
+                    System.out.println(value == this);
+
+                    //获取绑定到session中的属性名
+                    System.out.println(event.getName());
+                }
+
+                @Override
+                public void valueUnbound(HttpSessionBindingEvent event) {
+                    System.out.println("Customer.Unbound");
+                }
+            }
+            ```
+    - JSP
+        - sessionbound.jsp : [/java/mylearn/weblearn/src/main/webapp/listener/introduct/sessionbound.jsp](/java/mylearn/weblearn/src/main/webapp/listener/introduct/sessionbound.jsp)
+
+            ```java
+            Customer customer = new Customer();
+            session.setAttribute("customer", customer);
+            session.removeAttribute("customer");
+            ```
+    - 控制台输出
+        - 入口：http://localhost:8080/weblearn_war_exploded/listener/introduct/sessionbound.jsp
+        - ![bound_console](./imgs/webbase/listener/sessionbound/bound_console.png)
+
+
+### HttpSessionActivationListener接口
+[top](#catalog)
+- 实际开发时不太常用
+- 实现该接口的JavaBean对象可以感知自己被活化或钝化的事件
+    - 活化：从磁盘中读取session对象
+    - 钝化：将session对象写入磁盘
+- 由于钝化时，会将对象写入磁盘，所以实现HttpSessionActivationListener接口的类，<label style="color:red">必须要可序列化，实现`Serializable`接口</label>
+- 接口代码
+    ```java
+    public interface HttpSessionActivationListener extends EventListener { 
+        // 当绑定到HttpSession中的对象将要随HttpSession对象被钝化之前，web服务器调用该方法
+        public void sessionWillPassivate(HttpSessionEvent se); 
+
+        // 当绑定到HttpSession中的对象将要随HttpSession对象被活化之前，web服务器调用该方法
+        public void sessionDidActivate(HttpSessionEvent se);
+    } 
+    ```
+
+- 示例
+    - 接口实现类
+        - Customer2.java : [/java/mylearn/weblearn/src/main/java/com/ljs/test/listener/introduct/Customer2.java](/java/mylearn/weblearn/src/main/java/com/ljs/test/listener/introduct/Customer2.java)
+
+            ```java
+            public class Customer2 implements HttpSessionActivationListener, Serializable {
+                private static final long serialVersionUID = -1922108588750068344L;
+                private Date date;
+
+                public Date getDate() {
+                    return date;
+                }
+
+                public void setDate(Date date) {
+                    this.date = date;
+                }
+
+                // HttpSessionActivationListener接口实现
+                @Override
+                public void sessionWillPassivate(HttpSessionEvent se) {
+                    System.out.println("Customer2.sessionWillPassivate");
+                }
+
+                @Override
+                public void sessionDidActivate(HttpSessionEvent se) {
+                    System.out.println("Customer2.sessionDidActivate");
+                }
+            }
+
+            ```
+
+    - JSP
+        - sessionActivation.jsp : [/java/mylearn/weblearn/src/main/webapp/listener/introduct/sessionActivation.jsp](/java/mylearn/weblearn/src/main/webapp/listener/introduct/sessionActivation.jsp)
+
+            ```java
+            Customer2 customer2 = (Customer2) session.getAttribute("customer2");
+
+            if (customer2 == null){
+                customer2 = new Customer2();
+                //创建一个日期对象并保存
+                customer2.setDate(new Date());
+                //将对象保存到session中
+                session.setAttribute("customer2", customer2);
+
+
+                System.out.println("-----------------------------------");
+                System.out.println("create new customer2");
+                System.out.println("obj = " + customer2);
+                System.out.println("date = " + customer2.getDate());
+                System.out.println("-----------------------------------");
+            } else {
+                System.out.println("-----------------------------------");
+                System.out.println("read customer2");
+                System.out.println("obj = " + customer2);
+                System.out.println("date = " + customer2.getDate());
+                System.out.println("-----------------------------------");
+            }
+            ```
+
+    - 控制台输出
+        - 入口：http://localhost:8080/weblearn_war_exploded/listener/introduct/sessionActivation.jsp
+        - 第一次进入打印`create`部分，再次进入打印`read`部分内容，两次的date对象相同。关闭tomcat时，输出：`Customer2.sessionWillPassivate`
+            - <img src="./imgs/webbase/listener/sessionActivation/activation_console_result.png" height=60% width=60%>
+        - 关闭后在tomcat的 `work/Catalina/localhost/应用名`目录下生成一个`SESSION.ser`文件
+            - <img src="./imgs/webbase/listener/sessionActivation/colse_tomcat_session_file.png" height=40% width=40%>
+        - 重新启动tomcat ??????????????
 
 # JavaWeb开发中的路径问题
 [top](#catalog)
