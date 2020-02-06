@@ -6,7 +6,7 @@
 - http
     - [基本知识](http/memo.md)
 - jetbrains
-    - [intellijIDEA](intellijIDEA/base_memo.md)
+    - [intellijIDEA](intellijIDEA/base_memo.md) 
 - java
     - [基本知识](java/base/memo.md)
         - [反射]
@@ -18,6 +18,9 @@
     - jdk源码分析
         - [集合框架](java/jdkAnalyze/collection.md)
     - [maven](maven/maven_memo.md)
+    - javaweb
+        - [ide创建web工程](java/javaweb/createProject.md)
+        - [javaweb基础](java/javaweb/webbase.md)
 - linux
     - [基本知识](linux/base/base.md)
     - [通配符、正则表达式、转义字符](linux/cmd/regular.md)
