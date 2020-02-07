@@ -29,6 +29,23 @@
         - [类-接口](#类-接口)
     - [对象的序列化](#对象的序列化)
     - [object](#object)
+- [Java集合框架](#Java集合框架)
+    - [Java集合框架概述](#Java集合框架概述)
+    - [Collecton接口API的使用](#Collecton接口API的使用)
+    - [Iterator接口](#Iterator接口)
+    - [foreach循环遍历集合元素](#foreach循环遍历集合元素)
+    - [Collecton子接口-List接口及其实现类](#Collecton子接口-List接口及其实现类)
+        - [List接口](#List接口)
+        - [ArrayList](#ArrayList)
+        - [LinkedList](#LinkedList)
+    - [Collecton子接口-Set接口及其实现类](#Collecton子接口-Set接口及其实现类)
+        - [Set接口](#Set接口)
+        - [HashSet](#HashSet)
+        - [LinkedHashSet](#LinkedHashSet)
+        - [TreeSet](#TreeSet)
+    - [Collection相关的问题总结](#Collection相关的问题总结)
+- [](#)
+    
 - 应用
     - 字符串
         - [字符串-string](#字符串-string)
@@ -36,7 +53,6 @@
         - [字符串-StringBuilder](#字符串-stringbuilder)
         - [字符串-三种类型的关系](#字符串-三种类型的关系)
     - [异常](#异常)
-    - [集合](#集合)
     - [泛型](#泛型)
     - [枚举类](#枚举类)
     - [注解](#注解)
@@ -987,6 +1003,478 @@ public class CommandPara {
                 * x.equal(null)，**永远都返回false**
                 * x.equal(和x不同类型的对象)，**永远都返回false**
 
+# Java集合框架
+## Java集合框架概述
+[top](#catalog)
+- 为了方便多个对象的操作，就要对对象进行存储，但是数组Aarray具有一些弊端，而Java集合就像一种容器，可以动态地把多个**对象的引用**放入容器
+    - 主要指内存层面的存储，不涉及到持久化的存储
+- 数组的在内存存储方面的优缺点
+    - 优点
+        - 初始化后，长度确定
+        - 数组声明时的类型，就决定了元素初始化的类型
+    - 缺点
+        - 长度不可变，不利于扩展
+        - 数组中提供的属性和方法少，不便于添加、删除、插入等操作，且效率不高
+        - 无法获取已经存储的元素个数，只能获得数组长度
+        - 数组存储的数据是单一的，即：有序的、可重复的
+  
+- Java集合类可以用于存储数量不等的多个对象，还可以用于保存具有映射关系的关联数组
+- Java集合可以分为Collection和Map两种体系
+    - Collection接口：单列数据，定义了存储一组对象的方法的集合
+        - List：元素有序、可重复的集合
+            - ArrayList、LinkedList、Vector
+        - Set：元素无序，不可重复的集合
+            - HashSet、LinkedHashSet、TreeSet
+    - Map接口：双列数据，保存具有映射关系的key-value对的集合
+        - HashMap、LinkedHashMap、TreeMap、Hashtable、Properties
+
+## Collecton接口API的使用
+[top](#catalog)
+- 接口继承树： 
+    - <img src="./imgs/memo/java_collection/collection_class.png" height=60% width=60% />
+- 接口中的方法
+
+    |no|方法|描述|备注|
+    |-|-|-|-|
+    |1|add(Object obj)|添加单个元素|基本数据类型会自动进行装箱|
+    |2|addAll(Collection coll)|添加多个元素||
+    |3|int size()|获取有效元素个数||
+    |4|void clear()|清空集合||
+    |5|boolean isEmpty()|判断是否是空集合||
+    |6|boolean contains(Object obj)|是否包含某个元素|内部通过元素的equals方法来判断是否是用一个对象<br>对于某个类的实例，如果没有重写equals()，即使内容相同结果也是false|
+    |7|boolean containsAll(Collection c)|比较两个集合的元素|A.containsAll(B) 表示A是否包含B的所有元素<br>调用各元素的equals方法来比较|
+    |8|boolean retainAll(Collection c)|取两个集合的交集|A.retainAll(B) 交集的结果存A中，不影响B|
+    |9|boolean remove(Object obj)|删除某个元素，如果没有可以删除的元素则返回false|通过equals来比较元素，只删除找到的**第一个元素**|
+    |10|boolean removeAll(Collection coll)|从集合中删除集合，如果没有可以删除的元素则返回false|取当前集合的差集|
+    |11|boolean equals(Object obj)|判断集合是否相等||
+    |12|hashCode()|获取集合对象的hash值||
+    |13|Object[] toArray()|转换成数组对象||
+    |14|iterator()|返回迭代器对象，用于集合遍历|
+    |14|iterator()|返回迭代器对象，用于集合遍历|
+
+- 测试示例：
+    - CollectionAPITest.java: [/java/mylearn/javabase/src/test/java/com/ljs/learn/collection/collapi/CollectionAPITest.java](/java/mylearn/javabase/src/test/java/com/ljs/learn/collection/collapi/CollectionAPITest.java)
+    
+## Iterator接口
+[top](#catalog)
+- Iterator对象成为迭代器(设计模式的一种)，<label style="color:red">主要用于遍历Collection集合中的元素</label>
+- GOF给迭代器模式定义为：提供一种方法访问一个容器对象(container)中的各个元素，而又不暴露该对象的内部实现细节。迭代器模式，就是为容器而生
+- Collection接口继承了`java.lang.Iterator`接口，该接口有一个`iterator()`方法，所有实现了Collection接口的集合类都有一个iterator方法，来返回一个实现了iterator接口的对象
+- Iterator仅用于遍历集合，Iterator本身并不提供承装对象的能力，，如果需要创建Iterator对象，则必须有一个被迭代的集合
+- 集合对象每次调用`iterator()`方法都得到一个全新的迭代器对象，**默认游标在集合的第一个元素之前**
+    - 调用`iterator()`方法只是获取一个迭代器，不会创建一个一样的集合对象，所有被遍历的元素都属于原始的集合对象
+- iterator接口的方法
+
+    |方法|描述|备注|
+    |-|-|-|
+    |hasNext()|检测集合是否还有元素||
+    |next()|**先将指针下移**，然后返回指针指向的元素|使用next之前必须调用hasNext进行检测，如果不调用，且下一条记录无效，会引发NoSuchElementException异常|
+    |remove()|删除当前指针所指向的元素|如果未调用过`next()``next()`后已经调用过`remove()`，再次调用remove会引发IllegalStateException<br>1. 没有调用过`next()`时，指针在第一个元素之前，没有指向一个有效的元素所以会导致异常<br>2. 执行`remove`后，元素已经被删除，再次调用`remove`时，同样没有指向一个有效的元素，所以导致异常|
+
+- 测试代码
+    - IteratorTest.java : [/java/mylearn/javabase/src/test/java/com/ljs/learn/collection/collapi/IteratorTest.java](/java/mylearn/javabase/src/test/java/com/ljs/learn/collection/collapi/IteratorTest.java)
+        ```java
+        //使用迭代器遍历集合
+        @Test
+        public void testIterator(){
+            Collection coll = new ArrayList();
+    
+            coll.add("AA");
+            coll.add(new String("BB"));
+            coll.add(123);
+            coll.add(new Person("test", 18));
+            coll.add(new Date());
+            coll.add(new NoEqual("val"));
+    
+            Iterator iterator = coll.iterator();
+    
+            while(iterator.hasNext()){
+                System.out.println(iterator.next());
+            }
+        }
+    
+        //迭代时，删除某个元素
+        @Test
+        public void testRemove(){
+            Collection coll = new ArrayList();
+    
+            coll.add("AA");
+            coll.add(new String("BB"));
+            coll.add(123);
+            coll.add(new Person("test", 18));
+            coll.add(new Date());
+            coll.add(new NoEqual("val"));
+    
+            Iterator iterator = coll.iterator();
+    
+            while (iterator.hasNext()){
+                Object obj = iterator.next();
+                //删除某个元素
+                if ("BB".equals(obj)){
+                    iterator.remove();
+                    // 再次调用会导致IllegalStateException异常
+                    // 因为当前指针没有指向一个有效的元素
+                    // iterator.remove();
+                }
+            }
+    
+            // 重新遍历并打印
+            iterator = coll.iterator();
+    
+            while (iterator.hasNext()){
+                System.out.println(iterator.next());
+    
+            }
+        }
+        ```
+        
+## foreach循环遍历集合元素
+[top](#catalog)
+- Java5.0提供了foreach循环迭代访问Collection和数组
+- 遍历操作不需要获取Collection或数组的长度，无序使用索引访问元素
+- **底层调用Iterator完成操作**
+- 使用方法
+    - 每次都会从`collection`中获取一个元素并赋给node
+    ```java
+    for(Type node : collection){
+      ...
+    }
+    ```
+- 测试代码
+    - ForeachTest.java : [/java/mylearn/javabase/src/test/java/com/ljs/learn/collection/collapi/ForeachTest.java](/java/mylearn/javabase/src/test/java/com/ljs/learn/collection/collapi/ForeachTest.java)
+        ```java
+        @Test
+        public void testForeachCollection(){
+            Collection coll = new ArrayList();
+            coll.add("AA");
+            coll.add(new String("BB"));
+            coll.add(123);
+            coll.add(new Person("test", 18));
+            coll.add(new Date());
+            coll.add(new NoEqual("val"));
+    
+            for (Object node : coll) {
+                System.out.println(node);
+            }
+        }
+      
+        @Test
+        public void testForeachArray(){
+            int[] arrays = new int[]{33,55,2,6,4,6,8};
+            for (int array : arrays) {
+                System.out.println(array);
+            }
+        }
+        ```
+
+- **使用foreach时，需要注意对String型数据的修改**
+    - foreach每次都会把元素赋值给一个变量，如果值是String类型的，当修改值时，会导致变量重新开辟空间存储字符串，而没有正常更新元素值
+    - 参考：
+        - ForeachTest.java : [/java/mylearn/javabase/src/test/java/com/ljs/learn/collection/collapi/ForeachTest.java](/java/mylearn/javabase/src/test/java/com/ljs/learn/collection/collapi/ForeachTest.java)
+            ```java
+            @Test
+            public void testForeachUpdateString(){
+                String[] arr = new String[]{"aa","aa","aa"};
+        
+                //普通循环遍历，并修改元素值
+                for (int i = 0; i < arr.length; i++) {
+                    arr[i] = "bbb";
+                }
+                //打印结果
+                for (String s : arr) {
+                    System.out.println(s);
+                }
+        
+                //使用foreach来遍历，并修改元素
+                arr = new String[]{"aa","aa","aa"};
+                for (String s : arr) {
+                    s = "ccc";
+                }
+                //打印结果
+                for (String s : arr) {
+                    System.out.println(s);
+                }
+            }
+            ```
+      
+## Collecton子接口-List接口及其实现类
+### List接口
+[top](#catalog)
+- 一般都会使用List替代数组，作为**动态数组**
+- List集合类中元素有序，且可重复，集合中的每个元素都有其对应的顺序索引
+- List容器中的元素都对应一个整数形的序号记录元素所在位置，可以根据序号存取容器中的元素
+- JDK API中List接口的**常用实现类**包括：
+    - ArrayList
+    - LinkedList
+    - Vector
+
+- List接口方法
+    - 主要是在Collection的基础上添加了一些针对索引的操作 
+    
+    |方法|描述|备注|
+    |-|-|-|
+    |void add(int index, Object del)|在index位置插入ele元素||
+    |boolean addAll(int index, Collection eles)|从index位置开始将eles中的所有元素添加进来||
+    |Object get(int index)|获取指定index位置的元素||
+    |int indexOf(Object obj)|返回obj在集合中首次出现的位置|如果不存在则返回-1|
+    |int lastIndexOf(Object obj)|返回obj在当前集合中末次出现的位置|如果不存在则返回-1|
+    |Object remove(int index)|移除指定index位置的元素，并返回此元素||
+    |Object set(int index, Object ele)|设置指定index位置的元素为ele||
+    |List subList(int fromIndex, int toIndex)|返回从fromIndex到toIndex，但不包含toIndex位置的子集合||
+  
+- 常用方法
+    - 增: `add(Object obj)`, `add(int index Object obj)`
+    - 删: `remove(int index)`, `remove(Object obj)`
+    - 改: `set(index, Object ele)`
+    - 查: `get(int index)`
+    - 长度: `size()`
+    - 遍历:
+        1. Iterator迭代器遍历
+        2. foreach
+        3. for
+
+- List及其实现类的关系
+    - <img src="./imgs/memo/java_collection/list_dependency.png" width=70% height=70%>
+        
+### ArrayList
+[top](#catalog)
+- JDK7和JDK8的实现不同
+    - JDK7，在初始化时就为内部的数组开辟了空间
+    - JDK8，在第一次调用`add()`时，才为内部数组开辟空间
+    - JDK8延迟了数组的创建，节省了内存
+- ArrayList的扩容方式
+    - 默认初始容量为10
+    - 容量不足时会进行自动扩容，扩容为原来的1.5倍，所以建议**使用ArrayList的带参构造器**
+- 对于随机访问get/set，ArrayList效率更高（LinkedList需要移动指针）
+
+### LinkedList
+[top](#catalog)
+- 
+
+## Collecton子接口-Set接口及其实现类
+### Set接口
+[top](#catalog)
+- Set接口没有提供额外的方法
+- Set的存储特点：**存储无序、不可重复**
+    - **但是`无序 != 随机`，每次的遍历结果都是相同的**
+    
+    - Set使用equals来比较两个对象是否相等，但是需要hashCode来辅助
+- 接口实现类
+    - HashSet：作为主要实现类
+        - LinkedHashSet：HashSet的子类，遍历有序，存储无序
+    - TreeSet：可以按照添加对象的指定属性，进行排序
+- <label style="color:red">频繁插入使用：HashSet，频繁迭代使用LinkedHashSet</label>
+
+- Set及其实现类的关系
+    - <img src="./imgs/memo/java_collection/set_dependency.png" width=50% height=50%>
+
+
+### HashSet
+[top](#catalog)
+- HashSet的特点
+    - 不保证有序
+    - 不是线程安全的
+    - 集合元素可以是null
+- 底层的存储
+    - jdk7，是**数组和链表**，按照Hash算法来存储集合中的元素，因此具有很好的存取、查找、删除性能
+    - jdk8，是HashMap
+- HashSet集合判断两个元素相等的标准
+    - 基本原则：相等的对象必须具有相等的散列码
+    - `hashCode()`的结果相同，`equals()`的结果也相同
+- 存放在Set容器中的对象，对应的类必须重写`hashCode()`和`equals()`
+    - 如果没有重写这两个方法，Set会将两个属性全部相同的对象视作不同，使这两个对象都可以插入
+- <label style="color:red">HashSet如何添加元素</label>
+    - 添加过程
+        1. 调用元素a所在类的`hashCode()`方法，计算元素a的hash值
+        2. 通过hash值计算出在HashSet底层数组中的索引位置
+        3. 检查索引位置上是否有元素
+            - 如果索引位置上没有元素，**则元素a添加成功**
+            - 如果索引位置上有其他元素，则比较两个元素的hash值
+                - 如果hash值不同，**则元素a添加成功**
+                - 如果hash值相同，使用元素a的equals方法进行比较
+                    - equals()返回true，则两个元素相同，无法添加元素a
+                    - equals()返回false，**则元素a添加成功**
+    - 添加时，底层数组的索引位置上已经有值的时候，使用链表来存储多个元素，链表的顺序是：
+        - JDK7，元素a指向旧元素
+        - JDK8，旧元素指向元素a
+    - 添加元素时，还是应该尽量避免多个元素用链表存储在一个索引位置，来提高遍历的效率
+- hashCode的计算方式
+    - `Arrays.hashCode()`
+        ```java
+        public static int hashCode(Object a[]) {
+            if (a == null)
+                return 0;
+    
+            int result = 1;
+    
+            for (Object element : a)
+                result = 31 * result + (element == null ? 0 : element.hashCode());
+    
+            return result;
+        }
+        ```
+    - 计算时，每次计算一个元素的值就乘31，来避免两个问题
+        1. 不同的值的hash相同
+        2. 值相同的多个元素因顺序不同导致的hash结果相同(顺序不同，则表示不同的属性)
+            - 如 name="aa"、address="bb"和 name="bb"、address="aa"，如果不乘31，两个对象的hash值是相同的
+- <label style="color:red">重写hashCode()方法的基本原则</label>
+    - 同一个对象多次调用hashCode方法应该返回相同的值
+    - hashCode和equals的结果应该相同
+    - 对象中用作equals方法比较的Field，都应该用来计算hashCode
+- HashSet的扩容方式
+    - 底层数组的初始容量为16
+    - 当使用率超过0.75 时，扩容为元素的2倍
+- 计算hashCode后直接插入到相应的内存位置，**数据插入的性能比LinkedHashSet更好**
+
+- 测试代码
+    - SetTest.java : [/java/mylearn/javabase/src/test/java/com/ljs/learn/collection/set/SetTest.java](/java/mylearn/javabase/src/test/java/com/ljs/learn/collection/set/SetTest.java)
+
+### LinkedHashSet
+[top](#catalog)   
+- LinkedHashSet是HashSet的子类
+- 不允许集合元素重复
+- <label style="color:red">存储是无序的，迭代是有序的</label>
+    - 根据元素的hashCode值来决定元素的存储位置
+    - 底层使用双向链表和数组维护，在添加数据的同时，每个数据还维护了两个引用，记录当前数据的前一个和后一个数据，所以**迭代结果是有序的**
+- **LinkedHashSet的迭代访问性能比HashSet更好**
+
+- 测试代码
+    - LinkedHashSetTest.java : [/java/mylearn/javabase/src/test/java/com/ljs/learn/collection/set/LinkedHashSetTest.java](/java/mylearn/javabase/src/test/java/com/ljs/learn/collection/set/LinkedHashSetTest.java)
+    
+### TreeSet
+[top](#catalog)
+- 向TreeSet中添加的数据，必须是**相同类型的对象**
+- 底层使用红黑树结构存储数据
+- TreeSet可以按照对象的指定属性，进行排序
+    - 默认按照从小到大排序
+    - 类的自然排序
+        - 使用方法：类需要实现Comparable接口
+        - 排序标准：compareTo()，返回值不是0则可以添加，返回值是0则有元素相同 
+        - 第一个元素不进行compareTo()比较，后边添加的所有元素都会调用compareTo()进行比较
+    - 类的定制排序
+        - 使用方法
+            1. 创建一个实现了Comparator接口的类对象
+            2. 将Comparator对象传递给TreeSet的构造器中
+            3. 只能添加Comparator对象中涉及到的类的对象
+    - 同时使用Compatator和Comparable两者时，Compatator优先
+
+- 测试代码
+    - TreeSetTest.java : [/java/mylearn/javabase/src/test/java/com/ljs/learn/collection/set/TreeSetTest.java](/java/mylearn/javabase/src/test/java/com/ljs/learn/collection/set/TreeSetTest.java)
+
+## Collection相关的问题总结
+[top](#catalog)
+1. 集合Collection中如果存储的是自定义对象，需要自定义类重写哪个方法？为什么
+    - List
+        - `equals()`，一些方法需要使用：containsAll，contians，remove，retainsAll等等
+    - Set
+        - HashSet、LinkedHashSet
+            - `hashCode()`，插入元素时需要通过hahsCode来定位底层存储数组的索引位置，
+            - `equals()`，插入元素时，如果保存的索引位置上已经有元素，需要使用equals来判断新旧元素是否相同
+        - TreeSet
+            - 自然排序时，重写`compareTo(Object obj)`
+            - 定制排序时，重写`compare(Object o1, Object o2)`
+            - 插入元素时需要和树结构上的元素进行比较
+2. ArrayList、LinkedList、Vector之间的异同
+    - 相同点
+        - 都实现了List接口
+        - 存储数据的特点相同：有序的、可重复的
+    - 不同点
+        - ArrayList
+            - 作为List的主要 实现类
+            - 出现时间：JDK1.2 
+            - 安全性：线程不安全，效率高
+            - 存储方法：底层使用`Object[]`存储
+            - 访问元素的时间复杂度：O(1)
+            - 对于随机访问get/set，ArrayList效率更高（LinkedList需要移动指针）
+        - LinkedList
+            - JDK1.2
+            - 安全性：线程不安全，效率高
+            - 存储方法：底层使用双向链表存储
+            - 访问元素的时间复杂度：O(n)
+            - 对于频繁的插入、删除操作，使用此类效率比Array效率高  
+        - Vector
+            - 比较旧的实现类，JDK1.0
+            - 安全性：线程安全，效率低
+            - 存储方法：底层使用`Object[]`存储
+        
+
+3. 代码输出什么？
+    - 代码
+        ```java
+        @Test
+        public void test01(){
+            List list = new ArrayList<>();
+            list.add(1);
+            list.add(2);
+            list.add(3);
+    
+            list.remove(2);
+    
+            System.out.println(list.toString()); //output:[1, 2]
+        }
+        ```
+    - 由于没有使用范型，所有类型都是Object，执行remove时，会使用`remove(int index)`，所以输出[1, 2]    
+
+4. List接口的常用方法有哪些？
+    - 增: `add(Object obj)`, `add(int index Object obj)`
+    - 删: `remove(int index)`, `remove(Object obj)`
+    - 改: `set(index, Object ele)`
+    - 查: `get(int index)`
+    - 长度: `size()`
+    - 遍历:
+        1. Iterator迭代器遍历
+        2. foreach
+        3. for
+
+5. 如何过滤List中的重复值？
+    - 使用`Set.addAll()`，来过滤
+
+6. 测试HashSet的底层存储结构和存储步骤，代码输出什么？
+    - 代码
+        ```java
+        @Test
+        public void test01(){
+            Set set = new HashSet();
+
+            User u1 = new User("aa", 11);
+            User u2 = new User("bb", 22);
+            set.add(u1);
+            set.add(u2);
+
+            System.out.println(set); //output1
+
+            u1.setName("cc");
+            set.remove(u1);
+            System.out.println(set); //output2
+
+            set.add(new User("cc", 11));
+            System.out.println(set); //output3
+
+            set.add(new User("aa", 11));
+            System.out.println(set); //output4
+        }
+        ```
+    - 输出内容
+        - output1：[User{name='bb', age=22}, User{name='aa', age=11}]
+        - output2：[User{name='bb', age=22}, User{name='cc', age=11}]
+        - output3：[User{name='bb', age=22}, User{name='cc', age=11}, User{name='cc', age=11}]
+        - output4：[User{name='bb', age=22}, User{name='cc', age=11}, User{name='cc', age=11}, User{name='aa', age=11}]
+    - 分析
+        1. 存储了元素：aa，bb，set=[aa，bb]
+        2. 将aa 更新为 cc，set=[cc，bb]
+        3. 将cc从set中删除
+            - cc存储在hashCode(aa)的位置，删除时使用的是hashCode(cc)来判断元素是否存在，所以无法删除
+            - set=[cc，bb]
+        4. 将另一个cc添加到set中
+            - set中，旧的cc保存在hashCode(aa)处，hashCode(cc)没有元素，可以添加
+            - set=[cc，bb，cc]
+        5. 插入新的aa
+            - hashCode(aa)处有值，然后使用equals比较
+            - 当前hashCode(aa)处保存的是cc，所以两个元素不同，可以插入
+            - set=[(cc，aa)，bb，cc]
+
+
+
 # 应用
 ## 字符串
 ### 字符串-string
@@ -1421,211 +1909,7 @@ public class CommandPara {
     * 自定义异常需要提供serialVersionUID
     * 自定义的异常**通过throw抛出**。
 
-## 集合
-[top](#catalog)
-* 数组的问题
-    1. 长度固定
-    2. 具体存储了多少个元素不可知
-    3. 不便于添加、删除、插入等操作，且效率不高
-* 集合工具类 Arrays
-    * boolean equals(int[] a,int[] b) 判断两个数组是否相等。
-    * String toString(int[] a) 输出数组信息。
-    * void fill(int[] a,int val) 将指定值填充到数组之中。
-    * void sort(int[] a) 对数组进行排序。
-    * int binarySearch(int[] a,int key) 对排序后的数组进行二分法检索指定的值。
-    * Array.asList 数组转化为集合
-* Iterator 迭代器接口
-    * Iterator对象即迭代器，主要用于遍历Collection集合中的元素
-    * `foreach`底层是调用Iterator完成操作的
-    * 每次调用都会得到一个新的迭代器对象，默认游标在集合的第一个元素之前
-    * 返回迭代器对象(Iterator接口实现类的对象)，用于集合遍历
-    * iterator接口的方法
-        * hasNext()
-        * next()
-            * 使用next之前必须调用hasNext进行检测，如果不调用，且下一条记录无效，会引发NoSuchElementException异常
-        * remove()
-            * 如果 未调用过next() 或 next()后已经调用过remove，再次调用remove会引发IllegalStateException
-    * 集中遍历方法
-        ```java
-        Iterator iterator = coll.iterator();
 
-        //1
-        for (int i = 0; i < coll.size(); i++) {
-            System.out.println(iterator.next());
-        }
-
-        //2
-        while(iterator.hasNext()){
-            System.out.println(iterator.next());
-        }
-        ```
-
-* Collection接口（父类接口，jdk不直接提供该接口的任何直接实现）
-    * 接口继承树 ![collection_class](./imgs/collection_class.png)
-    * **不指定范型时，可以存储null**
-    * 接口方法
-        * 添加
-            * add(Object obj)
-                * 基本数据类型会自动进行装箱
-            * addAll(Collection coll)
-        * 获取有效元素个数
-            * int size()
-        * 清空集合
-            * void clear()
-        * 判断是否是空集合
-            * boolean isEmpty()
-        * 是否包含某个元素
-            * boolean contains(Object obj) 
-                * 通过元素的equals方法来判断是否是用一个对象
-                * 对于某个类的实例，如果没有重写equals()，即使内容相同结果也是false
-            * boolean containsAll(Collection c)
-                * 比较两个集合的元素
-                    * A.containsAll(B) 表示A是否包含B的所有元素
-                * 调用各元素的equals方法来比较
-        * 取两个集合的交集
-            * boolean retainAll(Collection c)
-                * A.retainAll(B) 交集的结果存A中，不影响B
-        * 删除
-            * boolean remove(Object obj)
-                * 通过equals来比较元素，只删除找到的**第一个元素**
-            * boolean removeAll(Collection coll)
-                * 取当前集合的差集
-        * 集合是否相等
-            * boolean equals(Object obj)
-        * 获取集合对象的hash值
-            * hashCode()
-        * 转换成数组对象
-            * Object[] toArray()
-    * 子接口
-        * List：
-            * 元素有序，可重复，每个元素都有对应的顺序索引，可以根据索引进行存取
-            * List接口中增加的方法
-                * void add(int index, Object ele):在index位置插入ele元素
-                * boolean addAll(int index, Collection eles):从index位置开始将eles中的所有元素添加进来
-                * Object get(int index):获取指定index位置的元素
-                * int indexOf(Object obj):返回obj在集合中首次出现的位置
-                * int lastIndexOf(Object obj):返回obj在当前集合中末次出现的位置 
-                * Object remove(int index):移除指定index位置的元素，并返回此元素 
-                * Object set(int index, Object ele):设置指定index位置的元素为ele 
-                * List subList(int fromIndex, int toIndex):返回从fromIndex到toIndex，但不包含toIndex位置的子集合
-            * 常用的接口实现类：ArrayList, LinkedList, Vector
-                * ArrayList（主要实现类）：
-                    * 底层是一个动态数组，进行元素插入时会移动数据
-                    * 初始化一个长度为0的数组，当添加第一个元素是再创建一个容量为10的数组
-                    * 对于随机访问get/set，ArrayList效率更高（LinkedList需要移动指针）
-                    * 线程不安全
-                * LinkedList：
-                    * 底层是一个双向链表，更适合频繁进行添加删除操作的数组(ArrayList会移动数据，效率低)
-                    * 新增方法
-                        * void addFirst(Object obj) 
-                        * void addLast(Object obj) 
-                        * Object getFirst()
-                        * Object getLast()
-                        * Object removeFirst() 
-                        * Object removeLast()
-                * Vector
-                    * 过于古老，尽量不使用，执行效率低
-                    * 线程安全的
-                    * 与ArrayList基本相同，但是属于同步类，开销大访问慢，每次扩容需要申请其大小两倍的空间，ArrayList只需要申请1.5倍
-        * Set：
-            * 元素无序，不可重复，常用方法都是Collection下定义的
-                * 无序性!=随机性，是在底层中元素的存储位置的无序的，虽然不是插入顺序，但每次顺序还是相同的
-            * 使用equals()判断两个对象是否相同
-            * 常用接口实现类
-                * HashSet（主要实现类）(hashMap的一种特殊实现)
-                    * 添加元素时，会使用元素所在类的equals()和hashCode()进行比较
-                    * 元素的存储方式
-                        * hash算法：先用hashCode()计算各元素的hash值，然后存储；存储时对应位置已经有数据，用equals()进行比较，如果结果为true，则两个元素相同，如果结果为false，则两个元素存储到同一个位置，通过链表来连接
-                            * 要求equals()和hashCode() 在结果上尽量一致
-                    * 底层是数组，初始容量为16，当使用率超过0.75，会扩容为原来的两倍(16-->32-->64...)
-                    * 存取、查找、删除的性能比较好
-                    * 不保证元素的排列顺序
-                    * 集合元素可以是null
-                    * 不是线程安全的
-                    * 计算hashCode后直接插入到相应的内存位置，**数据插入的性能比LinkedHashSet更好**
-                * LinkedHashSet（HashSet的子类）
-                    * 通过hashCode值确定数据的存储位置，再使用双向链表来存储数据
-                    * 因为使用链表来存储数据，所以**迭代结果是有序的**
-                        * 存储是无序的，迭代是有序的
-                    * 因为使用链表来维护元素的次序，使得**LinkedHashSet比HashSet有更好的迭代访问性能**
-                * TreeSet（SortedSet接口实现类）
-                    * 有序，查询速度比List块
-                    * 添加的元素必须是同一个类的
-                    * 按照集合元素的大小来遍历，如String、包装类等默认按照**从小到大**的顺序来排列
-                    * 元素的类必须实现Comparable接口，否则添加元素时会发生异常
-                        * 需要重写compareTo()；如果返回0，则认为两个元素相同，就不会添加到Set中
-                        * **compareTo()、hashCode()、equals()的接口应该尽量相同**
-                    * 排序
-                        * 自然排序
-                            1. 第一个元素不进行compareTo()比较，后边添加的所有元素都会调用compareTo()进行比较
-                            2. 插入的元素必须时同一类的对象
-                            3. compareTo()返回0时，认为两个元素相同，不会添加新元素
-                        * 定制排序
-                            1. 创建一个实现了Comparator接口的类对象
-                            2. 将Comparator对象传递给TreeSet的构造器中
-                            3. 只能添加Comparator对象中涉及到的类的对象
-                        * 能修改类就使用**自然排序**，无法修改类就使用**定制排序**
-                        * 同时使用Compatator和Comparable两者，Compatator优先
-                        
-        * Queue
-
-* Map接口：k-v对
-    * 接口继承树![map_class](./imgs/map_class.png)
-    * 同一个Map中key和value对象所对应的类，必须重写hashCode()和equals() 
-    * Map接口常用方法
-        * 添加，删除，修改
-            * Object put(Object key,Object value):将指定key-value添加到(或修改)当前map对象中 
-            * void putAll(Map m):将m中的所有key-value对存放到当前map中
-            * Object remove(Object key):移除指定key的key-value对，并返回value
-            * void clear():清空当前map中的所有数据
-        * 元素查询操作
-            * Object get(Object key):获取指定key对应的value
-            * boolean containsKey(Object key):是否包含指定的key
-            *  boolean containsValue(Object value):是否包含指定的value
-            * int size():返回map中key-value对的个数
-            * boolean isEmpty():判断当前map是否为空
-            * boolean equals(Object obj):判断当前map和参数对象obj是否相等
-        * 元视图操作的方法
-            * Set keySet():返回所有key构成的Set集合
-            * Collection values():返回所有value构成的Collection集合
-            * Set entrySet():返回所有key-value对构成的Set集合，遍历时需要将类型强制转换为Map.Entry
-    * 常用接口实现
-        * HashMap（主要实现类）
-            * 可以保存<null,null>
-            * ；会调用value的equals()方法
-            * 所有key构成的集合是set，无序不重复。添加元素时，会调用key所在类的hashCode()和equals()方法，判断两个key是否相同
-                * 判断两个key相同的标准是hashCode()和equals()返回true
-            * 所有value构成的集合是Collection，无序可重复。添加元素时，需要value的equals()方法
-            * 所有entry构成的集合是Set
-            * 存储结构：数组+链表+红黑树
-        * LinkedHashMap
-            * 使用链表来维护添加到Map中的顺序，遍历时是有序的
-            * 插入元素比HashMap慢
-        * TreeMap
-            * 按照添加进Map中元素的key的指定属性进行排序。要求key必须是同一个类的对象
-        * Hashtable
-            * 古老的Map实现类，是线程安全的
-            * 不允许null作为key和value
-        * Properties
-            * 常用来处理属性文件，键和值都是String类型的
-
-* Collections工具类
-    * 排序操作
-        * reverse(List):反转 List 中元素的顺序
-        * shuffle(List):对 List 集合元素进行随机排序
-        * sort(List):根据元素的自然顺序对指定 List 集合元素按升序排序 
-        * sort(List，Comparator):根据指定的 Comparator 产生的顺序对 List 集合元素进行排序 
-        * swap(List，int， int):将指定 list 集合中的 i 处元素和 j 处元素进行交换
-    * 查找、替换
-        * Object max(Collection):根据元素的自然顺序，返回给定集合中的最大元素 
-        * Object max(Collection，Comparator):根据 Comparator 指定的顺序，返回给定集合中的最大元素
-        * Object min(Collection)
-        * Object min(Collection，Comparator)
-        * int frequency(Collection，Object):返回指定集合中指定元素的出现次数 
-        * void copy(List dest,List src):将src中的内容复制到dest中
-        * boolean replaceAll(List list，Object oldVal，Object newVal):使用新值替换 List 对象的所有旧值
-    * 线程同步
-        * synchronizedXxx()
 
 ## 泛型
 [top](#catalog)
