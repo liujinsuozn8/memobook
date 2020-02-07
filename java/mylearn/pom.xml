@@ -11,6 +11,7 @@
   <modules>
     <module>myjdbc</module>
     <module>weblearn</module>
+      <module>javabase</module>
   </modules>
 
   <properties>

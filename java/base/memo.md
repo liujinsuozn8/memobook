@@ -43,9 +43,14 @@
         - [HashSet](#HashSet)
         - [LinkedHashSet](#LinkedHashSet)
         - [TreeSet](#TreeSet)
-    - [Collection相关的问题总结](#Collection相关的问题总结)
-- [](#)
-    
+    - [List和Set相关的问题总结](#List和Set相关的问题总结)
+    - [Collecton子接口-Map接口](#Collecton子接口-Map接口)
+        - [Map接口](#Map接口)
+        - [HashMap](#HashMap)
+        - [LinkedHashMap](#LinkedHashMap)
+        - [TreeMap](#TreeMap)
+        - [Properties](#Properties)
+
 - 应用
     - 字符串
         - [字符串-string](#字符串-string)
@@ -1031,7 +1036,7 @@ public class CommandPara {
 ## Collecton接口API的使用
 [top](#catalog)
 - 接口继承树： 
-    - <img src="./imgs/memo/java_collection/collection_class.png" height=60% width=60% />
+    - <img src="./imgs/memo/collection/collection_class.png" height=60% width=60% />
 - 接口中的方法
 
     |no|方法|描述|备注|
@@ -1234,7 +1239,7 @@ public class CommandPara {
         3. for
 
 - List及其实现类的关系
-    - <img src="./imgs/memo/java_collection/list_dependency.png" width=70% height=70%>
+    - <img src="./imgs/memo/collection/list_dependency.png" width=70% height=70%>
         
 ### ArrayList
 [top](#catalog)
@@ -1266,7 +1271,7 @@ public class CommandPara {
 - <label style="color:red">频繁插入使用：HashSet，频繁迭代使用LinkedHashSet</label>
 
 - Set及其实现类的关系
-    - <img src="./imgs/memo/java_collection/set_dependency.png" width=50% height=50%>
+    - <img src="./imgs/memo/collection/set_dependency.png" width=50% height=50%>
 
 
 ### HashSet
@@ -1278,11 +1283,12 @@ public class CommandPara {
 - 底层的存储
     - jdk7，是**数组和链表**，按照Hash算法来存储集合中的元素，因此具有很好的存取、查找、删除性能
     - jdk8，是HashMap
+        - 执行`add`操作时，值作为key，一个静态的object对象作为value
 - HashSet集合判断两个元素相等的标准
     - 基本原则：相等的对象必须具有相等的散列码
     - `hashCode()`的结果相同，`equals()`的结果也相同
 - 存放在Set容器中的对象，对应的类必须重写`hashCode()`和`equals()`
-    - 如果没有重写这两个方法，Set会将两个属性全部相同的对象视作不同，使这两个对象都可以插入
+    - 如果没有重写这两个方法，Set会将两个属性全部相同的对象视作不同，使 这两个对象都可以插入
 - <label style="color:red">HashSet如何添加元素</label>
     - 添加过程
         1. 调用元素a所在类的`hashCode()`方法，计算元素a的hash值
@@ -1361,7 +1367,7 @@ public class CommandPara {
 - 测试代码
     - TreeSetTest.java : [/java/mylearn/javabase/src/test/java/com/ljs/learn/collection/set/TreeSetTest.java](/java/mylearn/javabase/src/test/java/com/ljs/learn/collection/set/TreeSetTest.java)
 
-## Collection相关的问题总结
+## List和Set相关的问题总结
 [top](#catalog)
 1. 集合Collection中如果存储的是自定义对象，需要自定义类重写哪个方法？为什么
     - List
@@ -1473,7 +1479,133 @@ public class CommandPara {
             - 当前hashCode(aa)处保存的是cc，所以两个元素不同，可以插入
             - set=[(cc，aa)，bb，cc]
 
+## Collecton子接口-Map接口
+### Map接口
+[top](#catalog)
+- 存储Key-Value
+- 接口实现类的结构
+    - HashMap，作为Map的主要实现类；线程不安全，效率高；可以存储null的key和value
+        - LinkedHashMap，在遍历Map元素时，可以按照添加的顺序遍历，在原有的HashMap底层结构上添加了一对指针，指向前一个和后一个元素
+    - TreeMap，要求key必须是相同的类型，添加时按照key排序，需要考虑自然排序和定制排序；底层使用红黑树
+    - HashTable，Map的旧实现类；线程安全的，效率低；不能存储null的key和value
+        - Properties 
+- <label style="color:red">对于频繁的遍历操作LinkedHashMap效率更好</label>
+- Key-Value的结构（**以HashMap为例说明**）
+    - key，无序不可重复
+        - <label style="color:red"使用Set存储所有的key，所以key所在的类需要重写`equals()`、`hashCode()`</label>
+    - Value，无序可重复
+        - 使用Collection存储所有的value
+    - Entry
+        - 输入的是key-value，底层会将key、value组合成Entry，所以**实际存储到Map的是Entry**
+        - Entry是无序不可重复的，使用Set存储所有的Entry
 
+- Map接口中的方法
+
+    |类别|方法|描述|备注|
+    |-|-|-|-|
+    |添加，删除，修改|V put(K key, V value)|将指定key-value添加到(或修改)当前map对象中||
+    |添加，删除，修改|void putAll(Map<? extends K, ? extends V> m)|将m中的所有key-value对存放到当前map中||
+    |添加，删除，修改|V remove(Object key)|移除指定key的key-value对，并返回value|如果key不存在，则返回null|
+    |添加，删除，修改|void clear()|清空当前map中的所有数据|该方法会讲内部数组中的每个元素设为null，并设`size=0`|
+    |元素查询|V get(Object key)|获取指定key对应的value||
+    |元素查询|boolean containsKey(Object key)|是否包含指定的key||
+    |元素查询|boolean containsValue(Object value)|是否包含指定的value||
+    |元素查询|int size()|返回map中key-value对的个数||
+    |元素查询|boolean isEmpty()|判断当前map是否为空||
+    |元素查询|boolean equals(Object obj)|判断当前map和参数对象obj是否相等||
+    |元视图操作|Set keySet()|返回所有key构成的Set集合||
+    |元视图操作|Collection values()|返回所有value构成的Collection集合||
+    |元视图操作|Set entrySet()|返回所有key-value对构成的Set集合，遍历时需要将类型强制转换为Map.Entry||
+
+- 常用方法 
+    - 增：V put(K key, V value)
+    - 删：V remove(Object key)
+    - 改：V put(K key, V value)
+    - 查：V get(Object key)
+    - 长度：int size()
+    - 遍历：keySet、values、entrySet
+        - Map接口没有获取迭代器的方法，无法直接迭代，但是可以通过这个三个方法从Map中获取集合对象并进行迭代
+
+- 接口继承树
+    - <img src="./imgs/memo/collection/map_class.png" height="50%" width="50%">
+- 详细依赖关系
+    - <img src="./imgs/memo/collection/map_dependency.png" height="70%" width="70%">
+    
+### HashMap
+[top](#catalog)
+- 底层结构
+    - JDK7：数组+链表
+    - JDK8：数组+链表+红黑树
+- HashMap的底层原理
+    - JDK7
+        - 初始化：`HashMap map = new HashMap();`
+            - 在实例化之后，底层创建了长度是16的一维数组`Entry[] table`
+        - 添加Key-Value对：`map.put(key1, value1)`
+            - 只讨论第n次添加，第一次添加可能会有所不同
+            - 添加流程
+                1. 计算`hashCode(key1)`得到key的hash值，hash值经过某种算法以后，得到key1在Entry数组中的索引位置
+                2. 如果索引位置上的数据为空，**插入key1-value1** -- 情况1
+                3. 如果索引位置上的数据不为空，则此位置上存在一个数据，或多个数据(链表结构存在)
+                4. 比较key1和所有旧数据的hash值
+                    1. 如果key1的hash值与所有旧数据的hash值都不相同，则**key1-value1添加成功**
+                    2. 如果key1的hash值与某个数据的hash值相同，继续比较：调用`key1.equals()`
+                        1. 返回false，**插入key1-value1** -- 情况2
+                        2. 返回true，**使用value1更新旧数据** -- 情况3
+                        
+        - 在情况2中：key1-value1和原来的数据以链表的方式存储
+        - HashMap的默认扩容方式：扩容为原来容量的2倍，并将数据拷贝到新Map中
+    
+    - JDK8
+        - 在JDK8中，底层是用`Node<K,V>[] table;`来存储键值对，不再使用`Entry[]`，但是内部的基本属性都相同
+        - 初始化：`HashMap map = new HashMap();`
+            - 底层<label style="color:red">没有创建一个长度为16一维数组`Node[]`</label>
+        - 第一次执行：`map.put(key, value)`
+            - 底层创建一个长度为16一维数组`Node[]`
+        - 什么时候使用红黑树存储
+            - 当：`table[index].size() > 8 && table.length > 64`时，将`index`处的数据全部改为使用红黑树处理
+        - 添加Key-Value对的方式与JDK7基本相同
+        - 什么时候扩容：使用了75%，并且当前需要保存元素的位置不为空
+   
+- 测试代码
+    - HashMapTest.java : [/java/mylearn/javabase/src/test/java/com/ljs/learn/collection/map/HashMapTest.java](/java/mylearn/javabase/src/test/java/com/ljs/learn/collection/map/HashMapTest.java)
+     
+### LinkedHashMap
+[top](#catalog)
+- LinkedHashMap中，在创建`Node`时，会额外添加两个指针来记录前后的数据
+- 测试代码
+    - LinkedHashMapTest.java : [/java/mylearn/javabase/src/test/java/com/ljs/learn/collection/map/LinkedHashMapTest.java](/java/mylearn/javabase/src/test/java/com/ljs/learn/collection/map/LinkedHashMapTest.java)
+
+### TreeMap
+[top](#catalog)
+- 要求key必须是相同的类型
+- 添加时按照key排序，需要考虑自然排序和定制排序
+- 底层使用红黑树
+- 测试代码
+    - TreeMapTest.java : [/java/mylearn/javabase/src/test/java/com/ljs/learn/collection/map/TreeMapTest.java](/java/mylearn/javabase/src/test/java/com/ljs/learn/collection/map/TreeMapTest.java)
+
+### Properties
+[top](#catalog)
+- Properties是Hashtable的子类，该对象用于处理属性文件
+- 由于属性文件里的key、value都是字符串类型，所以Properties的key、value都是字符串类型
+- 存储数据时，建议使用`setProperty(String key, String value)`方法和`getProperty(String key)`方法
+- 使用方法
+    - 示例：PropertiesTest.java : [/java/mylearn/javabase/src/test/java/com/ljs/learn/collection/map/PropertiesTest.java](/java/mylearn/javabase/src/test/java/com/ljs/learn/collection/map/PropertiesTest.java)
+
+        ```java
+        // 创建 Properties对象
+        Properties properties = new Properties();
+        // 获取文件的输入流
+        FileInputStream is = new FileInputStream("jdbc.properties");
+
+        // 读取文件输入流，并从文件中解析属性
+        properties.load(is);
+
+        String user = properties.getProperty("user");
+        String password = properties.getProperty("password");
+
+        System.out.println("user = " + user);
+        System.out.println("password = " + password);
+        ```
 
 # 应用
 ## 字符串

@@ -14,3 +14,13 @@
             - LinkedHashSet接口测试
         - TreeSetTest.java
             - TreeSet接口测试
+    - map
+        - HashMapTest.java
+            - HashMap测试
+        - LinkedHashMapTest.java
+            - LinkedHashMap方法测试
+        - PropertiesTest.java
+            - 属性文件读取测试
+        - TreeMapTest.java
+            - TreeMap排序方式测试
+        
