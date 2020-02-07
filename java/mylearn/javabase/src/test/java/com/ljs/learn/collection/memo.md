@@ -23,4 +23,7 @@
             - 属性文件读取测试
         - TreeMapTest.java
             - TreeMap排序方式测试
+    - collections
+        - CollectionsTest.java
+            - 集合工具类测试
         

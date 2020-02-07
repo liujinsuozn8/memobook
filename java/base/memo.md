@@ -44,12 +44,13 @@
         - [LinkedHashSet](#LinkedHashSet)
         - [TreeSet](#TreeSet)
     - [List和Set相关的问题总结](#List和Set相关的问题总结)
-    - [Collecton子接口-Map接口](#Collecton子接口-Map接口)
-        - [Map接口](#Map接口)
+    - [Map接口](#Map接口)
+        - [Map接口API的使用](#Map接口API的使用)
         - [HashMap](#HashMap)
         - [LinkedHashMap](#LinkedHashMap)
         - [TreeMap](#TreeMap)
         - [Properties](#Properties)
+    - [Collections工具类](#Collections工具类)
 
 - 应用
     - 字符串
@@ -1479,8 +1480,8 @@ public class CommandPara {
             - 当前hashCode(aa)处保存的是cc，所以两个元素不同，可以插入
             - set=[(cc，aa)，bb，cc]
 
-## Collecton子接口-Map接口
-### Map接口
+## Map接口
+### Map接口API的使用
 [top](#catalog)
 - 存储Key-Value
 - 接口实现类的结构
@@ -1530,7 +1531,7 @@ public class CommandPara {
     - <img src="./imgs/memo/collection/map_class.png" height="50%" width="50%">
 - 详细依赖关系
     - <img src="./imgs/memo/collection/map_dependency.png" height="70%" width="70%">
-    
+
 ### HashMap
 [top](#catalog)
 - 底层结构
@@ -1545,12 +1546,12 @@ public class CommandPara {
             - 添加流程
                 1. 计算`hashCode(key1)`得到key的hash值，hash值经过某种算法以后，得到key1在Entry数组中的索引位置
                 2. 如果索引位置上的数据为空，**插入key1-value1** -- 情况1
-                3. 如果索引位置上的数据不为空，则此位置上存在一个数据，或多个数据(链表结构存在)
+                3. 如果索引位置上的数据不为空，则此位置上存在一个数据，或多个数据(链表结构存在) -- 情况2
                 4. 比较key1和所有旧数据的hash值
                     1. 如果key1的hash值与所有旧数据的hash值都不相同，则**key1-value1添加成功**
                     2. 如果key1的hash值与某个数据的hash值相同，继续比较：调用`key1.equals()`
-                        1. 返回false，**插入key1-value1** -- 情况2
-                        2. 返回true，**使用value1更新旧数据** -- 情况3
+                        1. 返回false，**插入key1-value1** -- 情况3
+                        2. 返回true，**使用value1更新旧数据** -- 情况4
                         
         - 在情况2中：key1-value1和原来的数据以链表的方式存储
         - HashMap的默认扩容方式：扩容为原来容量的2倍，并将数据拷贝到新Map中
@@ -1606,6 +1607,31 @@ public class CommandPara {
         System.out.println("user = " + user);
         System.out.println("password = " + password);
         ```
+
+## Collections工具类
+[top](#catalog)
+- Collections是一个操作Set、List、Map等集合的工具类
+- Collections中提供了一系列静态的方法对集合元素进行排序、查询和修改等操作，还提供了对集合对象设置不可变、对集合对象实现同步控制等方法
+- 常用工具类方法
+
+    |类别|方法|描述|备注|
+    |-|-|-|-|
+    |排序操作|reverse(List)|反转 List 中元素的顺序|直接修改集合本身|
+    |排序操作|shuffle(List)|对 List 集合元素进行随机排序|直接修改集合本身|
+    |排序操作|sort(List)|根据元素的自然顺序对指定 List 集合元素按升序排序|直接修改集合本身|
+    |排序操作|sort(List，Comparator)|根据指定的 Comparator 产生的顺序对 List 集合元素进行排序|直接修改集合本身|
+    |排序操作|swap(List，int， int)|将指定 list 集合中的 i 处元素和 j 处元素进行交换||
+    |查找、替换|Object max(Collection)|根据元素的自然顺序，返回给定集合中的最大元素||
+    |查找、替换|Object max(Collection，Comparator)|根据 Comparator 指定的顺序，返回给定集合中的最大元素||
+    |查找、替换|Object min(Collection)|||
+    |查找、替换|Object min(Collection，Comparator)|||
+    |查找、替换|int frequency(Collection，Object)|返回指定集合中指定元素的出现次数||
+    |查找、替换|void copy(List dest,List src)|将src中的内容复制到dest中|从dest的第一个元素开始进行拷贝，拷贝前需要保证dest.size() >= src.size()|
+    |查找、替换|boolean replaceAll(List list，Object oldVal，Object newVal)|使用新值替换 List 对象的所有旧值||
+    |线程同步|synchronized集合类型()|将指定集合包装成线程同步的集合，从而解决多线程并发访问集合时的线程安全问题||
+
+- 测试代码
+    - CollectionsTest.java : [/java/mylearn/javabase/src/test/java/com/ljs/learn/collection/collections/CollectionsTest.java](/java/mylearn/javabase/src/test/java/com/ljs/learn/collection/collections/CollectionsTest.java)
 
 # 应用
 ## 字符串
