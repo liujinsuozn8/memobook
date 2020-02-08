@@ -29,6 +29,7 @@
         - [类-接口](#类-接口)
     - [对象的序列化](#对象的序列化)
     - [object](#object)
+
 - [Java集合框架](#Java集合框架)
     - [Java集合框架概述](#Java集合框架概述)
     - [Collecton接口API的使用](#Collecton接口API的使用)
@@ -51,6 +52,17 @@
         - [TreeMap](#TreeMap)
         - [Properties](#Properties)
     - [Collections工具类](#Collections工具类)
+
+- [泛型](#泛型)
+    - [泛型的基本知识](#泛型的基本知识)
+    - [自定义泛型结构](#自定义泛型结构)
+        - [泛型类与泛型接口](#泛型类与泛型接口)
+        - [泛型方法](#泛型方法)
+    - [泛型中的通配符-泛型继承关系的体现](#泛型中的通配符-泛型继承关系的体现)
+        - [泛型与子类父类间的关系](#泛型与子类父类间的关系)
+        - [通配符?](#通配符?)
+        - [有限制条件的通配符](#有限制条件的通配符)
+    - [自定义泛型结构示例](#自定义泛型结构示例)
 
 - 应用
     - 字符串
@@ -1553,7 +1565,7 @@ public class CommandPara {
                         1. 返回false，**插入key1-value1** -- 情况3
                         2. 返回true，**使用value1更新旧数据** -- 情况4
                         
-        - 在情况2中：key1-value1和原来的数据以链表的方式存储
+        - 在情况2和情况3中：key1-value1和原来的数据以链表的方式存储
         - HashMap的默认扩容方式：扩容为原来容量的2倍，并将数据拷贝到新Map中
     
     - JDK8
@@ -1632,6 +1644,312 @@ public class CommandPara {
 
 - 测试代码
     - CollectionsTest.java : [/java/mylearn/javabase/src/test/java/com/ljs/learn/collection/collections/CollectionsTest.java](/java/mylearn/javabase/src/test/java/com/ljs/learn/collection/collections/CollectionsTest.java)
+
+
+# 泛型
+## 泛型的基本知识
+[top](#catalog)
+- 泛型是允许在定义类、接口时通过一个标识表示类中某个属性的类型或者某个方法的返回值及参数类型。类型参数将在使用时确定
+- 从JDK1.5以后，Java引入了**参数化类型**的概念，允许我们在创建集合时再指定集合元素的类型
+- <label style="color:red">泛型类型不能是基本数据类型，可以使用包装类替换</label>
+- 异常类不能声明为泛型类，`catch()`部分也不能使用泛型
+- 如果泛型结构是一个接口或抽象类，则不可创建泛型类的对象
+- 泛型如果不指定，将被擦除，泛型对应的类型均按照`java.lang.Object`处理，但不等价于Object
+    - 泛型如果使用就都使用，如果不使用就都不使用
+- 编译时`ArrayList<String>`和`ArrayList<Integer>`是两种类型，但是在**运行时只有一个ArrayList被加载到JVM中**
+- 类型推断：声明部分指定了泛型，实例化部分可以不用写泛型，如：`List<String> list = new ArrayList<>();`
+- 不能使用`new E[]`，但是可以先创建`Object`类型的对象，然后再使用泛型强转
+    ```java
+    E[] elements = (E[])new Object[capacity];
+    ```
+- <label style="color:red">泛型不同的引用不能互相赋值</label>，下面的代码是错误的
+    ```java
+    List<String> a = new ArrayList<>();
+    List<Integer> b = new ArrayList<>();
+  
+    a = b;
+    ```
+
+## 自定义泛型结构
+### 泛型类与泛型接口
+[top](#catalog)
+- 泛型类、泛型接口的语法
+    - 泛型类可以有多个泛型参数，此时应将多个参数一起放在尖括号内，如：`<E1, E2, E2>`
+    - 泛型类的构造器中**不声明泛型**
+    - <label style="color:red">泛型类中的静态方法不能使用泛型，但是泛型方法可以是静态方法</label>
+    ```java
+    public class Order<T, E, F> {
+        public Order(){
+        
+        }
+    }
+    ```
+
+- 泛型类、泛型接口的继承规则
+    - 父类
+        ```java
+        public class Order<T, E> {
+        }
+        ```
+    - 方式1：子类不保留父类的泛型
+        - 不指定泛型和具体类型，则泛型被擦除，相当于全部泛型使用Object
+            ```java
+            public class SubOrder extends Order{ //等价于class SubOrder extends Order<Object, Object>{
+            }
+            ```
+        - 指定父类的所有泛型类型
+            ```java
+            public class SubOrder extends Order<String, Integer>{
+            }
+            ```
+    - 方式2：子类保留父类的泛型
+        - 全部保留
+            ```java
+            public class SubOrder<T, E> extends Order<T, E>{
+            }
+            ```
+        - 部分保留
+            ```java
+            public class SubOrder<T> extends Order<T, String>{
+            }
+            ```
+    - 方式3：子类继承时，可以在父类基础上继续添加泛型
+        - 子类不保留父类的泛型
+            - 不指定泛型和具体类型，则泛型被擦除，相当于全部泛型使用Object
+                ```java
+                public class SubOrder<A, B> extends Order{ //等价于class SubOrder<A, B> extends Order<Object, Object>{
+                }
+                ```
+            - 指定父类的所有泛型类型
+                ```java
+                public class SubOrder<A, B> extends Order<String, Integer>{
+                }
+                ```
+        - 子类保留父类的泛型
+            - 全部保留
+                ```java
+                public class SubOrder<A, B, T, E> extends Order<T, E>{
+                }
+                ```
+            - 部分保留
+                ```java
+                public class SubOrder<A, B, T> extends Order<T, String>{
+                }
+                ```
+
+### 泛型方法
+[top](#catalog)
+- 泛型方法的语法
+    ```java
+    [访问权限] [static] <泛型> 返回类型 方法名([泛型标识 参数名称]) 抛出的异常
+  
+    public  <E> List<E> method(int count){...}
+    ```
+  
+- 泛型方法与所属类无关，需要在泛型方法调用时设定
+- <label style="color:red">泛型类中的静态方法不能使用泛型，但是泛型方法可以是静态方法</label>
+    - 类的泛型是实例化对象时指定的，静态方法无法使用，所以会导致异常
+    - 静态泛型方法的泛型是调用方法时指定的，静态方法可以使用
+    ```java
+    public class Order<T, E> {
+        // 类的泛型是实例化对象时指定的，静态方法无法使用，所以会导致异常
+        public static void test(T e){...}
+        // 静态泛型方法的泛型是调用方法时指定的，静态方法可以使用
+        public static <A> List<A> method(int a){...} 
+    }
+    ```
+ 
+## 泛型中的通配符-泛型继承关系的体现
+### 泛型与子类父类间的关系
+[top](#catalog)
+- 如果类A是类B的父类，但是`G<A>`和`G<B>`不具备子类父类关系，二者是并列关系
+- 相反，如果类A是类B的父类，则`A<T>`和`B<T>`仍然是子类父类关系
+    ```java
+    ArrayList<String> a = new ArrayList<>();
+    List<String> b = new ArrayList<>();
+    
+    //可以正常赋值
+    b = a;
+    ```
+
+### 通配符?
+[top](#catalog)
+- <label style="color:red">`<?>`是所有泛型的父类</label>
+- 类A是类B的父类，但是`class<A>`和`class<B>`之间是没有关系的，二者共同的父类是：`class<?>`
+- **迭代时或者获取元素时，类型不能使用`?`，只能使用Object来替代**
+- 对于`List<?>`
+    1. **无法执行`add`操作**，因为无法确定具体类型，但是可以添加`null`
+    2. 可以读取数据，因为无论list的真是类型是什么，它包含的都是`Object`类型
+- 测试内容
+    - GenericTest.java : [/java/mylearn/javabase/src/test/java/com/ljs/learn/generic/GenericTest.java](/java/mylearn/javabase/src/test/java/com/ljs/learn/generic/GenericTest.java)
+        ```java
+        @Test
+        public void testWildCard(){
+            List<Object> list1 = new ArrayList<>();
+            list1.add("aaa");
+            list1.add(123);
+            list1.add("bbb");
+            list1.add(456);
+
+            List<String> list2 = new ArrayList<>();
+            list2.add("qwer");
+            list2.add("asdf");
+            list2.add("zxcv");
+            list2.add("tgbn");
+
+            List<?> list = null;
+
+            list = list1;
+            show(list);
+            System.out.println("------------------------");
+
+            list = list2;
+            show(list);
+            System.out.println("------------------------");
+
+            // 无法添加元素
+            // list.add("aaa");
+
+            // 可以添加null
+            list.add(null);
+            list.add(null);
+            show(list);
+            // output:
+            // qwer
+            // asdf
+            // zxcv
+            // tgbn
+            // null
+            // null
+        }
+
+        public void show(List<?> list){
+            Iterator<?> iterator = list.iterator();
+            while (iterator.hasNext()){
+                //迭代时，不能使用泛型通配符?，只能使用Object类型
+                Object obj = iterator.next();
+                System.out.println(obj);
+            }
+
+            for (Object o : list) {
+                System.out.println(o);
+            }
+        }
+        ```
+### 有限制条件的通配符
+[top](#catalog)
+- 通配符指定上限：`<? extends Type>`，即`<=Type`
+    - 使用时指定的类型必须是某个类及其子类，或某个接口及其实现类
+    - 如果B是A的子类，则`class<? extend A>`可以作为`G<A>`和`G<B>`的父类
+    - 对于`List<? extends Type>`，无法执行`add`处理
+        - 无法确定当前的list类和添加类之间的关系，可能当前类是一个很小的子类，添加类是某一级的父类，会导致编译异常
+- 通配符指定下限：`<? super Type>`，即`>=Type`
+    - 使用时指定的类型必须是某个类及其父类，或某个接口及其实现类
+    - 如果B是A的父类类，则`class<? super A>`可以作为`G<A>`和`G<B>`的父类
+    - 对于`List<? super Type>`，可以执行`add`处理，只要是`Type`及其子类对象即可
+        - 如果插入Type的父类，会出现无法确定当前的list类和添加类之间的关系
+        - `Type`及其子类对象可以通过多态的方式被添加到集合中
+- 测试内容
+    - 类的继承关系
+        - CollegeStudent --> Student --> Person
+    - 测试类，GenericTest.java : [/java/mylearn/javabase/src/test/java/com/ljs/learn/generic/GenericTest.java](/java/mylearn/javabase/src/test/java/com/ljs/learn/generic/GenericTest.java)
+        ```java
+        // 有条件限制的通配符测试:? extends type
+        @Test
+        public void testExtendsWildCard(){
+            List<? extends Person> list1 = new ArrayList<>();
+
+            List<Person> ps = new ArrayList<>();
+            ps.add(new Person("aa", 11));
+            ps.add(new Person("bb", 22));
+            ps.add(new Person("cc", 33));
+            ps.add(new Person("dd", 44));
+
+            List<Student> ss = new ArrayList<>();
+            ss.add(new Student( "sa", 12, "12345"));
+            ss.add(new Student( "sb", 13, "12346"));
+            ss.add(new Student( "sc", 14, "12347"));
+            ss.add(new Student( "sd", 15, "12348"));
+
+            // 迭代时，只能使用Person类型
+            list1 = ps;
+            // 无法添加数据
+            // list1.add(new Student("add", 0, "0000"));
+            // list1.add(new Person("add",0));
+            for (Person person : list1) {
+                System.out.println(person);
+            }
+
+            System.out.println("----------------");
+
+            list1 = ss;
+            // 无法添加数据
+            // list1.add(new Student("add", 0, "0000"));
+            // list1.add(new Person("add",0));
+            for (Person person : list1) {
+                System.out.println(person);
+            }
+        }
+        
+        // 有条件限制的通配符测试:? super type
+        @Test
+        public void testSuperWildCard(){
+            List<? super Student> list1 = new ArrayList<>();
+
+            List<Person> ps = new ArrayList<>();
+            ps.add(new Person("aa", 11));
+            ps.add(new Person("bb", 22));
+            ps.add(new Person("cc", 33));
+            ps.add(new Person("dd", 44));
+
+            List<Student> ss = new ArrayList<>();
+            ss.add(new Student( "sa", 12, "12345"));
+            ss.add(new Student( "sb", 13, "12346"));
+            ss.add(new Student( "sc", 14, "12347"));
+            ss.add(new Student( "sd", 15, "12348"));
+
+            // 迭代时，只能使用Object类型
+            list1 = ps;
+            // 添加数据，可以添加Student及其子类
+            list1.add(new Student("add", 0, "0000"));
+            list1.add(new CollegeStudent("add", 0, "0000", "testCollege"));
+            for (Object o : list1) {
+                System.out.println(o);
+            }
+
+            // output:
+            // Person{name='aa', age=11}
+            // Person{name='bb', age=22}
+            // Person{name='cc', age=33}
+            // Person{name='dd', age=44}
+            // Student{studentID='0000'}
+            // CollegeStudent{collegeName='testCollege'}
+
+            System.out.println("----------------");
+
+            list1 = ss;
+            // 添加数据，可以添加Student及其子类
+            list1.add(new Student("add", 0, "0000"));
+            list1.add(new CollegeStudent("add", 0, "0000", "testCollege"));
+
+            for (Object o : list1) {
+                System.out.println(o);
+            }
+            //output:
+            // Student{studentID='12345'}
+            // Student{studentID='12346'}
+            // Student{studentID='12347'}
+            // Student{studentID='12348'}
+            // Student{studentID='0000'}
+            // CollegeStudent{collegeName='testCollege'}
+        }
+        ```
+## 自定义泛型结构示例
+[top](#catalog)
+- 泛型类， BaseDao.java : [/java/mylearn/myjdbc/src/main/java/com/ljs/myjdbc/dao/BaseDao.java](/java/mylearn/myjdbc/src/main/java/com/ljs/myjdbc/dao/BaseDao.java)
+- 子类， CustomerDaoImpl.java : [/java/mylearn/weblearn/src/main/java/com/ljs/mvc/dao/CustomerDaoImpl.java](/java/mylearn/weblearn/src/main/java/com/ljs/mvc/dao/CustomerDaoImpl.java)
+   
+
 
 # 应用
 ## 字符串
@@ -2066,127 +2384,6 @@ public class CommandPara {
     * 自定义异常类通常需要编写几个重载的构造器。
     * 自定义异常需要提供serialVersionUID
     * 自定义的异常**通过throw抛出**。
-
-
-
-## 泛型
-[top](#catalog)
-* 泛型的声明：`interface List<T>`, `class A<K,V>`
-* 泛型的实例化：在类名后面指定类型：List<String>
-* 通过泛型来限制可是用的类为某一个特定的类
-* 使用泛型能够在编译期检测错误
-* 泛型T只能是类，**不能用基本数据类型**，但是可以使用包装类替换
-* 泛型不同的引用不能互相赋值
-* 编译时：`ArrayList<String>`和`ArrayList<Integer>`是两种类型，但是在运行时，只有一个`ArrayList`被加载到JVM中
-* 定义了泛型，但是实例化时没有使用，则**默认为Object**
-* 不能再try-catch中使用泛型定义
-* 通配符
-    * ? `类<A>,类<B>`都是类<?>的子类
-        ```java
-        List<?> list = null;
-        List<Object> list1 = new ArrayList<>();
-        List<String> list2 = new ArrayList<>();
-        list = list1;
-        list = list2;
-        ```
-    * `? extends E`：E的子类或E ---> ?<=E
-    * `? super E`：E的父类或E ---> ?>=E
-    * 使用通配符后能读不能写
-        ```java
-        List<String> a = new ArrayList();
-        a.add("aaa");
-        a.add("bbb");
-        a.add("ccc");
-        List<?> list = a;
-        Iterator i = list.iterator();
-        // 实际读取时，是将各元素当作Object对象来读取的
-        while(i.hasNext()){System.out.println(i.next());}
-        // 写入是会发生编译错误，因为不知到？具体是什么类型
-        list.add("ddd");
-        // 但是可以添加 null, 因为null是所有元素的默认初始化状态
-        list.add(null)
-        ```
-* 自定义泛型
-    * 泛型类：`public class A<T> {...}`
-        * 泛型类的构造器：`public A(){...}`，不用加泛型T
-        * **静态方法**中不能**使用**当前类的泛型
-        * **异常类不能是泛型**
-        * 不能使用：`new E()`来创建对象，可以使用：`(E)new Object`
-        * 继承时，可以选择保留父类泛型、或指定泛型；子类也可以增加泛型
-            * 不保留-->指定泛型
-            * 保留
-                * 全部保留
-                * 部分保留
-            * 增加泛型时父类的泛型放在前面？？？？
-            ```java
-            class A<T1,T2>{...}
-            class B extends A<Integer,String>{...}
-            class C<T1,T2> extends A<T1,T2>{...}
-            class D<T2> extends A<Integer,T2>{...}
-            // 增加泛型
-            class B2<T3,T4> extends A<Integer,String>{...}
-            class C2<T1,T2,T3,T4> extends A<T1,T2>{...}
-            class D2<T2,T3,T4> extends A<Integer,T2>{...}
-            ```
-        * 示例
-            ```java
-            public class Order<T> {
-                private T t;
-                List<T> list = new ArrayList<>();
-
-                public void add(){
-                    list.add(t);
-                }
-
-                public T getT(){
-                    return t;
-                }
-
-                public void setT(T t){
-                    this.t = t;
-                }
-
-                // 泛型方法
-                public <E> E getE(E e){
-                return e;
-                }
-
-                // 实现数组到集合的复制，泛型方法中使用到的泛型可以可泛型类中使用的泛型不同
-                public <E> List<E> fromArrayToList(E[] e, List<E> list){
-                    for (E x : e){
-                        list.add(x);
-                    }
-                    return list;
-                }
-            }
-
-            @Test
-            public void method2(){
-                Order<Boolean> order = new Order<Boolean>();
-                order.setT(true);
-                System.out.println(order.getT()); //true
-                order.add();
-                List<Boolean> a = order.list;
-                System.out.println(a); //[true]
-
-                SubOrder o = new SubOrder();
-                List<Integer> b = o.list;
-                System.out.println(b); //[]
-
-                Integer mye = order.getE(188);
-                System.out.println(mye); // 188
-
-                Integer[] in = new Integer[]{1,2,3};
-                List<Integer> ls = new ArrayList<>();
-                List<Integer> lc = order.fromArrayToList(in, ls);
-                System.out.println(lc);  // [1,2,3]
-            }
-            ```
-    * 泛型接口
-    * 泛型方法: 
-        * 格式：[访问权限] [static] <泛型> 返回类型 方法名([泛型标识 参数名称]) 抛出的异常
-            * `public <E> E method(E e){...}`
-        * `<E>`标识一个泛型方法 
 
 ## 枚举类
 [top](#catalog)
