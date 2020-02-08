@@ -1,17 +1,26 @@
 - 内容整理自：
-    - `https://www.bilibili.com/video/av67955358?p=57`
+    - `https://www.bilibili.com/video/av67955358`
 
 <span id="catalog"></span>
 
 ### 目录
 - [JDBC概述](#JDBC概述)
-- [数据类型转换](#数据类型转换)
-- [获取连接](#获取连接)
+    - [JDBC的概念](#JDBC的概念)
+    - [JDBC接口的两个层次](#JDBC接口的两个层次)
+    - [JDBC程序编写步骤](#JDBC程序编写步骤)
+    - [JDBC的编程方式](#JDBC的编程方式)
+    - [JDBC对结果集的处理](#JDBC对结果集的处理)
+- [Java数据类型和数据库数据类型的转换](#Java数据类型和数据库数据类型的转换)
+- [获取数据库连接](#获取数据库连接)
+    - [获取连接的基本知识](#获取连接的基本知识)
+    - [获取连接的四个要素](#获取连接的四个要素)
+    - [5种创建Connection对象的方法及示例](#5种创建Connection对象的方法及示例)
 - [Statement](#Statement)
     - [Statement接口](#Statement接口)
     - [PreparedStatement接口](#preparedstatement接口)
         - [PreparedStatement的基本概念](#preparedstatement的基本概念)
-        - [PreparedStatement通用增删改查](#preparedstatement通用增删改查)
+        - [PreparedStatement执行查询处理](#PreparedStatement执行查询处理)
+        - [自定义PreparedStatement通用增删改查](#自定义PreparedStatement通用增删改查)
         - [操作blob数据](#操作blob数据)
         - [批量插入](#批量插入)
     - [CallableStatement](#CallableStatement)
@@ -26,47 +35,57 @@
 - [总结](#总结)
 
 # JDBC概述
+## JDBC的概念
 [top](#catalog)
 - JDBC(Java Database Connectivity)
-    - 一个**独立于特定数据库管理系统、通用的SQL数据库存取和操作的公共接口**（一组API）
-    - 定义了用来访问数据库的标准Java类库，（**java.sql,javax.sql**）
-        - 使用这些类库可以以一种**标准**的方法、方便地访问数据库资源。
-    - JDBC为访问不同的数据库提供了一种**统一的途径**，为开发者屏蔽了一些细节问题。
-    - JDBC本身是一种规范，即如何使用java程序来操作数据库
-- JDBC接口（API）包括两个层次：
-  - **面向应用的API**：Java API，抽象接口，供应用程序开发人员使用（连接数据库，执行SQL语句，获得结果）。
-  -  **面向数据库的API**：Java Driver API，供开发商开发数据库驱动程序用。
+- 一个**独立于特定数据库管理系统、通用的SQL数据库存取和操作的公共接口**（一组API）
+- 定义了用来访问数据库的标准Java类库，（**java.sql，javax.sql**）
+    - 使用这些类库可以以一种**标准**的方法、方便地访问数据库资源。
+- JDBC为访问不同的数据库提供了一种**统一的途径**，为开发者屏蔽了一些细节问题。
+- JDBC本身是一种规范，即如何使用java程序来操作数据库
 
-- JDBC程序编写步骤
-    - 导入`java.sql`包
-        - 添加相应数据库的驱动
-    - 加载并注册驱动程序
-        - 两种方式
-            - 直接使用对应的类创建
-            - 通过反射创建(可移植性更好)
-            - 使用`class DriverManager`
-    - **创建`Connection`对象**
-    - **创建`Statement`对象**
-    - 执行sql
-        - 查询：
-            - 使用`ResultSet对象`
-            - **关闭`ResultSet对象`**
-        - 更新
-            - 没有其他特殊操作
-    - **关闭`Statement`对象**
-    - **关闭`Connection`对象**
 
-- JDBC的两种思想
-    - 面向接口编程
-    - ORM(Object Relationship Mapping)对象关系有映射
-        - 一个数据表对应一个java类
-        - 表中的一条记录对应java类的一个对象
-        - 表中的一个字段对应java类的一个属性
+## JDBC接口的两个层次
+[top](#catalog)
+- **面向应用的API**：Java API，抽象接口，供应用程序开发人员使用（连接数据库，执行SQL语句，获得结果）。
+-  **面向数据库的API**：Java Driver API，供开发商开发数据库驱动程序用。
+
+## JDBC程序编写步骤
+[top](#catalog)
+1. 导入`java.sql`包
+    - 添加相应数据库的驱动
+2. 加载并注册驱动程序
+    - 两种方式
+        - 直接使用对应的类创建
+        - 通过反射创建(可移植性更好)
+        - 使用`class DriverManager`
+3. **创建`Connection`对象**
+4. **创建`Statement`对象**
+5. 执行sql
+    - 查询：
+        - 使用`ResultSet对象`
+        - **关闭`ResultSet对象`**
+    - 更新
+        - 没有其他特殊操作
+6. **关闭`Statement`对象**
+7。 **关闭`Connection`对象**
+
+## JDBC的两种编程思想
+[top](#catalog)
+- 面向接口编程
+- ORM(Object Relationship Mapping)对象关系有映射
+    - 一个数据集对应一个java类
+    - 表中的一条记录对应java类的一个对象
+    - 表中的一个字段对应java类的一个属性
+        - 使用时，应该是一个字段别名对应一个属性
+
+## JDBC对结果集的处理
+[top](#catalog)
 - JDBC处理`ResultSet对象`的[两种技术](#mapresultset)
     - 元数据：`ResultSetMetaData`
     - 反射：动态的给属性设值
 
-# 数据类型转换
+# Java数据类型和数据库数据类型的转换
 [top](#catalog)
 - 基本类型转换规则
 
@@ -85,151 +104,169 @@
 
 - date类型可以使用格式化的字符串来代替，如`1999-10-10`
 
-# 获取连接
+# 获取数据库连接
+
+## 获取连接的基本知识
 [top](#catalog)
 - 一个数据库连接就是一个`Socket`连接
 - 程序中不需要直接去访问`Driver`接口的`实现类`，而是由驱动程序管理器类(java.sql.DriverManager)去调用这些`Driver`实现
   - Oracle的驱动：`oracle.jdbc.driver.OracleDriver`
   - mySql的驱动： `com.mysql.jdbc.Driver`
-- 获取连接的四个要素
-    1. driver对象
-    2. url
-        - MySql
-            - mysql5.7:`jdbc:mysql://127.0.0.1:3306/test?`
-            - mysql8:`jdbc:mysql://127.0.0.1:3306/test?serverTimezone=UTC&characterEncoding=utf8&useUnicode=true&useSSL=false`
-                - 8以后必须添加时区`serverTimezone`
-        - Oracle 9i的连接URL编写方式：
-            - jdbc:oracle:thin:@主机名称:oracle服务端口号:数据库名称
-            - jdbc:oracle:thin:@localhost:1521:atguigu
 
-        - SQLServer的连接URL编写方式：
-            - jdbc:sqlserver://主机名称:sqlserver服务端口号:DatabaseName=数据库名称
-            - jdbc:sqlserver://localhost:1433:DatabaseName=atguigu
-        - url组成
-            - jdbc 主协议
-            - mysql子协议
-            - test数据库名
-    3. 用户名
-    4. 密码
-- 5种创建`Connection`对象的方法
+## 获取连接的四个要素
+[top](#catalog)
+
+1. driver对象
+2. url
+    - MySql
+        - mysql5.7:`jdbc:mysql://127.0.0.1:3306/test?`
+        - mysql8:`jdbc:mysql://127.0.0.1:3306/test?serverTimezone=UTC&characterEncoding=utf8&useUnicode=true&useSSL=false`
+            - 8以后必须添加时区`serverTimezone`
+    - Oracle 9i的连接URL编写方式：
+        - jdbc:oracle:thin:@主机名称:oracle服务端口号:数据库名称
+        - jdbc:oracle:thin:@localhost:1521:testdb
+
+    - SQLServer的连接URL编写方式：
+        - jdbc:sqlserver://主机名称:sqlserver服务端口号:DatabaseName=数据库名称
+        - jdbc:sqlserver://localhost:1433:DatabaseName=testdb
+    - url组成
+        - jdbc 主协议
+        - mysql子协议
+        - test数据库名
+3. 用户名
+4. 密码
+
+## 5种创建Connection对象的方法及示例
+[top](#catalog)
+- 5种创建方法
     1. 直接使用MySql手动创建`Driver`和`Connection`
     2. 通过反射创建`Driver`，再创建`Connection`
     3. 通过`DriverManager`来创建
     4. 对`DriverManager`的方式进行简化
         - 因为驱动类加载时，通过静态代码做了同样的引入操作
     5. 将部分配置信息移动到配置文件中，通过加载配置文件来实现
-    ```java
-    public class ConnectionTest {
-        // 连接方式1
-        @Test
-        public void method01() throws SQLException {
-            // Driver driver = new com.mysql.jdbc.Driver();
-            Driver driver = new com.mysql.cj.jdbc.Driver();
-            // jdbc 主协议，mysql子协议，test数据库
-            String url = "jdbc:mysql://127.0.0.1:3306/test?serverTimezone=UTC&characterEncoding=utf8&useUnicode=true&useSSL=false";
-            Properties info = new Properties();
-            info.setProperty("user", "root");
-            info.setProperty("password", "1234");
 
-            // 创建Connection对象
-            Connection connect = driver.connect(url, info);
-            System.out.println(connect);
+- 示例: 
+    - 测试代码：`myjdbc/src/main/java/com/ljs/myjdbc/connection/ConnectionTest.java`
+        ```java
+        public class ConnectionTest {
+            // 连接方式1
+            @Test
+            public void method01() throws SQLException {
+                // Driver driver = new com.mysql.jdbc.Driver();
+                Driver driver = new com.mysql.cj.jdbc.Driver();
+                // jdbc 主协议，mysql子协议，test数据库
+                String url = "jdbc:mysql://127.0.0.1:3306/test?serverTimezone=UTC&characterEncoding=utf8&useUnicode=true&useSSL=false";
+                Properties info = new Properties();
+                info.setProperty("user", "root");
+                info.setProperty("password", "1234");
+
+                // 创建Connection对象
+                Connection connect = driver.connect(url, info);
+                System.out.println(connect);
+            }
+
+            //连接方式2：通过反射创建驱动器,可移植性更好
+            @Test
+            public void method02() throws Exception {
+                Class clazz = Class.forName("com.mysql.cj.jdbc.Driver");
+                Driver driver = (Driver)clazz.newInstance();
+
+                String url = "jdbc:mysql://127.0.0.1:3306/test?serverTimezone=UTC&characterEncoding=utf8&useUnicode=true&useSSL=false";
+                Properties info = new Properties();
+                info.setProperty("user", "root");
+                info.setProperty("password", "1234");
+
+                // 创建Connection对象
+                Connection connect = driver.connect(url, info);
+                System.out.println(connect);
+
+            }
+
+            //连接方式3：通过DriverManager来创建驱动
+            @Test
+            public void method03() throws Exception {
+                String url = "jdbc:mysql://127.0.0.1:3306/test?serverTimezone=UTC&characterEncoding=utf8&useUnicode=true&useSSL=false";
+                String user = "root";
+                String password = "1234";
+
+                //获取driver类对象
+                Class clazz = Class.forName("com.mysql.cj.jdbc.Driver");
+                Driver driver = (Driver)clazz.newInstance();
+
+                //注册驱动
+                DriverManager.registerDriver(driver);
+
+                //获取连接
+                Connection connection = DriverManager.getConnection(url, user, password);
+
+                System.out.println(connection);
+            }
+
+            //连接方式4：对方式3进行优化
+            @Test
+            public void method04() throws Exception {
+                String url = "jdbc:mysql://127.0.0.1:3306/test?serverTimezone=UTC&characterEncoding=utf8&useUnicode=true&useSSL=false";
+                String user = "root";
+                String password = "1234";
+
+                //加载Driver
+                //MySql下也可以省略该操作，在jar包/META-INF/services/java.sql.Driver下引入了该类
+                Class clazz = Class.forName("com.mysql.cj.jdbc.Driver");
+
+                //省略注册操作，在Mysql的实现类中已经被执行了
+                // public class Driver extends NonRegisteringDriver implements java.sql.Driver {
+                //     public Driver() throws SQLException {
+                //     }
+                //
+                //     static {
+                //         try {
+                //             DriverManager.registerDriver(new Driver());
+                //         } catch (SQLException var1) {
+                //             throw new RuntimeException("Can't register driver!");
+                //         }
+                //     }
+                // }
+
+                //Driver driver = (Driver)clazz.newInstance();
+                //注册驱动
+                //DriverManager.registerDriver(driver);
+
+                //获取连接
+                Connection connection = DriverManager.getConnection(url, user, password);
+
+                System.out.println(connection);
+            }
+
+            //方式5，将部分配置信息移动到配置文件中，通过加载配置文件来实现
+            @Test
+            public void method05() throws Exception {
+                //读取配置文件
+                // eclipse
+                // InputStream is = ConnectionTest.class.getClassLoader().getResourceAsStream("jdbc.properties");
+                // idea
+                FileInputStream is = new FileInputStream("resource/jdbc.properties");
+                Properties props = new Properties();
+
+                props.load(is);
+                String url = props.getProperty("url");
+                String user = props.getProperty("user");
+                String password = props.getProperty("password");
+                String driverClass = props.getProperty("driverClass");
+
+                Class.forName(driverClass);
+                Connection connection = DriverManager.getConnection(url, user, password);
+                System.out.println(connection);
+            }
         }
-
-        //连接方式2：通过反射创建驱动器,可移植性更好
-        @Test
-        public void method02() throws Exception {
-            Class clazz = Class.forName("com.mysql.cj.jdbc.Driver");
-            Driver driver = (Driver)clazz.newInstance();
-
-            String url = "jdbc:mysql://127.0.0.1:3306/test?serverTimezone=UTC&characterEncoding=utf8&useUnicode=true&useSSL=false";
-            Properties info = new Properties();
-            info.setProperty("user", "root");
-            info.setProperty("password", "1234");
-
-            // 创建Connection对象
-            Connection connect = driver.connect(url, info);
-            System.out.println(connect);
-
-        }
-
-        //连接方式3：通过DriverManager来创建驱动
-        @Test
-        public void method03() throws Exception {
-            String url = "jdbc:mysql://127.0.0.1:3306/test?serverTimezone=UTC&characterEncoding=utf8&useUnicode=true&useSSL=false";
-            String user = "root";
-            String password = "1234";
-
-            //获取driver类对象
-            Class clazz = Class.forName("com.mysql.cj.jdbc.Driver");
-            Driver driver = (Driver)clazz.newInstance();
-
-            //注册驱动
-            DriverManager.registerDriver(driver);
-
-            //获取连接
-            Connection connection = DriverManager.getConnection(url, user, password);
-
-            System.out.println(connection);
-        }
-
-        //连接方式4：对方式3进行优化
-        @Test
-        public void method04() throws Exception {
-            String url = "jdbc:mysql://127.0.0.1:3306/test?serverTimezone=UTC&characterEncoding=utf8&useUnicode=true&useSSL=false";
-            String user = "root";
-            String password = "1234";
-
-            //加载Driver
-            //MySql下也可以省略该操作，在jar包/META-INF/services/java.sql.Driver下引入了该类
-            Class clazz = Class.forName("com.mysql.cj.jdbc.Driver");
-
-            //省略注册操作，在Mysql的实现类中已经被执行了
-            // public class Driver extends NonRegisteringDriver implements java.sql.Driver {
-            //     public Driver() throws SQLException {
-            //     }
-            //
-            //     static {
-            //         try {
-            //             DriverManager.registerDriver(new Driver());
-            //         } catch (SQLException var1) {
-            //             throw new RuntimeException("Can't register driver!");
-            //         }
-            //     }
-            // }
-
-            //Driver driver = (Driver)clazz.newInstance();
-            //注册驱动
-            //DriverManager.registerDriver(driver);
-
-            //获取连接
-            Connection connection = DriverManager.getConnection(url, user, password);
-
-            System.out.println(connection);
-        }
-
-        //方式5，将部分配置信息移动到配置文件中，通过加载配置文件来实现
-        @Test
-        public void method05() throws Exception {
-            //读取配置文件
-            // eclipse
-            // InputStream is = ConnectionTest.class.getClassLoader().getResourceAsStream("jdbc.properties");
-            // idea
-            FileInputStream is = new FileInputStream("resource/jdbc.properties");
-            Properties props = new Properties();
-
-            props.load(is);
-            String url = props.getProperty("url");
-            String user = props.getProperty("user");
-            String password = props.getProperty("password");
-            String driverClass = props.getProperty("driverClass");
-
-            Class.forName(driverClass);
-            Connection connection = DriverManager.getConnection(url, user, password);
-            System.out.println(connection);
-        }
-    }
-    ```
+        ```
+    - jdbc连接配置文件：`myjdbc/resource/jdbc.properties`
+        ```xml
+        url=jdbc:mysql://127.0.0.1:3306/test?serverTimezone=Asia/Shanghai&characterEncoding=utf8&useUnicode=true&useSSL=false&rewriteBatchedStatements=true
+        user=root
+        password=1234
+        driverClass=com.mysql.cj.jdbc.Driver
+        ```
 
 # Statement
 ## Statement接口
@@ -241,26 +278,39 @@
         - 每次都要重新拼接sql字符串
         - 每个sql都需要编译后才能使用
     - sql注入，如
+        - 拼接的sql
+            ```java
+            String sql  = "SELECT user, password ";
+                   sql += "FROM user_table ";
+                   sql += "WHERE ";
+                   sql += "user = '" + param01 + "' ";
+                   sql += "AND password = '" + param02 + "' ";
+            ```
         - 输入的条件
             - user:`a' OR 1 = `
             - password:` OR '1' = '1`
         - 但是sql拼接完之后**产生了不同的语义**
-        ```sql
-        SELECT user, password 
-        FROM user_table 
-        WHERE 
-        user='a' OR 1 = ' AND password = ' OR '1' = '1'
-        ```
+            - 由于产生了`OR '1' = '1'`，所以无论输入什么条件都可以进行访问
+
+            ```sql
+            SELECT user, password 
+            FROM user_table 
+            WHERE 
+                user = 'a' 
+                OR 1 = ' AND password = '
+                OR '1' = '1'
+            ```
 
 ## PreparedStatement接口
 ### PreparedStatement的基本概念
 [top](#catalog)
+
 - `PreparedStatement`是`Statement`接口的子接口
     - 一般都使用`PreparedStatement`来替代`Statement`
 - `PreparedStatement`：SQL语句被**预编译**并**存储**在该对象中，可以使用该对象多次高效的执行SQL语句
 - 在SQL中使用占位符`?`来替代未知条件
     - `insert into customers(name, email, birth) values (?, ?, ?);`
-    - 如果表名与一些关键字相同需要使用``包裹
+    - <label style="color:red">如果表名与一些关键字相同需要使用``包裹</label>
         ```sql
         insert into `order` ...
         ```
@@ -272,50 +322,57 @@
         - `Statement`每次都需要校验sql，`PreparedStatement`只校验一次，使用时只是填充占位符
 
 - 基本方法
-    - `connection.prepareStatement(sql)`，创建对象，并预编译sql
-    - `setXXX(index, value)`，填充sql中的占位符，index从1开始
-        - 通用设定方法`setObject(index, value)`
-    - `executeQuery()`来执行查询
-    - `execute()`，执行`insert`, `update`, `delete`，也可以执行`select`
-        - 如果执行select，有返回结果，则返回`true`
-        - 如果执行增删改，没有结果集，则返回`false`
-    - `executeUpdate()`执行增删改
-        - 返回更新的数据行数
-- 查询处理
+
+    |方法|执行内容|返回值|
+    |-|-|-|
+    |`connection.prepareStatement(sql)`|创建对象，并预编译sql|PreparedStatement接口对象|
+    |`void setXXX(int index, XXX value)`|填充sql中的占位符，<label style="color:red">index从1开始</label>|-|
+    |`void setObject(int parameterIndex, Object x) throws SQLException;`|通用sql参数设定方法|-|
+    |`ResultSet executeQuery() throws SQLException;`|执行查询|返回查询的结果集|
+    |`boolean execute() throws SQLException;`|执行`insert`, `update`, `delete`，也可以执行`select`|如果执行select，有返回结果，则返回`true`<br>如果执行增删改，没有结果集，则返回`false`|
+    |`int executeUpdate() throws SQLException;`|执行增删改|返回更新的数据行数|
+    
+## PreparedStatement执行查询处理
+[top](#catalog)
+- 处理方法
     - 使用`executeQuery()`执行查询，返回一个`ResultSet`对象
     - 使用`next()`方法迭代，返回`true/false`，如果返回`false`则迭代结束
     - 可以通过ORM来处理数据
     -  <span id="mapresultset"></span>通过反射从`ResultSet`对象中取值
-        ```java
-        // 执行并返回结果集
-        resultSet = ps.executeQuery();
-        // 获取结果集的元数据
-        ResultSetMetaData metaData = resultSet.getMetaData();
-        //  获取结果中的列数
-        int columnCount = metaData.getColumnCount();
-        // 处理结果集
-        if (resultSet.next()) {
-            customers = new Customers();
-            // 处理一行数据
-            for (int j = 1; j <= columnCount; j++) {
-                // 获取第j列的值
-                Object value = resultSet.getObject(j);
-                // 获取第j列的列名，不推荐使用
-                // String columnName = metaData.getColumnName(j);
-                // 获取第j列的别名
-                String columnName = metaData.getColumnLabel(j);
-                // 通过反射，给对应列名的属性设值
-                // 获取属性
-                Field field = Customers.class.getDeclaredField(columnName);
-                // 防止私有属性
-                field.setAccessible(true);
-                // 设值
-                field.set(customers, value);
-            }
+    - 从ResultSet和元数据中取值时，起始<label style="color:red">下标都从1开始</label>
+- 示例
+    ```java
+    // 执行并返回结果集
+    resultSet = ps.executeQuery();
+    // 获取结果集的元数据
+    ResultSetMetaData metaData = resultSet.getMetaData();
+    //  获取结果中的列数
+    int columnCount = metaData.getColumnCount();
+    // 处理结果集
+    if (resultSet.next()) {
+        customers = new Customers();
+        // 处理一行数据
+        for (int j = 1; j <= columnCount; j++) {
+            // 获取第j列的值
+            Object value = resultSet.getObject(j);
+            // 获取第j列的列名，不推荐使用
+            // String columnName = metaData.getColumnName(j);
+            // 获取第j列的别名
+            String columnName = metaData.getColumnLabel(j);
+            // 通过反射，给对应列名的属性设值
+            // 获取属性
+            Field field = Customers.class.getDeclaredField(columnName);
+            // 防止私有属性
+            field.setAccessible(true);
+            // 设值
+            field.set(customers, value);
         }
-        ```
-### PreparedStatement通用增删改查
+    }
+    ```
+
+### 自定义PreparedStatement通用增删改查
 [top](#catalog)
+- `myjdbc/src/main/java/com/ljs/myjdbc/util/JDBCUtils.java`
 ```java
 public class JDBCUtils {
     public static Connection getConnection() throws Exception {
@@ -514,8 +571,8 @@ public class JDBCUtils {
 - jdbc只允许插入1M以下的数据，需要在`mysql.ini`中指定:`max_allowed_packet=16M`
     - mysql8没有这种问题
 - 插入时，`setBlob()`需要创建一个文件输入流`InputStream`
-- 查询时，同`blob.getBinaryStream()`返回一个文件输入流`InputStream`，需要自行转换
-- 示例
+- 查询时，`blob.getBinaryStream()`返回一个文件输入流`InputStream`，需要自行转换
+- 示例: `myjdbc/src/main/java/com/ljs/myjdbc/blob/blobTest.java`
     ```java
     public class blobTest {
         // 插入blob字段
@@ -590,7 +647,7 @@ public class JDBCUtils {
 - 批量插入的优化：插入过程中禁止`commit`，全部插入后再`commit`
     - `connection.setAutoCommit(false);`
     - `connection.commit();`
-- 示例
+- 示例: `myjdbc/src/main/java/com/ljs/myjdbc/batch/BatchInsertTest.java`
     ```java
     @Test
     public void batchInsertTest03(){
@@ -943,7 +1000,7 @@ public class CustomersDAOImpl extends BaseDAO<Customers> implements CustomerDAO 
 [top](#catalog)
 - 手动创建连接的问题
     - 每次通过`DriverManager`,`DriverManager`获取连接时，都要将`DriverManager`加载到内存，并验证用户名密码，执行后再断开连接会浪费大量的资源和时间
-    - **对于每一次数据库连接，使用完后都得断开。**否则，如果程序出现异常而未能关闭，将会导致数据库系统中的内存泄漏，最终将导致重启数据库
+    - **对于每一次数据库连接，使用完后都得断开**，否则，如果程序出现异常而未能关闭，将会导致数据库系统中的内存泄漏，最终将导致重启数据库
     - **无法控制被创建的连接对象数**，如连接过多，也可能导致内存泄漏，服务器崩溃
 - 数据库连接池技术
     - 由数据库连接池控制：连接的数量，分配、管理和释放连接
@@ -960,7 +1017,7 @@ public class CustomersDAOImpl extends BaseDAO<Customers> implements CustomerDAO 
     - DataSource用来取代DriverManager来获取Connection，获取速度快，同时可以大幅度提高数据库访问速度
     - `DataSource`该接口通常由服务器(Weblogic, WebSphere, Tomcat)提供实现,也有一些开源实现：
         - **DBCP** 是Apache提供的数据库连接池。tomcat 服务器自带dbcp数据库连接池。**速度相对c3p0较快**，但因自身存在BUG，Hibernate3已不再提供支持
-        - **C3P0** 是一个开源组织提供的一个数据库连接池，**速度相对较慢，稳定性还可以。**hibernate官方推荐使用
+        - **C3P0** 是一个开源组织提供的一个数据库连接池，**速度相对较慢，稳定性还可以**，hibernate官方推荐使用
         - **Proxool** 是sourceforge下的一个开源项目数据库连接池，有监控连接池状态的功能，**稳定性较c3p0差一点**
         - **BoneCP** 是一个开源组织提供的数据库连接池，速度快
         - **Druid** 是阿里提供的数据库连接池，集DBCP 、C3P0 、Proxool 优点于一身的数据库连接池，但是速度不确定是否有BoneCP快
