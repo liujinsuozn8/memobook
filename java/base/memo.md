@@ -64,6 +64,18 @@
         - [有限制条件的通配符](#有限制条件的通配符)
     - [自定义泛型结构示例](#自定义泛型结构示例)
 
+- [注解](#注解)
+    - [注解的概念](#注解的概念)
+    - [常见的Annotation示例](#常见的Annotation示例)
+        - [1.生成文件相关的注解](#1.生成文件相关的注解)
+        - [2.在编译时进行格式检查-JDK内置的三个基本注解](#2.在编译时进行格式检查-JDK内置的三个基本注解)
+        - [3.跟踪代码依赖性，实现替代配置文件功能](#3.跟踪代码依赖性，实现替代配置文件功能)
+    - [自定义注解](#自定义注解)
+        - [JDK注解示例-SuppressWarnings](#JDK注解示例-SuppressWarnings)
+        - [定义注解语法](#定义注解语法)
+        - [使用注解的方式](#使用注解的方式)
+        - [元注解](#元注解)
+
 - 应用
     - 字符串
         - [字符串-string](#字符串-string)
@@ -71,9 +83,7 @@
         - [字符串-StringBuilder](#字符串-stringbuilder)
         - [字符串-三种类型的关系](#字符串-三种类型的关系)
     - [异常](#异常)
-    - [泛型](#泛型)
     - [枚举类](#枚举类)
-    - [注解](#注解)
     - io
         - [io-File类](#io-file类)
         - [io-io流](#io-io流)
@@ -1948,7 +1958,298 @@ public class CommandPara {
 [top](#catalog)
 - 泛型类， BaseDao.java : [/java/mylearn/myjdbc/src/main/java/com/ljs/myjdbc/dao/BaseDao.java](/java/mylearn/myjdbc/src/main/java/com/ljs/myjdbc/dao/BaseDao.java)
 - 子类， CustomerDaoImpl.java : [/java/mylearn/weblearn/src/main/java/com/ljs/mvc/dao/CustomerDaoImpl.java](/java/mylearn/weblearn/src/main/java/com/ljs/mvc/dao/CustomerDaoImpl.java)
-   
+
+# 注解
+## 注解的概念
+[top](#catalog)
+- 从jDK5.0开始开始，Java增加对元数据MetaDate的支持，即注解Annotation
+- Annotation其实就是代码里的**特殊标记**，这些特殊标记可以在**编译、类加载、运行时**被读取，并执行响应的处理
+- 使用Annotation，可以在不改变原有逻辑的情况下，在源文件中潜入一些补充信息。代码分析工具、开发工具、部署工具等可以通过这些补充信息进行验证或者进行部署
+- 使用Annotation时需要在前面添加`@`符号，并把注解当成一个修饰符来修饰它支持的程序元素，注解可以修饰：
+    - 包
+    - 类
+    - 构造器
+    - 方法
+    - 成员变量
+    - 参数
+    - 局部变量的声明
+- Annotation的修饰信息被保存在Annotation的`name=value`对中
+
+- 未来的开发模式都是基于Annotation的，除了标记，还可以配置应用程序的切面，进行文件配置等
+- 在一定程度上：<label style="color:red">框架 = 注解 + 反射 + 设计模式 </label>
+- 自定义注解必须配合反射执行相应的处理才有意义
+
+## 常见的Annotation示例
+### 1.生成文件相关的注解
+[top](#catalog)
+- 生成文件相关的注解
+    |注解|用途|备注|
+    |-|-|-|
+    |@Description|描述||
+    |@author|标明开发该类模块的作者，多个作者之间使用,分割||
+    |@version|标明该类模块的版本||
+    |@see|参考转向，也就是相关主题||
+    |@since|从哪个版本开始增加的||
+    |@param|对方法中某参数的说明，如果没有参数就不能写|只用于标记方法<br>格式要求:@param 形参名 形参类型 形参说明<br>可以并列多个|
+    |@return|对方法返回值的说明，如果方法的返回值类型是void就不能写|只用于标记方法<br>格式要求:@return 返回值类型 返回值说明|
+    |@exception|对方法可能抛出的异常进行说明如果方法没有用throws显式抛出的异常就不能写|只用于标记方法<br>格式要求:@exception 异常类型 异常说明<br>可以并列多个|
+
+- 示例参考
+    - DocAnnotationTest.java : [/java/mylearn/javabase/src/test/java/com/ljs/learn/annotation/DocAnnotationTest.java](/java/mylearn/javabase/src/test/java/com/ljs/learn/annotation/DocAnnotationTest.java)
+
+### 2.在编译时进行格式检查-JDK内置的三个基本注解
+[top](#catalog)
+- JDK内置的三个基本注解
+
+    |注解|描述|备注|
+    |-|-|-|
+    |@Override|限定重写父类方法, 该注解只能用于方法|重写父类方法、或实现接口方法时可以不加该注解<br>添加该注解时，在编译期会进行语法检查|
+    |@Deprecated|用于表示所修饰的元素(类, 方法等)已过时。通常是因为 所修饰的结构危险或存在更好的选择||
+    |@SuppressWarnings|抑制编译器警告||
+    
+- 示例参考
+    - JDKBaseAnnotationTest.java : [/java/mylearn/javabase/src/test/java/com/ljs/learn/annotation/JDKBaseAnnotationTest.java](/java/mylearn/javabase/src/test/java/com/ljs/learn/annotation/JDKBaseAnnotationTest.java)
+    
+### 3.跟踪代码依赖性，实现替代配置文件功能
+[top](#catalog)
+
+## 自定义注解
+### JDK注解示例-SuppressWarnings
+[top](#catalog)
+```java
+@Target({TYPE, FIELD, METHOD, PARAMETER, CONSTRUCTOR, LOCAL_VARIABLE, MODULE})
+@Retention(RetentionPolicy.SOURCE)
+public @interface SuppressWarnings {
+    String[] value();
+}
+```
+### 定义注解语法
+[top](#catalog)
+- 语法
+    ```java
+    import java.lang.annotation.*;
+
+    权限修饰符 @interface 注解名{
+        参数类型 参数名() [default 默认值];
+    }
+    ```
+  
+- 注解声明`@intreface`
+
+- 自定义注解自动继承了`java.lang.annotation.Annotation接口`
+
+- 注解的**配置参数**
+    - Annotation的成员变量成为**配置参数**，在Annotation定义中以**无参数方法**的形式来声明
+    - 方法名和返回值定义了该参数的名字和类型，如：
+        ```java
+        String[] value();
+        ```
+    - 配置参数的可用类型（可用类型及其类型的数组）
+        - 8种基本数据类型
+            1. byte，byte[]
+            2. short，short[]
+            3. int，int[]
+            4. long，long[]
+            5. float，float[]
+            6. double，double[]
+            7. char，char[]
+            8. boolean，boolean[]
+        - String，String[]
+        - Class，Class[]
+        - enum，enum[]
+        - Annotation[]
+        
+    - <label style="color:red">如果只有一个配置参数，建议使用参数名为`value`</label>
+    - 使用`default`关键字在定义配置参数时指定初始值
+        ```java
+        String value default "hello";
+        ```
+      
+- <label style="color:red">没有配置参数的注解，成为**标记**，如`Override`；包含配置参数的注解成为**元数据Annotation**</label>
+
+- 自定义注解示例
+    ```java
+    public @interface Myannotation {
+        String value() default "hello";
+    }
+    ```
+
+### 使用注解的方式
+[top](#catalog)
+- 如果指定的注解含有配置参数，那么使用时必须指定参数值，除非他有默认值
+    - 格式：`value=参数值`
+    - 如果注解只有一个参数，并且参数名为`value`，则可以省略`value=`
+
+- 使用注解的示例
+    - 使用元数据
+        ```java
+        public @interface Myannotation {
+            String value() default "hello";
+        }
+        
+        // 使用注解的默认值
+        @Myannotation
+        public class TestClass{}
+        
+        // 覆盖注解的默认值
+        @Myannotation(value="test2")
+        public class TestClass2{}
+        
+        // 注解只有一个参数，并且参数名为`value`，所以可以省略`value=`
+        @Myannotation("test3")
+        public class TestClass3{}
+        ```
+    - 使用标记
+        ```java
+        public @interface Myannotation {
+        }
+        
+        @Myannotation
+        public class TestClass{}
+        ```
+
+### 元注解
+[top](#catalog)
+- 元注解用于修饰其他Annotation定义
+- 5个标准的元注解类型
+- 提供了
+    - Retention，JDK5.0
+    - Target，JDK5.0
+    - Document，JDK5.0
+    - Inherited，JDK5.0
+    - Repeatable，JDK8.0
+    
+- `@Retention`
+    - 只能用于修饰一个Annotation定义，用于指定该注解的声明周期
+    - `@Rentention`包含一个名为value的RetentionPolicy枚举类型成员变量，使用时必须指定
+    - `RetentionPolicy`枚举类型
+        |枚举值|描述|
+        |-|-|
+        |RetentionPolicy.SOURCE|在源文件中有效，即源文件保留，编译器会丢弃之中策略的注解|
+        |RetentionPolicy.CLASS|在class文件中有效，即class保留，当运行Java程序时，JVM不会保留注解，这是**默认值**|
+        |RetentionPolicy.RUNTIME|在运行时有效，即运行时保留，**当java程序运行时，JVM会保留注解。程序可以通过反射获取该注释**|
+    - <label style="color:red">只有声明为RetentionPolicy.RUNTIME才能被反射获取</label>
+    - 各枚举值在java生命周期中的作用时间
+        - ![retention_value_flow.png](./imgs/memo/annotation/retention_value_flow.png)
+    
+- `@Taget`
+    - 用于指定被修饰的注解能用于修饰哪些程序元素。如果没有使用，则自定义注解的修饰位置没有限制
+    - `@Taget`包含一个名为value成员变量，类型是`ElementType`枚举数组，
+    - `ElementType`枚举类型
+        |枚举值|描述|版本|
+        |-|-|-|
+        |CONSTRUCTOR|描述构造器|JDK5.0|
+        |FIELD|描述域|JDK5.0|
+        |LOCAL_VARIABLE|描述局部变量|JDK5.0|
+        |METHOD|描述方法|JDK5.0|
+        |PACKAGE|描述包|JDK5.0|
+        |PARAMETER|描述参数|JDK5.0|
+        |TYPE|描述类、接口(包括注解类型)、enum声明|JDK5.0|
+        |TYPE_PARAMETER|**类型注解**，针对泛型<br>表示该注解能写在类型变量的声明语句中<br>注解要写在泛型类型之前|JDK8.0|
+        |TYPE_USE|**类型注解**，针对所有的类型<br>表示该注解能写在**使用类型的任何语句中**<br>注解要写在类型之前|JDK8.0|
+
+    - 类型注解`ElementType.TYPE_PARAMETER`
+        - 参考
+            - Myannotation.java : [/java/mylearn/javabase/src/test/java/com/ljs/learn/annotation/customize/Myannotation.java](/java/mylearn/javabase/src/test/java/com/ljs/learn/annotation/customize/Myannotation.java)
+            - TestClass.java : [/java/mylearn/javabase/src/test/java/com/ljs/learn/annotation/customize/TestClass.java](/java/mylearn/javabase/src/test/java/com/ljs/learn/annotation/customize/TestClass.java)
+            
+            ```java
+            @Retention(RetentionPolicy.RUNTIME)
+            @Target({ElementType.TYPE_PARAMETER})
+            public @interface Myannotation {
+                String value() default "hello";
+            }
+            ```
+            ```java
+            class TestClass <@Myannotation T> {// 写在类型变量的声明语句中
+            
+                // 写在类型变量的声明语句中
+                public <@Myannotation E> void show(List<E> list) throws  RuntimeException {
+                    for (E e : list) {
+                        System.out.println(e);
+                    }
+                }
+            }
+            ```
+          
+    - 类型注解`ElementType.TYPE_USE`
+        - 参考
+            - Myannotation2.java : [/java/mylearn/javabase/src/test/java/com/ljs/learn/annotation/customize/Myannotation2.java](/java/mylearn/javabase/src/test/java/com/ljs/learn/annotation/customize/Myannotation2.java)
+            - TestClass2.java : [/java/mylearn/javabase/src/test/java/com/ljs/learn/annotation/customize/TestClass2.java](/java/mylearn/javabase/src/test/java/com/ljs/learn/annotation/customize/TestClass2.java)
+            
+            ```java
+            @Retention(RetentionPolicy.RUNTIME)
+            @Target({ElementType.TYPE_USE})
+            public @interface Myannotation2 {
+                String value() default "hello";
+            }
+            ```
+            ```java
+            //写在类声明前
+            @Myannotation2
+            public class TestClass2<@Myannotation2 T> {// 写在泛型参数定义前
+                //写在属性声明前
+                @Myannotation2
+                private String name;
+                public static void main(String[] args) {
+                    TestClass2<@Myannotation2 String> t = null; // 写在类型前
+                    int a = (@Myannotation2 int) 2L; // 写在类型前
+            
+                    @Myannotation2 int b = 10;
+                }
+            
+                // 写在泛型参数定义前
+                public static <@Myannotation2 E> void method(E t) {}
+            
+                //写在参数声明和异常声明前
+                public static void test(@Myannotation2 String arg) throws @Myannotation2 Exception {}
+            }
+            ```
+        
+- `@Documented`
+    - 被该元注解修饰的注解将被javadoc工具提取成文档。默认情况下，javadoc是不包括注解的
+    - 定义为`@Documented`的注解必须设置Retentiom值为RUNTIME ????
+
+- `@Inherited`
+    - 被它修饰的注解将具有**继承性**。如果某个类使用了被`@Inherited`修饰的注解，则其子类将自动具有该注解
+    
+- `@Repeatable`，可重复注解
+    - JDK8之前，需要重复注解的方式
+        - 一个需要重复的注解，一个配置参数是这种注解数组的注解
+        ```java
+        public @interface Myannotations {
+            Myannotation[] value();
+        }
+        
+        public @interface Myannotation {
+            String value() default "hello";
+        }
+        
+        @Myannotations({@Myannotation("aa"),@Myannotation("bb")})
+        public class TestClass{}
+        ```
+    - 使用`@Repeatable`
+        - 使用时也需要使用一个存储注解数组的辅助注解
+        - <label style="color:red">使用前，需要保证两个注解的`@Retention`、`@Target`、`@Inherited`相同</label>
+            ```java
+            @Retention(RetentionPolicy.RUNTIME)
+            @Taget({TYPE,METHOD})
+            public @interface Myannotations {
+                Myannotation[] value();
+            }
+            
+            @Repeatable(Myannotations.class)
+            @Retention(RetentionPolicy.RUNTIME)
+            @Taget({TYPE,METHOD})
+            public @interface Myannotation {
+                String value() default "hello";
+            }
+            
+            @Myannotation("aa")
+            @Myannotation("bb")
+            public class TestClass{}
+            ```
+
 
 
 # 应用
@@ -2508,115 +2809,6 @@ public class CommandPara {
         System.out.println(sea); 
     }
     ```
-    
-## 注解
-[top](#catalog)
-* 从JDK5.0开始，增加了对元数据(MetaData)的支持，即注解Annotation
-* 注解可在编译、类加载、运行时被读取，执行相应的处理
-* 通过注解可以在不改变原有逻辑的情况下，补充其他信息
-* 可以修饰：包、类、构造器、方法、成员变量、参数、局部变量的声明，这些信息被保存在Annotation的`name=value`对中
-* JDK内置的三个基本注解
-    * @Override 限定重写父类方法，该注解只能用于方法
-        ```java
-        class Person{
-            String name;
-            int age;
-
-            public Person() {
-                super();
-            }
-
-            public Person(String name, int age) {
-                this.name = name;
-                this.age = age;
-            }
-
-            public void walk(){
-                System.out.println("is walking");
-            }
-        }
-        class Student extends Person{
-            @Override
-            public void wa1k(){ //l 写成了 数字1，添加注解后可以看到半一异常
-                System.out.println("student is walking");
-            }
-        }
-
-        ```
-    * @Deprecated 表示所修饰的元素(类、方法等)已经过时(结构不安全或有更好的选择)
-    * @SuppressWarnings 抑制编译器警告
-
-* 自定义注解
-    * 使用方法：`@interface 注解名{...}`
-    * 自定义注解自动继承了java.lang.annotation.Annotation接口
-    * 成员变量以无参数方法的形式来声明，方法名和返回值定义了该成员的名字和类型，称为配置参数
-    * 参数类型可以是：基本数据类型，String，class，enum，annotation，及这些类型的数组
-    * 可以通过default来为成员变量指定初始值
-    * 如果只有一个参数，最好使用value
-    * 指定参数的方法：参数名=参数值，如果只有一个参数且名为value，则可以省略`value=`
-    * 没有成员变量的称为标记，有成员变量的称为元数据anotation
-    ```java
-    public @interface MyAnnotation {
-        String value() default "hello";
-    }
-
-    @MyAnnotation(value="xxx")
-    class A{...}
-    ```
-* 元注解
-    * @Retention 修饰一个注解定义，指定该注解的声明周期
-        * 使用时必须为vlaue成员变量赋值
-        * RetentionPolicy.SOURCE 不进行编译
-        * RetentionPolicy.CLASS 进行编译，运行时JVM不会保留
-        * RetentionPolicy.RUNTIME 编译，运行时JVM会保留，可以通过反射老或区该注解
-    * @Target 修饰注解定义，指定该注解能够修饰哪些程序元素
-        * 可以修饰的元素（来可以源于枚举类ElementType）
-
-            |取值|描述元素|
-            |-|-|
-            |TYPE|类、接口(包括注解类型)、enum声明|
-            |FIELD|域|
-            |METHOD|方法|
-            |CONSTRUCTOR|构造器|
-            |LOCAL_VARIABLE|局部变量|
-            |PARAMETER|参数|
-            |PACKAGE|包|
-            |TYPE_PARAMETER|该注解能写在类型变量的声明语句中(如泛型声明)|
-            |TYPE_USE|该注解能写在使用类型的任何语句中|
-        * TYPE_PARAMETER 该注解能写在类型变量的声明语句中(如泛型声明)
-            ```java
-            public class TestTypeDefine<@TypeDefine() U> { 
-                private U u;
-                public <@TypeDefine() T> void test(T t){} 
-            }
-
-            @Target({ElementType.TYPE_PARAMETER}) 
-            @interface TypeDefine{...}
-            ```
-        * TYPE_USE 该注解能写在使用类型的任何语句中
-            ```java
-            @MyAnnotation
-            public class AnnotationTest<U> { 
-                @MyAnnotation
-                private String name;
-                public static void main(String[] args) {
-                    AnnotationTest<@MyAnnotation String> t = null; 
-                    int a = (@MyAnnotation int) 2L;
-
-                    @MyAnnotation
-                    int b = 10;
-                }
-
-                public static <@MyAnnotation T> void method(T t) {...}
-                public static void test(@MyAnnotation String arg) throws @MyAnnotation Exception {...}
-            }
-
-            @Target(ElementType.TYPE_USE) @interface MyAnnotation {...}
-            ```
-
-    * @Doucmented 被修饰的注解类将被javadoc提取成文档
-        * Doucmented定义的注解，Retention必须是RUNTIME
-    * @Inherited 被修饰的注解将具有继承性，如果某个类使用了@Inherited修饰的注解，其子类自动具有该注解？？？？？？
 
 ## io
 ### io-File类
