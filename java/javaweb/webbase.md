@@ -1,5 +1,6 @@
-<span id="catalog"></span>
 内容整理自：https://www.bilibili.com/video/av21367011
+
+<span id="catalog"></span>
 
 ### 目录
 - [JavaWeb应用的概念](#javaWeb应用的概念)
@@ -1691,7 +1692,7 @@
 - JSP页面的**访问路径与普通HTML页面的访问路径形式完全一样**
 
 ## JSP的运行原理
-[top](#catalog) 
+[top](#catalog)
 - 解析顺序
     1. WEB容器（Servlet引擎）接收到以`.jsp`为扩展名的URL的访问请求时，会把该请求交给JSP引擎去处理
     2. 每个JSP在**第一次访问**时，JSP引擎将它翻译成一个Servlet源程序,即：`xxx_jsp.java`
