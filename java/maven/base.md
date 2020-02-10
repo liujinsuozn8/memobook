@@ -1,4 +1,7 @@
-内容整理自：https://www.bilibili.com/video/av21004567
+- 内容整理自：
+    - http://maven.apache.org/index.html
+    - https://www.bilibili.com/video/av21004567
+    - https://www.cnblogs.com/best/p/9676515.html
 
 <span id="catalog"></span>
 
@@ -29,8 +32,18 @@
     - [与生命周期相关的插件和目标](#与生命周期相关的插件和目标)
 - [Maven的核心概念---继承](#Maven的核心概念---继承)
 - [Maven的核心概念---聚合](#Maven的核心概念---聚合)
+- [Maven_Archetype通过原型创建项目骨架](#Maven_Archetype通过原型创建项目骨架)
+    - [什么是原型Archetype](#什么是原型Archetype)
+    - [Maven_Archetype插件](#Maven_Archetype插件)
+        - [Maven提供的默认原型](#Maven提供的默认原型)
+        - [Archetype插件简介](#Archetype插件简介)
+        - [通过与Archetype插件交互来创建项目骨架](#通过与Archetype插件交互来创建项目骨架)
 - [其他问题](#其他问题)
 
+- [](#)
+- [](#)
+- [](#)
+- [](#)
 - [](#)
 - [](#)
 - [](#)
@@ -1072,6 +1085,131 @@
             │   └── two02-1.0-SNAPSHOT.pom
             └── maven-metadata-local.xml
         ``` 
+
+# Maven_Archetype通过原型创建项目骨架
+## 什么是原型Archetype
+[top](#catalog)
+- 内容参考：http://maven.apache.org/archetype/index.html
+- Archetype是创建Maven项目的模板工具，Archetype提供一个一致的、快速的方法来创建Maven项目的骨架
+- 通过Archetype可以规范各种类型开发的开发标准
+- Maven Archetype 的组成模块
+
+    |模块|描述|
+    |-|-|
+    |maven-archetype-plugin|原型插件可在Maven中使用原型|
+    |archetype-packaging|原型生命周期和包装定义|
+    |archetype-models|描述符类和参考文档|
+    |archetype-common|核心类|
+    |archetype-testing|内部用于测试Maven原型的组件|
+
+## Maven_Archetype插件
+### Archetype插件简介
+[top](#catalog)
+- 参考：http://maven.apache.org/archetype/maven-archetype-plugin/index.html
+
+- 通过原型插件可以从现有的模版创建Maven项目，还可以从现有项目中创建原型
+- 插件需要Java7及以上
+- 原型插件的四个直接使用的目标
+    1. `archetype:generate`，从原型创建一个Maven项目
+        - 要求用户从原型目录中选择一个原型，然后从远程存储库中检索它。检索后，将对其进行处理以创建一个正常的Maven项目
+
+    2. `archetype:create-from-project`，从现有项目创建原型
+    3. `archetype:crawl`，在仓库中搜索原型并更新目录
+    4. 通过`'maven-archetype'包装`将上面三个目标绑定到默认生命周期：
+        1. `archetype:jar`，（绑定到打包阶段）用于构建原型jar工件
+        2. `archetype:integration-test`，（绑定到集成测试阶段）用于通过从刚刚构建的原型生成示例项目来执行原型集成测试
+        3. `archetype：update-local-catalog`，（绑定到安装阶段）用于更新本地目录
+- Archetype插件的功能示意图
+    - ![archetype_plugin_introduction](./imgs/base/archetype/archetype_plugin_introduction.png)
+
+### Maven提供的默认原型
+[top](#catalog)
+- 参考：http://maven.apache.org/guides/introduction/introduction-to-archetypes.html
+- 默认原型
+
+    |No|原型ID|用途|
+    |-|-|-|
+    |1|maven-archetype-archetype|生成原型项目???|
+    |2|maven-archetype-j2ee-simple|生成简化的J2EE应用程序|
+    |3|maven-archetype-mojo|生成Maven插件示例????|
+    |4|maven-archetype-plugin|生成Maven插件|
+    |5|maven-archetype-plugin-site|生成Maven插件站点|
+    |6|maven-archetype-portlet|生成JSR-268 Portlet|
+    |7|**maven-archetype-quickstart**|生成一个示例工程，常用|
+    |8|maven-archetype-simple|生成一个简化的Maven项目|
+    |9|maven-archetype-site|生成示例Maven站点，该站点演示了一些受支持的文档类型，例如APT，XDoc和FML，并演示了如何构建您的站点|
+    |10|maven-archetype-site-simple|生成示例Maven站点|
+    |11|**maven-archetype-webapp**|生成Maven Webapp项目，常用|
+
+### 通过与Archetype插件交互来创建项目骨架
+[top](#catalog)
+- 参考：http://maven.apache.org/archetype/maven-archetype-plugin/usage.html
+
+- 创建项目的4个步骤
+    1. 输入创建指令：`mvn archetype:generate`
+        - 使用时可以通过`-Dfilter=groupID:artifactId`的方式来过滤部分原型，过滤时会模糊搜索可用的原型
+    2. 选择原型
+    3. 输入坐标信息
+    4. 确认创建项目
+
+- 创建示例：通过`maven-archetype-webapp`创建一个web工程
+    - 创建过程
+        - ![create_webdemo](./imgs/base/archetype/create_webdemo.png)
+    - 创建后的结构
+        ```
+        ├── pom.xml
+        └── src
+            └── main
+                ├── resources
+                └── webapp
+                    ├── WEB-INF
+                    │   └── web.xml
+                    └── index.jsp
+        ```
+
+- 通过`-Dfilter=groupID:artifactId`来过滤原型
+    - 指令：`mvn archetype:generate -Dfilter=org.apache:web`
+    - ![archetype_plugin_filter](./imgs/base/archetype/archetype_plugin_filter.png)
+
+
+### 直接通过指令创建项目骨架
+[top](#catalog)
+- 参考:http://maven.apache.org/archetype/maven-archetype-plugin/examples/generate-batch.html
+
+- 指令语法：`mvn archetype:generate -B 项目参数 原型参数`
+    - 通过`-B`来摆脱插件的交互性
+    - 项目参数
+        |参数|含义|
+        |-|-|
+        |DgroupId|Maven坐标|
+        |DartifactId|Maven坐标，项目ID|
+        |Dversion|Maven坐标，版本ID，默认使用`1.0-SNAPSHOT`|
+        |Dpackage|代码生成时使用的根包的名字，如果没有给出，默认使用:DgroupId + DartifactId|
+
+    - 原型参数
+        |参数|含义|
+        |-|-|
+        |DarchetypeGroupId|原型的GroupID|
+        |DarchetypeArtifactId|原型的ID|
+        |DarchetypeVersion|原型的版本|
+        |DarchetypeRepository|包含原型的资源库|
+        |DarchetypeCatalog|原型的位置分类|
+
+    - `archetypeCatalog`，原型的几种位置分类
+        |参数值|描述|
+        |-|-|
+        |`internal`|使用Maven内置的原型，及`org.apache.maven.archetypes`，参考：[Maven提供的默认原型](#Maven提供的默认原型)|
+        |`local`|本地，通常是本地仓库的archetype-catalog.xml文件|
+        |`remote`|远程，是maven的中央仓库|
+        |`file://...`|直接指定本地文件位置archetype-catalog.xml|
+        |`http://...`，`https://...`|网络上的文件位置 archetype-catalog.xml|
+
+- 使用指令生成一个web工程
+    - 指令：`mvn archetype:generate -B -DgroupId=com.ljs.maven -DartifactId=webdemo -Dversion=0.1-SNAPSHOT -DarchetypeGroupId=org.apache.maven.archetypes -DarchetypeArtifactId=maven-archetype-webapp`
+    - 执行结果
+        - ![create_by_cmd](./imgs/base/archetype/create_by_cmd.png)
+
+
 
 # 其他问题
 [top](#catalog)
