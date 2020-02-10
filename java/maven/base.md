@@ -17,15 +17,16 @@
 - [Maven的核心概念---依赖](#Maven的核心概念---依赖)
     - [为什么需要依赖以及如何配置](#为什么需要依赖以及如何配置)
     - [依赖的范围](#依赖的范围)
-    - [依赖示例工程---HelloFriend](#依赖示例工程---HelloFriend)
+    - [依赖范围示例工程---HelloFriend](#依赖范围示例工程---HelloFriend)
+    - [依赖的传递性](#依赖的传递性)
+    - [依赖的排除](#依赖的排除)
+    - [依赖的原则](#依赖的原则)
+    - [通过自定义参数来统一管理当前工程中的依赖版本](#通过自定义参数来统一管理当前工程中的依赖版本)
 - [Maven的核心概念---生命周期](#Maven的核心概念---生命周期)
     - [Maven生命周期](#Maven生命周期)
     - [与生命周期相关的插件和目标](#与生命周期相关的插件和目标)
 - [其他问题](#其他问题)
-- [](#)
-- [](#)
-- [](#)
-- [](#)
+
 - [](#)
 
 # 项目开发中存在的问题以及如何使用maven解决
@@ -345,6 +346,74 @@
 - 含义：Project Object Model项目对象模型
 - pom.xml是Maven工程的核心配置文件，与构建过程相关的一切设置都在这个文件中配置 （相当于web.xml对于web工程）
 - 配置内容
+    ```xml
+    <!--固定不变-->
+    <?xml version="1.0" encoding="UTF-8"?>
+
+    <!--固定不变-->
+    <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+        
+        <!--固定不变-->
+        <modelVersion>4.0.0</modelVersion>
+        
+        <!--当前Maven的坐标-->
+        <groupId>com.ljs.learn</groupId>
+        <artifactId>weblearn</artifactId>
+        <version>1.0-SNAPSHOT</version>
+
+        <!-- 配置当前工程的打包方式 -->
+        <packaging>jar/war/pom</packaging>
+
+        <!--当前Maven的坐标-->
+        <name>weblearn</name>
+        
+        <properties>
+            <!--配置项目源码的字符集-->
+            <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+            
+            <!--配置当前maven编译使用的JDK版本-->
+            <maven.compiler.source>1.9</maven.compiler.source>
+            <maven.compiler.target>1.9</maven.compiler.target>
+        
+            <!--自定义配置参数，可以在其他地方通过：${自定义参数} 来引用-->
+            <自定义参数>xxxxx</自定义参数>
+        
+
+        </properties>
+        
+        <dependencies>
+            <!--配置依赖位置-->
+            <dependency>
+                <groupId>mysql</groupId>
+                <artifactId>mysql-connector-java</artifactId>
+                <version>8.0.18</version>
+                    <!--type的值一般有jar、war、pom等，声明引入的依赖的类型-->
+                <type>jar</type>
+                    <!--配置依赖的范围-->
+                <scope>compile</scope>
+            </dependency>
+            
+            <dependency>
+                <groupId>com.atguigu.maven</groupId>
+                <artifactId>HelloFriend</artifactId>
+                <version>0.0.1-SNAPSHOT</version>
+                <type>jar</type>
+                <scope>compile</scope>
+        
+                <!--配置依赖排除-可以解决依赖冲突-->
+                <exclusions>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+        </dependencies>
+
+    </project>
+    ```
 
 
 
@@ -414,6 +483,8 @@
             |对主程序是否有效|有效|
             |对测试程序是否有效|有效|
             |是否参与打包|参与|
+            |是否参与部署|参与|
+            |例子|spring-core|
     
         - test
             |有效范围|是否有效|
@@ -421,6 +492,8 @@
             |对主程序是否有效|无效|
             |对测试程序是否有效|有效|
             |是否参与打包|不参与|
+            |是否参与部署|不参与|
+            |例子|junit|
     
     - provided
         - 有些依赖只是在开发阶段和测试阶段使用，在运行是服务器会提供对应的实现，所以可以使用provided。如果使用compile，可能会造成依赖冲突。如servlet-api
@@ -433,9 +506,10 @@
             |对测试程序是否有效|有效|
             |是否参与打包|不参与|
             |是否参与部署|不参与|
+            |例子|servlet-api|
 
 
-## 依赖示例工程---HelloFriend
+## 依赖范围示例工程---HelloFriend
 [top](#catalog)
 - 示例工程地址：HelloFriend，[/java/maven/sample/HelloFriend](/java/maven/sample/HelloFriend)
 - **在主程序中需要使用：[目录结构示例工程---Hello](#目录结构示例工程---Hello) 中的类，所以需要添加依赖**
@@ -551,6 +625,125 @@
         - 在HelloFriend.java中添加引用：`import org.junit.Test;，执行编译时发生异常，执行compile阶段时，找不到jar包
             - ![HelloFriend_mvn_cmd_02.png](./imgs/base/HelloFriend_mvn_cmd_02.png)
 
+## 依赖的传递性
+[top](#catalog)
+- 好处：可以传递的依赖不必在每个模块工程中都重复声明，**在最下层的工程中依赖一次即可** 
+- **非compile范围的依赖不能传递，只能在各个工程中单独配置**
+
+## 依赖的排除
+[top](#catalog)
+- 在依赖传递的过程中，有时候不需要某些jar，可以通过配置来排除
+- 依赖的排除也具有传递性，在中层排除掉的依赖，在高层也同样会排除
+- 配置方式:`<exclusions>`
+    ```xml
+    <dependency>
+        <groupId>com.atguigu.maven</groupId>
+        <artifactId>HelloFriend</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+        <type>jar</type>
+        <scope>compile</scope>
+        <exclusions>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+        </exclusions>
+    </dependency>
+    ```
+
+## 依赖的原则
+[top](#catalog)
+- 作用：解决模块工程之间同`<artifactId>`的jar包`<version>`冲突问题
+- 两个原则
+    1. 路径最短优先
+        - 0路径：当前工程配置的依赖优先与从其他依赖中传递过来的依赖
+        - 在依赖中出现了依赖的覆盖与传递时，路径最短优先
+    2. 路径长度相同时，先在`<dependency>`中声明的优先
+- 测试依赖原则的示例：[/java/maven/sample/multiple](/java/maven/sample/multiple)
+    - 基本结构
+        ```
+        Maven模块：one
+         └── log4j-1.2.17
+        
+        Maven模块：two01
+         ├── one
+         │   └── log4j-1.2.17
+         └── log4j-1.2.16
+
+        Maven模块：two02
+         └── log4j-1.2.14
+            
+        Maven模块：three01
+         ├── two01
+         │    ├── one
+         │    │    └── log4j-1.2.17
+         │    └── log4j-1.2.16
+         └── two02
+              └── log4j-1.2.14
+
+        Maven模块：three02
+         ├── two02
+         │    └── log4j-1.2.14
+         └── two01
+              ├── one
+              │    └── log4j-1.2.17
+              └── log4j-1.2.16
+        ```
+    - `three01`的依赖关系及最终可以使用的`log4j`版本
+        - `three01`中先配置了`two01`，然后配置了`two02`
+        - 根据原则2，先配置的优先度高，所以使用`two01`的`log4版本`
+        - `two01`中依赖了`one`，在`three01`中根据原则1，`two01`中的优先度更高，所以`three01`中使用的是：`log4j-1.2.16`
+        - 从依赖关系中可以看到，`two02`、`one`中的`log4j`依赖被`two01`中的依赖覆盖了
+        - ![dependency_principle01](./imgs/base/dependency_principle01.png)
+
+    - `three02`的依赖关系及最终可以使用的`log4j`版本
+        - `three02`中先配置了`two01`，然后配置了`two02`
+        - 根据原则2，先配置的优先度高，所以使用`two02`的`log4版本`
+        - `two01`中涉及到的依赖全部被`two02`中的依赖覆盖，所以`three02`中使用的是：`log4j-1.2.14`
+        - ![dependency_principle02](./imgs/base/dependency_principle02.png)
+
+## 通过自定义参数来统一管理当前工程中的依赖版本
+[top](#catalog)
+- 场景：对Spring各个jar包的依赖版本统一升级，手动逐一修改修改不可靠
+- Maven提供的管理方法
+- 使用properties标签内使用自定义标签统一声明版本号
+- 在需要统一版本的位置，使用`${自定义标签名}`引用声明的版本号
+- 示例：
+    ```xml
+    <properties>
+        <ljs.spring.version>4.1.1.RELEASE</ljs.spring.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-core</artifactId>
+            <version>${ljs.spring.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <version>${ljs.spring.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jdbc</artifactId>
+            <version>${ljs.spring.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-orm</artifactId>
+            <version>${ljs.spring.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+            <version>${ljs.spring.version}</version>
+        </dependency>
+    </dependencies>
+    ```
+
 # Maven的核心概念---生命周期
 ## Maven生命周期
 [top](#catalog)
@@ -641,6 +834,3 @@
             <maven.compiler.target>1.8</maven.compiler.target>
         </properties>
         ```
-    
-    7. 继承
-    8. 聚合
