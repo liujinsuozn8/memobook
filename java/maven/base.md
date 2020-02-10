@@ -14,6 +14,8 @@
     - [目录结构示例工程---Hello](#目录结构示例工程---Hello)
 - [Maven的核心概念---pom文件](#Maven的核心概念---pom文件)
 - [Maven的核心概念---坐标](#Maven的核心概念---坐标)
+    - [Maven坐标](#Maven坐标)
+    - [Meven坐标与仓库中路径的对应关系](#Meven坐标与仓库中路径的对应关系)
 - [Maven的核心概念---依赖](#Maven的核心概念---依赖)
     - [为什么需要依赖以及如何配置](#为什么需要依赖以及如何配置)
     - [依赖的范围](#依赖的范围)
@@ -25,8 +27,12 @@
 - [Maven的核心概念---生命周期](#Maven的核心概念---生命周期)
     - [Maven生命周期](#Maven生命周期)
     - [与生命周期相关的插件和目标](#与生命周期相关的插件和目标)
+- [Maven的核心概念---继承](#Maven的核心概念---继承)
+- [Maven的核心概念---聚合](#Maven的核心概念---聚合)
 - [其他问题](#其他问题)
 
+- [](#)
+- [](#)
 - [](#)
 
 # 项目开发中存在的问题以及如何使用maven解决
@@ -346,79 +352,150 @@
 - 含义：Project Object Model项目对象模型
 - pom.xml是Maven工程的核心配置文件，与构建过程相关的一切设置都在这个文件中配置 （相当于web.xml对于web工程）
 - 配置内容
-    ```xml
-    <!--固定不变-->
-    <?xml version="1.0" encoding="UTF-8"?>
-
-    <!--固定不变-->
-    <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-        
+    - 一般的模块配置
+        ```xml
         <!--固定不变-->
-        <modelVersion>4.0.0</modelVersion>
-        
-        <!--当前Maven的坐标-->
-        <groupId>com.ljs.learn</groupId>
-        <artifactId>weblearn</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <?xml version="1.0" encoding="UTF-8"?>
 
-        <!-- 配置当前工程的打包方式 -->
-        <packaging>jar/war/pom</packaging>
-
-        <!--当前Maven的坐标-->
-        <name>weblearn</name>
-        
-        <properties>
-            <!--配置项目源码的字符集-->
-            <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!--固定不变-->
+        <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
             
-            <!--配置当前maven编译使用的JDK版本-->
-            <maven.compiler.source>1.9</maven.compiler.source>
-            <maven.compiler.target>1.9</maven.compiler.target>
-        
-            <!--自定义配置参数，可以在其他地方通过：${自定义参数} 来引用-->
-            <自定义参数>xxxxx</自定义参数>
-        
+            <!--固定不变-->
+            <modelVersion>4.0.0</modelVersion>
+            
+            <!--当前Maven的坐标-->
+            <groupId>com.ljs.learn</groupId>
+            <artifactId>weblearn</artifactId>
+            <version>1.0-SNAPSHOT</version>
 
-        </properties>
+            <!-- 配置当前工程的打包方式 -->
+            <packaging>jar/war/pom</packaging>
+
+            <!-- 配置父工程的坐标 -->
+            <parent>
+                <groupId>父工程的groupId</groupId>
+                <artifactId>父工程模块名</artifactId>
+                <version>父工程版本</version>
         
-        <dependencies>
-            <!--配置依赖位置-->
-            <dependency>
-                <groupId>mysql</groupId>
-                <artifactId>mysql-connector-java</artifactId>
-                <version>8.0.18</version>
+                <!--配置父工程pom的相对路径，可以不进行配置-->
+                <relativePath>../pom.xml</relativePath>
+            </parent>
+
+            <!--当前Maven的名称-->
+            <name>weblearn</name>
+            
+            <!--配置参数-->
+            <properties>
+                <!--配置项目源码的字符集-->
+                <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+                
+                <!--配置当前maven编译使用的JDK版本-->
+                <maven.compiler.source>1.9</maven.compiler.source>
+                <maven.compiler.target>1.9</maven.compiler.target>
+            
+                <!--自定义配置参数，可以在其他地方通过：${自定义参数} 来引用-->
+                <自定义参数>xxxxx</自定义参数>
+            </properties>
+            
+            <!--配置依赖-->
+            <dependencies>
+                <dependency>
+                    <groupId>mysql</groupId>
+                    <artifactId>mysql-connector-java</artifactId>
+                    <!-- 如果父工程中有公共依赖版本配置，则可以省略version -->
+                    <version>8.0.18</version>
                     <!--type的值一般有jar、war、pom等，声明引入的依赖的类型-->
-                <type>jar</type>
+                    <type>jar</type>
                     <!--配置依赖的范围-->
-                <scope>compile</scope>
-            </dependency>
+                    <scope>compile</scope>
+                </dependency>
+                
+                <dependency>
+                    <groupId>com.atguigu.maven</groupId>
+                    <artifactId>HelloFriend</artifactId>
+                    <version>0.0.1-SNAPSHOT</version>
+                    <type>jar</type>
+                    <scope>compile</scope>
             
-            <dependency>
-                <groupId>com.atguigu.maven</groupId>
-                <artifactId>HelloFriend</artifactId>
-                <version>0.0.1-SNAPSHOT</version>
-                <type>jar</type>
-                <scope>compile</scope>
-        
-                <!--配置依赖排除-可以解决依赖冲突-->
-                <exclusions>
-                    <exclusion>
-                        <groupId>commons-logging</groupId>
-                        <artifactId>commons-logging</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
+                    <!--配置依赖排除-可以解决依赖冲突-->
+                    <exclusions>
+                        <exclusion>
+                            <groupId>commons-logging</groupId>
+                            <artifactId>commons-logging</artifactId>
+                        </exclusion>
+                    </exclusions>
+                </dependency>
 
-        </dependencies>
+            </dependencies>
 
-    </project>
-    ```
+        </project>
+        ```
+    - 父工程配置 (可以参照：[Maven的核心概念---继承](#Maven的核心概念---继承))
+        ```xml
+        <!-- 固定内容 -->
+        <?xml version="1.0" encoding="UTF-8"?>
+        <project xmlns="http://maven.apache.org/POM/4.0.0"
+                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+            <modelVersion>4.0.0</modelVersion>
+
+            <!-- 当前父工程的坐标 -->
+            <groupId>com.ljs.mavenlearn</groupId>
+            <artifactId>multiple</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <!-- 打包方式必须是pom -->
+            <packaging>pom</packaging>
+
+            <!-- 配置公共依赖 -->
+            <dependencyManagement>
+                <!-- 配置依赖的坐标 -->
+                <dependencies>
+                    <dependency>
+                        <groupId>junit</groupId>
+                        <artifactId>junit</artifactId>
+                        <version>4.11</version>
+                        <scope>test</scope>
+                    </dependency>
+                </dependencies>
+            </dependencyManagement>
+
+        </project>
+        ```
+    - 聚合工程的根模块配置
+        ```xml
+        <!-- 固定内容 -->
+        <?xml version="1.0" encoding="UTF-8"?>
+        <project xmlns="http://maven.apache.org/POM/4.0.0"
+                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+            <modelVersion>4.0.0</modelVersion>
+
+            <!-- 当前父工程的坐标 -->
+            <groupId>com.ljs.mavenlearn</groupId>
+            <artifactId>multiple</artifactId>
+            <packaging>pom</packaging>
+            <!-- 打包方式必须是pom -->
+            <version>1.0-SNAPSHOT</version>
+
+            <!--聚合工程配置-->
+            <modules>
+                <module>three02</module>
+                <module>three01</module>
+                <module>one</module>
+                <module>two02</module>
+                <module>two01</module>
+            </modules>
+
+
+        </project>
+        ```
 
 
 
 
 # Maven的核心概念---坐标
+## Maven坐标
 [top](#catalog)
 - Maven中使用三个向量在仓库中唯一定位一个Maven工程
     |向量|含义|配置内容|
@@ -431,17 +508,18 @@
     - `SNAPSHOT`表示迭代开发中的版本
     - `RELEASE`表示一个稳定的版本
     
-- Meven坐标与仓库中路径的对应关系
-    - `spring-core`的坐标配置
-        ```xml
-        <groupId>org.springframework</groupId>
-        <artifactId>spring-core</artifactId>
-        <version>5.2.0.RELEASE</version>
-        ```
-    - `spring-core`在仓库中的路径
-        - `仓库根目录/org/springframework/spring-core/5.2.0.RELEASE/spring-core-5.2.0.RELEASE.jar`
-    - 对应关系：`仓库根目录/groupId/artifactId/version/artifactId-version.jar`
-        - groupId中的所有`.`改成`/`
+## Meven坐标与仓库中路径的对应关系
+[top](#catalog)
+- `spring-core`的坐标配置
+    ```xml
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-core</artifactId>
+    <version>5.2.0.RELEASE</version>
+    ```
+- `spring-core`在仓库中的路径
+    - `仓库根目录/org/springframework/spring-core/5.2.0.RELEASE/spring-core-5.2.0.RELEASE.jar`
+- 对应关系：`仓库根目录/groupId/artifactId/version/artifactId-version.jar`
+    - groupId中的所有`.`改成`/`
 
 # Maven的核心概念---依赖
 ## 为什么需要依赖以及如何配置
@@ -805,6 +883,195 @@
 - 每个插件都能实现多个功能，每个功能就是一个插件目标
 - Maven 的生命周期与插件的某个目标(功能)是相对应的
 - ?????
+
+
+# Maven的核心概念---继承
+[top](#catalog)
+- 统一管理各个Maven模块中某个jar包的依赖版本
+- 由于非compile范围的依赖不能传递，所以必然会分散在各个模块工程中，很容易造成版本不一致
+- 解决思路，将jar包的依赖版本统一提取到父工程中，在子工程中声明依赖时不指定jar包版本，以父工程中统一设定的为准。同时也便于修改
+- 操作步骤
+    1. 创建一个Maven工程作为父工程，打包方式：`<packaging>pom</packaging>`
+    2. 在子工程中声明对父工程的引用
+        - **`<relativePath>`中配置父工程pom.xml文件的相对路径，最好还是添加该项配置**
+        ```xml
+        <parent>
+            <groupId>父工程的groupId</groupId>
+            <artifactId>父工程模块名</artifactId>
+            <version>父工程版本</version>
+       
+            <!--配置父工程pom的相对路径，可以不进行配置-->
+            <relativePath>../pom.xml</relativePath>
+        </parent>
+        ```
+    3. 将子工程的坐标中与父工程坐标中重复的内容删除
+        - 重复的内容包括：
+            - `<groupId>xxxxx</groupId>`
+            - ~~`<version>xxxxx</version>`~~
+    4. 在父工程中统一配置jar包依赖
+        - 配置的内容
+            ```xml
+            <dependencyManagement>
+                <dependencies>
+                    <dependency>
+                        <groupId>xxxxx</groupId>
+                        <artifactId>xxxxx</artifactId>
+                        <version>xxxxx</version>
+                        <scope>xxxxx</scope>
+                    </dependency>
+                </dependencies>
+            </dependencyManagement>
+            ```
+    5. 在子工程中删除依赖的版本号部分：`<version>4.10</version>`，其他部分不要删除
+        - 如果不删除，则以子工程中的依赖版本为主
+
+- <label style="color:red">配置继承后，需要先安装父工程，然后在安装子工程</label>
+
+- 参考示例：[/java/maven/sample/multiple](/java/maven/sample/multiple)
+    - 在父工程`multiple`中配置了全局的junit依赖：[/java/maven/sample/multiple/pom.xml](/java/maven/sample/multiple/pom.xml)
+        ```xml        
+        <groupId>com.ljs.mavenlearn</groupId>
+        <artifactId>multiple</artifactId>
+        <packaging>pom</packaging>
+        <version>1.0-SNAPSHOT</version>
+    
+        <dependencyManagement>
+            <dependencies>
+                <dependency>
+                    <groupId>junit</groupId>
+                    <artifactId>junit</artifactId>
+                    <version>4.11</version>
+                    <scope>test</scope>
+                </dependency>
+            </dependencies>
+        </dependencyManagement>
+        ```
+    - 在各子工程中配置父工程引用，并使用junit，如`two01/pom.xml`：[/java/maven/sample/multiple/two01/pom.xml](/java/maven/sample/multiple/two01/pom.xml)
+        ```xml
+        <!--配置当前maven模块的信息-->
+        <artifactId>two01</artifactId>
+        <version>1.0-SNAPSHOT</version>
+        
+        <!--配置父工程引用-->
+        <parent>
+            <groupId>com.ljs.mavenlearn</groupId>
+            <artifactId>multiple</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            
+            <!--配置父工程pom的相对路径，可以不进行配置-->
+            <relativePath>../pom.xml</relativePath>
+        </parent>
+      
+        <dependencies>
+          <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <!--<version>4.11</version>-->
+            <scope>test</scope>
+          </dependency>
+        </dependencies>
+        ```
+      
+    - 在子工程`one/pom.xml`中覆盖父工程的依赖版本，[/java/maven/sample/multiple/one/pom.xml](/java/maven/sample/multiple/one/pom.xml)
+        ```xml
+        <dependencies>
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <!--覆盖父模块中的依赖版本-->
+                <version>4.10</version>
+                <scope>test</scope>
+            </dependency>
+        </dependencies>
+        ```
+    - 依赖引入的结果
+        - one使用的是junit-4.1，其他的模块使用的是junit-4.11，父工程下只负责配置但是不会存在依赖
+        - [inherit_result](./imgs/base/inherit_result.png)
+        
+
+# Maven的核心概念---聚合
+[top](#catalog)
+- 聚合的作用，一次性安装配置中的各个模块
+- 配置方式：在一个总的聚合工程中配置各个参与聚合的模块
+    - 配置的时候不用处理各模块的顺序，编译是会自动识别模块间的依赖
+    - 配置的时候需要使用相对路径，并且以当前pom为起点
+        - 如果模块是和pom在同一个目录下，直接使用模块名
+        - 如果模块和当前工程在同一个目录下，需要使用`../模块名`
+    ```xml
+    <modules>
+        <!--模块是和pom在同一个目录下，直接使用模块名-->
+        <module>xxx</module>
+        <!--模块和当前工程在同一个目录下-->
+        <module>../yyy</module>
+    </modules>
+    ```
+
+- 执行安装的顺序与配置顺序的关系
+    1. 没有依赖的模块之间，按照配置中`<module>`的顺序来执行安装
+    2. 存在相互依赖的模块之间，maven会识别依赖关系，并**先安装被依赖的模块**
+  
+- 聚合与继承之间并不冲突，继承是为了管理依赖，聚合是为了方便安装。**一般两者可以配置在一起**
+
+- 示例：
+    - 工程目录：[/java/maven/sample/multiple](/java/maven/sample/multiple)
+    - 聚合工程的配置：`multiple/pom.xml`：[/java/maven/sample/multiple/two02/pom.xml](/java/maven/sample/multiple/two02/pom.xml)
+        ```xml
+        <modules>
+            <module>three02</module>
+            <module>three01</module>
+            <module>one</module>
+            <module>two02</module>
+            <module>two01</module>
+        </modules>
+        ```
+    - 在idea中执行`mvn install`安装模块
+        - ![mvn_install_in_idea](./imgs/base/mvn_install_in_idea.png)
+    - 虽然配置中的模块顺序与依赖关系不同，但是编译时，Maven将会自动识别模块间的依赖关系，并按顺序执行编译
+        - ![mvn_insall_order](./imgs/base/mvn_insall_order.png)
+    - 执行`mvn install`安装后，仓库目录下生成的文件：`.m2/repository/com/ljs/mavenlearn`
+        ```
+        ├── multiple
+        │   ├── 1.0-SNAPSHOT
+        │   │   ├── _remote.repositories
+        │   │   ├── maven-metadata-local.xml
+        │   │   └── multiple-1.0-SNAPSHOT.pom
+        │   └── maven-metadata-local.xml
+        ├── one
+        │   ├── 2.0-SNAPSHOT
+        │   │   ├── _remote.repositories
+        │   │   ├── maven-metadata-local.xml
+        │   │   ├── one-2.0-SNAPSHOT.jar
+        │   │   └── one-2.0-SNAPSHOT.pom
+        │   └── maven-metadata-local.xml
+        ├── three01
+        │   ├── 1.0-SNAPSHOT
+        │   │   ├── _remote.repositories
+        │   │   ├── maven-metadata-local.xml
+        │   │   ├── three01-1.0-SNAPSHOT.jar
+        │   │   └── three01-1.0-SNAPSHOT.pom
+        │   └── maven-metadata-local.xml
+        ├── three02
+        │   ├── 1.0-SNAPSHOT
+        │   │   ├── _remote.repositories
+        │   │   ├── maven-metadata-local.xml
+        │   │   ├── three02-1.0-SNAPSHOT.jar
+        │   │   └── three02-1.0-SNAPSHOT.pom
+        │   └── maven-metadata-local.xml
+        ├── two01
+        │   ├── 1.0-SNAPSHOT
+        │   │   ├── _remote.repositories
+        │   │   ├── maven-metadata-local.xml
+        │   │   ├── two01-1.0-SNAPSHOT.jar
+        │   │   └── two01-1.0-SNAPSHOT.pom
+        │   └── maven-metadata-local.xml
+        └── two02
+            ├── 1.0-SNAPSHOT
+            │   ├── _remote.repositories
+            │   ├── maven-metadata-local.xml
+            │   ├── two02-1.0-SNAPSHOT.jar
+            │   └── two02-1.0-SNAPSHOT.pom
+            └── maven-metadata-local.xml
+        ``` 
 
 # 其他问题
 [top](#catalog)

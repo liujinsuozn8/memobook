@@ -4,9 +4,19 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>com.ljs.mavenlearn</groupId>
+  <!--配置当前maven模块的信息-->
   <artifactId>three01</artifactId>
   <version>1.0-SNAPSHOT</version>
+
+  <!--配置父工程引用-->
+  <parent>
+    <groupId>com.ljs.mavenlearn</groupId>
+    <artifactId>multiple</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <!--配置父工程pom的相对路径，可以不进行配置-->
+    <relativePath>../pom.xml</relativePath>
+  </parent>
 
   <name>three01</name>
   <!-- FIXME change it to the project's website -->
@@ -35,7 +45,7 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.11</version>
+      <!--<version>4.11</version>-->
       <scope>test</scope>
     </dependency>
   </dependencies>

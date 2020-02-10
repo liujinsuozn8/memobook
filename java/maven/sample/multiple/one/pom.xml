@@ -2,13 +2,21 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-
-    <groupId>com.ljs.mavenlearn</groupId>
-    <artifactId>one</artifactId>
-    <version>1.0-SNAPSHOT</version>
-
     <modelVersion>4.0.0</modelVersion>
 
+    <!--配置当前maven模块的信息-->
+    <artifactId>one</artifactId>
+    <version>2.0-SNAPSHOT</version>
+
+    <!--配置父工程引用-->
+    <parent>
+        <groupId>com.ljs.mavenlearn</groupId>
+        <artifactId>multiple</artifactId>
+        <version>1.0-SNAPSHOT</version>
+
+        <!--配置父工程pom的相对路径，可以不进行配置-->
+        <relativePath>../pom.xml</relativePath>
+    </parent>
 
     <name>one</name>
     <!-- FIXME change it to the project's website -->
@@ -31,7 +39,8 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.11</version>
+            <!--覆盖父模块中的依赖版本-->
+            <version>4.10</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
