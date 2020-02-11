@@ -2,6 +2,12 @@
     - http://maven.apache.org/index.html
     - https://www.bilibili.com/video/av21004567
     - https://www.cnblogs.com/best/p/9676515.html
+    - 自定义archetype
+        - https://blog.csdn.net/qq_30162859/article/details/79038784  （原型描述部分在官方文档中未找到??????）
+        - https://blog.csdn.net/qq_30162859/article/details/79039085
+        - http://maven.apache.org/guides/mini/guide-creating-archetypes.html
+        - http://maven.apache.org/guides/mini/guide-creating-archetypes.html
+        - `原型描述符`：http://maven.apache.org/archetype/archetype-models/archetype-descriptor/archetype-descriptor.html
 
 <span id="catalog"></span>
 
@@ -32,19 +38,20 @@
     - [与生命周期相关的插件和目标](#与生命周期相关的插件和目标)
 - [Maven的核心概念---继承](#Maven的核心概念---继承)
 - [Maven的核心概念---聚合](#Maven的核心概念---聚合)
-- [Maven_Archetype通过原型创建项目骨架](#Maven_Archetype通过原型创建项目骨架)
+- [Maven_Archetype通过原型创建项目](#Maven_Archetype通过原型创建项目)
     - [什么是原型Archetype](#什么是原型Archetype)
     - [Maven_Archetype插件](#Maven_Archetype插件)
-        - [Maven提供的默认原型](#Maven提供的默认原型)
         - [Archetype插件简介](#Archetype插件简介)
-        - [通过与Archetype插件交互来创建项目骨架](#通过与Archetype插件交互来创建项目骨架)
+        - [Maven提供的默认原型](#Maven提供的默认原型)
+    - [通过原型创建Maven工程](#通过原型创建Maven工程)
+        - [通过与Archetype插件交互来创建项目](#通过与Archetype插件交互来创建项目)
+        - [直接通过指令创建项目](#直接通过指令创建项目)
+    - [自定义原型](#自定义原型)
+        - [通过现有项目来创建原型](#通过现有项目来创建原型)
+        - [create-from-project指令的结果分析以及手动创建原型](#create-from-project指令的结果分析以及手动创建原型)
+        - [原型描述符文件说明](#原型描述符文件说明)
 - [其他问题](#其他问题)
 
-- [](#)
-- [](#)
-- [](#)
-- [](#)
-- [](#)
 - [](#)
 - [](#)
 
@@ -1141,7 +1148,8 @@
     |10|maven-archetype-site-simple|生成示例Maven站点|
     |11|**maven-archetype-webapp**|生成Maven Webapp项目，常用|
 
-### 通过与Archetype插件交互来创建项目骨架
+## 通过原型创建Maven工程
+### 通过与Archetype插件交互来创建项目
 [top](#catalog)
 - 参考：http://maven.apache.org/archetype/maven-archetype-plugin/usage.html
 
@@ -1172,7 +1180,7 @@
     - ![archetype_plugin_filter](./imgs/base/archetype/archetype_plugin_filter.png)
 
 
-### 直接通过指令创建项目骨架
+### 直接通过指令创建项目
 [top](#catalog)
 - 参考:http://maven.apache.org/archetype/maven-archetype-plugin/examples/generate-batch.html
 
@@ -1195,7 +1203,7 @@
         |DarchetypeRepository|包含原型的资源库|
         |DarchetypeCatalog|原型的位置分类|
 
-    - `archetypeCatalog`，原型的几种位置分类
+    - `DarchetypeCatalog`，原型的几种位置分类，默认为`remote local`
         |参数值|描述|
         |-|-|
         |`internal`|使用Maven内置的原型，及`org.apache.maven.archetypes`，参考：[Maven提供的默认原型](#Maven提供的默认原型)|
@@ -1209,6 +1217,215 @@
     - 执行结果
         - ![create_by_cmd](./imgs/base/archetype/create_by_cmd.png)
 
+## 自定义原型
+### 通过现有项目来创建原型
+[top](#catalog)
+- 参考：http://maven.apache.org/guides/mini/guide-creating-archetypes.html
+- 创建步骤
+    1. 在项目目录下(pom.xml所在目录下)执行指令：`mvn archetype:create-from-project`
+    2. 移动到原型目录:`cd target/generated-sources/archetype/`
+    3. 执行`mvn install`，制作原型并安装到仓库目录中，原型名为： `${artifactId}-archetype (${artifactId})`
+        - ???? 安装时指定仓库
+        - 安装时会安装到仓库中的`groupId`目录下
+    4. 执行`mvn archetype:crawl`，让maven程序在仓库爬取所有可用的原型，更新`local`级别的原型目录
+    5. 移动到一个新目录，并且确保该目录下没有`pom.xml`文件
+    6. 通过`mvn archetype:generate -DarchetypeCatalog=local`指令在本地的目录中查找原型并进行交互式创建，或者：[直接通过指令创建项目骨架](#直接通过指令创建项目骨架)
+
+- 示例：创建一个web工程的原型，
+    1. 示例参考：[java/maven/sample/myweb](java/maven/sample/myweb)
+    2. 创建一个myweb工程，目录如下
+        - <img src="./imgs/base/archetype/create_from_project_01.png" width=30% height=30%>
+    3. 执行指令：`mvn archetype:create-from-project`
+        - <img src="./imgs/base/archetype/create_from_project_02.png" width=100% height=100%>
+    4. 移动到原型目录:`cd target/generated-sources/archetype/`，并执行安装
+        - <img src="./imgs/base/archetype/create_from_project_03.png" width=100% height=100%>
+    5. 执行指令`mvn archetype:crawl`，更新原型目录
+    6. 移动到新目录，通过自定义原型来创建maven工程：`mvn archetype:generate -DarchetypeCatalog=local`
+        - <img src="./imgs/base/archetype/create_from_project_04.png" width=60% height=60%>
+    7. 创建成功
+        - <img src="./imgs/base/archetype/create_from_project_05.png" width=30% height=30%>
+
+
+### create-from-project指令的结果分析以及手动创建原型
+[top](#catalog)
+- `archetype:create-from-project`指令的分析
+    1. 空目录会被忽略，使用该指令目录下必须存在文件才能被识别
+        - <img src="./imgs/base/archetype/create_from_project_compare.png" width=50% height=50%>
+    2. 与工程无关的目录没有被删除，如memo目录：`myweb/src/main/java/com/ljs/mavenlearn/memo`
+    3. 无法自定义原型名，自动生成的名字为
+
+- 生成结果分析    
+    - 执行后，插件程序会扫描整体结构，并制作两个目录
+        - 与原型相关的目录：`target/generated-sources/archetype/src/main`
+        - 用于测试原型的目录：
+            - `target/generated-sources/archetype/src/test`
+
+    - 在与原型相关的目录下
+        1. 被archetype插件识别出来的内容都放在该目录中：`target/generated-sources/archetype/src/main/resources/archetype-resources`
+            - 该目录作为生成Maven工程时的骨架
+        2. 原型描述符文件：`target/generated-sources/archetype/src/main/resources/META-INF/maven/archetype-metadata.xml`
+            - 作为原型创建Maven工程时，通过原型描述符文件来识别骨架
+    
+    - 指令生成的原型描述符文件
+        ```xml
+        <?xml version="1.0" encoding="UTF-8"?>
+        <archetype-descriptor xsi:schemaLocation="https://maven.apache.org/plugins/maven-archetype-plugin/archetype-descriptor/1.1.0 http://maven.apache.org/xsd/archetype-descriptor-1.1.0.xsd" name="myweb"
+            xmlns="https://maven.apache.org/plugins/maven-archetype-plugin/archetype-descriptor/1.1.0"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+        <fileSets>
+            <fileSet filtered="true" packaged="true" encoding="UTF-8">
+            <!-- 主程序目录配置 -->
+            <directory>src/main/java</directory>
+            <includes>
+                <include>**/*.java</include> <!-- 包含java文件-->
+            </includes>
+            </fileSet>
+            <fileSet packaged="true" encoding="UTF-8">
+
+            <directory>src/main/java</directory>
+            <includes>
+                <include>**/*.md</include>  <!-- markdown文件也被包含了-->
+            </includes>
+            </fileSet>
+
+            <!-- 主程序资源配置 -->
+            <fileSet filtered="true" encoding="UTF-8">
+            <directory>src/main/resources</directory>
+            <includes>
+                <include>**/*.properties</include>
+            </includes>
+            </fileSet>
+
+            <!-- webapp目录配置 -->
+            <fileSet filtered="true" encoding="UTF-8">
+            <directory>src/main/webapp</directory>
+            <includes>
+                <include>**/*.jsp</include>
+                <include>**/*.xml</include>
+            </includes>
+            </fileSet>
+
+            <!-- 测试目录配置 -->
+            <fileSet filtered="true" packaged="true" encoding="UTF-8">
+            <directory>src/test/java</directory>
+            <includes>
+                <include>**/*.java</include>
+            </includes>
+            </fileSet>
+
+            <!-- 测试资源目录被遗漏了 -->
+        </fileSets>
+        </archetype-descriptor>
+
+        ```
+
+        
+        - 生成时，会自动扫描各文件中的`package`字符串，并将其替换成：`${package}`，当作为原始使用时会自动创建根据输入参数来填充
+
+
+### 原型描述符文件说明
+[top](#catalog)
+- 参考：http://maven.apache.org/archetype/archetype-models/archetype-descriptor/archetype-descriptor.html
+- 文件可用的内容
+    ```xml
+    <archetype-descriptor xmlns="https://maven.apache.org/plugins/maven-archetype-plugin/archetype-descriptor/1.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="https://maven.apache.org/plugins/maven-archetype-plugin/archetype-descriptor/1.1.0 http://maven.apache.org/xsd/archetype-descriptor-1.1.0.xsd"
+    name="原型名称" partial="该原型时完整的Maven项目还是一部分" >
+    <requiredProperties>  <!-- （可包含多个）从该原型生成项目所需的属性列表 -->
+        <requiredProperty key="属性名" > 
+        <defaultValue/>                 <!-- 属性的默认值 -->
+        <validationRegex/>              <!-- 用于验证属性值的正则表达式 -->
+        </requiredProperty>
+    </requiredProperties>
+    
+    <fileSets>      <!-- （可包含多个）文件集定义 -->
+        <fileSet filtered="是否替换文件中的${xx}参数" packaged="目录下的内容是否拷贝到package目录" encoding="过滤内容时使用的编码" >
+        <directory/>    <!-- 需要生成的项目文件的目录 -->
+        <includes/>     <!-- 配置需要包含的目录/文件，可以使用通配符 -->
+        <excludes/>     <!-- 配置需要排除的目录/文件，可以使用通配符 -->
+        </fileSet>
+    </fileSets>
+    
+    <modules>       <!-- （可包含多个）module -->
+        <module id="模块的`artifactId`" dir="模块的目录" name="模块名" >
+    
+        <fileSets>
+            <fileSet filtered=.. packaged=.. encoding=.. >
+            <directory/>
+            <includes/>
+            <excludes/>
+            </fileSet>
+        </fileSets>
+    
+        <modules>
+            <module>...recursion...<module>
+        </modules>
+        </module>
+    </modules>
+    </archetype-descriptor>
+    ```
+
+- 详细说明
+    - 原型描述符：archetype-descriptor
+        |属性|类型|描述|
+        |-|-|-|
+        |name|String|原型名称，在选择原型时将显示给用户<br>通过`create-from-project`生成时，默认为`${artifactId}`|
+        |partial|boolean|这个原型代表一个完整的Maven项目还是仅一部分。默认值为：false|
+        
+    - 三大描述元素
+
+        |元素|类型|描述|
+        |-|-|-|
+        |requiredProperties/requiredProperty*|`List<RequiredProperty>`|(可包含多个)从该原型生成项目所需的属性列表|
+        |fileSets/fileSet*|`List<FileSet>`|(可包含多个)文件集定义|
+        |modules/module*|`List<ModuleDescriptor>`|(可包含多个)模块定义|
+
+    - 描述元素：必须属性`requiredPropertie`
+        - 通过原型创建项目时，必须提供的属性，并且可以为这些属性设置默认值或通过正则表达式来验证其合法性
+        - 可用属性
+            |属性|类型|描述|
+            |-|-|-|
+            |key|String|属性的键值|
+
+        - 可用元素
+            |元素|类型|描述|
+            |-|-|-|
+            |defaultValue|String|属性的默认值|
+            |validationRegex|String|用于验证属性值的正则表达式|
+
+    - 描述属性：文件集定义`fileSet`
+        - 定义一个目录以及与该目录相关的包含或排除规则
+        - 可用属性
+            |属性|类型|描述|
+            |-|-|-|
+            |filtered|boolean|默认值为：false<br>表示是否对文件中出现的`${参数}`使用指令中的参数替换|
+            |packaged|boolean|默认值为：false<br>如果设为`false`，在通过该原型创建Maven项目时，会将`directory`元素指定目录下的文件全部拷贝到，适合`resource目录`<br>如果设为`true`，在通过该原型创建Maven项目时，会先在`directory`元素指定目录下生成包路径，然后把子目录及文件拷贝到包路径下，适合`java`目录|
+            |encoding|String|过滤内容时使用的编码|
+
+        - 可用元素
+            |元素|类型|描述|
+            |-|-|-|
+            |directory|String|需要生成的项目文件的目录|
+            |includes/include*|`List<String>`|可以配置多个<br>没有该元素时，全部包含<br>配置需要包含的目录/文件，可以使用通配符|
+            |excludes/exclude*|`List<String>`|可以配置多个<br>没有该元素时，全部包含<br>配置需要排除的目录/文件，可以使用通配符|
+
+        - 通配符的写法
+            - `**`，表示匹配任何目录
+            - `*`，表示匹配0～n个字符
+
+    - 描述属性：模块定义`module`
+        - 可用属性
+            |属性|类型|描述|
+            |-|-|-|
+            |id|String|模块的`artifactId`|
+            |dir|String|模块的目录|
+            |name|String|模块名|
+
+        - 可用元素
+            |元素|类型|描述|
+            |-|-|-|
+            |fileSets/fileSet*|`List<FileSet>`|可以配置多个<br>文件集定义|
+            |modules/module*|`List<ModuleDescriptor>`|可以配置多个<br>模块定义|
 
 
 # 其他问题
@@ -1239,3 +1456,47 @@
             <maven.compiler.target>1.8</maven.compiler.target>
         </properties>
         ```
+
+
+
+
+
+
+<?xml version="1.0" encoding="UTF-8"?>
+<archetype-descriptor xsi:schemaLocation="https://maven.apache.org/plugins/maven-archetype-plugin/archetype-descriptor/1.1.0 http://maven.apache.org/xsd/archetype-descriptor-1.1.0.xsd" name="myweb"
+    xmlns="https://maven.apache.org/plugins/maven-archetype-plugin/archetype-descriptor/1.1.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <fileSets>
+    <fileSet filtered="true" encoding="UTF-8" packaged="true">
+      <directory>src/main/java</directory>
+      <includes>
+        <include>**/*.java</include>
+      </includes>
+    </fileSet>
+    <fileSet encoding="UTF-8">
+      <directory>src/main/java</directory>
+      <includes>
+        <include>**/*.md</include>
+      </includes>
+    </fileSet>
+    <fileSet encoding="UTF-8">
+      <directory>src/main/resources</directory>
+    </fileSet>
+    <fileSet filtered="true" encoding="UTF-8">
+      <directory>src/main/webapp</directory>
+      <includes>
+        <include>**/*.jsp</include>
+        <include>**/*.xml</include>
+      </includes>
+    </fileSet>
+    <fileSet filtered="true" encoding="UTF-8" packaged="true">
+      <directory>src/test/java</directory>
+      <includes>
+        <include>**/*.java</include>
+      </includes>
+    </fileSet>
+    <fileSet encoding="UTF-8">
+      <directory>src/test/resources</directory>
+    </fileSet>
+  </fileSets>
+</archetype-descriptor>
