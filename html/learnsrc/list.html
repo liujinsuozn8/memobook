@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>list test</title>
+    </head>
+    <body>
+        <!-- 无序 列表测试 -->
+        <ul> ul test
+            <li>test01</li>
+            <li>test02</li>
+            <li>test03</li>
+            <li>test04</li>
+            <li>test05</li>
+        </ul>
+        
+        <br>
+        <!-- 有序 列表测试 -->
+        <ol> ol test
+            <li>test01</li>
+            <li>test02</li>
+            <li>test03</li>
+            <li>test04</li>
+            <li>test05</li>
+        </ol>
+        
+        <br>
+        <!-- 定义 列表测试 -->
+        <dl>
+            <dt>dt01</dt>
+            <dd>this is dt01's dd01</dd>
+            <dd>this is dt01's dd02</dd>
+            <dt>dt02</dt>
+            <dd>this is dt02's dd</dd>
+            <dt>dt03</dt>
+            <dd>this is dt03's dd</dd>
+            <dt>dt04</dt>
+            <dt>dt05</dt>
+        </dl>
+
+        <br>
+        <!-- 列表的多级嵌套 -->
+        <ul>
+            level-0
+            <li>level-0-1</li>
+            <li>level-0-2</li>
+            <li>
+                level-0-3
+                <!-- 嵌套1级列表  将ol嵌套到li中-->
+                <ol>
+                    level-1
+                    <li>level-1-1</li>
+                    <li>level-1-2</li>
+                    <li>level-1-3</li>
+                    <li>
+                        level-1-4
+                        <!-- 嵌套2级列表  将dl嵌套到li中-->
+                        <dl>
+                            level-2
+                            <dt>level-2-dt01</dt>
+                            <dd>dd01 of level-2-dt01</dd>
+                            <dd>dd02 of level-2-dt01</dd>
+                            <dd>dd03 of level-2-dt01</dd>
+                            <dt>level-2-dt02</dt>
+                            <dd>dd01 of level-2-dt02</dd>
+                            <dt>level-2-dt03</dt>
+                        </dl>
+                    </li>
+                </ol>
+                <span>xxxx</span>
+            </li>
+            <li>level-0-4</li>
+            
+            <!-- 将ul嵌套到ul中 -->
+            <!-- <ul>
+                <li>llll</li>
+                <li>bbbbb</li>
+                <li>erewe</li>
+            </ul> -->
+        </ul>
+    </body>
+</html>
