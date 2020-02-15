@@ -70,8 +70,8 @@
 1. 检查JAVA_HOME环境变量
 2. 下载并解压Maven核心程序的压缩包，需要解压到一个纯英文的目录下，如：apache-maven-3.6.2-bin.tar
 3. 配置Maven的环境变量：MAVEN_HOME或M2_HOME
-    - export MAVEN_HOME=/Users/liujinsuo/javaJar/apache-maven-3.6.2
-      export PATH=$PATH:$MAVEN_HOME/bin
+    - `export MAVEN_HOME=maven路径/apache-maven-3.6.2`
+    - `export PATH=$PATH:$MAVEN_HOME/bin`
 4. 运行`mvn -v`查看Maven的版本
 
 # Maven简介

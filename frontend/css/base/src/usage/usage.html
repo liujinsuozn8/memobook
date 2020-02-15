@@ -1,0 +1,34 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>usage test</title>
+
+        <!-- 使用外部css :在内部css前使用，会被内部css覆盖-->
+        <!-- <link rel="stylesheet" href="mystyle.css"> -->
+        
+        <!-- 创建内部css -->
+        <!-- 将css写到<head>中的<style>标签中 -->
+            <style>
+                p{
+                    color:green; 
+                    font-size: 20px;
+                }
+                </style>
+
+        <!-- 使用外部css :在内部css后使用，会覆盖内部css-->
+        <link rel="stylesheet" href="mystyle.css">
+    </head>
+    <body>
+        <!-- 使用css修改元素的样式 -->
+        <!-- 覆盖css的其他使用过方式 -->
+        <!-- 使用方式1：在标签内部通过style属性来设置元素的样式 -->
+        <p style="color:red; font-size: 20px;">
+            p tab css test
+        </p>
+
+        <p>p tab common test01</p>
+        <p>p tab common test02</p>
+        <p>p tab common test03</p>
+    </body>
+</html>

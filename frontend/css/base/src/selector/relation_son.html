@@ -1,0 +1,55 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>relation test</title>
+        
+        <style>
+            /* 1. 子元素选择器 */
+            /* 1.1 子元素选择器：设置 div 下 span 的样式 */
+            div > span {
+                color: orange;
+            }
+
+            /* 1.2 子元素选择器混合复合选择器：设置 class是red的div 下 span 的样式 */
+            div.red > span {
+                color: red;
+                font-style: italic;
+                font-size: 30px;
+            }
+
+            /* 1.3 多级子元素选择器：设置 div 下 p 下 span 的样式 */
+            div > p > span  {
+                color: green;
+                font-size: 30px;
+            }
+        </style>
+
+    </head>
+    <body>
+        <section>0. 不符合任何选择器</section>
+        <span>out span</span>
+
+        <section>1.1 子元素选择器测试</section>
+        <div>
+            <span>div - span1 </span>
+        </div>
+        <br>
+
+        <section>1.2 子元素选择器混合复合选择器</section>
+        <div class="red">
+            <span>div - span2 </span>
+        </div>
+        <br>
+
+        <section>1.3 多级子元素选择器</section>
+        <div>
+            <p>
+                div - p - 3
+                <span>div - p - span - 3 </span>
+            </p>
+        </div>
+        <br>
+
+    </body>
+</html>

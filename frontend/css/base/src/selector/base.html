@@ -1,0 +1,54 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>selector test</title>
+        
+        <style>
+            /* 4.通配选择器 */
+            * {
+                /* 斜体字符 */
+                font-style: italic; 
+            }
+
+            /* 1.元素选择器*/
+            p{
+                color:green; 
+                font-size: 20px;
+            }
+
+            /* 2.id选择器 */
+            #redPTag{
+                color: red;
+            }
+
+            /* 3.class选择器 */
+            .blue{
+                color:blue;
+                /* 斜体字符 */
+                font-style: normal;
+            }
+
+            .font30{
+                font-size: 30px;
+            }
+        </style>
+
+    </head>
+    <body>
+        
+        <section>2.id选择器测试</section>
+        <p id='redPTag'>p 01 test</p>
+
+        <section>3.class选择器测试</section>
+        <p class='blue'>p 02 test</p>
+        
+        <section>3.多个class选择器 测试</section>
+        <p class='blue font30'>p 03 test</p>
+        
+        <section>1.元素选择器</section>
+        <p>p 04 test</p>
+        <p>p 05 test</p>
+
+    </body>
+</html>

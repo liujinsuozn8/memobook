@@ -1,0 +1,43 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>selector test</title>
+        
+        <style>
+            /* 1.交集选择器 */
+            /* 条件：使用blue类，并且是div */
+            div.blue{
+                /* 加粗字符 */
+                font-style: italic;
+                font-size: 30px;
+            }
+
+            /* 2.并集选择器 */
+            h1, span{
+                color: green;
+            }
+
+            /* 3.并集选择器中混合交集选择器 */
+            h2.complex, h3.complex, h4.complex {
+                color:coral;
+                font-style: normal;
+            }
+        </style>
+
+    </head>
+    <body>
+        <section>1.交集选择器测试</section>
+        <div class="blue">div 01 test</div>
+        <p class="blue">p 01 test</p>
+
+        <section>2.并集选择器测试</section>
+        <H1> h1 test</H1>
+        <span>span 01 test</span>
+
+        <section>3.并集选择器中混合交集选择器测试</section>
+        <h2 class="complex">h2 complex test</h2>
+        <h3 class="complex">h3 complex test</h3>
+        <h4 class="complex">h4 complex test</h4>
+    </body>
+</html>

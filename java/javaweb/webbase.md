@@ -6475,7 +6475,7 @@ pageContext, request, session, application
             ```
 
     - Filter
-        - TextFilter.java : [/Users/liujinsuo/myGit/memobook/java/mylearn/weblearn/src/main/java/com/ljs/test/filter/sample/reqparam/TextFilter.java](/Users/liujinsuo/myGit/memobook/java/mylearn/weblearn/src/main/java/com/ljs/test/filter/sample/reqparam/TextFilter.java)
+        - TextFilter.java : [/java/com/ljs/test/filter/sample/reqparam/TextFilter.java](/java/com/ljs/test/filter/sample/reqparam/TextFilter.java)
 
             ```java
             @Override

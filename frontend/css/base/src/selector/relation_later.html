@@ -1,0 +1,30 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>relation test</title>
+        
+        <style>
+            /* 2. 后代选择器 */
+            /* 选择 div下的所有p后代元素 */
+            div p{
+                color: mediumblue;
+                font-weight: bold;
+            }
+
+        </style>
+
+    </head>
+    <body>
+        <section>0. 不符合任何选择器</section>
+
+        <section>2. 后代选择器</section>
+        <div>
+            <div>
+                <p>div - p - 4 - 1 </p>
+            </div>
+            <p>div - p - 4 - 2</p>
+        </div>
+        <br>
+    </body>
+</html>
