@@ -1034,7 +1034,7 @@
 
 - 示例：
     - 工程目录：[/java/maven/sample/multiple](/java/maven/sample/multiple)
-    - 聚合工程的配置：`multiple/pom.xml`：[/java/maven/sample/multiple/two02/pom.xml](/java/maven/sample/multiple/two02/pom.xml)
+    - 聚合工程的配置：`multiple/pom.xml`：[/java/maven/sample/multiple/pom.xml](/java/maven/sample/multiple/pom.xml)
         ```xml
         <modules>
             <module>three02</module>
