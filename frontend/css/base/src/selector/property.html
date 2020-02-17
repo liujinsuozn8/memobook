@@ -1,0 +1,61 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>property test</title>
+        
+        <style>
+            /* 1. 选择含有指定属性的元素 */
+            p[title] {
+                color: green;
+            }
+
+            /* 2. 选择含有指定属性、属性值=abc的元素 */
+            p[title="abc"] {
+                color:red;
+            }
+            
+            /* 3. 选择含有指定属性、属性值以 1234 开头的元素 */
+            p[title^='1234']{
+                color:blue;
+            }
+
+            /* 4. 选择含有指定属性、属性值以 xyz 结尾的元素 */
+            p[title$="xyz"]{
+                font-size: 20px;
+                color: rebeccapurple;
+            }
+
+            /* 5. 选择含有指定属性、属性值中包含 qwe 元素 */
+            p[title*="qwe"]{
+                font-style: italic;
+                color: orange;
+            }
+        </style>
+
+    </head>
+    <body>
+        <section>0. 没有title属性，无法被任何选择器选择</section>
+        <p>no title test</p>
+
+        <section>1. 选择含有指定属性的元素</section>
+        <p title="qqqq">title=qqqq test</p>
+        <p title="zzzz">title=zzzz test</p>
+
+        <section>2. 选择含有指定属性、属性值=abc的元素</section>
+        <p title="abc">title=abc test</p>
+        
+        <section>3. 选择含有指定属性、属性值以 1234 开头的元素</section>
+        <p title="1234">title=1234 test</p>
+        <p title="12346789">title=12346789 test</p>
+        
+        <section>4. 选择含有指定属性、属性值以 xyz 结尾的元素</section>
+        <p title="xyz">title=xyz test</p>
+        <p title="zxcvbxyz">title=zxcvbxyz test</p>
+        <p title="1234xyz">title=1234xyz test</p>
+        
+        <section>5. 选择含有指定属性、属性值中包含 qwe 元素</section>
+        <p title="qwe">title=qwe test</p>
+        <p title="asdfqwerty">title=asdfqwerty test</p>
+    </body>
+</html>

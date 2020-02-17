@@ -14,6 +14,10 @@
     - [基本选择器](#基本选择器)
     - [复合选择器](#复合选择器)
     - [关系选择器](#关系选择器)
+    - [属性选择器](#属性选择器)
+    - [伪类选择器](#伪类选择器)
+- [](#)
+- [](#)
 - [](#)
 
 # CSS简介
@@ -249,7 +253,7 @@
         - 选择器中**如果有元素选择器，则必须以元素选择器开头**
 - 并集选择器 (选择器分组)
     - 同时选择多种选择器对应的元素
-    - 语法`选择器1, 选择器2, 选择器3{ 声明块 }`
+    - 语法：`选择器1, 选择器2, 选择器3{ 声明块 }`
 
 - 并集选择器中混合交集选择器
     - 如：
@@ -474,3 +478,82 @@
             ```
         - 页面结果
             - ![relation_brother_selector_html_result](imgs/selector/relation_brother_selector_html_result.png)
+
+## 属性选择器
+[top](#catalog)
+- 语法
+    1. `元素[属性名] {声明块}`， 选择含有指定属性的元素
+    2. `元素[属性名=属性值] {声明块}`， 选择含有指定属性、指定属性值的元素
+    3. `元素[属性名^=属性值] {声明块}`， 选择含有指定属性、以指定属性值**开头**的元素
+    4. `元素[属性名$=属性值] {声明块}`， 选择含有指定属性、以指定属性值**结尾**的元素
+    5. `元素[属性名*=属性值] {声明块}`， 选择含有指定属性、**包含**指定属性值的元素
+
+- `属性值`是否需要加引号
+    - 可以加引号也可以不加
+    - 单引号、双引号都可以
+    - <label style="color:red">如果属性值是数字，则必须加引号，否则选择无法选中元素</labe>
+- 示例
+    - 代码：[/frontend/css/base/src/selector/property.html](/frontend/css/base/src/selector/property.html)
+    - css
+        ```css
+        /* 1. 选择含有指定属性的元素 */
+        p[title] {
+            color: green;
+        }
+
+        /* 2. 选择含有指定属性、属性值=abc的元素 */
+        p[title="abc"] {
+            color:red;
+        }
+        
+        /* 3. 选择含有指定属性、属性值以 1234 开头的元素 */
+        p[title^='1234']{
+            color:blue;
+        }
+
+        /* 4. 选择含有指定属性、属性值以 xyz 结尾的元素 */
+        p[title$="xyz"]{
+            font-size: 20px;
+            color: rebeccapurple;
+        }
+
+        /* 5. 选择含有指定属性、属性值中包含 qwe 元素 */
+        p[title*="qwe"]{
+            font-style: italic;
+            color: orange;
+        }
+        ```
+    
+    - html
+        ```html
+        <body>
+            <section>0. 没有title属性，无法被任何选择器选择</section>
+            <p>no title test</p>
+
+            <section>1. 选择含有指定属性的元素</section>
+            <p title="qqqq">title=qqqq test</p>
+            <p title="zzzz">title=zzzz test</p>
+
+            <section>2. 选择含有指定属性、属性值=abc的元素</section>
+            <p title="abc">title=abc test</p>
+            
+            <section>3. 选择含有指定属性、属性值以 1234 开头的元素</section>
+            <p title="1234">title=1234 test</p>
+            <p title="12346789">title=12346789 test</p>
+            
+            <section>4. 选择含有指定属性、属性值以 xyz 结尾的元素</section>
+            <p title="xyz">title=xyz test</p>
+            <p title="zxcvbxyz">title=zxcvbxyz test</p>
+            <p title="1234xyz">title=1234xyz test</p>
+            
+            <section>5. 选择含有指定属性、属性值中包含 qwe 元素</section>
+            <p title="qwe">title=qwe test</p>
+            <p title="asdfqwerty">title=asdfqwerty test</p>
+        </body>
+        ```
+    
+    - 页面结果
+        - ![property_selector_html_result](imgs/selector/property_selector_html_result.png)
+
+## 伪类选择器
+[top](#catalog)

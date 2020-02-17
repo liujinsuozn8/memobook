@@ -1,0 +1,63 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>relation test</title>
+        
+        <style>
+            /* 3. 兄弟选择器 */
+            /* 3.1 选择 兄弟元素1选择器 后边紧挨的第一个兄弟元素 */
+            /* 选择p后面的第一个span */
+            p + span{
+                color:mediumpurple;
+                text-decoration:underline;
+                font-size: 20px;
+            }
+
+            /* 3.2 选择 兄弟元素1选择器 后边的所有兄弟元素 */
+            /* 选择 p 后边所有的 ul 和 ol 兄弟元素 */
+            p ~ ul,ol{
+                color:red;
+                text-decoration:underline;
+                font-size: 20px;
+            }
+        </style>
+
+    </head>
+    <body>
+        <section>0. 不符合任何选择器</section>
+        
+        <section>3. 兄弟选择器</section>
+        <section>3.1-1 选择 兄弟元素1选择器后边紧挨的第一个兄弟元素，选择p后面的第一个span</section>
+        <p>p1</p>
+        <span>p1 - span1</span><br>
+        <span>p1 - span2</span><br>
+        <br>
+
+        <section>3.1-2 兄弟元素1与兄弟元素2之间有其他元素，选择p后面的第一个span</section>
+        <p>p2</p>
+        <div>p2 - div</div>
+        <span>p2 - span1</span><br>
+        <span>p2 - span2</span><br>
+        <br>
+
+        <section>3.1-2 兄弟元素1与兄弟元素2之间有其他元素，选择 p 后边所有的 ul 和 ol 兄弟元素 </section>
+        <p>p2</p>
+        <div></div>
+        <ul>
+            <li>p2-list1-item1</li>
+            <li>p2-list1-item2</li>
+        </ul>
+        <div></div>
+        <ol>
+            <li>p2-list2-item1</li>
+            <li>p2-list2-item2</li>
+        </ul>
+        <ul>
+            <li>p2-list3-item1</li>
+            <li>p2-list3-item2</li>
+        </ul>
+        <br>
+
+    </body>
+</html>
