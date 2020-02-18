@@ -1,63 +1,236 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
     <head>
         <meta charset="utf-8">
-        <title>relation test</title>
-        
+        <title>pseudo class test</title>
         <style>
-            /* 3. 兄弟选择器 */
-            /* 3.1 选择 兄弟元素1选择器 后边紧挨的第一个兄弟元素 */
-            /* 选择p后面的第一个span */
-            p + span{
-                color:mediumpurple;
-                text-decoration:underline;
+            /* 伪类选择器 */
+
+            /* -------------对所有元素排序------------------------- */
+            /* 1. 选择 ul下的第一个和最后一个li子元素（与并集选择器混合） */
+            /* ul.test1 > li:first-child,li:last-child */
+            ul.test1 > li:first-child {
+                color:blue;
+            }
+
+            ul.test1 > li:last-child {
+                color:orange;
+            }
+
+            /* 2. 选择 ul下的第3个li子元素 */
+            ul.test1 > li:nth-child(3){
+                color:red
+            }
+
+            /* 3. 选择 ol下的所有li子元素 */
+            ol.test1 > li:nth-child(n){
+                color:green
+            }
+
+            /* 4. 选择ul下的所有偶数li子元素，通过2n的方式 */
+            ul.test2 > li:nth-child(2n){
+                color:hotpink;
+            }
+
+            /* 5. 选择ul下的所有偶数li子元素，通过even的方式 */
+            ul.test3 > li:nth-child(even){
+                color:hotpink;
+            }
+
+            /* 6. 选择ul下的所有奇数li子元素，通过2n+1的方式 */
+            ul.test4 > li:nth-child(2n+1){
                 font-size: 20px;
             }
 
-            /* 3.2 选择 兄弟元素1选择器 后边的所有兄弟元素 */
-            /* 选择 p 后边所有的 ul 和 ol 兄弟元素 */
-            p ~ ul,ol{
-                color:red;
-                text-decoration:underline;
+            /* 7. 选择ul下的所有奇数li子元素，通过odd的方式 */
+            ul.test5 > li:nth-child(odd){
                 font-size: 20px;
+            }
+
+            /* -------------只对同类元素排序------------------------- */
+            /* 8. 选择ul下的所有li元素中的第一个li子元素 */
+            ul.test6 > li:first-of-type{
+                color:red;
+            }
+
+            /* 9. 选择ul下的所有li元素中的最后一个li子元素 */
+            ul.test6 > li:last-of-type{
+                color:blue;
+            }
+
+            /* 10. 选择ul下的所有的li元素，忽略其他元素 */
+            ul.test7 > li:nth-of-type(n){
+                color:green;
+            }
+
+            /* 11. 选择ul下的所有的偶数li元素，忽略其他元素，使用2n方式 */
+            ul.test8 > li:nth-of-type(2n){
+                color:hotpink;
+            }
+            
+            /* 12. 选择ul下的所有的偶数li元素，忽略其他元素，使用event方式 */
+            ul.test9 > li:nth-of-type(even){
+                color:hotpink;
+            }
+
+            /* 13. 选择ul下的所有的奇数li元素，忽略其他元素，使用2n+1方式 */
+            ul.test10 > li:nth-of-type(2n+1){
+                font-size: 20px;
+            }
+
+            /* 14. 选择ul下的所有的奇数li元素，忽略其他元素，使用odd方式 */
+            ul.test11 > li:nth-of-type(odd){
+                font-size: 20px;
+            }
+
+            /* 15. 否定伪类，将title属性是 abcd 的li去除*/
+            ul.test12 > li:not([title="abcd"]){
+                color: red;
             }
         </style>
 
     </head>
     <body>
-        <section>0. 不符合任何选择器</section>
+
+        <section>
+            1. 选择 ul下的第一个和最后一个li子元素
+            <br>
+            2. 选择 ul下的第3个li子元素
+        </section>
+        <ul class="test1">
+            <li>ul1 item 01</li>
+            <li>ul1 item 02</li>
+            <li>ul1 item 03</li>
+            <li>ul1 item 04</li>
+            <li>ul1 item 05</li>
+        </ul>
+
+        <section>
+                0. span作为第一个元素，测试：first-child对所有的子元素排序
+        </section>
+        <ul class="test1">
+            <span>span 00</span>
+            <li>ul2 item 01</li>
+            <li>ul2 item 02</li>
+            <li>ul2 item 03</li>
+        </ul>
         
-        <section>3. 兄弟选择器</section>
-        <section>3.1-1 选择 兄弟元素1选择器后边紧挨的第一个兄弟元素，选择p后面的第一个span</section>
-        <p>p1</p>
-        <span>p1 - span1</span><br>
-        <span>p1 - span2</span><br>
-        <br>
+        <section>3. 选择 ol下的所有li子元素</section>
+        <ol class="test1">
+            <li>ol1 item 01</li>
+            <li>ol1 item 02</li>
+            <li>ol1 item 03</li>
+            <li>ol1 item 04</li>
+            <li>ol1 item 05</li>
+            <li>ol1 item 06</li>
+        </ol>
 
-        <section>3.1-2 兄弟元素1与兄弟元素2之间有其他元素，选择p后面的第一个span</section>
-        <p>p2</p>
-        <div>p2 - div</div>
-        <span>p2 - span1</span><br>
-        <span>p2 - span2</span><br>
-        <br>
+        <section>4. 选择ul下的所有偶数li子元素，通过2n的方式</section>
+        <ul class="test2">
+            <li>ul.test2 01 item01</li>
+            <li>ul.test2 01 item02</li>
+            <li>ul.test2 01 item03</li>
+            <li>ul.test2 01 item04</li>
+        </ul>
+        
+        <section>5. 选择ul下的所有偶数li子元素，通过even的方式</section>
+        <ul class="test3">
+            <li>ul.test3 01 item01</li>
+            <li>ul.test3 01 item02</li>
+            <li>ul.test3 01 item03</li>
+            <li>ul.test3 01 item04</li>
+        </ul>
 
-        <section>3.1-2 兄弟元素1与兄弟元素2之间有其他元素，选择 p 后边所有的 ul 和 ol 兄弟元素 </section>
-        <p>p2</p>
-        <div></div>
-        <ul>
-            <li>p2-list1-item1</li>
-            <li>p2-list1-item2</li>
+        <section>6. 选择ul下的所有奇数li子元素，通过2n+1的方式</section>
+        <ul class="test4">
+            <li>ul.test4 01 item01</li>
+            <li>ul.test4 01 item02</li>
+            <li>ul.test4 01 item03</li>
+            <li>ul.test4 01 item04</li>
         </ul>
-        <div></div>
-        <ol>
-            <li>p2-list2-item1</li>
-            <li>p2-list2-item2</li>
-        </ul>
-        <ul>
-            <li>p2-list3-item1</li>
-            <li>p2-list3-item2</li>
-        </ul>
-        <br>
 
+        <section>7. 选择ul下的所有奇数li子元素，通过odd的方式</section>
+        <ul class="test5">
+            <li>ul.test5 01 item01</li>
+            <li>ul.test5 01 item02</li>
+            <li>ul.test5 01 item03</li>
+            <li>ul.test5 01 item04</li>
+        </ul>
+        
+        <section>8. 选择ul下的所有li元素中的第一个li子元素</section>
+        <section>9. 选择ul下的所有li元素中的最后一个li子元素</section>
+        <ul class="test6">
+            <span>span01</span>
+            <span>span02</span>
+            <li>ul.test6 01 item01</li>
+            <li>ul.test6 01 item02</li>
+            <span>span03</span>
+            <li>ul.test6 01 item03</li>
+        </ul>
+        
+        <section>10. 选择ul下的所有的li元素，忽略其他元素</section>
+        <ul class="test7">
+            <span>span01</span>
+            <span>span02</span>
+            <li>ul.test7 01 item01</li>
+            <li>ul.test7 01 item02</li>
+            <span>span03</span>
+            <li>ul.test7 01 item03</li>
+            <li>ul.test7 01 item04</li>
+        </ul>
+        
+        <section>11. 选择ul下的所有的偶数li元素，忽略其他元素</section>
+        <ul class="test8">
+            <span>span01</span>
+            <span>span02</span>
+            <li>ul.test8 01 item01</li>
+            <li>ul.test8 01 item02</li>
+            <span>span03</span>
+            <li>ul.test8 01 item03</li>
+            <li>ul.test8 01 item04</li>
+        </ul>
+        
+        <section>12. 选择ul下的所有的偶数li元素，忽略其他元素，使用odd方式</section>
+        <ul class="test9">
+            <span>span01</span>
+            <span>span02</span>
+            <li>ul.test9 01 item01</li>
+            <li>ul.test9 01 item02</li>
+            <span>span03</span>
+            <li>ul.test9 01 item03</li>
+            <li>ul.test9 01 item04</li>
+        </ul>
+
+        <section>13. 选择ul下的所有的奇数li元素，忽略其他元素，使用2n+1方式</section>
+        <ul class="test10">
+            <span>span01</span>
+            <span>span02</span>
+            <li>ul.test10 01 item01</li>
+            <li>ul.test10 01 item02</li>
+            <span>span03</span>
+            <li>ul.test10 01 item03</li>
+            <li>ul.test10 01 item04</li>
+        </ul>
+
+        <section>14. 选择ul下的所有的奇数li元素，忽略其他元素，使用odd方式</section>
+        <ul class="test11">
+            <span>span01</span>
+            <span>span02</span>
+            <li>ul.test11 01 item01</li>
+            <li>ul.test11 01 item02</li>
+            <span>span03</span>
+            <li>ul.test11 01 item03</li>
+            <li>ul.test11 01 item04</li>
+        </ul>
+        
+        <section>15. 否定伪类，将title属性是 abcd的li去除</section>
+        <ul class="test12">
+            <li>ul.test12 01 item01</li>
+            <li title="abcd">ul.test12 01 item02 :title="abcd"</li>
+            <li>ul.test12 01 item03</li>
+            <li>ul.test12 01 item04</li>
+        </ul>
+        
+        <br>
     </body>
 </html>
