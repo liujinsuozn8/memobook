@@ -1,0 +1,73 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>pseudo element test</title>
+        <style>
+            /* 伪元素选择器 */
+            /* 1. 设置所有p标签的第一个字符的大小 */
+            p::first-letter{
+                font-size: 20px;
+            }
+
+            /* 2. 设置所有p标签的第一行的颜色 */
+            p::first-line{
+                color: green;
+            }
+
+            /* 3. 设置p标签中，文字被选中时的颜色 */
+            p::selection{
+                background:orange;
+            }
+
+            /* 4. 在div的内容之前和之后添加文字及样式 */
+            div.test01::before{
+                content: "be";
+                color:red;
+            }
+
+            div.test01::after{
+                content:"af";
+                color: green;
+            }
+            
+            /* 5. 为div中的文字添加书名号 */
+            div.test02::before{
+                content:"【"
+            }
+            div.test02::after{
+                content:"】"
+            }
+
+            /* 6. 测试::before 和 ::after 中不是用content的效果（没有任何效果） */
+            div.test03::before{
+                color:green;
+            }
+            div.test03::after{
+                color:green;
+            }
+        </style>
+    </head>
+    <body>
+        <section>
+            1. 设置所有p标签的第一个字符的大小
+            <br>
+            2. 设置所有p标签的第一行的颜色
+            <br>
+            3. 设置p标签中，文字被选中时的颜色
+        </section>
+        <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Cumque cupiditate voluptates libero. Tempora porro id libero laboriosam, reiciendis modi rem beatae itaque facilis provident rerum numquam, aperiam, fugiat quod quae!</p>
+        <br>
+
+        <section>4. 在div的内容之前和之后添加文字及样式</section>
+        <div class="test01">div test01</div>
+        <br>
+
+        <section>5. 为div中的文字添加书名号</section>
+        <div class="test02">div test02</div>
+        <br>
+
+        <section>6. 测试::before 和 ::after 中不是用content的效果(没有任何效果)</section>
+        <div class="test03">div test03</div>
+    </body>
+</html>
