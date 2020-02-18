@@ -10,12 +10,16 @@
     - [内部css](#内部css)
     - [外部css](#外部css)
 - [css语法](#css语法)
-- [选择器](#选择器)
+- [常用CSS选择器](#常用CSS选择器)
     - [基本选择器](#基本选择器)
     - [复合选择器](#复合选择器)
     - [关系选择器](#关系选择器)
     - [属性选择器](#属性选择器)
     - [伪类选择器](#伪类选择器)
+    - [伪元素选择器](#伪元素选择器)
+- [选择器的优先级](#选择器的优先级)
+- [继承](#继承)
+- [](#)
 - [](#)
 - [](#)
 - [](#)
@@ -160,7 +164,7 @@
 
 - **多个css中如果出现的重复的部分，则使用后声明的部分**
 
-# 选择器
+# 常用CSS选择器
 ## 基本选择器
 [top](#catalog)
 - 4中基本选择器
@@ -557,3 +561,516 @@
 
 ## 伪类选择器
 [top](#catalog)
+- 什么是伪类
+    - 不存在的类，是特殊的类
+- 伪类的用途
+    - 用来描述一个**元素的特殊状态**。如：第一个子元素，被点击的元素，鼠标移入的元素
+- 伪类的语法，`其他选择器:伪类名`
+- 伪类
+
+    |伪类|描述|备注|
+    |-|-|-|
+    |`:first-child`|所有子元素中的第一个子元素|将对所有的子元素进行排序,如果多个元素中间有不符合规则的元素，将会影响显示结果|
+    |`:last-child`|所有子元素中的最后一个子元素|将对所有的子元素进行排序,如果多个元素中间有不符合规则的元素，将会影响显示结果|
+    |`:nth-child(index)`|所有子元素中的第n个子元素|将对所有的子元素进行排序,如果多个元素中间有不符合规则的元素，将会影响显示结果<br>index从0开始<br>`index=n`时，选中所有子元素，表示从1到正无穷<br>`index=2n`、`index=even`时，表示选择偶数位置的子元素<br>`index=2n+1`、`index=odd`时，表示选择奇数数位置的子元素|
+    |`:first-of-type`|同类元素中的第一个子元素|仅对同类元素进行排序,如果多个元素中间有不符合规则的元素，则忽略这些元素|
+    |`:last-of-type`|同类元素中的最后一个子元素|仅对同类元素进行排序,如果多个元素中间有不符合规则的元素，则忽略这些元素|
+    |`:nth-of-type(index)`|同类元素中的第n个子元素|仅对同类元素进行排序,如果多个元素中间有不符合规则的元素，则忽略这些元素<br>index从0开始<br>`index=n`时，选中所有子元素，表示从1到正无穷<br>`index=2n`、`index=even`时，表示选择偶数位置的子元素<br>`index=2n+1`、`index=odd`时，表示选择奇数数位置的子元素|
+    |`:not(选择器|伪类)`|否定伪类，将符合条件的元素从选择器中删除|如果使用`属性选择器`，只写`[属性名=属性值]`部分即可|
+
+- 示例
+    - 参考代码：[/frontend/css/base/src/selector/pseudo_class.html](/frontend/css/base/src/selector/pseudo_class.html)
+
+    - 对所有元素排序
+        1. 选择 ul下的第一个和最后一个li子元素（与并集选择器混合）
+            - css
+                ```css
+                ul.test1 > li:first-child {
+                    color:blue;
+                }
+
+                ul.test1 > li:last-child {
+                    color:orange;
+                }
+                ```
+
+            - html
+                ```html
+                <section>
+                    1. 选择 ul下的第一个和最后一个li子元素
+                    <br>
+                    2. 选择 ul下的第3个li子元素
+                </section>
+                <ul class="test1">
+                    <li>ul1 item 01</li>
+                    <li>ul1 item 02</li>
+                    <li>ul1 item 03</li>
+                    <li>ul1 item 04</li>
+                    <li>ul1 item 05</li>
+                </ul>
+                ```
+            
+            - 页面结果
+                - ![](?????)
+        2. 选择 ul下的第3个li子元素
+            - css
+                ```css
+                ul.test1 > li:nth-child(3){
+                    color:red
+                }
+                ```
+
+            - html
+                ```html
+                <section>
+                    1. 选择 ul下的第一个和最后一个li子元素
+                    <br>
+                    2. 选择 ul下的第3个li子元素
+                </section>
+                <ul class="test1">
+                    <li>ul1 item 01</li>
+                    <li>ul1 item 02</li>
+                    <li>ul1 item 03</li>
+                    <li>ul1 item 04</li>
+                    <li>ul1 item 05</li>
+                </ul>
+                ```
+            
+            - 页面结果
+                - ![](?????)
+        3. 选择 ol下的所有li子元素
+            - css
+                ```css
+                ol.test1 > li:nth-child(n){
+                    color:green
+                }
+                ```
+
+            - html
+                ```html
+                <section>3. 选择 ol下的所有li子元素</section>
+                <ol class="test1">
+                    <li>ol1 item 01</li>
+                    <li>ol1 item 02</li>
+                    <li>ol1 item 03</li>
+                    <li>ol1 item 04</li>
+                    <li>ol1 item 05</li>
+                    <li>ol1 item 06</li>
+                </ol>
+                ```
+            
+            - 页面结果
+                - ![](?????)
+
+        4. 选择ul下的所有偶数li子元素，通过2n的方式
+            - css
+                ```css
+                ul.test2 > li:nth-child(2n){
+                    color:hotpink;
+                }
+                ```
+
+            - html
+                ```html
+                <section>4. 选择ul下的所有偶数li子元素，通过2n的方式</section>
+                <ul class="test2">
+                    <li>ul.test2 01 item01</li>
+                    <li>ul.test2 01 item02</li>
+                    <li>ul.test2 01 item03</li>
+                    <li>ul.test2 01 item04</li>
+                </ul>
+                ```
+            
+            - 页面结果
+                - ![](?????)
+        5. 选择ul下的所有偶数li子元素，通过even的方式
+            - css
+                ```css
+                ul.test3 > li:nth-child(even){
+                    color:hotpink;
+                }
+                ```
+
+            - html
+                ```html
+                <section>5. 选择ul下的所有偶数li子元素，通过even的方式</section>
+                <ul class="test3">
+                    <li>ul.test3 01 item01</li>
+                    <li>ul.test3 01 item02</li>
+                    <li>ul.test3 01 item03</li>
+                    <li>ul.test3 01 item04</li>
+                </ul>
+                ```
+            - 页面结果
+                - ![](?????)
+        
+        6. 选择ul下的所有奇数li子元素，通过2n+1的方式
+            - css
+                ```css
+                ul.test4 > li:nth-child(2n+1){
+                    font-size: 20px;
+                }
+                ```
+
+            - html
+                ```html
+                <section>6. 选择ul下的所有奇数li子元素，通过2n+1的方式</section>
+                <ul class="test4">
+                    <li>ul.test4 01 item01</li>
+                    <li>ul.test4 01 item02</li>
+                    <li>ul.test4 01 item03</li>
+                    <li>ul.test4 01 item04</li>
+                </ul>
+                ```
+            
+            - 页面结果
+                - ![](?????)
+        
+        7. 选择ul下的所有奇数li子元素，通过odd的方式
+            - css
+                ```css
+                ul.test5 > li:nth-child(odd){
+                    font-size: 20px;
+                }
+                ```
+
+            - html
+                ```html
+                <section>7. 选择ul下的所有奇数li子元素，通过odd的方式</section>
+                <ul class="test5">
+                    <li>ul.test5 01 item01</li>
+                    <li>ul.test5 01 item02</li>
+                    <li>ul.test5 01 item03</li>
+                    <li>ul.test5 01 item04</li>
+                </ul>
+                ```
+            - 页面结果
+                - ![](?????)
+
+
+    - 只对同类元素排序
+        1. 选择ul下的所有li元素中的第一个和最后一个li子元素
+            - css
+                ```css
+                ul.test6 > li:first-of-type{
+                    color:red;
+                }
+
+                ul.test6 > li:last-of-type{
+                    color:blue;
+                }
+                ```
+
+            - html
+                ```html
+                <section>8. 选择ul下的所有li元素中的第一个li子元素</section>
+                <section>9. 选择ul下的所有li元素中的最后一个li子元素</section>
+                <ul class="test6">
+                    <span>span01</span>
+                    <span>span02</span>
+                    <li>ul.test6 01 item01</li>
+                    <li>ul.test6 01 item02</li>
+                    <span>span03</span>
+                    <li>ul.test6 01 item03</li>
+                </ul>
+                ```
+            
+            - 页面结果
+                - ![](?????)
+        
+        2. 选择ul下的所有的li元素，忽略其他元素
+            - css
+                ```css
+                ul.test7 > li:nth-of-type(n){
+                    color:green;
+                }
+                ```
+
+            - html
+                ```html
+                <section>10. 选择ul下的所有的li元素，忽略其他元素</section>
+                <ul class="test7">
+                    <span>span01</span>
+                    <span>span02</span>
+                    <li>ul.test7 01 item01</li>
+                    <li>ul.test7 01 item02</li>
+                    <span>span03</span>
+                    <li>ul.test7 01 item03</li>
+                    <li>ul.test7 01 item04</li>
+                </ul>
+                ```
+            
+            - 页面结果
+                - ![](?????)
+        
+        3. 选择ul下的所有的偶数li元素，忽略其他元素，使用2n方式
+            - css
+                ```css
+                ul.test8 > li:nth-of-type(2n){
+                    color:hotpink;
+                }
+                ```
+
+            - html
+                ```html
+                <section>11. 选择ul下的所有的偶数li元素，忽略其他元素</section>
+                <ul class="test8">
+                    <span>span01</span>
+                    <span>span02</span>
+                    <li>ul.test8 01 item01</li>
+                    <li>ul.test8 01 item02</li>
+                    <span>span03</span>
+                    <li>ul.test8 01 item03</li>
+                    <li>ul.test8 01 item04</li>
+                </ul>
+                ```
+            
+            - 页面结果
+                - ![](?????)
+        
+        4. 选择ul下的所有的偶数li元素，忽略其他元素，使用event方式
+            - css
+                ```css
+                ul.test9 > li:nth-of-type(even){
+                    color:hotpink;
+                }
+                ```
+
+            - html
+                ```html
+                section>12. 选择ul下的所有的偶数li元素，忽略其他元素，使用odd方式</section>
+                <ul class="test9">
+                    <span>span01</span>
+                    <span>span02</span>
+                    <li>ul.test9 01 item01</li>
+                    <li>ul.test9 01 item02</li>
+                    <span>span03</span>
+                    <li>ul.test9 01 item03</li>
+                    <li>ul.test9 01 item04</li>
+                </ul>
+                ```
+            
+            - 页面结果
+                - ![](?????)
+        
+        5. 选择ul下的所有的奇数li元素，忽略其他元素，使用2n+1方式
+            - css
+                ```css
+                ul.test10 > li:nth-of-type(2n+1){
+                    font-size: 20px;
+                }
+                ```
+
+            - html
+                ```html
+                <section>13. 选择ul下的所有的奇数li元素，忽略其他元素，使用2n+1方式</section>
+                <ul class="test10">
+                    <span>span01</span>
+                    <span>span02</span>
+                    <li>ul.test10 01 item01</li>
+                    <li>ul.test10 01 item02</li>
+                    <span>span03</span>
+                    <li>ul.test10 01 item03</li>
+                    <li>ul.test10 01 item04</li>
+                </ul>
+                ```
+            
+            - 页面结果
+                - ![](?????)
+        
+        6. 选择ul下的所有的奇数li元素，忽略其他元素，使用odd方式
+            - css
+                ```css
+                ul.test11 > li:nth-of-type(odd){
+                    font-size: 20px;
+                }
+                ```
+
+            - html
+                ```html
+                <section>14. 选择ul下的所有的奇数li元素，忽略其他元素，使用odd方式</section>
+                <ul class="test11">
+                    <span>span01</span>
+                    <span>span02</span>
+                    <li>ul.test11 01 item01</li>
+                    <li>ul.test11 01 item02</li>
+                    <span>span03</span>
+                    <li>ul.test11 01 item03</li>
+                    <li>ul.test11 01 item04</li>
+                </ul>
+                ```
+            
+            - 页面结果
+                - ![](?????)
+    
+    - 否定伪类
+        - 否定伪类，将title属性是 abcd 的li去除
+
+            - css
+                ```css
+                ul.test12 > li:not([title="abcd"]){
+                    color: red;
+                }
+                ```
+
+            - html
+                ```html
+                <section>15. 否定伪类，将title属性是 abcd的li去除</section>
+                <ul class="test12">
+                    <li>ul.test12 01 item01</li>
+                    <li title="abcd">ul.test12 01 item02 :title="abcd"</li>
+                    <li>ul.test12 01 item03</li>
+                    <li>ul.test12 01 item04</li>
+                </ul>
+                ```
+            
+            - 页面结果
+                - ![](?????)
+
+
+## 伪元素选择器
+[top](#catalog)
+- 伪元素表示页面中一些特殊的但不存在的元素或特殊位置
+- 伪元素的语法, `其他选择器::伪元素名`
+- 常用伪元素
+    
+    |伪元素|描述|备注|
+    |-|-|-|
+    |`::first-letter`|表示第一个字母||
+    |`:first-line:`|表示第一行||
+    |`::selection`|表示选中的内容||
+    |`::before`|表示元素的开始|1.该元素的位置处于开始标签后，标签内容之前<br>如：`<tag>|文字`，假设`|`不真实存在，`|`就是`::before`的位置<br><br>2. `before`必须结合`content`属性来使用，所有的样式都是在设置`content`中的内容<br><br>3. 如果使用了`content`属性，在控制台可以看到该元素；如果不使用`content`属性则无法看到|
+    |`::after`|表示元素的最后|1.该元素的位置处于标签内容之后，结束标签之前<br>如：`文字|<tag>`，假设`|`不真实存在，`|`就是`::after`的位置<br><br>2. `after`必须结合`content`属性来使用，所有的样式都是在设置`content`中的内容<br><br>3. 如果使用了`content`属性，在控制台可以看到该元素；如果不使用`content`属性则无法看到|
+
+- 在短引用标签`<q>`中，页面中自动出现的`""`或`[]`，就是通过在css中设置`::before`和`::after`来实现的
+
+- 示例
+    - 参考代码:[/frontend/css/base/src/selector/pseudo_class.html](/frontend/css/base/src/selector/pseudo_class.html)
+    - css
+        ```css
+        /* 1. 设置所有p标签的第一个字符的大小 */
+        p::first-letter{
+            font-size: 20px;
+        }
+
+        /* 2. 设置所有p标签的第一行的颜色 */
+        p::first-line{
+            color: green;
+        }
+
+        /* 3. 设置p标签中，文字被选中时的颜色 */
+        p::selection{
+            background:orange;
+        }
+
+        /* 4. 在div的内容之前和之后添加文字及样式 */
+        div.test01::before{
+            content: "be";
+            color:red;
+        }
+
+        div.test01::after{
+            content:"af";
+            color: green;
+        }
+        
+        /* 5. 为div中的文字添加书名号 */
+        div.test02::before{
+            content:"【"
+        }
+        div.test02::after{
+            content:"】"
+        }
+
+        /* 6. 测试::before 和 ::after 中不是用content的效果（没有任何效果） */
+        div.test03::before{
+            color:green;
+        }
+        div.test03::after{
+            color:green;
+        }
+        ```
+    - html
+        ```html
+        <section>
+            1. 设置所有p标签的第一个字符的大小
+            <br>
+            2. 设置所有p标签的第一行的颜色
+            <br>
+            3. 设置p标签中，文字被选中时的颜色
+        </section>
+        <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Cumque cupiditate voluptates libero. Tempora porro id libero laboriosam, reiciendis modi rem beatae itaque facilis provident rerum numquam, aperiam, fugiat quod quae!</p>
+        <br>
+
+        <section>4. 在div的内容之前和之后添加文字及样式</section>
+        <div class="test01">div test01</div>
+        <br>
+
+        <section>5. 为div中的文字添加书名号</section>
+        <div class="test02">div test02</div>
+        <br>
+
+        <section>6. 测试::before 和 ::after 中不是用content的效果(没有任何效果)</section>
+        <div class="test03">div test03</div>
+        ```
+    - 页面结果
+        - ![](?????)
+
+    - 控制台中的页面元素
+        - ![](?????)
+
+
+# 选择器的优先级
+[top](#catalog)
+- 样式冲突
+    - 发生样式冲突的条件：<label style="color:red">不同的选择器，选中相同的元素，为相同的样式设置不同的值</label>
+- 发生能够冲突时，应用哪个样式，由选择器的优先级来决定
+- 选择器的优先级
+
+
+    
+# 继承
+[top](#catalog)
+- 样式的继承
+    - 为一个元素设置的样式同时也会应用到它的**后代元素**
+    - 继承是发生在祖先元素和后代元素上的
+- 继承的目的
+    - 为了方便开发，利用继承可以将一些通用的样式设置到祖先元素中，只设置一次，就可以使所有后代元素都能获取到该样式
+
+- 不会自动继承的样式
+    - 背景相关的样式，如背景色、背景图片
+    - 布局相关等样式
+
+- 示例
+    - 参考代码[/frontend/css/base/src/inherit/inherit.html](/frontend/css/base/src/inherit/inherit.html)
+    - css
+        ```css
+        p{
+            color: blue;
+
+        }
+
+        div{
+            color:green;
+        }
+        ```
+    - html
+        ```html
+        <section>继承测试--只设置祖先元素的样式，后代元素也能获取到该样式</section>
+        <p>
+            p element
+            <span>span inner p</span>
+        </p>
+
+        <span>span outer p</span>
+
+        <div>
+            div element
+            <span>
+                span inner div ：level1
+                <em>em inner div:level2</em>
+            </span>
+
+        </div>
+        ```
+
