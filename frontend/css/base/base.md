@@ -17,7 +17,7 @@
     - [属性选择器](#属性选择器)
     - [伪类选择器](#伪类选择器)
     - [伪元素选择器](#伪元素选择器)
-- [选择器的优先级](#选择器的优先级)
+- [选择器的权重](#选择器的权重)
 - [继承](#继承)
 - [](#)
 - [](#)
@@ -1020,15 +1020,160 @@
         - ![](?????)
 
 
-# 选择器的优先级
+# 选择器的权重
 [top](#catalog)
 - 样式冲突
     - 发生样式冲突的条件：<label style="color:red">不同的选择器，选中相同的元素，为相同的样式设置不同的值</label>
-- 发生能够冲突时，应用哪个样式，由选择器的优先级来决定
-- 选择器的优先级
+- 发生样式冲突时，由选择器的权重来决定。如果优先级相同，则使用后声明的选择器中的样式（可以理解为后声明的内容覆盖了先声明的内容）
 
+- 选择器类型及其对应的权重
+    |选择器|权重|
+    |-|-|
+    |内联样式|`1,0,0,0`|
+    |id|`0,1,0,0`|
+    |类和伪类选择器|`0,0,1,0`|
+    |元素选择器|`0,0,0,1`|
+    |通配符选择器|`0,0,0,0`|
+    |从祖先元素继承的样式|没有权重|
 
+- 复合选择器的权重计算方式
+    - 对于交集选择器，它的权重=所有的选择器的权重相加
+        - 选择器的累加不会超过其最大的数量级。如有n个类选择器，无论n多大，权重求和的结果也不会超过id选择器，即数量级无法从`10`跨越到`100`
+
+    - 对于并集选择器，每个选择器单独计算，各算各的
+
+- 强制最大权重：`!important`
+    - 可以在<label style="color:red">样式</label>的后面添加`!important`。该样式将会获得最高的权重，比内联样式还高
+    - 语法
+        ```css
+        选择器{
+            样式名:样式值 !important;
+        }
+        ```
+
+- 示例
+    - 参考代码：[/frontend/css/base/src/selector/selector_level.html](/frontend/css/base/src/selector/selector_level.html)
     
+    - 权重大小测试 id > 类选择 > 元素选择器
+        - css
+            ```css
+            #box1{
+                color:blue;
+            }
+            div{
+                color:blueviolet;
+            }
+
+            .red{
+                color:red;
+            }
+            ```
+        - html
+            ```html
+            <section>1.1 测试基本的权重大小</section>
+            <div id="box1" class="red">div id=box1 class=red</div>
+            <div class="red">div class=red</div>
+            <div>only div</div>
+            <section>1.2. 测试内联样式</section>
+            <div id="box1" style="color:green">div with inner css</div>
+            ```
+
+        - ![](?????)
+
+    - 测试交集选择器的权重
+        - css
+            ```css
+            div.aa.bb.cc.dd.ee.ff.gg.hh.ii.jj{
+                color:orange;
+            }
+
+            #box2{
+                color: green;
+            }
+            ```
+        - html
+            ```html
+            <section>2. 测试交集选择器的权重相加</section>
+            <div class='aa bb cc dd ee ff gg hh ii jj'>
+                div class='aa bb cc dd ee ff gg hh ii jj'
+                <br>
+                权重【10个class+div】=101 > id的100，但实际上没有跨越数量级
+            </div>
+            <div id="box2" class='aa bb cc dd ee ff gg hh ii jj'>div id="box2" class='aa bb cc dd ee ff gg hh ii jj'</div>
+            <br>
+            ```
+
+        - ![](?????)
+
+    - 测试 `!important`
+        - css
+            ```css
+            .test01{
+                color:indigo !important;
+            }
+            ```
+        - html
+            ```html
+            <section>4. 测试!important</section>
+            <div class="test01" style="color:orange">div class="test01" style="color:orange"</div>
+            <div style="color:orange">div style="color:orange"</div>
+            ```
+        - ![](?????)
+
+    - 测试权重相同的选择器
+        - css
+            ```css
+            .test0201{
+                color:orange;
+            }
+
+            .test0202{
+                color:green;
+            }
+            ```
+
+        - html
+            ```html
+            <section>5. 测试权重相同的选择器</section>
+            <div class="test0201">div class="test0201"</div>
+            <div class="test0202">div class="test0202"</div>
+            <div class="test0201 test0202">div class="test0201 test0202"</div>
+            <br>
+            ```
+        - ![](?????)
+
+    - 测试通配符选择器和继承样式的权重
+        - css
+            ```css
+            /* 设置 div.test03 下的所有后代元素的样式 */
+            div.test03 *{
+                color:green;
+            }
+            
+            /* 仅设置 div.test03的样式 */
+            div.test03 {
+                color:red;
+            }
+            ```
+        - html
+            ```html
+            <section>6. 测试通配符选择器和继承样式的权重</section>
+            <div class="test03">
+                div class="test03"，
+                <br>
+                只有这里是红色，其他的子元素因为通配选择器的样式，都是绿色
+                <br>
+                <span>div - span</span>
+                <br>
+                <div>div - div<p>div - div - p </p>
+                </div>
+            </div>
+            ```
+        - ![](?????)
+
+
+
+
 # 继承
 [top](#catalog)
 - 样式的继承
@@ -1074,3 +1219,4 @@
         </div>
         ```
 
+- 
