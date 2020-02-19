@@ -12,9 +12,9 @@
     - [如何使用依赖倒转原则](#如何使用依赖倒转原则)
     - [依赖关系传递的三种方式和应用案例](#依赖关系传递的三种方式和应用案例)
     - [依赖倒转原则的注意事项和细节](#依赖倒转原则的注意事项和细节)
-- [](#)
-- [](#)
-- [](#)
+- [里氏替换原则](#里氏替换原则)
+    - [什么是里氏替换原则](#什么是里氏替换原则)
+    - [OO中的继承性思考和说明](#OO中的继承性思考和说明)
 - [](#)
 
 # 设计模式简介
@@ -358,7 +358,7 @@
         }
         ```
     - UML类图
-        - ![imgs/principle/Dependency_Inversion/DeliverByInterface.png](/designPattern/base/imgs/principle/Dependency_Inversion/DeliverByInterface.png)
+        - ![imgs/principle/Dependency_Inversion/DeliverByInterface.png](imgs/principle/Dependency_Inversion/DeliverByInterface.png)
         
 - 构造方法传递
     - 接口之间完全看不出依赖关系，只是通过实现类的构造器来关联
@@ -479,3 +479,111 @@
 - 底层模块尽量都要有抽象类或接口，或者两者都有，程序的稳定性更好
 - **变量的声明类型尽量是抽象类或接口**，这样我们的变量引用和实际对象间，就存在一个缓冲层，利于程序扩展和优化
 - 继承时需要遵守里氏替换原则
+
+# 里氏替换原则
+## OO中的继承性思考和说明
+[top](#catalog)
+- 继承包含的另一层含义
+    - 父类中已经实现的方法，实际上是在设定一直规范和契约。但是不强制子类必须遵守这些规范
+    - 如果子类对已经实现的方法进行**任意修改，将会破坏整个继承体系**
+- 继承带来的弊端
+    - 使用继承会给程序带来侵入性，导致程序的可移植性降低、增加对象间的耦合度
+    - 如果一个类A被其他的类所继承，当类A需要修改时，**必须考虑到所有的子类**。并且父类修改后，**所有涉及到子类的功能都可能产生故障**
+- 在编程中，如何正确的使用继承：里氏替换原则
+
+## 什么是里氏替换原则
+[top](#catalog)
+- 里氏替换原则的概念
+    - 详细描述：如果对每个类型为T1的对象o1，都有类型为T2的对象o2，使得以T1定义的所有程序P在所有的对象o1都代换成o2时，程序P的行为没有发生变化，那么类型T2是类型T1的子类型
+    - 简单来说，即：所有引用基类的地方必须能透明的使用其子类的对象
+- 里氏替换原则的中心思想： **在子类中尽量不要重写父类的方法**
+- 继承实际上使两个类耦合性增强了，在适当的情况下，可以通过**聚合、组合、依赖、抽象出更高阶的父类**来解决问题
+
+## 示例说明里氏替换原则
+- 不实用里氏替换原则
+    - 参考代码：[/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/principle/liskov/LiskovOrigian.java](/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/principle/liskov/LiskovOrigian.java)
+    - B继承了A，但是重写方法时，更改了父类方法的功能，导致调用时会有不同的结果
+    - 代码
+        ```java
+        public class LiskovOrigian {
+            public static void main(String[] args) {
+                A a = new A();
+                B b = new B();
+
+                // 虽然有继承关系，但是B重写了父类的方法，导致同样的方法结果不同
+                a.func1(11,8);
+                b.func1(11,8);
+            }
+        }
+
+
+        class A{
+            public int func1(int num1, int num2){
+                return num1 - num2;
+            }
+        }
+
+        class B extends A {
+            //B无意中重写了A的方法，并且两个方法的含义完全不同
+            public int func1(int a, int b){
+                return a + b;
+            }
+
+            public int func2(int a, int b){
+                return func1(a, b) + 9;
+            }
+        }
+        ```
+
+- 使用里氏替换原则来改进：抽象出更高阶的父类
+    - 参考：[/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/principle/liskov/LiskovImprove.java](/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/principle/liskov/LiskovImprove.java)
+    - 抽象出一个更基本的类Base，A和B都继承Base，并提供相同的方法，但实现内容各不相同。
+    - 在调用A和B的功能时更加清晰，不会被A和B的继承关系误导
+    - 在B中组合A，使得通过B也能完成A的功能
+    - 改进之后的UML图
+        ![Liskov_improve_uml](imgs/principle/Liskov/Liskov_improve_uml.png)
+    - 代码
+        ```java
+        public class LiskovImprove {
+            public static void main(String[] args) {
+                A2 a = new A2();
+                B2 b = new B2();
+
+                // A和B通过父类Base进行了解耦，在调用时，各方法的意义更加明确
+                a.func1(11,8);
+                b.func1(11,8);
+
+                // 如果在B中仍然想使用A的方法，可以通过组合关系来调用
+                b.func3(11, 8);
+            }
+        }
+
+        // 构造更基础的类，来降低耦合
+        abstract class Base{
+            public abstract int func1(int num1, int num2);
+        }
+
+        class A2 extends Base{
+            public int func1(int num1, int num2){
+                return num1 - num2;
+            }
+        }
+
+        // 在B中，与A使用组合关系，并通过A来实现部分功能
+        class B2 extends Base {
+            private A2 a = new A2();
+            //B无意中重写了A的方法，并且两个方法的含义完全不同
+            public int func1(int a, int b){
+                return a + b;
+            }
+
+            public int func2(int a, int b){
+                return func1(a, b) + 9;
+            }
+
+            //使用A的方法来实现功能
+            public int func3(int a, int b){
+                return this.a.func1(a, b);
+            }
+        }
+        ```
