@@ -1,0 +1,104 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>selector weight test</title>
+        <style>
+            /* 1.权重大小测试 id > 类选择 > 元素选择器 */
+            #box1{
+                color:blue;
+            }
+            div{
+                color:blueviolet;
+            }
+
+            .red{
+                color:red;
+            }
+
+            /* 2. 测试交集选择器的权重 */
+            div.aa.bb.cc.dd.ee.ff.gg.hh.ii.jj{
+                color:orange;
+            }
+
+            #box2{
+                color: green;
+            }
+
+            /* 3. 测试比并集选择器的 */
+            
+            /* 4. 测试 !important */
+            .test01{
+                color:indigo !important;
+            }
+
+            /* 5. 测试权重相同的选择器 */
+            .test0201{
+                color:orange;
+            }
+
+            .test0202{
+                color:green;
+            }
+
+            /* 6. 测试通配符选择器和继承样式的权重 */
+            /* 设置 div.test03 下的所有后代元素的样式 */
+            div.test03 *{
+                color:green;
+            }
+            
+            /* 仅设置 div.test03的样式 */
+            div.test03 {
+                color:red;
+            }
+        </style>
+    </head>
+    <body>
+
+        <section>1.1 测试基本的权重大小</section>
+        <div id="box1" class="red">div id=box1 class=red</div>
+        <div class="red">div class=red</div>
+        <div>only div</div>
+        <section>1.2. 测试内联样式</section>
+        <div id="box1" style="color:green">div with inner css</div>
+        <br>
+
+        <section>2. 测试交集选择器的权重相加</section>
+        <div class='aa bb cc dd ee ff gg hh ii jj'>
+            div class='aa bb cc dd ee ff gg hh ii jj'
+            <br>
+            权重【10个class+div】=101 > id的100，但实际上没有跨越数量级
+        </div>
+        <div id="box2" class='aa bb cc dd ee ff gg hh ii jj'>div id="box2" class='aa bb cc dd ee ff gg hh ii jj'</div>
+        <br>
+
+        <!-- <section>3. 测试并集选择器的权重</section>
+        <div></div>
+        <br> -->
+
+        <section>4. 测试!important</section>
+        <div class="test01" style="color:orange">div class="test01" style="color:orange"</div>
+        <div style="color:orange">div style="color:orange"</div>
+        <br>
+
+        <section>5. 测试权重相同的选择器</section>
+        <div class="test0201">div class="test0201"</div>
+        <div class="test0202">div class="test0202"</div>
+        <div class="test0201 test0202">div class="test0201 test0202"</div>
+        <br>
+
+        <section>6. 测试通配符选择器和继承样式的权重</section>
+        <div class="test03">
+            div class="test03"，
+            <br>
+            只有这里是红色，其他的子元素因为通配选择器的样式，都是绿色
+            <br>
+            <span>div - span</span>
+            <br>
+            <div>div - div<p>div - div - p </p>
+            </div>
+        </div>
+        <br>
+
+    </body>
+</html>
