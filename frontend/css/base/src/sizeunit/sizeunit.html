@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<!-- <html lang="en"> -->
+<head>
+    <meta charset="UTF-8">
+    <title>size unit test</title>
+    <style>
+        html{
+            font-size: 15px;
+        }
+        .box1{
+            width: 200px;
+            height: 200px;
+            background-color: green;
+        }
+
+        /* 1. 百分比自动变化测试 */
+        .box2{
+            width:50%;
+            height:50%;
+            background-color: orange;
+        }
+
+        /* 2. em测试: 分别使用不同的文字大小 */
+        .box3{
+            font-size:5px;
+            width:10em;
+            height: 10em;
+            background-color: green;
+        }
+
+        .box4{
+            font-size:10px;
+            width:10em;
+            height: 10em;
+            background-color: orange;
+        }
+
+        /* 3. rem测试 */
+        .box5{
+            width:10rem;
+            height:10rem;
+            background-color:green;
+        }
+    </style>
+</head>
+<body>
+
+    <section>1.1. 百分比自动变化测试(包含父元素)</section>
+    <div class="box1">
+        <div class="box2"></div>
+    </div>
+    <br>
+
+    <section>1.2. 百分比自动变化测试(不包含父元素，直接使用)</section>
+    <div class="box2">dddd</div>
+    <br>
+
+    <section>2. em测试: 分别使用不同的文字大小</section>
+    <div class="box3"></div>
+    <div class="box4"></div>
+
+    <section>3. rem测试</section>
+    <div class="box5"></div>
+
+</body>
+</html>
