@@ -5,16 +5,21 @@
 
 ### 目录
 - [设计模式简介](#设计模式简介)
-- [设计模式七大原则](#设计模式七大原则)
-- [单一职责原则](#单一职责原则)
-- [接口隔离原则](#接口隔离原则)
-- [依赖倒转原则](#依赖倒转原则)
-    - [如何使用依赖倒转原则](#如何使用依赖倒转原则)
-    - [依赖关系传递的三种方式和应用案例](#依赖关系传递的三种方式和应用案例)
-    - [依赖倒转原则的注意事项和细节](#依赖倒转原则的注意事项和细节)
-- [里氏替换原则](#里氏替换原则)
-    - [什么是里氏替换原则](#什么是里氏替换原则)
-    - [OO中的继承性思考和说明](#OO中的继承性思考和说明)
+- 设计原则
+    - [设计模式七大原则](#设计模式七大原则)
+    - [设计原则核心思想](#设计原则核心思想)
+    - [单一职责原则](#单一职责原则)
+    - [接口隔离原则](#接口隔离原则)
+    - [依赖倒转原则](#依赖倒转原则)
+        - [如何使用依赖倒转原则](#如何使用依赖倒转原则)
+        - [依赖关系传递的三种方式和应用案例](#依赖关系传递的三种方式和应用案例)
+        - [依赖倒转原则的注意事项和细节](#依赖倒转原则的注意事项和细节)
+    - [里氏替换原则](#里氏替换原则)
+        - [什么是里氏替换原则](#什么是里氏替换原则)
+        - [OO中的继承性思考和说明](#OO中的继承性思考和说明)
+    - [开闭原则](#开闭原则)
+    - [迪米特法则](#迪米特法则)
+    - [合成复用原则](#合成复用原则)
 - [](#)
 
 # 设计模式简介
@@ -36,7 +41,8 @@
     - 功能模块 = 设计模式 + 算法(数据结构)
     - 框架 = 多种设计模式
 
-# 设计模式七大原则
+# 设计原则
+## 设计模式七大原则
 [top](#catalog)
 - 什么是设计原则
     - 设计原则就是**编写程序时，应该遵守的原则**
@@ -50,8 +56,14 @@
     5. 开闭原则ocp
     6. 迪米特法则
     7. 合成复用原则
-    
-# 单一职责原则
+
+## 设计原则核心思想
+[top](#catalog)
+- 分离应用中经常变化和固定不变的部分
+- 针对接口编程，而不是针对实现编程
+- 为了交互对象之间的松耦合设计而努力
+
+## 单一职责原则
 [top](#catalog)
 - SingleReponsibility
 - 基本介绍：对类来说，即<label style="color:red">一个类应该只负责一项职责</label>
@@ -160,14 +172,14 @@
     - 降低类的复杂度，一个类只负责一项职责
     - 提高类的可读性，可维护性
     - 降低变更带来的风险
-        - 如使使用的是`方式2`，则哪种类别需要变更就改哪个类，不会影响其他类的功能
+        - 如果使用的是`方式2`，则哪种类别需要变更就改哪个类，不会影响其他类的功能
         - 如果使用的是`方式3`，则哪种别需要变更就改哪个方法，不会影响其他方法的功能
         - 如果使用方式1，则改动都集中在一个方法中，会降低可维护性
     - 通常情况下，应当遵守单一职责原则，但是特殊情况下可以进行**退化**
         1. 只有在逻辑足够简单时，才能在代码级别违反单一职责原则
         2. 只有类中方法数量足够少时，才可以在方法级别保持单一职责原则，如`方式2`
     
-# 接口隔离原则
+## 接口隔离原则
 [top](#catalog)
 - Interface Segregation Principle
 - 基本介绍：客户端不应该依赖他不需要的接口，即<label style="color:red">一个类对另一个类的依赖应该建立在最小的接口上</label>
@@ -198,8 +210,8 @@
         - 类之间的依赖都建立在最小的接口上
 
 
-# 依赖倒转原则
-## 如何使用依赖倒转原则
+## 依赖倒转原则
+### 如何使用依赖倒转原则
 [top](#catalog)
 - Dependency Inversion Principle
 - 中心思想
@@ -305,7 +317,7 @@
         - Person依赖于接口IReceive，每次增加新的信息源时，不需要修改Person，只需要添加IReceive的实现类
         - 由由于Person依赖于接口IReceive，自需要一个方法来处理接口的实例对象，减少了不必要的重载方法
         
-## 依赖关系传递的三种方式和应用案例
+### 依赖关系传递的三种方式和应用案例
 [top](#catalog)
 - 三种传递方式
     1. 接口传递
@@ -474,14 +486,14 @@
     - UML类图
         - ![DeliverBySetter](imgs/principle/Dependency_Inversion/DeliverBySetter.png)
         
-## 依赖倒转原则的注意事项和细节
+### 依赖倒转原则的注意事项和细节
 [top](#catalog)
 - 底层模块尽量都要有抽象类或接口，或者两者都有，程序的稳定性更好
-- **变量的声明类型尽量是抽象类或接口**，这样我们的变量引用和实际对象间，就存在一个缓冲层，利于程序扩展和优化
+- **变量的声明类型尽量使用抽象类或接口**，这样我们的变量引用和实际对象间，就存在一个缓冲层，利于程序扩展和优化
 - 继承时需要遵守里氏替换原则
 
-# 里氏替换原则
-## OO中的继承性思考和说明
+## 里氏替换原则
+### OO中的继承性思考和说明
 [top](#catalog)
 - 继承包含的另一层含义
     - 父类中已经实现的方法，实际上是在设定一直规范和契约。但是不强制子类必须遵守这些规范
@@ -491,7 +503,7 @@
     - 如果一个类A被其他的类所继承，当类A需要修改时，**必须考虑到所有的子类**。并且父类修改后，**所有涉及到子类的功能都可能产生故障**
 - 在编程中，如何正确的使用继承：里氏替换原则
 
-## 什么是里氏替换原则
+### 什么是里氏替换原则
 [top](#catalog)
 - 里氏替换原则的概念
     - 详细描述：如果对每个类型为T1的对象o1，都有类型为T2的对象o2，使得以T1定义的所有程序P在所有的对象o1都代换成o2时，程序P的行为没有发生变化，那么类型T2是类型T1的子类型
@@ -499,7 +511,8 @@
 - 里氏替换原则的中心思想： **在子类中尽量不要重写父类的方法**
 - 继承实际上使两个类耦合性增强了，在适当的情况下，可以通过**聚合、组合、依赖、抽象出更高阶的父类**来解决问题
 
-## 示例说明里氏替换原则
+### 示例说明里氏替换原则
+[top](#catalog)
 - 不实用里氏替换原则
     - 参考代码：[/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/principle/liskov/LiskovOrigian.java](/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/principle/liskov/LiskovOrigian.java)
     - B继承了A，但是重写方法时，更改了父类方法的功能，导致调用时会有不同的结果
@@ -587,3 +600,366 @@
             }
         }
         ```
+
+## 开闭原则
+[top](#catalog)
+- Open Closed Principle
+- 开闭原则是编程中最基础，最重要的设计原则
+- **基本原则**
+    - 一个软件实体如类、模块、函数应该对扩展开放(**对提供方**)，对修改关闭(**对使用方**)。用抽象构建框架，用实现扩展细节
+    - 当软件需要变化时，尽量通过扩展软件实体的行为来实现变化，而不是通过修改已有的代码来实现变化
+    - 编程中遵循其他原则，以及使用设计模式的目的就是遵循开闭原则
+    
+- 结合示例说明
+    - 参照：[/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/principle/openClose/origian/OcpOrigian.java](/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/principle/openClose/origian/OcpOrigian.java)
+    - 该示例的问题
+        - 没有遵守ocp原则，当新增一个三角形时，绘图类(即使用方)需要修改判断逻辑，并添加相应的处理方法，修改比较大
+    - 代码
+        ```java
+        public class OcpOrigian {
+            public static void main(String[] args) {
+                GraphicEditor graphicEditor = new GraphicEditor();
+        
+                graphicEditor.drawShape(new Rectangle());
+                graphicEditor.drawShape(new Circle());
+        
+                graphicEditor.drawShape(new Triangle());
+        
+            }
+        }
+        
+        class Shape{
+            int m_type;
+        }
+        
+        class Rectangle extends Shape{
+            public Rectangle() {
+                super.m_type = 1;
+            }
+        }
+        
+        class Circle extends Shape {
+            public Circle() {
+                super.m_type = 2;
+            }
+        }
+        
+        // 新增一个三角形
+        class Triangle extends Shape{
+            public Triangle() {
+                super.m_type = 3;
+            }
+        }
+        
+        // 一个用于绘图的类
+        class GraphicEditor{
+            //根据Shape的值，来绘制不通过的图形
+            public void drawShape(Shape s){
+                if (s.m_type == 1)
+                    drawRectangle(s);
+                else if (s.m_type == 2)
+                    drawCircle(s);
+                //如果新增了一个三角形，则需要添加判断逻辑
+                else if (s.m_type == 3)
+                    drawTriangle(s);
+            }
+        
+            public void drawRectangle(Shape r){
+                System.out.println("Rectangle");
+            }
+        
+            public void drawCircle(Shape r){
+                System.out.println("Circle");
+            }
+        
+            //如果新增了一个三角形，则需要单独添加处理方法
+            public void drawTriangle(Shape s){
+                System.out.println("Triangle");
+            }
+        }
+        ```
+      
+- 使用开闭原则来修改示例
+    - 参考：[/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/principle/openClose/improve/OcpImprove.java](/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/principle/openClose/improve/OcpImprove.java)
+    - 解决方案
+        1. 将Shape类作为抽象类，提供一个抽象的draw方法，让子类去实
+        2. 当出现新的图形类别时，让图形继承Shape，并实现draw方法，防止修改使用方的代码
+    - 修改后的UML图
+        - ![ocp_improve_uml](imgs/principle/Open_Close/ocp_improve_uml.png)
+    - 代码
+        ```java
+        public class OcpImprove {
+            public static void main(String[] args) {
+                GraphicEditor graphicEditor = new GraphicEditor();
+        
+                graphicEditor.drawShape(new Rectangle());
+                graphicEditor.drawShape(new Circle());
+        
+                graphicEditor.drawShape(new Triangle());
+        
+            }
+        }
+        
+        // 创建抽象类
+        abstract class Shape{
+            public abstract void draw();
+        }
+        
+        // 个图形分别实现绘制方法
+        class Rectangle extends Shape {
+            @Override
+            public void draw() {
+                System.out.println("Rectangle");
+            }
+        }
+        
+        class Circle extends Shape {
+            @Override
+            public void draw() {
+                System.out.println("Circle");
+            }
+        }
+        
+        //如果新增了一个三角形，则只需要添加图形类即可，不需要修改绘图类
+        class Triangle extends Shape {
+            @Override
+            public void draw() {
+                System.out.println("Triangle");
+            }
+        }
+        
+        // 一个用于绘图的类
+        class GraphicEditor{
+            //根据Shape的值，来绘制不通过的图形
+            public void drawShape(Shape s) {
+                s.draw();
+            }
+        }
+        ```
+
+## 迪米特法则
+[top](#catalog)
+- Demeter Principle
+- 迪米特法则也称为**最少知道原则**，即一个类对自己依赖的类知道的越少越好
+    - 类与类关系越密切，耦合度越大
+    - 即：对于被依赖的类不管多么复杂，都尽量将逻辑封装在类的内部，对外除了提供public方法，不对外暴露任何信息
+    - 类与类之间只通过public方法来通信
+- 迪米特法则的简单定义：**只与直接的朋友通信**
+- 朋友类
+    - 什么是朋友关系
+        - 每个对象都会与其他对象有耦合关系，只要两个对象之间有耦合关系，就称这两个对象是朋友关系
+        - 耦合的方式很多：依赖、关联、组合、聚合等等
+    - 直接的朋友：出现在成员变量、方法参数、方法返回值中的类
+    - 不是直接的朋友：出现在局部变量中的类
+    - 陌生的类最好不要以局部变量的形式出现在类的内部
+- 迪米特法则注意事项和细节
+    - 迪米特法则的核心是是**降低类之间的耦合**
+    - 由于每个类都减少了不必要的依赖，因此迪米特法则只是要求**降低**类之间的耦合关系，**并不是要求完全没有依赖关系**
+
+- 违反迪米特法则的示例
+    - 参考代码：[/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/principle/demeter/origian/Demeter.java](/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/principle/demeter/origian/Demeter.java)
+    - 基本功能
+        - 通过`CollegeManager`创建`CollegeEmployee`
+        - 通过`SchooleManager`创建`Employee`
+        - `SchooleManager`可以打印所有`CollegeEmployee`和`Employee`的信息
+    - `SchooleManager`的分析
+        - 直接朋友类：Employee，CollegeManager
+        - 非直接朋友：CollegeEmployee，
+            - CollegeEmployee以局部变量的形式出现在printAllEmployee方法中，违背了迪米特法则
+    - 代码
+        ```java
+        //学校员工类
+        class Employee{
+            private String id;
+        
+            public String getId() {return id;}
+        
+            public void setId(String id) {this.id = id;}
+        }
+        
+        //学院员工
+        class CollegeEmployee{
+            private String id;
+        
+            public String getId() {return id;}
+        
+            public void setId(String id) {this.id = id;}
+        }
+        
+        // 学院员工管理类
+        class CollegeManager{
+            //返回所有员工
+            public List<CollegeEmployee> getAllEmployee(){
+                List<CollegeEmployee> list = new ArrayList<>();
+                for (int i = 0; i < 10; i++) {//添加10个员工
+                    CollegeEmployee emp = new CollegeEmployee();
+                    emp.setId("collegeID="+i);
+                    list.add(emp);
+                }
+                return list;
+            }
+        }
+        
+        // 学校员工管理类
+        class SchooleManager{
+            // 返回所有总部员工
+            public List<Employee> getAllEmployee(){
+                List<Employee> list = new ArrayList<>();
+                for (int i = 0; i < 5; i++) {
+                    Employee emp = new Employee();
+                    emp.setId("schoolID="+i);
+                    list.add(emp);
+                }
+                return list;
+            }
+        
+            // 输出学校总部和学院员工学校的方法
+            void printAllEmployee(CollegeManager cm){
+                //输出学院员工
+                List<CollegeEmployee> list1 = cm.getAllEmployee();
+                System.out.println("----------CollegeEmployee-----------");
+                for (CollegeEmployee e : list1) {
+                    System.out.println(e.getId());
+                }
+        
+                //输出学校员工
+                List<Employee> list2 = this.getAllEmployee();
+                for (Employee e : list2) {
+                    System.out.println(e.getId());
+                }
+            }
+        }
+        ```
+    - 示例UML图
+        - `SchooleManager`与`CollegeEmployee`产生了依赖，增加了耦合度
+        - ![origain_uml](imgs/principle/Demeter/origain_uml.png)
+        
+- 示例的改进
+    - 参考代码：[/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/principle/demeter/improve/Demeter.java](/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/principle/demeter/improve/Demeter.java)
+    - 改进方法
+        - 将`CollegeEmployee`的打印逻辑从`SchooleManager`抽出，移动到直接朋友类`CollegeManager`中
+    - 代码
+        ```java
+        // 学院员工管理类
+        class CollegeManager {
+            //返回所有员工
+            public List<CollegeEmployee> getAllEmployee() {
+                List<CollegeEmployee> list = new ArrayList<>();
+                for (int i = 0; i < 10; i++) {//添加10个员工
+                    CollegeEmployee emp = new CollegeEmployee();
+                    emp.setId("collegeID=" + i);
+                    list.add(emp);
+                }
+                return list;
+            }
+        
+            //输出学院员工
+            public void printAllEmployee() {
+                List<CollegeEmployee> list1 = this.getAllEmployee();
+                System.out.println("----------CollegeEmployee-----------");
+                for (CollegeEmployee e : list1) {
+                    System.out.println(e.getId());
+                }
+            }
+        
+        }
+        
+        // 学校员工管理类
+        // 直接朋友类：Employee，CollegeManager
+        // 非直接朋友：CollegeEmployee，
+        // CollegeEmployee以局部变量的形式出现在printAllEmployee方法中，违背了迪米特法则
+        class SchooleManager{
+            // 返回所有总部员工
+            public List<Employee> getAllEmployee(){
+                List<Employee> list = new ArrayList<>();
+                for (int i = 0; i < 5; i++) {
+                    Employee emp = new Employee();
+                    emp.setId("schoolID="+i);
+                    list.add(emp);
+                }
+                return list;
+            }
+        
+            // 输出学校总部和学院员工学校的方法
+            void printAllEmployee(CollegeManager cm){
+                //输出学院员工
+                // 使用迪米特法则将逻辑封装在被依赖类中
+                cm.printAllEmployee();
+        
+                //输出学校员工
+                List<Employee> list2 = this.getAllEmployee();
+                for (Employee e : list2) {
+                    System.out.println(e.getId());
+                }
+            }
+        }
+        ```
+    - UML图
+        - 去除了`SchooleManager`与`CollegeEmployee`之间的依赖
+        - ![improve_uml](imgs/principle/Demeter/improve_uml.png)
+
+## 合成复用原则
+[top](#catalog)
+- Composite Reuse Priciple
+- 基本原则：尽量使用合成/聚合的方式，而不是使用继承
+- 示例
+    - 参考代码：[/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/principle/compositeReuse/CompositeReuse.java](/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/principle/compositeReuse/CompositeReuse.java)
+    - 功能类`A`
+        ```java
+        class A{
+            public void method01(){}
+            public void method02(){}
+        }
+        ```
+    - 类B使用A的方法的几种方式
+        1. 继承
+            - 继承后B可以直接使用A的方法
+            - 继承使得B和A的耦合性增强
+            - 如果A增加了其他方法，B也会增加
+            - 如果A发生了修改，可能会A影响到B
+            ```java
+            class B1 extends A{
+            }
+            ```
+        2. 依赖
+            ```java
+            class B2{
+                public void method01(A a){
+                    a.method01();
+                }
+            }
+            ```
+
+        3. 聚合
+            ```java
+            class B3{
+                private A a;
+            
+                public A getA() {
+                    return a;
+                }
+            
+                public void setA(A a) {
+                    this.a = a;
+                }
+            
+                public void method01(){
+                    a.method01();
+                }
+            }
+            ```
+
+        4. 组合
+            - 创建B时，A也被创建好了
+            ```java
+            class B4{
+                private A a = new A();
+            
+                public void method01(){
+                    a.method01();
+                }
+            }
+            ```
+    - 四种合成方式的UML图
+        - ![AB_uml](imgs/principle/Composite_Reuse/AB_uml.png)
+
