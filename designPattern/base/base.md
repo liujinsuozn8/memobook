@@ -20,6 +20,10 @@
     - [开闭原则](#开闭原则)
     - [迪米特法则](#迪米特法则)
     - [合成复用原则](#合成复用原则)
+- [UML类图](#UML类图)
+    - [UML图简介](#UML图简介)
+    - [UML类图](#UML类图)
+    - [UML类图的6种实体关系](#UML类图的6种实体关系)
 - [](#)
 
 # 设计模式简介
@@ -963,3 +967,126 @@
     - 四种合成方式的UML图
         - ![AB_uml](imgs/principle/Composite_Reuse/AB_uml.png)
 
+
+# UML类图
+[top](#catalog)
+## UML图简介
+- UML，Unified modeling language，统一建模语言
+- UML是一种用于软件系统分析和设计的语言工具。UML本身是一套符号的规定，这些符号用于描述软件模型中的各个元素和他们之间的关系 
+- UML图分类
+    - 用例图(use case)
+    - 静态结构图: 类图、对象图、包图、组件图、部署图
+    - 动态行为图: 交互图(时序图与协作图)、状态图、活动图
+
+## UML类图
+[top](#catalog)
+- 类图是UML图中最核心的图
+- 类图用于描述系统中的类(对象)本身的组成和类(对象)之间的各种静态关系
+- UML实体
+    - 类 Class
+    - 实体 Interface
+- 实体间6种关系
+    - 依赖
+    - 关联
+    - 继承/泛化（类）
+    - 实现(接口) 
+    - 聚合
+    - 组合
+
+- 实体间关系的表示方法
+    - ![entity_relation](imgs/uml/entity_relation.png)
+    
+## UML类图的6种实体关系
+[top](#catalog)
+1. 依赖关系：Dependence
+    - 表示方式：**箭头+虚线**
+    - **只要在类图中用到了对方，那么他们之间就存在依赖关系**，如果没有对方连就无法编译
+    - 产生依赖关系的前提：类中用到了对方
+    - 会产生依赖关系的情况
+        - 类的成员属性
+        - 方法的返回值类型
+        - 方法的参数
+        - 方法中的局部变量
+
+2. 继承/泛化关系：Generalization
+    - 表示方式：**三角+实线**
+    - 继承/泛化关系是依赖关系的特例
+    
+3. 实现关系：Implementation
+    - 表示方式：**三角+虚线**
+    - 实现关系是依赖关系的特例
+    - 实际上就是A类实现B类
+    
+4. 关联关系：Association
+    - 表示方式：**箭头+实线**
+    - 关联关系实际上是类与类之间的关系，它是依赖关系的特例
+        - 这种关系经常表现为<label style="color:red">类的成员属性</label>
+    - 关联关系具有**导航性**，即双向关系或单向关系
+    - 关联关系的多重性：1:1、1:n、n:m的关系
+    - 单向1:1关系
+        - 参考：[/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/UML/association/oneway/OneWay.java](/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/UML/association/oneway/OneWay.java)
+            ```java
+            //一个人对应一个身份证ID
+            class Person{
+                private IDCard card; 
+            }
+            
+            class IDCard{}
+            ```
+        - ![association_oneway](imgs/uml/association_oneway.png)
+        
+    - 双向1:1关系
+        - 参考：[/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/UML/association/twoway/TwoWay.java](/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/UML/association/twoway/TwoWay.java)
+            ```java
+            class Person{
+                private IDCard card; 
+            }
+            
+            class IDCard{
+                private Person person;
+            }
+            ```
+        - ![association_twoway](imgs/uml/association_twoway.png)
+    
+5. 聚合关系：Aggregation
+    - 表示方式：**空心菱形+实线**
+        - 菱形指向整体
+    - 聚合关系表示的是整体和部分的关系，整体与部分可以分开
+    - **聚合关系是关联关系的特例**，所以他具有关联关系的导航性与多重性
+    - 示例
+        - 参考代码：[/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/UML/aggregation/Aggregation.java](/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/UML/aggregation/Aggregation.java)
+            ```java
+            class Computer{
+                private Mouse mouse;
+                private Monitor monitor1;
+            }
+            
+            class Mouse{}
+            class Monitor{}
+            ```
+        - `Computer`与`Mouse`、`Monitor`具有1:1的聚合关系
+        - UML图
+            - ![aggregation_uml](imgs/uml/aggregation_uml.png)
+6. 组合关系：Composition
+    - 表示方式：**实心菱形+实线**
+        - 菱形指向整体
+    - 组合关系也是整体和部分的关系，但是**整体和部分不可分开**
+        - 不可分开即同时创建，同时销毁，无法相互分离
+        - 如：
+    - 示例
+        - 参考代码：[/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/UML/composition/Composition.java](/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/UML/composition/Composition.java)
+            ```java
+            class Laptop {
+                private Mouse mouse;
+                private Monitor monitor = new Monitor();
+            }
+            
+            class Monitor {}
+            class Mouse{}
+            ```
+        - `Computer`与`Monitor`同时创建、同时销毁，两者不可分离，是组合关系
+        - `Computer`与`Mouse`可以分离，是聚合关系
+        - UML图
+            - ![composition_uml](imgs/uml/composition_uml.png)
+        
+        

@@ -1,0 +1,11 @@
+@startuml
+Class1 <.. Class2 : 依赖
+Class3 <-- Class4:关联
+Class5 o-- Class6:聚合
+Class7 <|-- Class8:继承/泛化
+
+Interface Interface9
+Interface9 <|.. Class10:实现
+
+Class11 *-- Class12:组合
+@enduml
