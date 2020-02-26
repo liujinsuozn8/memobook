@@ -4,16 +4,14 @@
     <meta charset="UTF-8">
     <title>size unit test</title>
     <style>
-        html{
-            font-size: 15px;
-        }
+
+        /* 1. 百分比自动变化测试 */
         .box1{
             width: 200px;
             height: 200px;
             background-color: green;
         }
-
-        /* 1. 百分比自动变化测试 */
+        
         .box2{
             width:50%;
             height:50%;
@@ -36,11 +34,22 @@
         }
 
         /* 3. rem测试 */
+        html{
+            font-size: 15px;
+        }
+
         .box5{
             width:10rem;
             height:10rem;
             background-color:green;
         }
+
+        .box6{
+            width:15rem;
+            height:15rem;
+            background-color:green;
+        }
+        
     </style>
 </head>
 <body>
@@ -61,6 +70,7 @@
 
     <section>3. rem测试</section>
     <div class="box5"></div>
+    <div class="box6"></div>
 
 </body>
 </html>
