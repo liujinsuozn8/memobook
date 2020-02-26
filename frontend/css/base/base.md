@@ -19,8 +19,9 @@
     - [伪元素选择器](#伪元素选择器)
 - [选择器的权重](#选择器的权重)
 - [继承](#继承)
-- [页面的长度单位](#页面的长度单位)
-- [](#)
+- [web页面中的单位](#web页面中的单位)
+    - [页面的长度单位](#页面的长度单位)
+    - [颜色单位](#颜色单位)
 - [](#)
 - [](#)
 
@@ -1218,7 +1219,8 @@
 
     - ![](?????)
 
-# 页面的长度单位
+# web页面中的单位
+## 页面的长度单位
 [top](#catalog)
 - 像素
     - 单位：`px`
@@ -1237,3 +1239,235 @@
 
 - rem
     - rem是相对于根元素`<html>`的字体大小而计算的
+
+- 示例
+    - 参考代码：[/frontend/css/base/src/sizeunit/sizeunit.html](/frontend/css/base/src/sizeunit/sizeunit.html)
+    - 百分比自动变化测试
+        - css
+            ```css
+            .box1{
+                width: 200px;
+                height: 200px;
+                background-color: green;
+            }
+            
+            .box2{
+                width:50%;
+                height:50%;
+                background-color: orange;
+            }
+            ```
+        - html
+            ```html
+            <section>1.1. 百分比自动变化测试(包含父元素)</section>
+            <div class="box1">
+                <div class="box2"></div>
+            </div>
+            <br>
+
+            <section>1.2. 百分比自动变化测试(不包含父元素，直接使用)</section>
+            <div class="box2">dddd</div>
+            <br>
+            ```
+        - ![](?????)
+
+    - em测试: 分别使用不同的文字大小
+        - css
+            ```css
+            .box3{
+                font-size:5px;
+                width:10em;
+                height: 10em;
+                background-color: green;
+            }
+
+            .box4{
+                font-size:10px;
+                width:10em;
+                height: 10em;
+                background-color: orange;
+            }
+            ```
+        - html
+            ```html
+            <section>2. em测试: 分别使用不同的文字大小</section>
+            <div class="box3"></div>
+            <div class="box4"></div>
+            ```
+        - ![](?????)
+    
+    - 3. rem测试 
+        - css
+            ```css
+            html{
+                font-size: 15px;
+            }
+
+            .box5{
+                width:10rem;
+                height:10rem;
+                background-color:green;
+            }
+
+            .box6{
+                width:15rem;
+                height:15rem;
+                background-color:green;
+            }
+            ```
+        - html
+            ```html
+            <section>3. rem测试</section>
+            <div class="box5"></div>
+            <div class="box6"></div>
+            ```
+        - ![](?????)
+
+## 颜色单位
+[top](#catalog)
+- 在css中可以使用颜色名来设置颜色，如：red、green、yellow等，但是不方便使用
+- RGB值
+    - RGB通过三种颜色的不同浓度来调配出不同的颜色
+    - R-red，G-green，B-blue
+    - 每一种颜色的范围是：`[0, 255]`
+        - 值越大，对应的颜色越深
+    - 颜色的范围也可以使用百分数：`[0%, 100%]`
+    - 语法:`RGB(红色值, 绿色值, 蓝色值)`
+    - `RGB(0,0,0)`是黑色，`RGB(255,255,255)`是白色
+
+- 16进制RGB值
+    - 语法：`#红色绿色蓝色`
+    - 颜色的范围：`[00, ff]`
+    - 如果RGB都是重复的两位数则可以简写，如`#aabbcc`可以简写为`#abc`
+
+- RGBA值
+    - 在RGB的基础上添加了一个A，即不透明度
+    - R、G、B的范围参照RGB
+    - A的范围：`[0, 1]`
+        - `1`是不透明，`0`是完全透明
+    - 语法：`RGBA(R, G, B, A)`
+
+- HSL值、HSLA值
+    - 表示的含义
+        - H，色相，范围：`[0, 360]`
+        - S，饱和度，表示颜色的浓度，范围`[0%, 100%]`，必须使用百分数
+        - L，亮度，颜色的亮度，范围`[0%, 100%]`，必须使用百分数
+        - A，表示透明度
+
+- 示例
+    - 参考代码：[/frontend/css/base/src/sizeunit/color.html](/frontend/css/base/src/sizeunit/color.html)
+    - 颜色名测试
+        - css
+            ```css
+            .box1{
+                width: 200px;
+                height: 200px;
+                background-color: green;
+            }
+            ```
+        - html
+            ```html
+            <section>1. 颜色名测试</section>
+            <div class="box1"></div>
+            ```
+        - ![](?????)
+
+    - RGB颜色值测试 
+        - css
+            ```css
+            .box2{
+                width: 200px;
+                height: 200px;
+                background-color: rgb(50,100,200)
+            }
+            ```
+        - html
+            ```html
+            <section>2.RGB颜色值测试</section>
+            <div class="box2"></div>
+            ```
+        - ![](?????)
+
+    - RGB颜色百分比测试
+        - css
+            ```css
+            .box3{
+                width: 200px;
+                height: 200px;
+                background-color: rgb(10%,20%,30%)
+            }
+            ```
+        - html
+            ```html
+            <section>3.RGB颜色百分比测试</section>
+            <div class="box3"></div>
+            ```
+        - ![](?????)
+
+    - 4. 16进制RGB值 测试
+        - css
+            ```css
+            .box4{
+                width:200px;
+                height:200px;
+                background-color: #aabbcc;
+            }
+            ```
+        - html
+            ```html
+            <section>4. 16进制RGB值 测试</section>
+            <div class="box4"></div>
+            ```
+        - ![](?????)
+
+    - RGBA测试
+        - css
+            ```css
+            .box5{
+                width: 200px;
+                height:200px;
+                background-color: rgba(100, 100, 100, 0.5)
+            }
+            .box6{
+                width: 200px;
+                height:200px;
+                background-color: rgba(100, 100, 100, 1)
+            }
+            ```
+        - html
+            ```html
+            <section>5. RGBA测试</section>
+            <div class="box5"></div>
+            <div class="box6"></div>
+            ```
+        - ![](?????)
+
+    - HSL值 测试
+        - css
+            ```css
+            .box7{
+                width: 200px;
+                height:200px;
+                background-color: hsl(20, 50%, 70%)
+            }
+            ```
+        - html
+            ```html
+            <section>6. HSL值 测试</section>
+            <div class="box7"></div>
+            ```
+        - ![](?????)
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+
+
+    
