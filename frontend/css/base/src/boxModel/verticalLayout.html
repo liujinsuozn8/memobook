@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>boxModel vertical layout test</title>
+    <style>
+        /* 1. 父元素没有设置高度 */
+        .outer1{
+            background-color: rgb(121, 219, 56);
+        }
+
+        .inner1{
+            height:100px;
+
+            width:100px;
+            background-color: orange;
+            
+            /* 如果当前元素下方没有其他元素，则该属性没有显示效果 */
+            margin-bottom:50px;
+        }
+
+        /* 2. 父元素设置高度 */
+        .outer2{
+            width:300px;
+            height: 300px;
+            background-color: rgb(121, 219, 56);
+        }
+
+        .inner2{
+            height:100px;
+
+            width:100px;
+            background-color: orange;
+            
+            /* 如果当前元素下方没有其他元素，则该属性没有显示效果 */
+            margin-bottom:50px;
+        }
+
+        /* 3. 子元素没有设置高度 */
+        .outer3{
+            width:200px;
+            height: 200px;
+            background-color: rgb(121, 219, 56);
+        }
+
+        .inner3{
+            background-color: orange;
+        }
+
+        /* 4. 子元素的高度 > 父元素的高度 */
+        .outer4{
+            width:200px;
+            height: 200px;
+            background-color: rgb(121, 219, 56);
+        }
+
+        .inner4{
+            height:250px;
+
+            width:100px;
+            background-color: orange;
+            
+        }
+        
+        /* 5. 处理子元素溢出，overflow=hidden */
+        .outer5{
+            width:200px;
+            height: 200px;
+            background-color: rgb(121, 219, 56);
+            overflow: hidden;
+        }
+
+        .inner5{
+            height:300px;
+
+            width:100px;
+            background-color: orange;
+        }
+
+        /* 6. 处理子元素溢出，overflow=scroll */
+        .outer6{
+            width:200px;
+            height: 200px;
+            background-color: rgb(121, 219, 56);
+            overflow: scroll;
+        }
+
+        .inner6{
+            height:300px;
+
+            width:100px;
+            background-color: orange;
+        }
+        
+        /* 7. 处理子元素溢出，overflow=auto */
+        .outer7{
+            width:200px;
+            height: 200px;
+            background-color: rgb(121, 219, 56);
+            overflow:auto;
+        }
+
+        .inner7{
+            height:300px;
+
+            width:100px;
+            background-color: orange;
+        }
+    </style>
+</head>
+<body>
+    <section>1. 父元素没有设置高度，子元素设置了高度</section>
+    <div class="outer1">
+        <div class="inner1">outer1.inner1 01</div>
+        <div class="inner1">outer1.inner1 02</div>
+    </div>
+    <br>
+    
+    <section>2. 父元素设置高度，子元素设置了高度</section>
+    <div class="outer2">
+        <div class="inner2">outer2.inner2 01</div>
+        <div class="inner2">outer2.inner2 02</div>
+    </div>
+    <br>
+    
+    <section>3. 父元素设置高度，子元素没有设置高度</section>
+    <section>(子元素中如果没有文字内容或下一层的子元素，则这个子元素不会显示)</section>
+    <div class="outer3">
+        <div class="inner3">outer3.inner3</div>
+        <div class="inner3"></div>
+    </div>
+    <br>
+
+    <section>4. 子元素的高度 > 父元素的高度，子元素会从父元素中溢出</section>
+    <div class="outer4">
+        <div class="inner4">outer4.inner4</div>
+    </div>
+    <br>
+    <br>
+    <br>
+    <br>
+
+    <section>5. 处理子元素溢出，overflow=hidden</section>
+    <div class="outer5">
+        <div class="inner5">outer5.inner5</div>
+    </div>
+    <br>
+    
+    <section>6. 处理子元素溢出，overflow=scroll</section>
+    <div class="outer6">
+        <div class="inner6">outer6.inner6</div>
+    </div>
+    <br>
+    
+    <section>7. 处理子元素溢出，overflow=auto</section>
+    <div class="outer7">
+        <div class="inner7">outer7.inner7</div>
+    </div>
+    <br>
+
+
+</body>
+</html>
