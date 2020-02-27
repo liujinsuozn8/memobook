@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>boxModel horizontal layout test</title>
+
+    <style>
+        .outter{
+            width: 800px;
+            height:200px;
+            border:rgb(63, 124, 238) 10px solid;
+        }
+
+        /* 父元素.width > 子元素.sum */
+        /* 1. 过度约束测试。子元素的各属性中没有auto */
+        .inner1{
+            width: 200px;
+            height: 200px;
+            background-color: rgb(129, 226, 112);
+
+            margin-left:100px;
+        }
+
+        /* 2. 过度约束测试。子元素.width = auto */
+        .inner2{
+            width: auto;
+            height: 200px;
+            background-color: rgb(129, 226, 112);
+
+            margin-left:100px;
+        }
+
+        /* 3. 过度约束测试。子元素中包含多个auto */
+        /* 3.1. margin-left = auto; width = auto */
+        .inner3{
+            width: auto;
+            height: 200px;
+            background-color: rgb(129, 226, 112);
+
+            margin-left:auto;
+            margin-right: 100px;
+        }
+
+        /* 3.2. margin-left = auto; margin-right = auto */
+        .inner4{
+            width: 200px;
+            height: 200px;
+            background-color: rgb(129, 226, 112);
+
+            margin-left:auto;
+            margin-right: auto;
+        }
+
+        /* 4. 父元素.width < 子元素.sum */
+        .inner5{
+            width: 1000px;
+            height: 200px;
+            background-color: rgb(129, 226, 112);
+        }
+    </style>
+</head>
+<body>
+
+    <section>1. 过度约束测试。子元素的各属性中没有auto</section>
+    <section>等式：800 = 100 + 0 + 0 + 200 + 0 + 0 + 0，等式不满足，浏览器会自动调整margin-right=500</section>
+    <div class="outter">
+        <div class="inner1"></div>
+    </div>
+    <br>
+    
+    <section>2. 过度约束测试。子元素.width = auto</section>
+    <section>等式：800 = 100 + 0 + 0 + auto + 0 + 0 + 0，浏览器会自动计算width=700</section>
+    <div class="outter">
+        <div class="inner2"></div>
+    </div>
+    <br>
+   
+    <section>3. 过度约束测试。子元素中包含多个auto</section>
+    <br>
+    <section>3.1. margin-left = auto; width = auto</section>
+    <section>等式：800 = auto + 0+ 0 + auto + 0 + 0 + 100，浏览器会自动计算width=700，margin-left=0</section>
+    <div class="outter">
+        <div class="inner3"></div>
+    </div>
+    <br>
+    
+    <section>3.2. margin-left = auto; margin-right = auto</section>
+    <section>等式：800 = auto + 0+ 0 + 200 + 0 + 0 + auto，剩余600px，浏览器会自动除2，设置成相同的值：margin-left = margin-right = 300px</section>
+    <div class="outter">
+        <div class="inner4"></div>
+    </div>
+    <br>
+    
+    <section>4. 父元素.width &lt; 子元素.sum</section>
+    <section>等式：800 = 0 + 0+ 0 + 1000 + 0 + 0 + 0，浏览器会设置：margin-left = -200</section>
+    <div class="outter">
+        <div class="inner5"></div>
+    </div>
+
+</body>
+</html>
