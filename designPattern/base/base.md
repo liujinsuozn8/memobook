@@ -24,6 +24,21 @@
     - [UML图简介](#UML图简介)
     - [UML类图](#UML类图)
     - [UML类图的6种实体关系](#UML类图的6种实体关系)
+- [设计模式的分类](#设计模式的分类)
+- 创建型-单例设计模式
+    - [单例设计模式简介](#单例设计模式简介)
+    - [单例模式形式1-饿汉式-静态常量](#单例模式形式1-饿汉式-静态常量)
+    - [单例模式形式2-饿汉式-静态代码块](#单例模式形式2-饿汉式-静态代码块)
+    - [单例模式形式3-懒汉式-线程不安全](#单例模式形式3-懒汉式-线程不安全)
+    - [单例模式形式4-懒汉式-线程安全-同步方法](#单例模式形式4-懒汉式-线程安全-同步方法)
+    - [单例模式形式5-懒汉式-线程不安全-同步代码块](#单例模式形式5-懒汉式-线程不安全-同步代码块)
+    - [单例模式形式6-懒汉式-双重检查](#单例模式形式6-懒汉式-双重检查)
+    - [单例模式形式7-静态内部类中的静态属性](#单例模式形式7-静态内部类中的静态属性)
+    - [单例模式形式7-枚举](#单例模式形式7-枚举)
+    - [单例模式在JDK中的应用](#单例模式在JDK中的应用)
+- [](#)
+- [](#)
+- [](#)
 - [](#)
 
 # 设计模式简介
@@ -1089,4 +1104,620 @@
         - UML图
             - ![composition_uml](imgs/uml/composition_uml.png)
         
+
+# 设计模式的分类
+[top](#catalog)
+- 设计模式分为三种类型，共23种
+    1. 创建型模式：**如何创建对象**
+    2. 结构型模式：**提高软件整体的扩展性**
+    3. 行为型模式：**如何设计类的方法，使得方法的调用和开发更加合理**
+
+- 创建型模式
+    1. <labe style="color:red">单例模式</label>
+    2. <labe style="color:red">工厂模式</label>
+    3. 抽象工厂模式
+    4. 原型模式
+    5. 建造者模式
+    
+- 结构型模式
+    1. <labe style="color:red">代理模式</label>
+    2. <labe style="color:red">装饰器模式</label>
+    3. 适配器模式
+    4. 桥接模式
+    5. 组合模式
+    6. 外观模式
+    7. 享元模式
+    
+- 行为型模式
+    1. <labe style="color:red">观察者模式</label>
+    2. 模版方法模式
+    3. 命令模式
+    4. 访问者模式
+    5. 迭代器模式
+    6. 中介者模式
+    7. 备忘录模式
+    8. 解释器模式/Interpreter模式
+    9. 状态模式
+    10. 策略模式
+    11. 职责链模式/责任链模式
+
+# 创建型-单例设计模式
+## 单例设计模式简介
+[top](#catalog)
+- 什么是单例模式
+    - 采取一定的方法保证在整个软件系统中，类只存在一个实例对象，并且该类只提供一个取得实例的方法(一般是静态方法)
+
+- 单例模式保证了系统内存中该类只存在一个对象，节省了系统资源，对于一些需要频繁创建销毁的对象，使用单例模式可以提高系统性能
+- 实例化一个单例类时，必须使用对应的方法来获取，不能使用`new`来创建
+- 单例模式的使用场景：
+    - 需要频繁的进行创建和销毁的对象
+    - 创建对象时耗时过多，即重量级对象
+    - 经常用到的对象
+    - 工具类对象
+    - 频繁访问数据库或文件的对象，如数据源、session工厂等
+
+- **单例模式的8中形式**
+    1. 饿汉式（静态常量）
+    2. 饿汉时（静态代码块）
+    3. 懒汉式（线程不安全）
+    4. 懒汉式（线程安全，同步方法）
+    5. 懒汉式（线程不安全，同步代码块）
+    6. 双重检查
+    7. 静态内部类
+    8. 枚举
+    
+## 单例模式形式1-饿汉式-静态常量
+[top](#catalog)
+- 创建步骤
+    1. 构造器私有化，防止调用方通过`new`来创建实例对象
+    2. 在类的内部实例化一个**私有的、静态的(不可变的)**对象`instance`
+        - 私有：防止外部的直接访问
+        - 静态：使得该对象可以通过静态方法访问
+        - 不可变：防止外部对该对象的直接替换
+    3. 向外暴露一个静态的公共方法，一般写作：`getInstance()`
+
+- 饿汉式的优缺点<span id="singleton_hungry_advantages_and_disadvantages"></span>
+    - 优点：写法简单，在类装载时就完成了实例化，避免了线程同步的问题
+    - 缺点：
+        - 在类装载时就完成了实例化，没有达到`Lazy Loading`的效果
+        - 如果一直没有使用过这个实例，则会造成内存的浪费
+    - 这种方式基于`classloader`机制，避免了多线程的同步问题。不过，instance在类装载时就实例化，在单例模式中大多数都是调用`getInstance`方法，但是导致类装载的原因有很多种，因此不能确定有其他的方式或者其他的静态方法导致类装载，这时候初始化instance就没有达到`Lazy Loading`的效果
+
+- 结论：饿汉式-静态常量<label style="color:red">可以用，可能会造成内存浪费</label>
+    - 如果确定类装载方式，则没有问题
+    - 如果无法确定类装载方式，则可能会造成内存浪费
+
+- 示例
+    - 参考代码：[/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/pattern/singleton/type1/SingletonType01Test.java](/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/pattern/singleton/type1/SingletonType01Test.java)
+    - 单例模式类
+        ```java
+        // 饿汉式-静态变量
+        class Singleton{
+            // 创建步骤
         
+            // 1. 构造器私有化，防止调用方通过`new`来创建实例对象
+            private Singleton() {
+        
+            }
+        
+            // 2. 在类的内部实例化一个：私有的、静态的、不可变的 对象
+            private final static Singleton instance = new Singleton();
+        
+            // 3. 向外暴露一个静态的公共方法，一般写作：`getInstance`
+            public static Singleton getInstance(){
+                return instance;
+            }
+        }
+        ```
+    - 测试内容
+        ```java
+        Singleton instance1 = Singleton.getInstance();
+        Singleton instance2 = Singleton.getInstance();
+
+        // output:true
+        System.out.println(instance1 == instance2);
+
+        // 两个实例的hashCode是相同的
+        System.out.println("instance1 hashCode = " + instance1.hashCode());
+        System.out.println("instance2 hashCode = " + instance2.hashCode());
+        ```
+
+## 单例模式形式2-饿汉式-静态代码块
+[top](#catalog)
+- 创建步骤
+    1. 构造器私有化，防止调用方通过`new`来创建实例对象
+    2. 添加一个**私有的、静态的(不可变的)**成员属性`instance`
+        - 私有：防止外部的直接访问
+        - 静态：使得该对象可以通过静态方法访问
+        - 不可变：防止外部对该对象的直接替换
+    3. 在静态代码块中为`instance`提供实例化对象
+    4. 向外暴露一个静态的公共方法，一般写作：`getInstance()`
+    
+- 优缺点与[饿汉式-静态常量](#singleton_hungry_advantages_and_disadvantages)相同
+- 结论：这种单例模式<label style="color:red">可用，但是可能会造成内存浪费</label>
+- 示例
+    - 参考代码：[/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/pattern/singleton/type2/SingletonType02Test.java](/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/pattern/singleton/type2/SingletonType02Test.java)
+    - 单例模式类
+        ```java
+        class Singleton{
+            // 创建步骤
+        
+            // 1. 构造器私有化，防止调用方通过`new`来创建实例对象
+            private Singleton() {
+        
+            }
+        
+            // 2. 添加一个私有的、静态的、不可变的成员属性instance
+            private final static Singleton instance;
+        
+            // 3. 在静态代码块中为instance提供实例化对象
+            static{
+                instance = new Singleton();
+            }
+        
+            // 4. 向外暴露一个静态的公共方法，一般写作：`getInstance`
+            public static Singleton getInstance(){
+                return instance;
+            }
+        }
+        ```
+    - 测试内容
+        ```java
+        Singleton instance1 = Singleton.getInstance();
+        Singleton instance2 = Singleton.getInstance();
+
+        // output:true
+        System.out.println(instance1 == instance2);
+
+        // 两个实例的hashCode是相同的
+        System.out.println("instance1 hashCode = " + instance1.hashCode());
+        System.out.println("instance2 hashCode = " + instance2.hashCode());
+        ```
+
+## 单例模式形式3-懒汉式-线程不安全
+[top](#catalog)
+- 创建步骤
+    1. 构造器私有化，防止调用方通过`new`来创建实例对象
+    2. 添加一个**私有的、静态的**成员属性`instance`
+        - 私有：防止外部的直接访问
+        - 静态：使得该对象可以通过静态方法访问
+    3. 向外暴露一个静态的公共方法，一般写作：`getInstance()`
+    4. 在`getInstance()`方法中，进行`懒汉式`判断。即当使用到`instance`时，才进行创建
+        - 如果`instance`尚未创建，则创建实例化对象并返回
+        - 如果`instance`已创建，则直接返回
+        
+- 懒汉式的优缺点
+    - 优点：懒汉式起到了`Lazy Loading`的效，但是**只能在单线程下使用**
+    - 缺点：可能同时产生多个实例，违背单例模式的基本原则
+        - 在多线程下，如果一个线程进入了`if(singleton==null)`判断语句，还未开始创建对象时，另一个线程也通过了这个判断语句，这时便**会产生多个实例**。所以多线程环境下不可以使用这种方式
+
+- 结论：<label style="color:red">在实际开发中，不可以使用这种方式</label>
+
+- 示例
+    - 参考代码：[/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/pattern/singleton/type3/SingletonType03Test.java](/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/pattern/singleton/type3/SingletonType03Test.java)
+    - 单例模式代码
+        ```java
+        class Singleton{
+            // - 创建步骤
+            // 1. 构造器私有化，防止调用方通过`new`来创建实例对象
+            private Singleton() {
+            }
+            // 2. 添加一个**私有的、静态的**成员属性`instance`
+            private static Singleton instance;
+        
+            // 3. 向外暴露一个静态的公共方法，一般写作：`getInstance()`
+            public static Singleton getInstance(){
+                // 4. 在`getInstance()`方法中，进行`懒汉式`判断。即当使用到`instance`时，才进行创建
+                if (instance == null){
+                    instance = new Singleton();
+                }
+                return instance;
+            }
+        }
+        ```
+    - 测试内容
+        ```java
+        public static void main(String[] args) {
+            Callable<Singleton> r = () -> {
+                Singleton instance = Singleton.getInstance();
+                System.out.println(
+                        Thread.currentThread().getName() +
+                                " : instance hashCode = " +
+                                instance
+                );
+                return instance;
+            };
+    
+            FutureTask<Singleton> f1 = new FutureTask<>(r);
+            FutureTask<Singleton> f2 = new FutureTask<>(r);
+            FutureTask<Singleton> f3 = new FutureTask<>(r);
+            FutureTask<Singleton> f4 = new FutureTask<>(r);
+    
+            // 创建线程对象
+            Thread t1 = new Thread(f1);
+            Thread t2 = new Thread(f2);
+            Thread t3 = new Thread(f3);
+            Thread t4 = new Thread(f4);
+    
+            // 启动线程
+            t1.start();
+            t2.start();
+            t3.start();
+            t4.start();
+    
+            // 获取线程的返回单例对象并比较
+            try {
+                Singleton singleton1 = f1.get();
+                Singleton singleton2 = f2.get();
+                Singleton singleton3 = f3.get();
+                Singleton singleton4 = f4.get();
+                System.out.println(singleton1 == singleton2);
+                System.out.println(singleton1 == singleton3);
+                System.out.println(singleton1 == singleton4);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            }
+        }
+        ```
+    - 测试结果
+        - 可能需要多次测试才能测出单例对象被多次创建了
+        - ![type03_test_result](/designPattern/base/imgs/pattern/singleton/type03_test_result.png)
+      
+## 单例模式形式4-懒汉式-线程安全-同步方法
+[top](#catalog)
+- 创建步骤
+    1. 构造器私有化，防止调用方通过`new`来创建实例对象
+    2. 添加一个**私有的、静态的**成员属性`instance`
+        - 私有：防止外部的直接访问
+        - 静态：使得该对象可以通过静态方法访问
+    3. 向外暴露一个**线程同步的**静态的公共方法，一般写作：`getInstance()`，
+    4. 在`getInstance()`方法中，进行`懒汉式`判断。即当使用到`instance`时，才进行创建
+        - 如果`instance`尚未创建，则创建实例化对象并返回
+        - 如果`instance`已创建，则直接返回
+        
+- 使用同步方法的懒汉式的优缺点
+    - 优点
+        - 起到了`Lazy Loading`的效
+        - 可以在多线程下使用，<label style="color:red">解决了线程不安全的问题</label>
+    - 缺点
+        - 同步方法的效率低，每个线程在获取`instance`时，都需要同步。其实这个同步方法只需要同步一次即可，后面想获取`instance`时，直接`return`即可
+        
+- 结论：在实际开发中，<label style="color:red">不推荐使用这种方式</label>
+
+- 示例
+    - 参考代码：[/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/pattern/singleton/type4/SingletonType04Test.java](/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/pattern/singleton/type4/SingletonType04Test.java)
+    - 单例代码
+        ```java
+        class Singleton{
+            // - 创建步骤
+            // 1. 构造器私有化，防止调用方通过`new`来创建实例对象
+            private Singleton() {
+            }
+            // 2. 添加一个**私有的、静态的**成员属性`instance`
+            private static Singleton instance;
+        
+            // 3. 向外暴露一个**线程同步的**静态的公共方法，一般写作：`getInstance()`，
+            public static synchronized Singleton getInstance(){
+                // 4. 在`getInstance()`方法中，进行`懒汉式`判断。即当使用到`instance`时，才进行创建
+                if (instance == null){
+                    instance = new Singleton();
+                }
+                return instance;
+            }
+        }
+        ```
+    - 测试内容
+        ```java
+        public static void main(String[] args) {
+            Callable<Singleton> r = () -> {
+                Singleton instance = Singleton.getInstance();
+                System.out.println(
+                        Thread.currentThread().getName() +
+                                " : instance hashCode = " +
+                                instance
+                );
+                return instance;
+            };
+    
+            FutureTask<Singleton> f1 = new FutureTask<>(r);
+            FutureTask<Singleton> f2 = new FutureTask<>(r);
+            FutureTask<Singleton> f3 = new FutureTask<>(r);
+            FutureTask<Singleton> f4 = new FutureTask<>(r);
+    
+            // 创建线程对象
+            Thread t1 = new Thread(f1);
+            Thread t2 = new Thread(f2);
+            Thread t3 = new Thread(f3);
+            Thread t4 = new Thread(f4);
+    
+            // 启动线程
+            t1.start();
+            t2.start();
+            t3.start();
+            t4.start();
+    
+            // 获取线程的返回单例对象并比较
+            try {
+                Singleton singleton1 = f1.get();
+                Singleton singleton2 = f2.get();
+                Singleton singleton3 = f3.get();
+                Singleton singleton4 = f4.get();
+                System.out.println(singleton1 == singleton2);
+                System.out.println(singleton1 == singleton3);
+                System.out.println(singleton1 == singleton4);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            }
+        }
+        ```
+    - 测试结果
+        - ![type04_test_result](/designPattern/base/imgs/pattern/singleton/type04_test_result.png)
+        
+## 单例模式形式5-懒汉式-线程不安全-同步代码块  
+[top](#catalog)
+- 将[单例模式形式4-懒汉式-线程安全-同步方法](#单例模式形式4-懒汉式-线程安全-同步方法)中的同步方法变成了同步代码快
+    ```java
+    public static Singleton getInstance(){
+        if(instance == null){
+            // 将同步方法改为同步代码块
+            synchronized (Singleton.class){
+                instance = new Singleton();
+            }
+        }
+
+        return instance;
+    }
+    ```
+- <label style="color:red">这种方式无法做到线程同步，无法解决线程安全的问题</label>
+- 同步代码块的问题分析
+    1. 当两个线程同时进入`if(instance == null){`
+    2. 一个线程拿到同步监视器，创建了一个单例对象A，然后释放同步监视器
+    3. 另一个线程获取到同步监视器，又创建了一个单例对象B
+    4. 最终导致单例对象被多次创建
+- 结论：<label style="color:red">在实际开发中不能使用这种方式</label>
+- 示例
+    - 参考代码：[/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/pattern/singleton/type4/SingletonType04Test.java](/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/pattern/singleton/type4/SingletonType04Test.java)
+    - 代码内容
+        ```java
+        class Singleton{
+            private static Singleton instance;
+        
+            private Singleton() {
+            }
+        
+            public static Singleton getInstance(){
+                if(instance == null){
+                    synchronized (Singleton.class){
+                        instance = new Singleton();
+                    }
+                }
+                return instance;
+            }
+        }
+        ```
+    - 测试内容
+        ```java
+        public static void main(String[] args) {
+            Callable<Singleton> r = ()-> {
+                Singleton instance = Singleton.getInstance();
+                System.out.println(
+                        Thread.currentThread().getName() +
+                                " : instance hashCode = " +
+                                instance
+                );
+                return instance;
+            };
+    
+            FutureTask<Singleton> f1 = new FutureTask<>(r);
+            FutureTask<Singleton> f2 = new FutureTask<>(r);
+            FutureTask<Singleton> f3 = new FutureTask<>(r);
+            FutureTask<Singleton> f4 = new FutureTask<>(r);
+    
+            // 创建线程对象
+            Thread t1 = new Thread(f1);
+            Thread t2 = new Thread(f2);
+            Thread t3 = new Thread(f3);
+            Thread t4 = new Thread(f4);
+    
+            // 启动线程
+            t1.start();
+            t2.start();
+            t3.start();
+            t4.start();
+    
+            // 获取线程的返回单例对象并比较
+            try {
+                Singleton singleton1 = f1.get();
+                Singleton singleton2 = f2.get();
+                Singleton singleton3 = f3.get();
+                Singleton singleton4 = f4.get();
+                System.out.println(singleton1 == singleton2);
+                System.out.println(singleton1 == singleton3);
+                System.out.println(singleton1 == singleton4);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            }
+        }
+        ```
+    - 测试结果
+        - ![type05_test_result](/designPattern/base/imgs/pattern/singleton/type05_test_result.png)
+        
+## 单例模式形式6-懒汉式-双重检查  
+[top](#catalog)
+- 多重检查的方式
+    ```java
+    if (instance == null){
+        synchronized(Singleton.class){
+            if (instance == null){
+                instance = new Singleton();
+            }
+        }
+    }
+    ```
+
+- 多重检查是多线程开发中经常使用到的，通过两个检查`if (instance == null){`就可以保证线程安全
+- 实例化代码只执行一次，后面再执行到`if (instance == null){`(无论是第一层还是第二层)，都直接`return`实例化对象，避免了重复进行方法同步
+- 这种方法是线程安全的，能做到延迟加载，效率比较高
+- 结论：<label style="color:red">在实际开发中，推荐使用这种单例设计模式</label>
+- 示例
+    - 参考代码：[/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/pattern/singleton/type6/SingletonType06Test.java](/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/pattern/singleton/type6/SingletonType06Test.java)
+    - 代码内容
+        ```java
+        class Singleton{
+            private static volatile Singleton instance;
+        
+            private Singleton() {
+            }
+        
+            public static Singleton getInstance(){
+                if (instance == null){
+                    synchronized(Singleton.class){
+                        if (instance == null){
+                            instance = new Singleton();
+                        }
+                    }
+                }
+        
+                return instance;
+            }
+        }
+        ```
+    - 测试内容
+        ```java
+        public static void main(String[] args) {
+            Callable<Singleton> r = ()-> {
+                Singleton instance = Singleton.getInstance();
+                System.out.println(
+                        Thread.currentThread().getName() +
+                                " : instance hashCode = " +
+                                instance
+                );
+                return instance;
+            };
+    
+            FutureTask<Singleton> f1 = new FutureTask<>(r);
+            FutureTask<Singleton> f2 = new FutureTask<>(r);
+            FutureTask<Singleton> f3 = new FutureTask<>(r);
+            FutureTask<Singleton> f4 = new FutureTask<>(r);
+    
+            // 创建线程对象
+            Thread t1 = new Thread(f1);
+            Thread t2 = new Thread(f2);
+            Thread t3 = new Thread(f3);
+            Thread t4 = new Thread(f4);
+    
+            // 启动线程
+            t1.start();
+            t2.start();
+            t3.start();
+            t4.start();
+    
+            // 获取线程的返回单例对象并比较
+            try {
+                Singleton singleton1 = f1.get();
+                Singleton singleton2 = f2.get();
+                Singleton singleton3 = f3.get();
+                Singleton singleton4 = f4.get();
+                System.out.println(singleton1 == singleton2);
+                System.out.println(singleton1 == singleton3);
+                System.out.println(singleton1 == singleton4);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            }
+        }
+        ```
+
+## 单例模式形式7-静态内部类中的静态属性
+[top](#catalog)
+- 静态内部类的特点
+    - 外部类被加载时，静态内部类不会被加载
+    - 当调用该类的属性或方法时，静态内部类才会被加载
+    - 类的装载只会发生一次，并且是**线程安全的**
+    
+- 使用静态内部类中的静态属性的优点
+    - 延迟加载，效率高：
+        - 加载外部类时，不会加载内部类
+        - 保证单例对象只在需要时进行实例化，即只在调用`getInstance()`时才会装载静态内部类，并完成对象的实例化
+    - 线程安全：
+        - 这种方式采用了类装载机制来保证初始化实例时只有一个线程
+        - 类的静态属性只会在第一次加载时初始化，所以间接的通过JVM来实现了线程的安全性。**在类初始化时，其他线程时无法进入的**
+- 结论：<labe style="color:red">推荐使用</label>
+- 示例
+    - 参考代码：[/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/pattern/singleton/type7/SingletonType07Test.java](/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/pattern/singleton/type7/SingletonType07Test.java)
+    - 代码内容
+        ```java
+        class Singleton{
+            private Singleton() {
+            }
+            
+            // 创建静态内部类及其静态属性
+            private static class SingletonInstance{
+                public static final Singleton INSTANCE = new Singleton();
+            }
+        
+            // 直接返回静态内部类中的静态属性
+            public static Singleton getInstance(){
+                return SingletonInstance.INSTANCE;
+            }
+        }
+        ```
+
+## 单例模式形式7-枚举
+[top](#catalog)
+- 通过使用枚举，**不仅能避免多线程同步问题，而且还能防止反序列化重新创建新的对象**
+- 这种方式也是Effective Java作者所提倡的方式
+- 结论：<label style="color:red">推荐使用</label>
+- 示例
+    - 参考代码：[/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/pattern/singleton/type8/SingletonType08Test.java](/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/pattern/singleton/type8/SingletonType08Test.java)
+    - 代码内容
+        ```java
+        enum Singleton{
+            INSTANCE;
+        
+            public void work(){
+                System.out.println("singleton instance is working");
+            }
+        }
+        ```
+    - 测试内容
+        ```java
+        public static void main(String[] args) {
+            Singleton instance = Singleton.INSTANCE;
+            Singleton instance2 = Singleton.INSTANCE;
+    
+            System.out.println(instance == instance2);
+    
+            instance.work();
+        }
+        ```
+
+## 单例模式在JDK中的应用
+[top](#catalog)
+- JDK中 `java.lang.Runtime`就是经典的单例模式
+- 源码分析
+    ```java
+    public class Runtime {
+        private static final Runtime currentRuntime = new Runtime();
+    
+        private static Version version;
+    
+        public static Runtime getRuntime() {
+            return currentRuntime;
+        }
+    
+        private Runtime() {}
+        
+        ...
+    }
+    ```
+- `java.lang.Runtime`采用的是饿汉式-静态常量的方式
+
+ 

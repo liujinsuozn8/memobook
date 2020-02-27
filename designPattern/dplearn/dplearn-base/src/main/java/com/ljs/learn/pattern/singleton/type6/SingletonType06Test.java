@@ -1,17 +1,17 @@
-package com.ljs.learn.pattern.singleton.type4;
+package com.ljs.learn.pattern.singleton.type6;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 
-public class SingletonType04Test {
+public class SingletonType06Test {
     public static void main(String[] args) {
         Callable<Singleton> r = ()-> {
             Singleton instance = Singleton.getInstance();
             System.out.println(
-                Thread.currentThread().getName() +
-                        " : instance hashCode = " +
-                        instance
+                    Thread.currentThread().getName() +
+                            " : instance hashCode = " +
+                            instance
             );
             return instance;
         };
@@ -51,19 +51,20 @@ public class SingletonType04Test {
 }
 
 class Singleton{
-    // - 创建步骤
-    // 1. 构造器私有化，防止调用方通过`new`来创建实例对象
+    private static volatile Singleton instance;
+
     private Singleton() {
     }
-    // 2. 添加一个**私有的、静态的**成员属性`instance`
-    private static Singleton instance;
 
-    // 3. 向外暴露一个**线程同步的**静态的公共方法，一般写作：`getInstance()`，
-    public static synchronized Singleton getInstance(){
-        // 4. 在`getInstance()`方法中，进行`懒汉式`判断。即当使用到`instance`时，才进行创建
+    public static Singleton getInstance(){
         if (instance == null){
-            instance = new Singleton();
+            synchronized(Singleton.class){
+                if (instance == null){
+                    instance = new Singleton();
+                }
+            }
         }
+
         return instance;
     }
 }
