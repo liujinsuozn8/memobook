@@ -22,6 +22,18 @@
 - [web页面中的单位](#web页面中的单位)
     - [页面的长度单位](#页面的长度单位)
     - [颜色单位](#颜色单位)
+- [文档流](#文档流)
+- [盒子模型](#盒子模型)
+    - [盒子模型的基本组成](#盒子模型的基本组成)
+    - [内容区content](#内容区content)
+    - [边框border](#边框border)
+    - [内边距padding](#内边距padding)
+    - [外边距margin](#外边距margin)
+    - [盒子模型中可以设置为auto的属性](#盒子模型中可以设置为auto的属性)
+    - [盒子模型的水平方向布局](#盒子模型的水平方向布局)
+    - [盒子模型的垂直方向布局](#盒子模型的垂直方向布局)
+    - [垂直外边距的折叠](#垂直外边距的折叠)
+    - [行内元素的盒子模型](#行内元素的盒子模型)
 - [](#)
 - [](#)
 
@@ -417,7 +429,7 @@
     - 语法
         - 选择`兄弟元素1选择器`**后边紧挨的第一个兄弟元素**：`兄弟元素1选择器 + 兄弟元素2选择器{ 声明块 }`
             - 兄弟元素1和兄弟元素2之间必须紧挨，如果出现其他元素则无法选择
-        - 选择`兄弟元素1选择器`**后边的所有兄弟元素**：`兄弟元素1选择器 + 兄弟元素2选择器{ 声明块 }`
+        - 选择`兄弟元素1选择器`**后边的所有兄弟元素**：`兄弟元素1选择器 ~ 兄弟元素2选择器{ 声明块 }`
             - 兄弟元素之间可以有其他元素，不会影响选择结果
     - **兄弟选择器只能选择`兄弟元素1`后面的元素，无法选择前面的元素**
     - 可以混合复合选择器
@@ -938,7 +950,7 @@
     |伪元素|描述|备注|
     |-|-|-|
     |`::first-letter`|表示第一个字母||
-    |`:first-line:`|表示第一行||
+    |`::first-line`|表示第一行||
     |`::selection`|表示选中的内容||
     |`::before`|表示元素的开始|1.该元素的位置处于开始标签后，标签内容之前<br>如：`<tag>|文字`，假设`|`不真实存在，`|`就是`::before`的位置<br><br>2. `before`必须结合`content`属性来使用，所有的样式都是在设置`content`中的内容<br><br>3. 如果使用了`content`属性，在控制台可以看到该元素；如果不使用`content`属性则无法看到|
     |`::after`|表示元素的最后|1.该元素的位置处于标签内容之后，结束标签之前<br>如：`文字|<tag>`，假设`|`不真实存在，`|`就是`::after`的位置<br><br>2. `after`必须结合`content`属性来使用，所有的样式都是在设置`content`中的内容<br><br>3. 如果使用了`content`属性，在控制台可以看到该元素；如果不使用`content`属性则无法看到|
@@ -1044,7 +1056,7 @@
     - 对于并集选择器，每个选择器单独计算，各算各的
 
 - 强制最大权重：`!important`
-    - 可以在<label style="color:red">样式</label>的后面添加`!important`。该样式将会获得最高的权重，比内联样式还高
+    - 可以在<label style="color:red">样式的后面</label>添加`!important`。该样式将会获得最高的权重，比内联样式还高
     - 语法
         ```css
         选择器{
@@ -1458,16 +1470,904 @@
             ```
         - ![](?????)
 
-    
+# 文档流
+[top](#catalog)
+- normal flow
+- 什么是文档流：网页是一个多层次的结构，通过css可以分别为每一层设置样式，但是作为用户只能看到最上面的一层，最下面的一层被称为文档流
+- <label style="color:red">文档流是网页的基础，所有元素默认都是在文档流中进行排列</label>
+- 元素相对于文档流的两种状态
+    - 在文档流中
+    - 不再文档流中，即脱离文档流
+- 元素**在文档流中**的特点
+    - 块元素
+        - 块元素在页面内独占一行
+        - 多个块元素在页面内从上到下垂直排列
+        - 默认宽度是父元素的的宽度，会将父元素撑满
+        - 默认高度是元素内容的高度，即子元素
+        - 如`<div></div>`元素，没有元素内容时，不会在页面中显示;有内容时，默认宽度与页面块度相同
+    - 行内元素
+        - 行内元素不会堆栈页面的一行，只占自身的大小
+        - 多个行内元素在页面中从左到右水平排列，如果一行无法容纳多个行内元素，则自动切换到第二行显示
+        - **行内元素的宽和高默认都是元素内容的宽和高**
 
-    
+# 盒子模型
+## 盒子模型的基本组成
+[top](#catalog)
+- box model
+- 为了方便页面布局，css将页面中的每个元素都设置为一个矩形盒子。将元素设置为矩形盒子后，页面的布局就变成了如何安排这些盒子的位置
 
-    
+- 盒子模型的示例
+    - ![](?????)
 
-    
+- 盒子的组成
+    - 组成元素
 
+        |名称|含义|描述|
+        |-|-|-|
+        |`context`|内容区||
+        |`border`|边框||
+        |`padding`|内边距|表示是内容区与边框的内容|
+        |`margin`|外边距|当两个盒子放在一起时，两个盒子的间距|
     
+- <label style="color:red">盒子的可见大小 = `context` + `border` + `padding`</label>
+
+## 内容区content
+[top](#catalog)
+- 元素中的所有**子元素和文本内容**都在内容区中排列
+- 内容区的大小由`width`、`height`属性来设置
+- <label style="color:red">width的默认值为auto。如果不写，会由浏览器自动计算</labe>
+
+## 边框border
+[top](#catalog)
+- 边框至少要设置三个属性
+    1. 边框的宽度：`border-width`
+        - 默认值为`3px`，所以不指定该属性也能显示边框
+    2. 边框的颜色：`border-color`
+        - 默认值为黑色，所以不指定该属性也能显示边框
+    3. 边框的样式：`border-style`
+        - `style`的默认值为`none`，即表示没有边框。所以**如果要显示边框，该属性必须写**
+        - 如实线solid、虚线dashed、点线dotted等等
+
+- 对于设置4个边的统一属性，如：`border-width`、`border-color`、`border-style`，参数值有如下的规定
+    - 1个值：上下左右
+    - 2个值：上下 左右
+    - 3个值：上 左右 下
+    - 4个值：上 右 下 左
+            
+- 单边的各种属性。使用时不方便，所以使用的比较少
+    - 上:`border-top-xxx`
+    - 下:`border-bottom-xxx`
+    - 左:`border-left-xxx`
+    - 右:`border-right-xxx`
+
+- 简写属性（**最常用的方法**）
+    - 语法：
+        - 统一设置4个边框的属性：`border: color width style`
+        - 分别设置4个边框的属性
+            - `border-top: color width style`
+            - `border-bottom: color width style`
+            - `border-left: color width style`
+            - `border-right: color width style`
+    - 该属性可以同时设置边框的所有相关样式，并且**没有顺序的要求**
+
+- 通过设置统一属性和单边属性来控制边框的整体的样式，同时可以还可以对某个边框作微调
+    - 如，用统一属性设置边框整体样式，通过单边属性来隐藏某个边框
+        ```css
+        border: color width style;
+        border-top: none;
+        ```
+
+- 示例
+    - 参考代码：[/frontend/css/base/src/boxModel/border.html](/frontend/css/base/src/boxModel/border.html)
+    - 通过border-width设置边框的宽度
+        - css
+            ```css
+            /* 2. 通过border-width设置边框的宽度 */
+            /* 2.1. 1个参数设置边框宽度，统一设置4个边框的宽度*/
+            .box2{
+                /* 内容区设置 */
+                /* 设置内容区的宽 */
+                width: 200px; 
+                /* 设置内容区的高 */
+                height:200px;
+                background-color: rgb(124, 200, 61);
+                
+                /* 边框设置 */
+                border-width: 5px;
+                border-color: orange;
+                border-style: dashed;
+            }
+
+            /* 2.2. 2个参数设置边框宽度，分别设置：上下、左右 */
+            .box3{
+                width: 200px;
+                height:200px;
+                background-color: rgb(124, 200, 61);
+
+                /* 设置边框 */
+                border-width: 10px 20px;
+                border-color: orange;
+                border-style: solid;
+            }
+            
+            /* 2.3. 3个参数设置边框宽度，分别设置：上、左右、下 */
+            .box4{
+                width: 200px;
+                height:200px;
+                background-color:  rgb(124, 200, 61);
+
+                /* 设置边框 */
+                border-width: 10px 20px 30px;
+                border-color: orange;
+                border-style: solid;
+            }
+            
+            /* 2.4. 4个参数设置边框宽度，分别设置：上、右、下、左 */
+            .box5{
+                width: 200px;
+                height:200px;
+                background-color:  rgb(124, 200, 61);
+
+                /* 设置边框 */
+                border-width: 10px 20px 30px 40px;
+                border-color: orange;
+                border-style: solid;
+            }
+            ```
+        - html
+            ```html
+            <section>2. 通过border-width设置边框的宽度</section>
+            <section>2.1. 1个参数设置边框宽度</section>
+            <div class="box2"></div>
+            <section>2.2. 2个参数设置边框宽度，分别设置：上下、左右</section>
+            <div class="box3"></div>
+            <section>2.3. 3个参数设置边框宽度，分别设置：上、左右、下</section>
+            <div class="box4"></div>
+            <section>4个参数设置边框宽度，分别设置：上、右、下、左</section>
+            <div class="box5"></div>
+            ```
+        - 页面结果
+            - ![](?????)
+
+    - 通过4个边的宽度属性来设置边框
+        - css
+            ```css
+            /* 3. 通过4个边的宽度属性来设置边框 */
+            /* 3.1. 分别设置4个边框的属性 */
+            .box6{
+                width:200px;
+                height:200px;
+                background-color: rgb(83, 150, 218);
+
+                /* 设置边框 */
+                /* 分别设置4个边框 */
+                /* 上 */
+                border-top-width: 10px;
+                border-top-color: orange;
+                border-top-style: dashed;
+                /* 下 */
+                border-bottom-width: 20px;
+                border-bottom-color: green;
+                border-bottom-style: solid;
+                /* 左 */
+                border-left-width:40px;
+                border-left-color: blueviolet;
+                border-left-style: double;
+                /* 右 */
+                border-right-width: 80px;
+                border-right-color: rgb(194, 154, 21);
+                border-right-style: groove;
+            }
+
+            /* 3.2. 只设置3个边框 */
+            .box7{
+                width:200px;
+                height:200px;
+                background-color: rgb(83, 150, 218);
+
+                /* 设置边框 */
+                /* 分别设置4个边框 */
+                /* 上 */
+                border-top-width: 10px;
+                border-top-color: orange;
+                border-top-style: dashed;
+                /* 下 */
+                border-bottom-width: 20px;
+                border-bottom-color: green;
+                border-bottom-style: solid;
+                /* 左 */
+                border-left-width:40px;
+                border-left-color: blueviolet;
+                border-left-style: double;
+                /* 右 */
+            }
+            ```
+        - html
+            ```html
+            <section>3. 通过4个边的属性分别设置边框</section>
+            <section>3.1. 分别设置4个边框的属性</section>
+            <div class="box6"></div>
+            <section>3.2. 只设置3个边框</section>
+            <div class="box7"></div>
+            ```
+        - 页面结果
+            - ![](?????)
+
+    - 简写属性测试
+        - css
+            ```css
+            /* 4. 简写属性测试*/
+            /* 4.1. 通过简写属性同时设置4个边框 */
+            .box8{
+                width:200px;
+                height:200px;
+                background-color: rgb(83, 150, 218);
+
+                /* 通过简写属性同时设置4个边框 */
+                border:rgb(124, 200, 61) 20px solid;
+            }
+
+            /* 4.2. 分别设置4个边框的属性 */
+            .box9{
+                width:200px;
+                height:200px;
+                background-color: rgb(83, 150, 218);
+
+                /* 通过简写属性同时设置4个边框 */
+                border-top:rgb(124, 200, 61) 10px solid;
+                border-bottom:rgb(245, 109, 172) 20px dashed;
+                border-left:rgb(200, 174, 61) 30px double;
+                border-right:rgb(75, 178, 219) 40px dotted;
+            }
+            ```
+        - html
+            ```html
+            <section>4. 简写属性测试</section>
+            <section>4.1. 通过简写属性同时设置4个边框</section>
+            <div class="box8"></div>
+            <section>4.2. 分别设置4个边框的属性</section>
+            <div class="box9"></div>
+            ```
+        - 页面结果
+            - ![](?????)
+
+    - 统一属性和单边属性的配合
+        - css
+            ```css
+            /* 5. 统一属性和单边属性的配合 */
+            .box10{
+                width:200px;
+                height:200px;
+                background-color: coral;
+
+                /* 使用统一属性设置边框的整体样式 */
+                border:green 20px solid;
+                /* 使用单边属性来隐藏某个边 */
+                border-right:none;
+            }
+            ```
+        - html
+            ```html
+            <section>5. 统一属性和单边属性的配合</section>
+            <div class="box10"></div>
+            ```
+        - 页面结果
+            - ![](?????)
+
+## 内边距padding
+[top](#catalog)
+- 内容区和边框的距离
+- 内边距的颜色默认与内容区相同
+- 内边距的4个单边属性，分别是:
+    - padding-top
+    - padding-bottom
+    - padding-left
+    - padding-right
+- 内边距的简写属性：
+    - `padding:上 右 下 左`
+    - 内边距属性值的设置方式与内容区的设置方式相同
+        - 1个值：上下左右
+        - 2个值：上下 左右
+        - 3个值：上 左右 下
+        - 4个值：上 右 下 左        
+
+- 示例
+    - [/frontend/css/base/src/boxModel/padding.html](/frontend/css/base/src/boxModel/padding.html)
+      
+    - 通过单边属性分别设置4个方向的内边距
+        - css
+            ```css
+            .box1{
+                /* 设置内容区 */
+                width: 200px;
+                height:200px;
+                background-color: green;
+
+                /* 设置边框 */
+                border:orange 20px solid;
+
+                /* 设置内边距 */
+                padding-top: 10px;
+                padding-bottom: 20px;
+                padding-left: 30px;
+                padding-right: 40px;
+            }
+
+            /* 通过在div内部嵌套class=inner的块元素来显示内边距 */
+            .inner{
+                width:100%;
+                height: 100%;
+                background-color: rgb(56, 150, 212);
+            }
+            ```
+        - html
+            ```html
+            <section>1. 通过单边属性分别设置4个方向的内边距</section>
+            <div class="box1">
+                <div class="inner"></div>
+            </div>
+            ```
+        - 页面结果
+            - ![](?????)        
     
+    - 通过简写属性统一设置内边距
+        - css
+            ```css
+            .box2{
+                /* 设置内容区 */
+                width: 200px;
+                height:200px;
+                background-color: green;
+
+                /* 设置边框 */
+                border:orange 20px solid;
+                
+                /* 设置内边距 */
+                padding: 10px 20px 30px 40px;
+            }
+
+            /* 通过在div内部嵌套class=inner的块元素来显示内边距 */
+            .inner{
+                width:100%;
+                height: 100%;
+                background-color: rgb(56, 150, 212);
+            }
+            ```
+        - html
+            ```html
+            <section>2. 通过简写属性统一设置内边距</section>
+            <div class="box2">
+                <div class="inner"></div>
+            </div>
+            ```
+        - 页面结果
+            - ![](?????)
+
+## 外边距margin
+[top](#catalog)
+- 外边距表示当前盒子与其他盒子之间的距离
+- 外边距不会影响盒子可见部分的大小，只会**影响盒子的位置**
+- 外边距的4个单边属性，分别是:
+    - `margin-top`
+    - `margin-bottom`
+    - `margin-left`
+    - `margin-right`
+- 外边距的简写属性
+    - `margin:上 右 下 左`
+    - 外边距属性值的设置方式与内容区的设置方式相同
+        - 1个值：上下左右
+        - 2个值：上下 左右
+        - 3个值：上 左右 下
+        - 4个值：上 右 下 左  
+
+- margin的单边设置对元素的影响
+    - 设置`top`、`left`时，会移动元素自身
+    - 设置`bottom`时，会移动其他元素
+    - `right`默认情况下，不会产生任何效果
+
+- margin的值可以是正数，也可以是负数。负数表示向相反的方向移动
+- 示例
+    - 参考内容：[/frontend/css/base/src/boxModel/margin.html](/frontend/css/base/src/boxModel/margin.html)
+    - 测试margin的单边属性
+        - css
+            ```css
+            /* 1. 测试margin的单边属性 */
+            .box1{
+                /* 设置内容区 */
+                width:200px;
+                height:200px;
+                background-color: green;
+                
+                /* 设置边框 */
+                border:orange 20px solid;
+
+                /* 设置外边距 */
+                margin-top: 10px;
+                margin-bottom: 20px;
+                margin-left: 30px;
+                margin-right: 40px;
+            }
+            .box2{
+                /* 设置内容区 */
+                width:200px;
+                height: 200px;
+                background-color:rgb(51, 114, 230);
+
+                /* 设置边框 */
+                border:orange 20px solid;
+            }
+            ```
+        - html
+            ```html
+            <section>1. 测试margin的单边属性</section>
+            <div class="box1"></div>
+            <div class="box2"></div>
+            ```
+        - 页面结果
+            - ![](?????)
+    
+    - 通过简写属性设置外边距
+        - css
+            ```css
+            .box3{
+                /* 设置内容区 */
+                width: 200px;
+                height: 200px;
+                background-color: green;
+
+                /* 设置边框 */
+                border:orange 20px solid;
+
+                /* 通过简写属性设置外边距 */
+                margin: 10px 20px 30px 40px;
+            }
+            ```
+        - html
+            ```html
+            <section>2. 通过简写属性设置外边距</section>
+            <div class="box3"></div>
+            <div class="box2"></div>
+            ```
+        - 页面结果
+            - ![](?????)
+
+    - 测试负数的margin值
+        - css
+            ```css
+            .box4{
+                /* 设置内容区 */
+                width: 200px;
+                height: 200px;
+                background-color: green;
+
+                /* 设置边框 */
+                border:orange 20px solid;
+
+                /* 通过简写属性设置外边距 */
+                margin: -10px -20px -30px -40px;
+            }
+            ```
+        - html
+            ```html
+            <section>3. 测试负数的margin值</section>
+            <div class="box4"></div>
+            <div class="box2"></div>
+            ```
+        - 页面结果
+            - ![](?????)
+
+## 盒子模型中可以设置为auto的属性
+[top](#catalog)
+- 如果某个属性为auto，则浏览器会自动计算属性值，来满足页面布局的各种规则
+- 可以设置为auto的属性
+    - `width`
+    - `margin-left`
+    - `margin-right`
+
+## 盒子模型的水平方向布局
+[top](#catalog)
+- 子元素在其父元素中水平方向的位置的决定因素。方向是从左到右、从外到内
+    1. `margin-left`
+    2. `border-left`
+    3. `padding-left`
+    4. `width`
+    5. `padding-right`
+    6. `border-right`
+    7. `margin-right`
+
+- 一个子元素在父元素中，水平布局<label style="color:red">必须满足以下等式</label>
+    - `父元素.width = 子元素.sum(margin-left, border-left, padding-left, width, padding-right, border-right, margin-right)`
+        - 即：父元素内容区的宽度 = 子元素盒子模型的整体宽度
+    - 当计算结果不成立时，浏览器会自动调整，使等式成立
+        - `父元素.width > 子元素.sum`时，称为**过度约束**，调整方法：
+            - 在子元素的7个属性中，如果没有auto，则浏览器会自动调整`margin-right`
+            - 在子元素的7个属性中，如果有auto，则浏览器会自动计算该属性值
+                - 存在多个多个auto的属性时
+                    - 如果包含`width`，则只计算`width`的值，其他属性值=0
+                    - 如果只有`margin-left`和`margin-right`，则将剩余的宽度区平均，使得`margin-left = margin-right`
+        - `父元素.width < 子元素.sum`时，调整方法：
+            - 浏览器会将`margin-right`设为负数，来满足等式
+
+- 示例
+    - 参考代码：[/frontend/css/base/src/boxModel/horizontalLayout.html](/frontend/css/base/src/boxModel/horizontalLayout.html)
+    - 过度约束测试。子元素的各属性中没有auto
+        - css
+            ```css
+            .inner1{
+                width: 200px;
+                height: 200px;
+                background-color: rgb(129, 226, 112);
+
+                margin-left:100px;
+            }
+
+            .outter{
+                width: 800px;
+                height:200px;
+                border:rgb(63, 124, 238) 10px solid;
+            }
+            ```
+        - html
+            ```html
+            <section>1. 过度约束测试。子元素的各属性中没有auto</section>
+            <section>等式：800 = 100 + 0 + 0 + 200 + 0 + 0 + 0，等式不满足，浏览器会自动调整margin-right=500</section>
+            <div class="outter">
+                <div class="inner1"></div>
+            </div>
+            ```
+        - 页面结果
+            - ![](?????)
+
+    - 过度约束测试。子元素.width = auto
+        - css
+            ```css
+            .inner2{
+                width: auto;
+                height: 200px;
+                background-color: rgb(129, 226, 112);
+
+                margin-left:100px;
+            }
+            .outter{
+                width: 800px;
+                height:200px;
+                border:rgb(63, 124, 238) 10px solid;
+            }
+            ```
+        - html
+            ```html
+            <section>2. 过度约束测试。子元素.width = auto</section>
+            <section>等式：800 = 100 + 0 + 0 + auto + 0 + 0 + 0，浏览器会自动计算width=700</section>
+            <div class="outter">
+                <div class="inner2"></div>
+            </div>
+            ```
+        - 页面结果
+            - ![](?????)
+
+    - 过度约束测试。子元素中包含多个auto
+        - css
+            ```css
+            /* 3.1. margin-left = auto; width = auto */
+            .inner3{
+                width: auto;
+                height: 200px;
+                background-color: rgb(129, 226, 112);
+
+                margin-left:auto;
+                margin-right: 100px;
+            }
+
+            /* 3.2. margin-left = auto; margin-right = auto */
+            .inner4{
+                width: 200px;
+                height: 200px;
+                background-color: rgb(129, 226, 112);
+
+                margin-left:auto;
+                margin-right: auto;
+            }
+            .outter{
+                width: 800px;
+                height:200px;
+                border:rgb(63, 124, 238) 10px solid;
+            }
+            ```
+        - html
+            ```html
+            <section>3. 过度约束测试。子元素中包含多个auto</section>
+            <br>
+            <section>3.1. margin-left = auto; width = auto</section>
+            <section>等式：800 = auto + 0+ 0 + auto + 0 + 0 + 100，浏览器会自动计算width=700，margin-left=0</section>
+            <div class="outter">
+                <div class="inner3"></div>
+            </div>
+            <br>
+            
+            <section>3.2. margin-left = auto; margin-right = auto</section>
+            <section>等式：800 = auto + 0+ 0 + 200 + 0 + 0 + auto，剩余600px，浏览器会自动除2，设置成相同的值：margin-left = margin-right = 300px</section>
+            <div class="outter">
+                <div class="inner4"></div>
+            </div>
+            ```
+        - 页面结果
+            - ![](?????)
+    
+    - 父元素.width < 子元素.sum
+        - css
+            ```css
+            .inner5{
+                width: 1000px;
+                height: 200px;
+                background-color: rgb(129, 226, 112);
+            }
+            .outter{
+                width: 800px;
+                height:200px;
+                border:rgb(63, 124, 238) 10px solid;
+            }
+            ```
+        - html
+            ```html
+            <section>4. 父元素.width &lt; 子元素.sum</section>
+            <section>等式：800 = 0 + 0+ 0 + 1000 + 0 + 0 + 0，浏览器会设置：margin-left = -200</section>
+            <div class="outter">
+                <div class="inner5"></div>
+            </div>
+            ```
+        - 页面结果
+            - ![](?????)
+                    
+## 盒子模型的垂直方向布局
+[top](#catalog)
+- 元素的高度
+    - 如果元素没有设置高度，则`元素.height = 子元素/文字内容.height`
+    - 如果元素设置了高度，则使用自身的高度
+    - 子元素是在父元素的内容区排列的，如果子元素的高度超过了父元素的高度，则子元素会从父元素中溢出
+- 通过`overflow`属性，设置父元素如何处理溢出的子元素
+    - visible，默认值，子元素会从父元素中溢出，并在父元素的外部显示
+    - hidden，隐藏溢出的部分
+    - scroll，在父元素上同时生成水平和垂直方向的两个滚动条，可以通过滚动条来查看子元素的完整内容
+    - auto，在父元素上，根据需要生成水平或垂直方向的滚动条，可以通过滚动条来查看子元素的完整内容
+    - inherit， ?????
+    - initial， ?????
+    - unset， ?????
+    - -moz-hidden-unscrollable， ?????
+
+- overflow-x，处理水平方向的溢出
+- overflow-y，处理垂直方向的溢出
+
+## 垂直外边距的折叠
+[top](#catalog)
+- 垂直方向的、相邻的外边距会发生折叠
+- 兄弟元素
+    - 两个兄弟元素在垂直方向上相邻的外边距属性：上边元素的`margin-bottom`与下边元素的`margin-top`
+    - 计算方式
+        
+        |外边距的值|计算方法|公式|
+        |-|-|-|
+        |如果两者都是正数|取最大值|`外边距 = Max(elem1.margin-bottom, elem2.margin-top)`|
+        |如果一正一负|求和|`外边距 = elem1.margin-bottom + elem2.margin-top`|
+        |如果两者都是负数|取绝对值的最大值|`外边距 = Max(abs(elem1.margin-bottom), abs(elem2.margin-top))`|
+
+    - 兄弟元素之间的重叠对开发是有利的，一般不需要进行处理
+
+- 父子元素
+    - 父子元素在垂直方向上相邻的外边距属性：`margin-top`
+    - 子元素的`margin-top`会传递给父元素，所以父子元素间的外边距折叠会影响整个页面的布局，**必须要进行处理**
+    - 为什么子元素的`margin-top`会传递给父元素？
+        - 父元素中没有设置边框来隔离，导致了`margin-top`的传递
+    - 解决方式
+        - 方式1：子元素不使用`margin-top`，同时调整父元素
+            - 子元素
+                - 删除：`margin-top`
+            - 父元素
+                - 增加`padding-top`
+                - 从`height`中减去与`padding-top`相同的值，维持整体的布局不变
+
+        - 方式2：在父元素中添加边框来隔离父子元素
+            - 父元素：
+                - `border-top`增加`1px`的，隔离父子元素
+                - `height`减去`1px`，维持整体的布局不变
+            - 子元素：
+                - `margin-top`减去`1px`，抵消父元素增加`1px`边框导致的子元素布局下移
+
+- 示例
+    - 参考代码：[/frontend/css/base/src/boxModel/marginFold.html](/frontend/css/base/src/boxModel/marginFold.html)
+    - 兄弟元素之间的外边距折叠，两者都是正数
+        - css
+            ```css
+            .box1{
+                width:100px;
+                height:100px;
+                background-color: rgb(113, 212, 46);
+                
+                margin-bottom: 50px;
+            }
+
+            .box2{
+                width:100px;
+                height:100px;
+                background-color: orange;
+
+                margin-top:100px;
+            }
+            ```
+        - html
+            ```html
+            <section>1. 兄弟元素之间的外边距折叠，两者都是正数</section>
+            <div class="box1"></div>
+            <div class="box2"></div>
+            ```
+        - 页面结构
+            - ![](?????)
+
+    - 兄弟元素之间的外边距折叠，一正一负
+        - css
+            ```css
+            .box3{
+                width:100px;
+                height:100px;
+                background-color: rgb(113, 212, 46);
+                
+                margin-bottom: 50px;
+            }
+
+            .box4{
+                width:100px;
+                height:100px;
+                background-color: orange;
+
+                margin-top:-20px;
+            }
+            ```
+        - html
+            ```html
+            <section>2. 兄弟元素之间的外边距折叠，一正一负</section>
+            <div class="box3"></div>
+            <div class="box4"></div>
+            ```
+        - 页面结构
+            - ![](?????)
+
+    - 兄弟元素之间的外边距折叠，两者都是负数
+        - css
+            ```css
+            .box5{
+                width:200px;
+                height:200px;
+                background-color: rgb(113, 212, 46);
+                
+                margin-bottom: -50px;
+            }
+
+            .box6{
+                width:200px;
+                height:200px;
+                background-color: orange;
+
+                margin-top:-100px;
+            }
+            ```
+        - html
+            ```html
+            <section>3. 兄弟元素之间的外边距折叠，两者都是负数</section>
+            <div class="box5"></div>
+            <div class="box6"></div>
+            ```
+        - 页面结构
+            - ![](?????)
+
+    - 父子元素之间的外边距折叠，子元素的外边距会传递给父元素
+        - css
+            ```css
+            .box7{
+                width:100px;
+                height:100px;
+                background-color: rgb(113, 212, 46);
+                
+                /* margin-bottom: -50px; */
+            }
+
+            .box8{
+                width:50px;
+                height:50px;
+                background-color: orange;
+
+                margin-top:50px;
+            }
+            ```
+        - html
+            ```html
+            <section>4. 父子元素之间的外边距折叠</section>
+            <div class="box7">
+                <div class="box8"></div>
+            </div>
+            ```
+        - 页面结构
+            - ![](?????)
+
+    - 父子元素之间的外边距折叠。解决方式1：子元素不使用margin-top，同时调整父元素
+        - css
+            ```css
+            .box9{
+                width:100px;
+                /* 父元素同时从height中减去与padding-top相同的值 */
+                /* height:100px; */
+                height:50px;
+                background-color: rgb(113, 212, 46);
+                
+                /* 父元素，增加`padding-top` */
+                padding-top:50px;
+            }
+
+            .box10{
+                width:50px;
+                height:50px;
+                background-color: orange;
+
+                /* 子元素，删除：`margin-top` */
+                /* margin-top:50px; */
+            }
+            ```
+        - html
+            ```html
+            <section>5. 父子元素之间的外边距折叠。解决方式1：子元素不使用margin-top，同时调整父元素</section>
+            <div class="box9">
+                <div class="box10"></div>
+            </div>
+            ```
+        - 页面结构
+            - ![](?????)
+
+    - 父子元素之间的外边距折叠。解决方式2：在父元素中添加边框来隔离父子元素
+        - css
+            ```css
+            .box11{
+                width:100px;
+                /* height减去1px，维持整体的布局不变 */
+                /* height:100px; */
+                height:99px;
+                background-color: rgb(113, 212, 46);
+                
+                /* border-top增加1px的，隔离父子元素 */
+                border-top: red 1px solid;          
+            }
+
+            .box12{
+                width:50px;
+                height:50px;
+                background-color: orange;
+
+                /* margin-top减去1px，抵消父元素增加1px边框导致的子元素布局下移 */
+                /* margin-top:50px; */
+                margin-top:49px;
+            }
+            ```
+        - html
+            ```html
+            <section>6. 父子元素之间的外边距折叠。解决方式2：在父元素中添加边框来隔离父子元素</section>
+            <div class="box11">
+                <div class="box12"></div>
+            </div>
+            ```
+        - 页面结构
+            - ![](?????)
+
+## 行内元素的盒子模型
+[top](#catalog)
+- 行内元素的内容区content不支持`width`和`height`属性，行内元素的宽、高由元素中的内容决定
+- 行内元素可以设置`padding`，并且垂直方向的属性不会影响页面布局，但是可能会覆盖某些元素
+- 行内元素可以设置`border`，并且垂直方向的属性不会影响页面布局，但是可能会覆盖某些元素
+- 行内元素可以设置`margin`，并且垂直方向的属性不会影响页面布局，但是垂直方向的margin看不到
+- `display`，用来设置元素的显示类型
+    - inline，将元素设置为行内元素
 
 
-    
+
+# other
+- width的默认值为auto。如果不写，会由浏览器自动计算
+- 一个子元素在父元素中，水平布局<label style="color:red">必须满足以下等式</label>
+    - `父元素.width = 子元素.sum(margin-left, border-left, padding-left, width, padding-right, border-right, margin-right)`
+
+行内元素的宽和高默认都是元素内容的宽和高
