@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>boxModel margin test</title>
+    <style>
+        /* 1. 测试margin的单边属性 */
+        .box1{
+            /* 设置内容区 */
+            width:200px;
+            height:200px;
+            background-color: green;
+            
+            /* 设置边框 */
+            border:orange 20px solid;
+
+            /* 设置外边距 */
+            margin-top: 10px;
+            margin-bottom: 20px;
+            margin-left: 30px;
+            margin-right: 40px;
+        }
+        .box2{
+            /* 设置内容区 */
+            width:200px;
+            height: 200px;
+            background-color:rgb(51, 114, 230);
+
+            /* 设置边框 */
+            border:orange 20px solid;
+        }
+
+        /* 2. 通过简写属性设置外边距 */
+        .box3{
+            /* 设置内容区 */
+            width: 200px;
+            height: 200px;
+            background-color: green;
+
+            /* 设置边框 */
+            border:orange 20px solid;
+
+            /* 通过简写属性设置外边距 */
+            margin: 10px 20px 30px 40px;
+        }
+
+        /* 3. 测试负数的margin值 */
+        .box4{
+            /* 设置内容区 */
+            width: 200px;
+            height: 200px;
+            background-color: green;
+
+            /* 设置边框 */
+            border:orange 20px solid;
+
+            /* 通过简写属性设置外边距 */
+            margin: -10px -20px -30px -40px;
+        }
+    </style>
+</head>
+<body>
+
+    <section>1. 测试margin的单边属性</section>
+    <div class="box1"></div>
+    <div class="box2"></div>
+    <br>
+    
+    <section>2. 通过简写属性设置外边距</section>
+    <div class="box3"></div>
+    <div class="box2"></div>
+    <br>
+    
+    <section>3. 测试负数的margin值</section>
+    <div class="box4"></div>
+    <div class="box2"></div>
+</body>
+</html>
