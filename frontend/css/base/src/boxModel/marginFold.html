@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>boxModel margin fold test</title>
+    <style>
+        /* 1. 兄弟元素之间的外边距折叠，两者都是正数 */
+        .box1{
+            width:100px;
+            height:100px;
+            background-color: rgb(113, 212, 46);
+            
+            margin-bottom: 50px;
+        }
+
+        .box2{
+            width:100px;
+            height:100px;
+            background-color: orange;
+
+            margin-top:100px;
+        }
+
+        /* 2. 兄弟元素之间的外边距折叠，一正一负 */
+        .box3{
+            width:100px;
+            height:100px;
+            background-color: rgb(113, 212, 46);
+            
+            margin-bottom: 50px;
+        }
+
+        .box4{
+            width:100px;
+            height:100px;
+            background-color: orange;
+
+            margin-top:-20px;
+        }
+
+        /* 3. 兄弟元素之间的外边距折叠，两者都是负数 */
+        .box5{
+            width:200px;
+            height:200px;
+            background-color: rgb(113, 212, 46);
+            
+            margin-bottom: -50px;
+        }
+
+        .box6{
+            width:200px;
+            height:200px;
+            background-color: orange;
+
+            margin-top:-100px;
+        }
+
+        /* 4. 父子元素之间的外边距折叠，子元素的外边距会传递给父元素*/
+        .box7{
+            width:100px;
+            height:100px;
+            background-color: rgb(113, 212, 46);
+            
+            /* margin-bottom: -50px; */
+        }
+
+        .box8{
+            width:50px;
+            height:50px;
+            background-color: orange;
+
+            margin-top:50px;
+        }
+        
+        /* 5. 父子元素之间的外边距折叠。解决方式1：子元素不使用margin-top，同时调整父元素 */
+        .box9{
+            width:100px;
+            /* 父元素同时从height中减去与padding-top相同的值 */
+            /* height:100px; */
+            height:50px;
+            background-color: rgb(113, 212, 46);
+            
+            /* 父元素，增加`padding-top` */
+            padding-top:50px;
+        }
+
+        .box10{
+            width:50px;
+            height:50px;
+            background-color: orange;
+
+            /* 子元素，删除：`margin-top` */
+            /* margin-top:50px; */
+        }
+
+        /* 6. 父子元素之间的外边距折叠。解决方式2：在父元素中添加边框来隔离父子元素 */
+        .box11{
+            width:100px;
+            /* height减去1px，维持整体的布局不变 */
+            /* height:100px; */
+            height:99px;
+            background-color: rgb(113, 212, 46);
+            
+            /* border-top增加1px的，隔离父子元素 */
+            border-top: red 1px solid;          
+        }
+
+        .box12{
+            width:50px;
+            height:50px;
+            background-color: orange;
+
+            /* margin-top减去1px，抵消父元素增加1px边框导致的子元素布局下移 */
+            /* margin-top:50px; */
+            margin-top:49px;
+        }
+    </style>
+</head>
+<body>
+
+    <section>1. 兄弟元素之间的外边距折叠，两者都是正数</section>
+    <div class="box1"></div>
+    <div class="box2"></div>
+    <br>
+
+    <section>2. 兄弟元素之间的外边距折叠，一正一负</section>
+    <div class="box3"></div>
+    <div class="box4"></div>
+    <br>
+
+    <section>3. 兄弟元素之间的外边距折叠，两者都是负数</section>
+    <div class="box5"></div>
+    <div class="box6"></div>
+    <br>
+
+    <section>4. 父子元素之间的外边距折叠</section>
+    <div class="box7">
+        <div class="box8"></div>
+    </div>
+    <br>
+    
+    <section>5. 父子元素之间的外边距折叠。解决方式1：子元素不使用margin-top，同时调整父元素</section>
+    <div class="box9">
+        <div class="box10"></div>
+    </div>
+    <br>
+    
+    <section>6. 父子元素之间的外边距折叠。解决方式2：在父元素中添加边框来隔离父子元素</section>
+    <div class="box11">
+        <div class="box12"></div>
+    </div>
+    <br>
+    
+</body>
+</html>
