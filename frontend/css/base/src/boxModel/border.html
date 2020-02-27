@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>boxModel border test</title>
+
+    <style>
+        /* 1. 盒子模型测试 */
+        .box1{
+            /* 内容区设置 */
+            /* 设置内容区的宽 */
+            width: 200px; 
+            /* 设置内容区的高 */
+            height:200px;
+            background-color: green;
+            
+            /* 边框设置 */
+            border-width: 5px;
+            border-color: orange;
+            border-style: dashed;
+        }
+        
+        /* 2. 通过border-width设置边框的宽度 */
+        /* 2.1. 1个参数设置边框宽度，统一设置4个边框的宽度*/
+        .box2{
+            /* 内容区设置 */
+            /* 设置内容区的宽 */
+            width: 200px; 
+            /* 设置内容区的高 */
+            height:200px;
+            background-color: rgb(124, 200, 61);
+            
+            /* 边框设置 */
+            border-width: 5px;
+            border-color: orange;
+            border-style: dashed;
+        }
+
+        /* 2.2. 2个参数设置边框宽度，分别设置：上下、左右 */
+        .box3{
+            width: 200px;
+            height:200px;
+            background-color: rgb(124, 200, 61);
+
+            /* 设置边框 */
+            border-width: 10px 20px;
+            border-color: orange;
+            border-style: solid;
+        }
+        
+        /* 2.3. 3个参数设置边框宽度，分别设置：上、左右、下 */
+        .box4{
+            width: 200px;
+            height:200px;
+            background-color:  rgb(124, 200, 61);
+
+            /* 设置边框 */
+            border-width: 10px 20px 30px;
+            border-color: orange;
+            border-style: solid;
+        }
+        
+        /* 2.4. 4个参数设置边框宽度，分别设置：上、右、下、左 */
+        .box5{
+            width: 200px;
+            height:200px;
+            background-color:  rgb(124, 200, 61);
+
+            /* 设置边框 */
+            border-width: 10px 20px 30px 40px;
+            border-color: orange;
+            border-style: solid;
+        }
+
+        /* 3. 通过4个边的宽度属性来设置边框 */
+        /* 3.1. 分别设置4个边框的属性 */
+        .box6{
+            width:200px;
+            height:200px;
+            background-color: rgb(83, 150, 218);
+
+            /* 设置边框 */
+            /* 分别设置4个边框 */
+            /* 上 */
+            border-top-width: 10px;
+            border-top-color: orange;
+            border-top-style: dashed;
+            /* 下 */
+            border-bottom-width: 20px;
+            border-bottom-color: green;
+            border-bottom-style: solid;
+            /* 左 */
+            border-left-width:40px;
+            border-left-color: blueviolet;
+            border-left-style: double;
+            /* 右 */
+            border-right-width: 80px;
+            border-right-color: rgb(194, 154, 21);
+            border-right-style: groove;
+        }
+
+        /* 3.2. 只设置3个边框 */
+        .box7{
+            width:200px;
+            height:200px;
+            background-color: rgb(83, 150, 218);
+
+            /* 设置边框 */
+            /* 分别设置4个边框 */
+            /* 上 */
+            border-top-width: 10px;
+            border-top-color: orange;
+            border-top-style: dashed;
+            /* 下 */
+            border-bottom-width: 20px;
+            border-bottom-color: green;
+            border-bottom-style: solid;
+            /* 左 */
+            border-left-width:40px;
+            border-left-color: blueviolet;
+            border-left-style: double;
+            /* 右 */
+        }
+
+        /* 4. 简写属性测试*/
+        /* 4.1. 通过简写属性同时设置4个边框 */
+        .box8{
+            width:200px;
+            height:200px;
+            background-color: rgb(83, 150, 218);
+
+            /* 通过简写属性同时设置4个边框 */
+            border:rgb(124, 200, 61) 20px solid;
+        }
+
+        /* 4.2. 分别设置4个边框的属性 */
+        .box9{
+            width:200px;
+            height:200px;
+            background-color: rgb(83, 150, 218);
+
+            /* 通过简写属性同时设置4个边框 */
+            border-top:rgb(124, 200, 61) 10px solid;
+            border-bottom:rgb(245, 109, 172) 20px dashed;
+            border-left:rgb(200, 174, 61) 30px double;
+            border-right:rgb(75, 178, 219) 40px dotted;
+        }
+
+        /* 5. 统一属性和单边属性的配合 */
+        .box10{
+            width:200px;
+            height:200px;
+            background-color: coral;
+
+            /* 使用统一属性设置边框的整体样式 */
+            border:green 20px solid;
+            /* 使用单边属性来隐藏某个边 */
+            border-right:none;
+        }
+    </style>
+</head>
+<body>
+
+    <section>1. 盒子模型测试</section>
+    <div class="box1"></div>
+    <br>
+
+    <section>2. 通过border-width设置边框的宽度</section>
+    <section>2.1. 1个参数设置边框宽度</section>
+    <div class="box2"></div>
+    <section>2.2. 2个参数设置边框宽度，分别设置：上下、左右</section>
+    <div class="box3"></div>
+    <section>2.3. 3个参数设置边框宽度，分别设置：上、左右、下</section>
+    <div class="box4"></div>
+    <section>4个参数设置边框宽度，分别设置：上、右、下、左</section>
+    <div class="box5"></div>
+    <br>
+
+    <section>3. 通过4个边的属性分别设置边框</section>
+    <section>3.1. 分别设置4个边框的属性</section>
+    <div class="box6"></div>
+    <section>3.2. 只设置3个边框</section>
+    <div class="box7"></div>
+    <br>
+
+    <section>4. 简写属性测试</section>
+    <section>4.1. 通过简写属性同时设置4个边框</section>
+    <div class="box8"></div>
+    <section>4.2. 分别设置4个边框的属性</section>
+    <div class="box9"></div>
+    <br>
+
+    <section>5. 统一属性和单边属性的配合</section>
+    <div class="box10"></div>
+    
+</body>
+</html>
