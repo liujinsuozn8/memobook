@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>boxModel padding test</title>
+    <style>
+        /* 通过在div内部嵌套class=inner的块元素来显示内边距 */
+        .inner{
+            width:100%;
+            height: 100%;
+            background-color: rgb(56, 150, 212);
+        }
+
+        /* 1. 通过单边属性分别设置4个方向的内边距 */
+        .box1{
+            /* 设置内容区 */
+            width: 200px;
+            height:200px;
+            background-color: green;
+
+            /* 设置边框 */
+            border:orange 20px solid;
+
+            /* 设置内边距 */
+            padding-top: 10px;
+            padding-bottom: 20px;
+            padding-left: 30px;
+            padding-right: 40px;
+        }
+
+        /* 2. 通过简写属性统一设置内边距 */
+        .box2{
+            /* 设置内容区 */
+            width: 200px;
+            height:200px;
+            background-color: green;
+
+            /* 设置边框 */
+            border:orange 20px solid;
+            
+            /* 设置内边距 */
+            padding: 10px 20px 30px 40px;
+        }
+    </style>
+</head>
+<body>
+    
+    <section>1. 通过单边属性分别设置4个方向的内边距</section>
+    <div class="box1">
+        <div class="inner"></div>
+    </div>
+    <br>
+
+    <section>2. 通过简写属性统一设置内边距</section>
+    <div class="box2">
+        <div class="inner"></div>
+    </div>
+
+</body>
+</html>
