@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>exercise 02 piclist</title>
+    <style>
+        /* img.piclist{
+            width:100%;
+            height:100%;
+        }
+        a.piclistA{
+            display: block;
+            width:100px;
+            height:50px;
+            margin-top: 5px;
+            margin-bottom: 5px;
+        } */
+
+        /* 去除ul li的默认样式 */
+        ul, li {
+            margin: 0;
+            padding: 0;
+            border: 0;
+            font-size: 100%;
+            font: inherit;
+            vertical-align: baseline;
+        }
+
+        ul {
+            list-style: none;
+        }
+
+        /* 设置当前样式 */
+        ul.imglist{
+            width:50px;
+            border: solid rgb(151, 151, 151) 1px;
+            padding: 5px;
+        }
+
+        ul.imglist > li:not(:last-child){
+            margin-bottom: 5px;
+        }
+        
+        /* 控制图片大小与父元素相同，通过百分比让图片自动调整大小 */
+        /* 该属性必须设置在 img 上，设置在li中，没有效果 */
+        ul.imglist img{
+            width:100%;
+        }
+    </style>
+</head>
+<body>
+    <!-- <div>
+        <a href="https://www.baidu.com" class="piclistA">
+            <img src="./testpic.png" alt="pic01" class="piclist">
+        </a>
+
+        <a href="javascript:;" class="piclistA">
+            <img src="./testpic.png" alt="pic02" class="piclist">
+        </a>
+
+        <a href="javascript:;" class="piclistA">
+            <img src="./testpic.png" alt="pic03" class="piclist">
+        </a>
+    </div> -->
+
+    <ul class="imglist">
+        <li>
+            <a href="javascript:;" >
+                <img src="./testimg.png" alt="img01" >
+            </a>
+        </li>
+        <li>
+            <a href="javascript:;" >
+                <img src="./testimg.png" alt="img02" >
+            </a>
+        </li>
+        <li>
+            <a href="javascript:;" >
+                <img src="./testimg.png" alt="img03" >
+            </a>
+        </li>
+    </ul>
+</body>
+</html>
