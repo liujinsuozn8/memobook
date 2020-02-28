@@ -34,8 +34,13 @@
     - [盒子模型的垂直方向布局](#盒子模型的垂直方向布局)
     - [垂直外边距的折叠](#垂直外边距的折叠)
     - [行内元素的盒子模型](#行内元素的盒子模型)
+- [浏览器的默认样式](#浏览器的默认样式)
 - [](#)
 - [](#)
+- [](#)
+- [常用的通用属性](#常用的通用属性)
+    - [display](#display)
+    - [visibility](#visibility)
 
 # CSS简介
 [top](#catalog)
@@ -1037,7 +1042,7 @@
 [top](#catalog)
 - 样式冲突
     - 发生样式冲突的条件：<label style="color:red">不同的选择器，选中相同的元素，为相同的样式设置不同的值</label>
-- 发生样式冲突时，由选择器的权重来决定。如果优先级相同，则使用后声明的选择器中的样式（可以理解为后声明的内容覆盖了先声明的内容）
+- 发生样式冲突时，由选择器的权重来决定。如果权重相同，则使用后声明的选择器中的样式（可以理解为后声明的内容覆盖了先声明的内容）
 
 - 选择器类型及其对应的权重
     |选择器|权重|
@@ -2199,7 +2204,7 @@
             <div class="box1"></div>
             <div class="box2"></div>
             ```
-        - 页面结构
+        - 页面结果
             - ![](?????)
 
     - 兄弟元素之间的外边距折叠，一正一负
@@ -2227,7 +2232,7 @@
             <div class="box3"></div>
             <div class="box4"></div>
             ```
-        - 页面结构
+        - 页面结果
             - ![](?????)
 
     - 兄弟元素之间的外边距折叠，两者都是负数
@@ -2255,7 +2260,7 @@
             <div class="box5"></div>
             <div class="box6"></div>
             ```
-        - 页面结构
+        - 页面结果
             - ![](?????)
 
     - 父子元素之间的外边距折叠，子元素的外边距会传递给父元素
@@ -2284,7 +2289,7 @@
                 <div class="box8"></div>
             </div>
             ```
-        - 页面结构
+        - 页面结果
             - ![](?????)
 
     - 父子元素之间的外边距折叠。解决方式1：子元素不使用margin-top，同时调整父元素
@@ -2317,7 +2322,7 @@
                 <div class="box10"></div>
             </div>
             ```
-        - 页面结构
+        - 页面结果
             - ![](?????)
 
     - 父子元素之间的外边距折叠。解决方式2：在父元素中添加边框来隔离父子元素
@@ -2351,7 +2356,7 @@
                 <div class="box12"></div>
             </div>
             ```
-        - 页面结构
+        - 页面结果
             - ![](?????)
 
 ## 行内元素的盒子模型
@@ -2360,9 +2365,238 @@
 - 行内元素可以设置`padding`，并且垂直方向的属性不会影响页面布局，但是可能会覆盖某些元素
 - 行内元素可以设置`border`，并且垂直方向的属性不会影响页面布局，但是可能会覆盖某些元素
 - 行内元素可以设置`margin`，并且垂直方向的属性不会影响页面布局，但是垂直方向的margin看不到
-- `display`，用来设置元素的显示类型
-    - inline，将元素设置为行内元素
+- 通过[通用属性：display](#display)可以将行内模型转换为块元素
 
+# 浏览器的默认样式
+[top](#catalog)
+- 默认样式
+    - 一般情况下，浏览器都会为元素设置默认样式
+    - html控制结构，css控制页面显示，如果只有html没有css，则页面无法显示任何信息。所以浏览器为了在没有css的情况下能正常显示，会使用默认样式
+    - 通常情况下，默认样式会影响页面布局，所以要去除默认样式（主要是在pc端）
+        - 主要希望去除的是：`margin`、`padding`这些会影响页面布局的属性
+
+- 去除默认样式的方法
+    - 方法1：可以使用通配符来统一去除默认样式
+        ```css
+        /* 统一出去默认样式的 外边距和内边距 */
+        *{
+            margin: 0px;
+            padding: 0px;
+        }
+        ```
+    - 方法2：手动调整某个标签的样式
+    - 方法3：从外部引入重置样式表：
+        - `reset.css`
+            - **去除**所有的默认样式
+        - `nomalize.css`
+            - **统一**所有的默认样式
+
+- 示例
+    - 去除body的默认css
+        - 参考代码：[/frontend/css/base/src/browserDefalutCss/defalutCss.html](/frontend/css/base/src/browserDefalutCss/defalutCss.html)
+        - css
+            ```css
+            body{
+                margin:0px;
+            }
+            .box1{
+                width: 100px;
+                height: 100px;
+                
+                border:black 1px solid;
+            }
+            ```
+        - 页面结果
+            - ![](?????)
+
+    - 去除ul的样式
+        - 参考代码：[/frontend/css/base/src/browserDefalutCss/defalutCss.html](/frontend/css/base/src/browserDefalutCss/defalutCss.html)
+        - css
+            ```css
+            ul{
+                list-style: none;
+            }
+            ```
+        - html
+            ```html
+            <section>2. 去除ul的样式</section>
+            <ul>
+                <li>aaaa</li>
+                <li>bbbb</li>
+                <li>cccc</li>
+                <li>dddd</li>
+            </ul>
+            ```
+        - 页面结果
+            - ![](?????)
+
+    - 使用通配符统一去除浏览器的默认样式
+        - 参考代码：[/frontend/css/base/src/browserDefalutCss/deleteDefaultCss.html](/frontend/css/base/src/browserDefalutCss/deleteDefaultCss.html)
+        - css
+            ```css
+            *{
+                margin: 0px;
+                padding: 0px;
+            }
+            ```
+        - html
+            ```html
+            <body>
+                <p>p1</p>
+                <p>p2</p>
+                <p>p3</p>
+                <p>p4</p>
+
+                <ul>
+                    <li>li01</li>
+                    <li>li02</li>
+                    <li>li03</li>
+                    <li>li04</li>
+                    <li>li05</li>
+                </ul>
+            </body>
+            ```
+        - 页面结果
+            - ![](?????)
+            
+# 常用的通用属性
+## display
+[top](#catalog)
+- `display`，用来设置元素的显示类型
+- 常用的属性值
+
+    |属性值|描述|备注|
+    |-|-|-|
+    |inline|将元素设置为行内元素||
+    |block|将元素设置为块元素||
+    |inline-block|行内块元素|<ul><li>优缺点<ul><li>同时兼具行内元素和块元素的优点：既可以设置`width`和`height`(块元素)，又**不会独占一行**（行内元素）</li><li>同时兼具行内元素和块元素的缺点：换行符会被解析为空白距离。即如果行内块元素间有换行，页面上的两个元素之间会产生一个空白的距离</li></ul></li><li>一般开发时尽量不要使用</li></ul>|
+    |table|将元素设置为表格元素||
+    |none|元素不再页面中显示。|可以用来隐藏元素，在需要的时候，通过页面控制再显示出来|
+
+- 示例
+    - 参考代码：[/frontend/css/base/src/commonProperties/display.html](/frontend/css/base/src/commonProperties/display.html)
+    - 测试行内元素转化为`display:block`
+        - css
+            ```css
+            .s1{
+                background-color: rgb(214, 177, 54);
+                /* 转化为块元素之后可以设置 width 和 height */
+                width: 250px;
+                height:250px;
+
+                display: block;
+            }
+            .box1{
+                width:200px;
+                height:200px;
+                background-color: green;
+            }
+            ```
+        - html
+            ```html
+            <section>1. 测试行内元素的 display:block</section>
+            <span class="s1">this is span5</span>
+            <div class="box1"></div>
+            <br>
+            ```
+        - 页面结果
+            - ![](?????)
+
+    - 测试行内块元素`display:inline-block`
+        - css
+            ```css
+            .s2{
+                background-color: rgb(214, 177, 54);
+
+                width: 50px;
+                height:50px;
+
+                display: inline-block;
+            }
+            .box2{
+                width:200px;
+                height:200px;
+                background-color: green;
+            }
+            ```
+        - html
+            ```html
+            <section>2. 测试行内块元素 display:inline-block</section>
+            <section>2.1. 多个行内块元素之间有换行</section>
+            <span class="s2">span2 01</span>
+            <span class="s2">span2 02</span>
+            <span class="s2">span2 03</span>
+
+            <br>
+            <br>
+            <section>2.2. 多个行内块元素之间没有换行</section>
+            <span class="s2">span2 04</span><span class="s2">span2 05</span><span class="s2">span2 06</span>
+            <div class="box2"></div>
+            <br>
+            ```
+        - 页面结果
+            - ![](?????)
+
+    - 测试元素隐藏`display:none`
+        - css
+            ```css
+            .s3{
+                background-color: rgb(214, 177, 54);
+
+                width: 50px;
+                height:50px;
+
+                display: none;
+            }
+            .box3{
+                width:200px;
+                height:200px;
+                background-color: green;
+            }
+            ```
+        - html
+            ```html
+            <section>3. 测试元素隐藏 display:none</section>
+            <span class="s7">span6 04</span>
+            abcdefg
+            <span class="s7">span6 05</span>
+            <div class="box7"></div>
+            ```
+        - 页面结果
+            - ![](?????)
+
+## visibility
+[top](#catalog)
+- visible
+    - 默认值，显示元素
+- hidden
+    - 隐藏元素，但是元素仍然会占据页面的位置
+
+- 示例
+    - 参考代码：[/frontend/css/base/src/commonProperties/visibility.html](/frontend/css/base/src/commonProperties/visibility.html)
+    - 1. 测试元素隐藏`visibility:hidden`
+        - css
+            ```css
+            .s1{
+                background-color: rgb(214, 177, 54);
+
+                width: 100px;
+                height:100px;
+
+                visibility: hidden
+            }
+            .box1{
+                width:200px;
+                height:200px;
+                background-color: green;
+            }
+            ```
+        - html
+            ```html
+            <section>1. 测试元素隐藏 visibility:hidden</section>
+            <span class="s1"></span>
+            <div class="box1"></div>
+            ```
 
 
 # other
