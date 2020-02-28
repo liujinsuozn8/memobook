@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>exercise 03 newlist</title>
+    <style>
+        /* 去除默认样式 */
+        a, ul, li, h3 {
+            margin: 0;
+            padding: 0;
+            border: 0;
+            font-size: 100%;
+            font: inherit;
+            vertical-align: baseline;
+        }
+        ol, ul {
+            list-style: none;
+        }
+
+
+        /* 去除所有链接的下划线 */
+        a {
+            text-decoration: none;
+        }
+
+        /* ----------------------容器设置------------------------ */
+        .newsBox{
+            /* 设置外边框 */
+            border:1px rgb(175, 175, 175) solid;
+            /* 设置宽度 */
+            width:200px;
+            /* height:500px; */
+            /* 设置内边距
+            padding:20px; */
+            /* 设置背景颜色 */
+            background-color: white;
+        }
+
+        /* ----------------------标题设置------------------------ */
+        .newsTitle{
+            /* 设置整体高度 */
+            height:20px;
+
+            /* 添加上边框，使标题和容器的边框重叠 */
+            border-top:1px red solid;
+
+            /* 块元素的长度默认与父元素相同，这回导致上边框的全部覆盖。
+             所以将块元素转换为行内块元素，使边框的大小与文字大小相同 */
+            display: inline-block;
+
+            /* 标题元素和父元素的边框不重叠，父元素的边框会使标题元素会向下移动1px
+               通过使用负数的margin来调整布局 */
+            margin:-1px 0px 10px 0px ;
+
+            /* 添加padding使文字靠下 */
+            padding-top:10px;            
+        }
+
+        .newsTitle > a{
+            /* 设置文字内容的样式 */
+            font-weight: bold;
+            color:rgb(68, 68, 68);
+        }
+
+        /* ----------------------图片设置------------------------ */
+        .newsImg{
+            height:180px;
+        }
+
+        /* 图片标题设置 */
+        .newsImg > a > h3{
+            /* 文字样式 */
+            color:rgb(80, 78, 78);
+            font-size:15px;
+            font-weight: bold;
+
+            /* 向上移动与图片重叠 */
+            margin-top:-30px;
+            /* 使用padding控制标题相对居中，不使用margin，这样选中时还是一个整体 */
+            padding-left: 30px;
+        }
+
+
+        /* ----------------------列表设置------------------------ */
+        /* 设置ul样式，使整个列表与图片对齐，并且控制与图片的间隔 */
+        .newsUL{
+            margin: 0px 0px 0px 10px;
+        }
+
+        /* 设置li样式，控制li之间的间隔 */
+        .newsUL > li{
+            margin: 5px 0px 8px 0px;
+        }
+        
+        .newsUL > li::before{
+            content: '-';
+        }
+
+        /* 设置子链接的状态 */
+        .newsUL > li > a{
+            /* 设置链接文字大小 */
+            font-size: 15px;
+            /* 设置链接文字颜色 */
+            color:rgb(105, 100, 100);
+        }
+
+        /* 设置连接选中时的文字颜色 */
+        .newsUL > li > a:hover{
+            color:red;
+        }
+    </style>
+</head>
+<body>
+    <div class="newsBox">
+        <h3 class="newsTitle">
+            <a href="javascript:;">news</a>
+        </h3>
+        <div class="newsImg">
+            <a href="javascript:;">
+                <img src="./testimg.png" width="100%">
+                <h3>h3 testimg</h3>
+            </a>
+        </div>
+        <ul class="newsUL">
+            <li>
+                <a href="javascript:;" class="newsA">list item 01</a>
+            </li>
+            <li>
+                <a href="javascript:;" class="newsA">list item 02</a>
+            </li>
+            <li>
+                <a href="javascript:;" class="newsA">list item 03</a>
+            </li>
+            <li>
+                <a href="javascript:;" class="newsA">list item 04</a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- <div style="width:100px; height: 100px;background-color: rosybrown;">
+        <div style="width:50px; height: 50px;background-color:royalblue;"></div>
+    </div>
+    <div style="width:100px; height: 100px;background-color: green;">
+    </div> -->
+    
+</body>
+</html>
