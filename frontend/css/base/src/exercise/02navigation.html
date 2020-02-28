@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>exercise 02 navigation</title>
+
+    <style>
+        /* 去除默认样式 */
+        a, ul, li {
+            margin: 0;
+            padding: 0;
+            border: 0;
+            font-size: 100%;
+            font: inherit;
+            vertical-align: baseline;
+        }
+
+        ul {
+            list-style: none;
+        }
+
+        /* 设置当前样式 */
+        ul.nav{
+            width:200px;
+            padding: 10px 0px;
+            border:solid rgb(180, 180, 180) 2px;
+        }
+
+        /* 设置每一行的样式 */
+        li.navLine{
+            height:30px;
+            /* 使文字垂直居中 */
+            line-height: 30px;
+            /* 为了保持选中该行时，一整行都有背景，使用padding来控制间距 */
+            padding: 0px 20px;
+        }
+
+        /* 设置每行选择时的背景 */
+        li.navLine:hover{
+            background-color: #d9d9d9;
+        }
+        
+        /* 设置链接的样式 */
+        a.navItem{
+            /* 去除下划线 */
+            text-decoration:none;
+            /* 设置字体颜色 */
+            color: rgb(39, 36, 36);
+            font-size: 15px;
+        }
+
+        /* 设置链接选择时的文字颜色 */
+        a.navItem:hover{
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <!-- <div class="box">
+        <a href="javascript:;" >a1</a><br>
+        <a href="javascript:;" >a1</a><span>/</span><a href="javascript:;" >a1</a><span>/</span><br>
+    </div> -->
+
+    <ul class="nav">
+        <li class="navLine">
+            <a href="javascript:;" class="navItem">a11</a>
+        </li>
+        
+        <li class="navLine">
+            <a href="javascript:;" class="navItem">a21</a><span>/</span><a href="javascript:;" class="navItem">a22</a>
+        </li>
+
+        <li class="navLine">
+            <a href="javascript:;" class="navItem">a31</a>
+        </li>
+
+        <li class="navLine">
+            <a href="javascript:;" class="navItem">a41</a>
+        </li>
+    </ul>
+</body>
+</html>
