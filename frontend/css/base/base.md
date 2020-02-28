@@ -30,17 +30,19 @@
     - [内边距padding](#内边距padding)
     - [外边距margin](#外边距margin)
     - [盒子模型中可以设置为auto的属性](#盒子模型中可以设置为auto的属性)
-    - [盒子模型的水平方向布局](#盒子模型的水平方向布局)
+    - [块元素盒子模型的水平方向布局](#块元素盒子模型的水平方向布局)
     - [盒子模型的垂直方向布局](#盒子模型的垂直方向布局)
     - [垂直外边距的折叠](#垂直外边距的折叠)
     - [行内元素的盒子模型](#行内元素的盒子模型)
 - [浏览器的默认样式](#浏览器的默认样式)
 - [](#)
 - [](#)
-- [](#)
 - [常用的通用属性](#常用的通用属性)
     - [display](#display)
     - [visibility](#visibility)
+- [总结](#总结)
+- [练习](#练习)
+
 
 # CSS简介
 [top](#catalog)
@@ -1969,7 +1971,7 @@
     - `margin-left`
     - `margin-right`
 
-## 盒子模型的水平方向布局
+## 块元素盒子模型的水平方向布局
 [top](#catalog)
 - 子元素在其父元素中水平方向的位置的决定因素。方向是从左到右、从外到内
     1. `margin-left`
@@ -2599,9 +2601,20 @@
             ```
 
 
-# other
+# 总结
+[top](#catalog)
 - width的默认值为auto。如果不写，会由浏览器自动计算
 - 一个子元素在父元素中，水平布局<label style="color:red">必须满足以下等式</label>
     - `父元素.width = 子元素.sum(margin-left, border-left, padding-left, width, padding-right, border-right, margin-right)`
 
-行内元素的宽和高默认都是元素内容的宽和高
+- 行内元素的宽和高默认都是元素内容的宽和高
+- 如果父元素中没有设置`height`，当子元素中使用负数的`margin`时，会导致下方的元素向上移动。
+
+# 练习
+[top](#catalog)
+- 图片列表
+    - 01piclist.html
+- 文字导航条
+    - 02navigation.html
+- 网易新闻列表
+    - 03newlist.html
