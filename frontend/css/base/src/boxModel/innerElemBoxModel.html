@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>inner Element boxModel test</title>
+    <style>
+        /* 1. 测试行内元素的宽、高；由元素中的内容决定 */
+        .s1{
+            background-color: rgb(214, 177, 54);
+        }
+        .box1{
+            width:200px;
+            height:200px;
+            background-color: green;
+        }
+        
+        /* 2. 测试行内元素的padding 对其他元素的影响 */
+        .s2{
+            background-color: rgb(214, 177, 54);
+            padding: 100px;
+        }
+        .box2{
+            width:200px;
+            height:200px;
+            background-color: green;
+        }
+        
+        /* 3. 测试行内元素的border 对其他元素的影响 */
+        .s3{
+            background-color: rgb(214, 177, 54);
+            border: blue 100px solid;
+        }
+        .box3{
+            width:200px;
+            height:200px;
+            background-color: green;
+        }
+        /* 4. 测试行内元素的marigin 对其他元素的影响 */
+        .s4{
+            background-color: rgb(214, 177, 54);
+            margin: 100px;
+        }
+        .box4{
+            width:200px;
+            height:200px;
+            background-color: green;
+        }
+    </style>
+</head>
+<body>
+    
+    <section>1. 测试行内元素的宽、高；由元素中的内容决定 </section>
+    <span class="s1">this is span1</span>
+    <div class="box1"></div>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+
+    
+    <section>2. 测试行内元素的padding 对其他元素的影响</section>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <span class="s2">this is span2</span>
+    <div class="box2"></div>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    
+    <section>3. 测试行内元素的border 对其他元素的影响</section>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <span class="s3">this is span3</span>
+    <div class="box3"></div>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    
+    <section>4. 测试行内元素的marigin 对其他元素的影响</section>
+    <span class="s4">this is span4</span>
+    <div class="box4"></div>
+    <br>
+    <br>
+    <br>
+
+</body>
+</html>
