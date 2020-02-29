@@ -40,6 +40,14 @@
 - [](#)
 - [](#)
 - [](#)
+- 结构型-代理模式
+    - [代理模式简介](#代理模式简介)
+    - [静态代理](#静态代理)
+    - [动态代理](#动态代理)
+    - [Cglib代理](#Cglib代理)
+    - [代理模式的变体](#代理模式的变体)
+- [](#)
+
 
 # 设计模式简介
 [top](#catalog)
@@ -92,7 +100,7 @@
     
 - 结合实例说明:交通工具的功能分解
     - 方案1
-        - 参考：[/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/principle/singleresponsibility/SingleResponsibility1.java](/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/principle/singleresponsibility/SingleResponsibility1.java)
+        - 参考：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/principle/singleresponsibility/SingleResponsibility1.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/principle/singleresponsibility/SingleResponsibility1.java)
         - 打印结果的问题：`vehicle.run("飞机");`，打印了飞机正在路上行驶，这不符合常识
         - 方案1的问题：所有功能集中在run方法中，违反了单一职责原则，导致了不符合常识的打印内容
         - 解决方案：根据交通工具的运行方法，分解成不同类 --> 方案2
@@ -116,7 +124,7 @@
             }
             ```
     - 方案2
-        - 参考：[/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/principle/singleresponsibility/SingleResponsibility2.java](/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/principle/singleresponsibility/SingleResponsibility2.java)
+        - 参考：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/principle/singleresponsibility/SingleResponsibility2.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/principle/singleresponsibility/SingleResponsibility2.java)
         - 方案2的优点：不同的类负责不同的功能，遵守了单一职责原则
         - 方案2的问题：在方案1的基础上**做了非常大的改动**，同时修改了类和客户端
         - 解决方案：直接修改Vehicle类，改动的代码会比较少 --> 方案3
@@ -156,7 +164,7 @@
             }
             ```
     - 方案3
-        - 参考：[/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/principle/singleresponsibility/SingleResponsibility3.java](/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/principle/singleresponsibility/SingleResponsibility3.java)
+        - 参考：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/principle/singleresponsibility/SingleResponsibility3.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/principle/singleresponsibility/SingleResponsibility3.java)
         - 方案3的优点：这种修改方法没有对原来的类做过多的修改，只是增加了方法
         - 方案3的问题：没有在类这个级别上遵守单一职责原则，**只是在方法级别上，遵守了单一职责**
         - 代码
@@ -205,7 +213,7 @@
 - 接口冗余的示例说明
     - 示例的UML图
         - ![dependency_origian](imgs/principle/Interface_Segregation_Principle/dependency_origian.png)
-    - 示例代码：[/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/principle/interfaceSegregation/origian/Segregation1.java](/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/principle/interfaceSegregation/origian/Segregation1.java)
+    - 示例代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/principle/interfaceSegregation/origian/Segregation1.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/principle/interfaceSegregation/origian/Segregation1.java)
     - 依赖关系
         1. B、D是接口Interface1的接口
         2. A通过Interface1依赖B，但是A只会使用到接口中的1、2、3方法；4、5方法没有使用，导致B中产生了多余的实现
@@ -218,7 +226,7 @@
 - 接口冗余的改进
     - 改进的UML图
         - ![dependency_improve](imgs/principle/Interface_Segregation_Principle/dependency_improve.png)
-    - 示例代码：[/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/principle/interfaceSegregation/improve/Segregation2.java](/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/principle/interfaceSegregation/improve/Segregation2.java)
+    - 示例代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/principle/interfaceSegregation/improve/Segregation2.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/principle/interfaceSegregation/improve/Segregation2.java)
     - 依赖关系
         - B实现了`Interface1`和`Interface2`
         - D实现了`Interface1`和`Interface3`
@@ -247,7 +255,7 @@
 - 直接依赖的示例说明：接受消息的功能
     - 示例的UML图
         - ![person_origian](imgs/principle/Dependency_Inversion/person_origian.png)
-    - 代码：[/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/principle/dependencyInversion/origian/DependencyInversion1.java](/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/principle/dependencyInversion/origian/DependencyInversion1.java)
+    - 代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/principle/dependencyInversion/origian/DependencyInversion1.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/principle/dependencyInversion/origian/DependencyInversion1.java)
         
         ```java
         public class DependencyInversion1 {
@@ -291,7 +299,7 @@
 - 通过依赖倒转原则来解决示例的问题
     - 改善后的UML图
         - ![person_improve.png](imgs/principle/Dependency_Inversion/person_improve.png)
-        - 代码：[/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/principle/dependencyInversion/improve/DependencyInversion2.java](/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/principle/dependencyInversion/improve/DependencyInversion2.java)
+        - 代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/principle/dependencyInversion/improve/DependencyInversion2.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/principle/dependencyInversion/improve/DependencyInversion2.java)
             ```java
             public class DependencyInversion2 {
                 public static void main(String[] args) {
@@ -345,7 +353,7 @@
 
 - **接口传递**的应用
     - 使用方法：在主要方法中声明接口参数，来传递依赖
-    - 参考代码：[/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/principle/dependencyInversion/threePattern/first/DeliverByInterface.java](/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/principle/dependencyInversion/threePattern/first/DeliverByInterface.java)
+    - 参考代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/principle/dependencyInversion/threePattern/first/DeliverByInterface.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/principle/dependencyInversion/threePattern/first/DeliverByInterface.java)
         ```java
         public class DeliverByInterface {
             public static void main(String[] args) {
@@ -397,7 +405,7 @@
         1. 在实现类中添加用来保存依赖接口对象的属性
         2. 创建带参数的构造器，将依赖传入，并保存在对象中
         3. 使用时，直接使用对象内部保存的依赖对象
-    - 参考代码：[/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/principle/dependencyInversion/threePattern/second/DeliverByConstructor.java](/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/principle/dependencyInversion/threePattern/second/DeliverByConstructor.java)
+    - 参考代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/principle/dependencyInversion/threePattern/second/DeliverByConstructor.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/principle/dependencyInversion/threePattern/second/DeliverByConstructor.java)
         ```java
         // 依赖关系传递的三种方式和应用案例
         // 构造方法传递
@@ -455,7 +463,7 @@
         2. 在接口中添加一个setter方法，用来保存依赖
         3. 使用时，直接使用对象内部保存的依赖对象
     - 与`构造方法传递`类似，只不过**传递依赖的时间被推迟了**
-    - 参考代码：[/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/principle/dependencyInversion/threePattern/third/DeliverBySetter.java](/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/principle/dependencyInversion/threePattern/third/DeliverBySetter.java)
+    - 参考代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/principle/dependencyInversion/threePattern/third/DeliverBySetter.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/principle/dependencyInversion/threePattern/third/DeliverBySetter.java)
         ```java
         public class DeliverBySetter {
             public static void main(String[] args) {
@@ -533,7 +541,7 @@
 ### 示例说明里氏替换原则
 [top](#catalog)
 - 不实用里氏替换原则
-    - 参考代码：[/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/principle/liskov/LiskovOrigian.java](/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/principle/liskov/LiskovOrigian.java)
+    - 参考代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/principle/liskov/LiskovOrigian.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/principle/liskov/LiskovOrigian.java)
     - B继承了A，但是重写方法时，更改了父类方法的功能，导致调用时会有不同的结果
     - 代码
         ```java
@@ -568,7 +576,7 @@
         ```
 
 - 使用里氏替换原则来改进：抽象出更高阶的父类
-    - 参考：[/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/principle/liskov/LiskovImprove.java](/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/principle/liskov/LiskovImprove.java)
+    - 参考：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/principle/liskov/LiskovImprove.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/principle/liskov/LiskovImprove.java)
     - 抽象出一个更基本的类Base，A和B都继承Base，并提供相同的方法，但实现内容各不相同。
     - 在调用A和B的功能时更加清晰，不会被A和B的继承关系误导
     - 在B中组合A，使得通过B也能完成A的功能
@@ -630,7 +638,7 @@
     - 编程中遵循其他原则，以及使用设计模式的目的就是遵循开闭原则
     
 - 结合示例说明
-    - 参照：[/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/principle/openClose/origian/OcpOrigian.java](/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/principle/openClose/origian/OcpOrigian.java)
+    - 参照：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/principle/openClose/origian/OcpOrigian.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/principle/openClose/origian/OcpOrigian.java)
     - 该示例的问题
         - 没有遵守ocp原则，当新增一个三角形时，绘图类(即使用方)需要修改判断逻辑，并添加相应的处理方法，修改比较大
     - 代码
@@ -699,7 +707,7 @@
         ```
       
 - 使用开闭原则来修改示例
-    - 参考：[/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/principle/openClose/improve/OcpImprove.java](/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/principle/openClose/improve/OcpImprove.java)
+    - 参考：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/principle/openClose/improve/OcpImprove.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/principle/openClose/improve/OcpImprove.java)
     - 解决方案
         1. 将Shape类作为抽象类，提供一个抽象的draw方法，让子类去实
         2. 当出现新的图形类别时，让图形继承Shape，并实现draw方法，防止修改使用方的代码
@@ -776,7 +784,7 @@
     - 由于每个类都减少了不必要的依赖，因此迪米特法则只是要求**降低**类之间的耦合关系，**并不是要求完全没有依赖关系**
 
 - 违反迪米特法则的示例
-    - 参考代码：[/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/principle/demeter/origian/Demeter.java](/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/principle/demeter/origian/Demeter.java)
+    - 参考代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/principle/demeter/origian/Demeter.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/principle/demeter/origian/Demeter.java)
     - 基本功能
         - 通过`CollegeManager`创建`CollegeEmployee`
         - 通过`SchooleManager`创建`Employee`
@@ -854,7 +862,7 @@
         - ![origain_uml](imgs/principle/Demeter/origain_uml.png)
         
 - 示例的改进
-    - 参考代码：[/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/principle/demeter/improve/Demeter.java](/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/principle/demeter/improve/Demeter.java)
+    - 参考代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/principle/demeter/improve/Demeter.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/principle/demeter/improve/Demeter.java)
     - 改进方法
         - 将`CollegeEmployee`的打印逻辑从`SchooleManager`抽出，移动到直接朋友类`CollegeManager`中
     - 代码
@@ -922,7 +930,7 @@
 - Composite Reuse Priciple
 - 基本原则：尽量使用合成/聚合的方式，而不是使用继承
 - 示例
-    - 参考代码：[/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/principle/compositeReuse/CompositeReuse.java](/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/principle/compositeReuse/CompositeReuse.java)
+    - 参考代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/principle/compositeReuse/CompositeReuse.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/principle/compositeReuse/CompositeReuse.java)
     - 功能类`A`
         ```java
         class A{
@@ -1039,7 +1047,7 @@
     - 关联关系具有**导航性**，即双向关系或单向关系
     - 关联关系的多重性：1:1、1:n、n:m的关系
     - 单向1:1关系
-        - 参考：[/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/UML/association/oneway/OneWay.java](/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/UML/association/oneway/OneWay.java)
+        - 参考：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/UML/association/oneway/OneWay.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/UML/association/oneway/OneWay.java)
             ```java
             //一个人对应一个身份证ID
             class Person{
@@ -1051,7 +1059,7 @@
         - ![association_oneway](imgs/uml/association_oneway.png)
         
     - 双向1:1关系
-        - 参考：[/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/UML/association/twoway/TwoWay.java](/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/UML/association/twoway/TwoWay.java)
+        - 参考：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/UML/association/twoway/TwoWay.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/UML/association/twoway/TwoWay.java)
             ```java
             class Person{
                 private IDCard card; 
@@ -1069,7 +1077,7 @@
     - 聚合关系表示的是整体和部分的关系，整体与部分可以分开
     - **聚合关系是关联关系的特例**，所以他具有关联关系的导航性与多重性
     - 示例
-        - 参考代码：[/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/UML/aggregation/Aggregation.java](/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/UML/aggregation/Aggregation.java)
+        - 参考代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/UML/aggregation/Aggregation.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/UML/aggregation/Aggregation.java)
             ```java
             class Computer{
                 private Mouse mouse;
@@ -1089,7 +1097,7 @@
         - 不可分开即同时创建，同时销毁，无法相互分离
         - 如：
     - 示例
-        - 参考代码：[/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/UML/composition/Composition.java](/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/UML/composition/Composition.java)
+        - 参考代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/UML/composition/Composition.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/UML/composition/Composition.java)
             ```java
             class Laptop {
                 private Mouse mouse;
@@ -1188,7 +1196,7 @@
     - 如果无法确定类装载方式，则可能会造成内存浪费
 
 - 示例
-    - 参考代码：[/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/pattern/singleton/type1/SingletonType01Test.java](/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/pattern/singleton/type1/SingletonType01Test.java)
+    - 参考代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/singleton/type1/SingletonType01Test.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/singleton/type1/SingletonType01Test.java)
     - 单例模式类
         ```java
         // 饿汉式-静态变量
@@ -1236,7 +1244,7 @@
 - 优缺点与[饿汉式-静态常量](#singleton_hungry_advantages_and_disadvantages)相同
 - 结论：这种单例模式<label style="color:red">可用，但是可能会造成内存浪费</label>
 - 示例
-    - 参考代码：[/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/pattern/singleton/type2/SingletonType02Test.java](/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/pattern/singleton/type2/SingletonType02Test.java)
+    - 参考代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/singleton/type2/SingletonType02Test.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/singleton/type2/SingletonType02Test.java)
     - 单例模式类
         ```java
         class Singleton{
@@ -1294,7 +1302,7 @@
 - 结论：<label style="color:red">在实际开发中，不可以使用这种方式</label>
 
 - 示例
-    - 参考代码：[/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/pattern/singleton/type3/SingletonType03Test.java](/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/pattern/singleton/type3/SingletonType03Test.java)
+    - 参考代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/singleton/type3/SingletonType03Test.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/singleton/type3/SingletonType03Test.java)
     - 单例模式代码
         ```java
         class Singleton{
@@ -1387,7 +1395,7 @@
 - 结论：在实际开发中，<label style="color:red">不推荐使用这种方式</label>
 
 - 示例
-    - 参考代码：[/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/pattern/singleton/type4/SingletonType04Test.java](/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/pattern/singleton/type4/SingletonType04Test.java)
+    - 参考代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/singleton/type4/SingletonType04Test.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/singleton/type4/SingletonType04Test.java)
     - 单例代码
         ```java
         class Singleton{
@@ -1480,7 +1488,7 @@
     4. 最终导致单例对象被多次创建
 - 结论：<label style="color:red">在实际开发中不能使用这种方式</label>
 - 示例
-    - 参考代码：[/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/pattern/singleton/type4/SingletonType04Test.java](/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/pattern/singleton/type4/SingletonType04Test.java)
+    - 参考代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/singleton/type4/SingletonType04Test.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/singleton/type4/SingletonType04Test.java)
     - 代码内容
         ```java
         class Singleton{
@@ -1566,7 +1574,7 @@
 - 这种方法是线程安全的，能做到延迟加载，效率比较高
 - 结论：<label style="color:red">在实际开发中，推荐使用这种单例设计模式</label>
 - 示例
-    - 参考代码：[/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/pattern/singleton/type6/SingletonType06Test.java](/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/pattern/singleton/type6/SingletonType06Test.java)
+    - 参考代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/singleton/type6/SingletonType06Test.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/singleton/type6/SingletonType06Test.java)
     - 代码内容
         ```java
         class Singleton{
@@ -1651,7 +1659,7 @@
         - 类的静态属性只会在第一次加载时初始化，所以间接的通过JVM来实现了线程的安全性。**在类初始化时，其他线程时无法进入的**
 - 结论：<labe style="color:red">推荐使用</label>
 - 示例
-    - 参考代码：[/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/pattern/singleton/type7/SingletonType07Test.java](/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/pattern/singleton/type7/SingletonType07Test.java)
+    - 参考代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/singleton/type7/SingletonType07Test.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/singleton/type7/SingletonType07Test.java)
     - 代码内容
         ```java
         class Singleton{
@@ -1676,7 +1684,7 @@
 - 这种方式也是Effective Java作者所提倡的方式
 - 结论：<label style="color:red">推荐使用</label>
 - 示例
-    - 参考代码：[/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/pattern/singleton/type8/SingletonType08Test.java](/designPattern/dplearn/dplearn-base/src/main/java/com/ljs/learn/pattern/singleton/type8/SingletonType08Test.java)
+    - 参考代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/singleton/type8/SingletonType08Test.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/singleton/type8/SingletonType08Test.java)
     - 代码内容
         ```java
         enum Singleton{
@@ -1721,3 +1729,312 @@
 - `java.lang.Runtime`采用的是饿汉式-静态常量的方式
 
  
+
+# 结构型-代理模式
+## 代理模式简介
+[top](#catalog)
+- 什么是代理模式？
+    - 为一个对象提供一个替身，以控制对这个对象的访问。即通过代理对象访问目标对象
+- 代理模式的好处：可以在目标对象实现的基础上，增强额外的功能操作，即扩展目标对象的功能
+- 被代理的对象：远程对象、创建开销大的对象、需要安全控制的对象
+- 代理模式的形式
+    1. 静态代理
+    2. 动态代理(JDK代理、接口代理)
+    3. Cglib代理，可以在内存中动态的创建对象，而不需要实现接口，他是属于动态代理的范畴
+
+## 静态代理
+[top](#catalog)
+- 静态代理的要点
+    1. 需要定义接口或者父类，
+    2. 被代对象(即目标对象)、代理对象一起实现相同的接口或者是继承相同的父类
+- 静态代理的优缺点
+    - 优点：在不修改目标对象的功能前提下，通过代理对象对目标功能扩展
+    - 缺点：
+        - 代理对象与目标对象需要实现相同的接口，会导致存在很多的代理类
+        - 如果接口增加了方法，则目标对象和代理对象都需要维护
+- 应用示例
+    - 具体要求
+        - 定义一个接口：`ITeacherDao`
+        - 目标对象`TeacherDAO`实现接口`ITeacherDAO`
+        - 代理对象`TeacherDAOProxy`实现接口`ITeacherDAO`
+        - 通过代理对象来调用目标对象
+        - 代理对象于目标对象实现相同的接口，然后通过调用相同的方法来调用目标对象的方法
+    - UML图
+        - ![static_sample_uml](imgs/pattern/proxy/staticProxy/static_sample_uml.png)
+    - 接口
+        - 参考代码:[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/proxy/staticProxy/ITeacherDao.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/proxy/staticProxy/ITeacherDao.java)
+        - 代码内容
+            ```java
+            public class TeacherDao implements ITeacherDao{
+                @Override
+                public void teach() {
+                    System.out.println("teacher is teaching");
+                }
+            }
+            ```
+    - 被代理类
+        - 参考代码:[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/proxy/staticProxy/ITeacherDao.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/proxy/staticProxy/ITeacherDao.java)
+        - 代码内容
+            ```java
+            public class TeacherDao implements ITeacherDao{
+                @Override
+                public void teach() {
+                    System.out.println("teacher is teaching");
+                }
+            }
+            ```
+    - 代理类
+        - 参考代码:[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/proxy/staticProxy/TeacherDaoProxy.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/proxy/staticProxy/TeacherDaoProxy.java)
+        - 代码内容
+            ```java
+            public class TeacherDaoProxy implements ITeacherDao {
+                private ITeacherDao target;
+            
+                public TeacherDaoProxy(ITeacherDao target) {
+                    this.target = target;
+                }
+            
+                @Override
+                public void teach() {
+                    System.out.println("proxy start");
+                    target.teach();
+                    System.out.println("proxy end");
+                }
+            }
+            ```
+    - 测试类
+        - 参考代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/proxy/staticProxy/ClientTest.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/proxy/staticProxy/ClientTest.java)
+        - 代码内容
+            ```java
+            public class ClientTest {
+                @Test
+                public void test01(){
+                    // 创建被代理对象
+                    ITeacherDao teacherDao = new TeacherDao();
+            
+                    // 创建代理对象，同时将被代理对象作为参数传递给代理对象
+                    TeacherDaoProxy proxy = new TeacherDaoProxy(teacherDao);
+            
+                    // 通过代理对象调用被代理对象的方法
+                    // 即执行的是代理对象的方法，内部执行的是被代理对象的方法
+                    proxy.teach();
+                }
+            }
+            ```
+        - 测试结果
+            ```
+            proxy start
+            teacher is teaching
+            proxy end
+            ```
+          
+## 动态代理
+[top](#catalog)
+- 动态代理的特点
+    - 代理对象不需要实现接口，但是目标对象要实现接口，否则不能使用动态代理
+    - 代理对象的生成，是利用JDK的API，动态的在内存中构建代理对象
+    - 动态代理也叫做：JDK代理，接口代理
+    
+- JDK中生成代理对象的API
+    - 代理类所在包：`java.lang.reflect.Proxy`
+    - JDK实现代理需要使用newProxyInstance方法，该方法需要三个参数
+        - `ClassLoader loader`: 指定当前目标对象使用的类加载器
+        - `Class<?>[] interfaces`:目标对象实现的接口类型，使用泛型方法确认类型
+        - `InvocationHandler h`:事件处理器。执行目标对象的方法时，会触发事件处理器方法，会把当前执行的目标对象方法作为参数传入
+        ```java
+        static Object newProxyInstance(ClassLoader loader, Class<?>[] interfaces, InvocationHandler h)
+        ```
+
+- 示例
+    - 具体要求
+        - 定义一个接口：`ITeacherDao`
+        - 目标对象`TeacherDAO`实现接口`ITeacherDAO`
+        - 通过工厂`ProxyFactory`来创建代理对象
+        - 实例化`ProxyFactory`对象并获取代理对象，通过代理对象调用方法
+    - UML图
+        - ![dynamic_sample_uml](imgs/pattern/proxy/dynamic/dynamic_sample_uml.png)
+    - 接口
+        - 参考代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/proxy/dynamic/ITeacherDao.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/proxy/dynamic/ITeacherDao.java)
+        - 代码内容
+            ```java
+            public interface ITeacherDao {
+                void teach();
+            }
+            ```
+    - 目标对象
+        - 参考代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/proxy/dynamic/TeacherDao.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/proxy/dynamic/TeacherDao.java)
+        - 代码内容
+            ```java
+            public class TeacherDao implements ITeacherDao {
+                @Override
+                public void teach() {
+                    System.out.println("is teaching");
+                }
+            }
+            ```
+    - 工厂类
+        - 参考代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/proxy/dynamic/ProxyFactory.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/proxy/dynamic/ProxyFactory.java)
+        - 代码内容
+            ```java
+            public class ProxyFactory<T> {
+                //维护一个目标对象
+                private T target;
+            
+                public ProxyFactory(T target) {
+                    this.target = target;
+                }
+            
+                //给目标对象生成一个代理对象
+                public T getProxyInstance(){
+                    return (T)Proxy.newProxyInstance(
+                            target.getClass().getClassLoader(),
+                            target.getClass().getInterfaces(),
+                            new InvocationHandler() {
+                                @Override
+                                public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                                    System.out.println("proxy start");
+                                    // 通过反射调用目标对象的方法
+                                    Object invoke = method.invoke(target, args);
+            
+                                    System.out.println("proxy end");
+                                    return invoke;
+                                }
+                            }
+                    );
+                }
+            }
+            ```
+    - 测试类
+        - 参考代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/proxy/dynamic/ClientTest.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/proxy/dynamic/ClientTest.java)
+        - 代码内容
+            ```java
+            @Test
+            public void test01(){
+                // 创建目标对象
+                ITeacherDao target = new TeacherDao();
+                
+                // 通过com.sun.proxy.$Proxy4在内存中动态生成代理对象
+                ITeacherDao proxyInstance = new ProxyFactory<ITeacherDao>(target).getProxyInstance();
+        
+                System.out.println(proxyInstance);
+                System.out.println(proxyInstance.getClass());
+        
+                // 通过代理对象，调用目标对象的方法
+                proxyInstance.teach();
+            }
+            ```
+        - 测试结果
+            ```java
+            proxy start
+            proxy end
+            com.ljs.learn.pattern.proxy.dynamic.TeacherDao@5679c6c6
+            class com.sun.proxy.$Proxy4
+            proxy start
+            is teaching
+            proxy end
+            ```
+          
+## Cglib代理
+[top](#catalog)
+- 什么是Cglib代理
+    - Cglib代理也叫做子类代理
+    - 当目标对象只是一个单独的对象，没有实现一个接口时，这个时候可以使用目标对象的子类来实现代理
+    - Cglib代理会在内存中创建一个子类对象从而实现对目标对象功能的扩展
+- Cglib包
+    - Cglib包是一个高性能的代码生成包，底层是通过使用字节吗处理框架ASM来转换字节码并生成新的类
+    - Cglib包可以在运行期扩展java类与实现java接口，它广泛的被许多AOP框架使用，例如SpringAOP，实现方法拦截
+- 在AOP编程中如何选择代理模式
+    1. 目标对象需要实现接口，用JDK代理
+    2. 目标对象不需要实现接口，用Cglib代理
+- 使用Cglib代理的步骤
+    1. 引入cglib的jar包
+    2. 在内存中动态构建子类，并且**目标类不能是final**
+        1. 创建一个工具类`Enhancer`对象
+        2. 使用工具类对象设置父类
+        3. 设置回调函数
+        4. 创建子类，即代理对象
+    3. 实现`MethodInterceptor`接口的`intercept`方法，通过反射来调用目标对象的方法
+    4. 目标对象的方法如果为`final`、`static`，不会被拦截，即不会执行目标对象额外的业务方法
+    
+- 示例
+    - 具体要求
+        - 定义目标对象`TeacherDAO`
+        - 工厂`ProxyFactory`实现`MethodInterceptor`
+        - 实例化`ProxyFactory`对象并获取代理对象，通过代理对象调用方法
+    - UML图
+        - ![cglib_sample_uml](imgs/pattern/proxy/cglib/cglib_sample_uml.png)
+    - 目标对象
+        - 参考代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/proxy/cglibProxy/TeacherDao.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/proxy/cglibProxy/TeacherDao.java)
+        - 代码内容：
+            ```java
+            public class TeacherDao {
+                public void teach(){
+                    System.out.println("is teaching");
+                }
+            }
+            ```
+    - 工厂类
+        - 参考代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/proxy/cglibProxy/ProxyFactory.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/proxy/cglibProxy/ProxyFactory.java)
+        - 代码内容
+            ```java
+            public class ProxyFactory<T> implements MethodInterceptor {
+                private T target;
+            
+                public ProxyFactory(T target) {
+                    this.target = target;
+                }
+            
+                // 返回一个target的代理对象
+                public T getProxyInstance(){
+                    // 1. 创建一个工具类
+                    Enhancer enhancer = new Enhancer();
+                    // 2. 设置父类
+                    enhancer.setSuperclass(target.getClass());
+                    // 3. 设置回调函数
+                    enhancer.setCallback(this);
+                    // 4. 创建子类，即代理对象
+                    return (T)enhancer.create();
+                }
+            
+                // 重写intercept方法，实现对目标对象方法的调用
+                @Override
+                public Object intercept(Object o, Method method, Object[] args, MethodProxy methodProxy) throws Throwable {
+                    System.out.println("proxy is start");
+                    Object invoke = method.invoke(target, args);
+                    System.out.println("prroxy is end");
+                    return invoke;
+                }
+            }
+            ```
+    - 测试类
+        - 参考代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/proxy/cglibProxy/ClientTest.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/proxy/cglibProxy/ClientTest.java)
+        - 代码内容
+            ```java
+            @Test
+            public void test01(){
+                // 创建目标对象
+                TeacherDao target = new TeacherDao();
+        
+                // 创建cglib代理对象
+                TeacherDao proxyInstance = new ProxyFactory<TeacherDao>(target).getProxyInstance();
+                proxyInstance.teach();
+            }
+            ```
+        - 测试结果
+            ```
+            proxy is start
+            is teaching
+            prroxy is end
+            ```
+
+## 代理模式的变体
+[top](#catalog)
+- 防火墙代理
+    - 内网通过代理穿透防火墙，实现对公网的访问
+- 缓存代理
+    - 如请求图片文件等资源时，先带缓存代理获取，如果没取到再到公网或者数据库取，然后缓存
+- 远程代理
+    - 远程对象的本地代表，通过它**可以把远程对象当本地对象**来调用，远程代理通过网络和真正的远程对象沟通信息
+- 同步代理
+    - 主要使用在多线程编程中，完成多线程间同步工作
+   

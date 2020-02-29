@@ -1,0 +1,23 @@
+@startuml
+
+class TeacherDao{
+    teach():void
+}
+
+interface MethodInterceptor{
+
+}
+
+class ProxyFactory<T>{
+    T target
+    ProxyFactory(T target)
+    getProxyInstance():T
+    intercept():void
+}
+
+
+MethodInterceptor <|--ProxyFactory
+
+TeacherDao <-- Client
+ProxyFactory <-- Client
+@enduml
