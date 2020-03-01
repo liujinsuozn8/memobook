@@ -1,0 +1,31 @@
+@startuml
+
+abstract class Pizza{
+    prepare():void
+    bake():void
+    cut():void
+    box():void
+}
+
+interface AbsFactory{
+    createPizza():Pizza
+}
+
+Pizza <|-- ChinaSubPizza01
+Pizza <|-- ChinaSubPizza02
+Pizza <|-- AmericanSubPizza01
+Pizza <|-- AmericanSubPizza02
+
+ChinaSubPizza01<--ChinaFactory
+ChinaSubPizza02<--ChinaFactory
+AmericanSubPizza01<--AmericanFactory
+AmericanSubPizza02<--AmericanFactory
+
+ChinaFactory..|>AbsFactory
+AmericanFactory..|>AbsFactory
+
+AbsFactory-->OrderPizza1
+AbsFactory-->OrderPizza2
+
+
+@enduml

@@ -36,9 +36,16 @@
     - [单例模式形式7-静态内部类中的静态属性](#单例模式形式7-静态内部类中的静态属性)
     - [单例模式形式7-枚举](#单例模式形式7-枚举)
     - [单例模式在JDK中的应用](#单例模式在JDK中的应用)
-- [](#)
-- [](#)
-- [](#)
+- 创建型-工厂模式
+    - [问题引入-pizza订购](#问题引入-pizza订购)
+    - [简单工厂模式](#简单工厂模式)
+    - [静态工厂模式](#静态工厂模式)
+    - [工厂方法模式](#工厂方法模式)
+    - [抽象工厂模式](#抽象工厂模式)
+    - [工厂模式总结](#工厂模式总结)
+- [创建型-原型模式](#创建型-原型模式)
+    - [问题引入-克隆羊](#问题引入-克隆羊)
+    - [原型模式的基本概念](#原型模式的基本概念)
 - [](#)
 - 结构型-代理模式
     - [代理模式简介](#代理模式简介)
@@ -1728,7 +1735,753 @@
     ```
 - `java.lang.Runtime`采用的是饿汉式-静态常量的方式
 
+# 创建型-工厂模式
+## 问题引入-pizza订购
+[top](#catalog)
+- 需求
+    - 披萨店项目：要便于披萨种类的扩展，要便于维护
+    - 基本流程：披萨店去订购，然后制作披萨
+    - 披萨有很多种类，但基本制作流程相同：prepare、bake、cut、box
+    
+- 传统设计
+    - UML图：
+        - ![problem_uml](/designPattern/base/imgs/pattern/factory/import_problem/problem_uml.png)
+    - 披萨类及其子类
+        - 参考代码
+            - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/factory/pizzastore/pizza/Pizza.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/factory/pizzastore/pizza/Pizza.java)
+            - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/factory/pizzastore/pizza/SubPizza01.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/factory/pizzastore/pizza/SubPizza01.java)
+            - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/factory/pizzastore/pizza/SubPizza02.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/factory/pizzastore/pizza/SubPizza02.java)
+        - 代码内容
+            ```java
+            public abstract class Pizza {
+                private String name;
+            
+                public Pizza(String name) {
+                    this.name = name;
+                }
+            
+                public abstract void prepare();
+            
+                public void bake(){
+                    System.out.println("is baking");
+                }
+            
+                public void cut(){
+                    System.out.println("is cutting");
+                }
+            
+                public void box(){
+                    System.out.println("is boxing");
+                }
+            }
+          
+            public class SubPizza01 extends Pizza {
+            
+                public SubPizza01() {
+                    super("SubPizza01");
+                }
+            
+                @Override
+                public void prepare() {
+                    System.out.println("SubPizza01 is preparing");
+                }
+            }
+          
+            public class SubPizza02 extends Pizza{
+                public SubPizza02() {
+                    super("SubPizza02");
+                }
+            
+                @Override
+                public void prepare() {
+                    System.out.println("SubPizza02 is preparing");
+                }
+            }
+            ```
+    - 订单类
+        - 参考代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/factory/pizzastore/order/OrderPizza.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/factory/pizzastore/order/OrderPizza.java)
+        - 代码内容：
+            ```java
+            public class OrderPizza {
+                public void order(){
+                    Pizza p = null;
+                    String orderType;
+            
+                    do{
+                        orderType = getType();
+                        //创建pizza对象
+                        if (orderType.equals("sub01")){
+                            p = new SubPizza01();
+                        }else if (orderType.equals("sub02")){
+                            p = new SubPizza02();
+                        }else{
+                            break;
+                        }
+                        //制作pizza
+                        p.prepare();
+                        p.bake();
+                        p.cut();
+                        p.box();
+                    }while(true);
+                }
+            
+                // 从控制台获取pizza种类
+                private String getType(){
+                    try {
+                        BufferedReader is = new BufferedReader(new InputStreamReader(System.in));
+                        System.out.println("input pizza type : ");
+                        String type= is.readLine();
+                        return type;
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    return "";
+                }
+            }
+            ```
+    - 披萨店类
+        - 参考代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/factory/pizzastore/store/PizzaStore.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/factory/pizzastore/store/PizzaStore.java)
+        - 代码内容：
+            ```java
+            public class PizzaStore {
+                public static void main(String[] args) {
+                    //作为客户端发出pizza的定做任务
+                    OrderPizza order = new OrderPizza();
+                    order.order();
+                }
+            }
+            ```
+          
+- 传统设计的优缺点
+    - 优点：理解容易，操作简单
+    - 缺点
+        - 违反了设计模式的ocp原则，没有对修改关闭。当新增一个Pizza子类时，需要在订单类`OrderPizza`中的构造器中添加处理逻辑
+        - 如果有多个`OrderPizza`类，当添加Pizza子类时，会造成大量的修改
+                
+## 简单工厂模式
+[top](#catalog)
+- 简单工厂模式
+    - 基本思路：定义一个创建对象的工厂类，封装创建对象的逻辑
+    - 简单工厂模式是最简单实用的工厂模式
+- 在软件开发中，当我们会用到大量的创建某些对象时，就会使用工厂模式
+
+- 披萨店项目的改进方法
+    - 问题分析：`OrderPizza`类负责创建pizza，使得增加pizza时，`OrderPizza`会产生大量的修改
+    - 解决方法：将创建Pizza的逻辑封装到一个工厂类中，当新增pizza，只需要修改该工厂类即可，其他类不需要修改
+
+- 使用简单工厂模式来修改萨店项目
+    - 修改方法：将创建`OrderPizza`中的创建pizza的逻辑封装到工厂类`PizzaFactory`中，并组合`PizzaFactory`
+    - 改进后的UML
+        - ![problem_uml](imgs/pattern/factory/simplefactory/problem_uml.png)
+    - 工厂类
+        - 参考代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/factory/simplefactory/factory/PizzaFactory.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/factory/simplefactory/factory/PizzaFactory.java)
+        - 代码内容
+            ```java
+            public class PizzaFactory {
+                public Pizza create(String orderType){
+                    Pizza p = null;
+            
+                    if (orderType.equals("sub01")){
+                        p = new SubPizza01();
+                    }else if (orderType.equals("sub02")){
+                        p = new SubPizza02();
+                    }
+                    return p;
+                }
+            }
+            ```
+    - 订单类
+        - 参考代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/factory/simplefactory/order/OrderPizza.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/factory/simplefactory/order/OrderPizza.java)
+            ```java
+            public class OrderPizza {
+                private PizzaFactory pf;
+                public OrderPizza(PizzaFactory pf) {
+                    this.pf = pf;
+                }
+            
+                public void order(){
+                    Pizza p = null;
+                    String orderType;
+            
+                    do{
+                        orderType = getType();
+                        // 使用工厂创建pizza
+                        p = pf.create(orderType);
+                        // 制作pizza
+                        if (p != null){
+                            p.prepare();
+                            p.bake();
+                            p.cut();
+                            p.box();
+                        }else {
+                            break;
+                        }
+                    }while(true);
+                }
+            
+                // 从控制台获取pizza种类
+                private String getType(){
+                    try {
+                        BufferedReader is = new BufferedReader(new InputStreamReader(System.in));
+                        System.out.println("input pizza type : ");
+                        String type= is.readLine();
+                        return type;
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    return "";
+                }
+            }
+            ```
+    - 披萨店类
+        - 参考代码:[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/factory/simplefactory/store/PizzaStore.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/factory/simplefactory/store/PizzaStore.java)
+        - 代码内容
+            ```java
+            public class PizzaStore {
+                public static void main(String[] args) {
+                    //作为客户端发出pizza的定做任务
+                    OrderPizza order = new OrderPizza(new PizzaFactory());
+                    order.order();
+                }
+            }
+            ```
+
+## 静态工厂模式
+[top](#catalog)
+- 基本思路与：[简单工厂模式](#简单工厂模式)基本相同，只是提供逻辑的方法是**静态方法**
+- 在使用工厂类的类中，不需要再聚合或组合工厂类对象，直接通过调用工厂类的静态方法来创建对象
+- 使用静态工厂模式来修改萨店项目
+    - 工厂类
+        - 参考代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/factory/staticfactory/factory/PizzaFactory.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/factory/staticfactory/factory/PizzaFactory.java)
+        - 代码内容
+            ```java
+            public class PizzaFactory {
+                // 通过静态方法对外提供创建方式
+                public static Pizza create(String orderType){
+                    Pizza p = null;
+            
+                    if (orderType.equals("sub01")){
+                        p = new SubPizza01();
+                    }else if (orderType.equals("sub02")){
+                        p = new SubPizza02();
+                    }
+                    return p;
+                }
+            }
+            ```
+    - 订单类
+        - 参考代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/factory/staticfactory/order/OrderPizza.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/factory/staticfactory/order/OrderPizza.java)
+        - 代码内容
+            ```java
+            public class OrderPizza {
+            
+                public void order(){
+                    Pizza p = null;
+                    String orderType;
+            
+                    do{
+                        orderType = getType();
+                        // 使用静态工厂创建pizza
+                        p = PizzaFactory.create(orderType);
+                        // 制作pizza
+                        if (p != null){
+                            p.prepare();
+                            p.bake();
+                            p.cut();
+                            p.box();
+                        }else {
+                            break;
+                        }
+                    }while(true);
+                }
+            
+                // 从控制台获取pizza种类
+                private String getType(){
+                    try {
+                        BufferedReader is = new BufferedReader(new InputStreamReader(System.in));
+                        System.out.println("input pizza type : ");
+                        String type= is.readLine();
+                        return type;
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    return "";
+                }
+            }
+            ```
+
+## 工厂方法模式
+[top](#catalog)
+- 工厂方法模式：
+    - 定义一个创建对象的抽象方法，由子类决定要实例化的类。
+    - 工厂方法模式将**对象的实例化推迟到子类中**
+
+- pizza项目中应用工厂方法模式
+    - 新需求
+        - 原始的需求：客户可以点不同类型的披萨
+        - 新需求：客户在点披萨时，可以点**不同地区**的各种披萨
+
+    - 改进方式
+        - 方法1：使用简单工厂模式
+            - 对应不同的地区，创建不同的简单工厂类，如`ChinaPizzaFactory`、`AmericanPizzaFactory`
+            - 但是这种方式**会产生大量的简单工厂类，不利于扩展与维护**
+        - 方法2：使用工厂方法模式
+            - 不直接使用工厂类，将披萨的实例化功能抽象成抽象方法，在不同口味的订单子类中具体实现
+            
+- 修改示例
+    - 修改方法
+        1. 去除工厂类
+        2. 在`OrderPizza`中添加抽象方法来创建pizza，创建方法有该类的子类提供实现
+        3. 添加`OrderPizza`的子类，并提供方法实现
+    - UML图：
+        - ![problem_uml](imgs/pattern/factory/factoryMethod/problem_uml.png)
+    - 抽象类`OrderPizza`
+        - 参考代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/factory/factoryMethod/order/OrderPizza.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/factory/factoryMethod/order/OrderPizza.java)
+        - 代码内容
+            ```java
+            public abstract class OrderPizza {
+                // 工厂方法模式，将实现交给子类
+                public abstract Pizza createPizza(String orderType);
+            
+                public void order(){
+                    Pizza p = null;
+                    String orderType;
+            
+                    do{
+                        orderType = getType();
+                        // 使用静态工厂创建pizza
+                        p = createPizza(orderType);
+                        // 制作pizza
+                        if (p != null){
+                            p.prepare();
+                            p.bake();
+                            p.cut();
+                            p.box();
+                        }else {
+                            break;
+                        }
+                    }while(true);
+                }
+            
+                // 从控制台获取pizza种类
+                private String getType(){
+                    try {
+                        BufferedReader is = new BufferedReader(new InputStreamReader(System.in));
+                        System.out.println("input pizza type : ");
+                        String type= is.readLine();
+                        return type;
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    return "";
+                }
+            }
+            ```
+    - `OrderPizza`的子类实现
+        - 参考代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/factory/factoryMethod/order/ChinaOrderPizza.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/factory/factoryMethod/order/ChinaOrderPizza.java)
+        - 代码内容
+            ```java
+            public class ChinaOrderPizza extends OrderPizza {
+                @Override
+                public Pizza createPizza(String orderType) {
+                    Pizza p = null;
+            
+                    if (orderType.equals("sub01")){
+                        p = new ChinaSubPizza01();
+                    }else if (orderType.equals("sub02")){
+                        p = new ChinaSubPizza02();
+                    }
+                    return p;
+                }
+            }
+            ```
+        
+## 抽象工厂模式
+[top](#catalog)
+- 什么是抽象工厂模式
+    - **定义一个interface用于创建相关或有依赖的对象簇，而无需指明具体的类**
+    - 抽象工厂模式可以将简单工厂模式和工厂方法模式进行整合
+    - 从设计层面看，抽象工厂模式就是对简单工厂模式和工厂方法模式的进一步抽象
+    - 使用时，根据创建对象的类型使用对应的工厂子类，从而将单个简单工厂类变成了工厂簇，更利于维护和扩展
+    
+- pizza项目中应用工厂方法模式
+    - 新需求
+        - 原始的需求：客户可以点不同类型的披萨
+        - 新需求：客户在点披萨时，可以点**不同地区**的各种披萨
+    - 改进方式
+        1. 提供一个创建pizza的抽象工厂`AbsFactory`
+        2. 提供抽象工厂的实例，分别对应不同地区的pizza：`ChinaFactory`、`AmericanFactory`
+        3. 在订单类`OrderPizza`中通过注入不同的工厂实例，来创建不同地区的披萨
+
+- 修改示例
+    - UML图
+        - ![problem_uml](imgs/pattern/factory/abstractFactory/problem_uml.png)
+    - 修改之后，当添加新的`OrderPizza`类时，只需要注入抽象工厂`AbsFactory`的实现类即可
+    - 抽象工厂及其实现类
+        - 参考代码：
+            - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/factory/abstractFactory/factory/AbsFactory.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/factory/abstractFactory/factory/AbsFactory.java)
+            - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/factory/abstractFactory/factory/AmericanFactory.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/factory/abstractFactory/factory/AmericanFactory.java)
+            - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/factory/abstractFactory/factory/ChinaFactory.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/factory/abstractFactory/factory/ChinaFactory.java)
+        - 代码内容
+            ```java
+            // 抽象工厂
+            public interface AbsFactory {
+                Pizza createPizza(String orderType);
+            }
+          
+            // 抽象工厂的实现类
+            public class ChinaFactory implements AbsFactory {
+                @Override
+                public Pizza createPizza(String orderType) {
+                    System.out.println("use ChinaFactory");
+                    Pizza p = null;
+            
+                    if (orderType.equals("sub01")){
+                        p = new ChinaSubPizza01();
+                    }else if (orderType.equals("sub02")){
+                        p = new ChinaSubPizza02();
+                    }
+                    return p;
+                }
+            }
+          
+            // 抽象工厂的实现类
+            public class AmericanFactory implements AbsFactory {
+                @Override
+                public Pizza createPizza(String orderType) {
+                    System.out.println("use AmericanFactory");
+                    Pizza p = null;
+            
+                    if (orderType.equals("sub01")){
+                        p = new AmericanSubPizza01();
+                    }else if (orderType.equals("sub02")){
+                        p = new AmericanSubPizza02();
+                    }
+                    return p;
+                }
+            }
+            ```
+    - 订单类
+        - 参考代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/factory/abstractFactory/order/OrderPizza.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/factory/abstractFactory/order/OrderPizza.java)
+        - 代码内容
+            ```java
+            public class OrderPizza {
+                // 聚合一个抽象工厂子类
+                private AbsFactory factory;
+            
+                public OrderPizza(AbsFactory factory) {
+                    this.factory = factory;
+                }
+            
+                public void order(){
+                    Pizza p = null;
+                    String orderType;
+            
+                    do{
+                        orderType = getType();
+                        // 使用抽象工厂的实现类创建pizza
+                        p = factory.createPizza(orderType);
+                        // 制作pizza
+                        if (p != null){
+                            p.prepare();
+                            p.bake();
+                            p.cut();
+                            p.box();
+                        }else {
+                            break;
+                        }
+                    }while(true);
+                }
+            
+                // 从控制台获取pizza种类
+                private String getType(){
+                    try {
+                        BufferedReader is = new BufferedReader(new InputStreamReader(System.in));
+                        System.out.println("input pizza type : ");
+                        String type= is.readLine();
+                        return type;
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    return "";
+                }
+            }
+            ```
+        - 披萨店类
+            - 参考代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/factory/abstractFactory/store/PizzaStore.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/factory/abstractFactory/store/PizzaStore.java)
+            - 代码内容
+                ```java
+                public class PizzaStore {
+                    public static void main(String[] args) {
+                        //创建抽象工厂并注入订单类中
+                        AbsFactory f = new ChinaFactory();
+                        OrderPizza orderPizza = new OrderPizza(f);
+                        orderPizza.order();
+                    }
+                }
+                ```     
+
+## 工厂模式在JDK中的应用
+[top](#catalog) 
+- JDK中的`java.util.Calendar`类中，使用了简单工厂模式
+- 使用`Calendar cal = Calendar.getInstance();`获取对象时的创建过程
+    ```java
+    // 1. 创建单例
+    public static Calendar getInstance()
+    {
+        Locale aLocale = Locale.getDefault(Locale.Category.FORMAT);
+        return createCalendar(defaultTimeZone(aLocale), aLocale);
+    }
+    
+    // 2. 通过简单工厂创建实例，但是这里没有直接创建简单工厂类，而是直接通过私有方法封装所有创建逻辑
+    private static Calendar createCalendar(TimeZone zone,
+                                               Locale aLocale)
+    {
+        // 根据参数情况，分别封装实例化的逻辑
+        CalendarProvider provider =
+            LocaleProviderAdapter.getAdapter(CalendarProvider.class, aLocale)
+                                 .getCalendarProvider();
+        if (provider != null) {
+            try {
+                return provider.getInstance(zone, aLocale);
+            } catch (IllegalArgumentException iae) {
+                // fall back to the default instantiation
+            }
+        }
+    
+        Calendar cal = null;
+    
+        if (aLocale.hasExtensions()) {
+            String caltype = aLocale.getUnicodeLocaleType("ca");
+            if (caltype != null) {
+                switch (caltype) {
+                case "buddhist":
+                cal = new BuddhistCalendar(zone, aLocale);
+                    break;
+                case "japanese":
+                    cal = new JapaneseImperialCalendar(zone, aLocale);
+                    break;
+                case "gregory":
+                    cal = new GregorianCalendar(zone, aLocale);
+                    break;
+                }
+            }
+        }
+        if (cal == null) {
+            // If no known calendar type is explicitly specified,
+            // perform the traditional way to create a Calendar:
+            // create a BuddhistCalendar for th_TH locale,
+            // a JapaneseImperialCalendar for ja_JP_JP locale, or
+            // a GregorianCalendar for any other locales.
+            // NOTE: The language, country and variant strings are interned.
+            if (aLocale.getLanguage() == "th" && aLocale.getCountry() == "TH") {
+                cal = new BuddhistCalendar(zone, aLocale);
+            } else if (aLocale.getVariant() == "JP" && aLocale.getLanguage() == "ja"
+                       && aLocale.getCountry() == "JP") {
+                cal = new JapaneseImperialCalendar(zone, aLocale);
+            } else {
+                cal = new GregorianCalendar(zone, aLocale);
+            }
+        }
+        return cal;
+    }
+    ```
+
+## 工厂模式总结
+[top](#catalog)
+- 工厂模式的意义
+    - <label style="color:red">将实例化对象的代码提取出来</label>，放到一个类中统一管理和维护，将实例化对象的逻辑与主项目的逻辑解耦，从而提高项目的扩展性和维护性
+- 三种工厂模式
+    - 简单工厂（可以改造成静态工厂）
+    - 工厂方法模式
+    - 抽象工厂模式
+
+- 需要遵循设计模式的**依赖倒转**原则
+    - 创建对象实例时，将new对象的逻辑封装到工厂的方法中，并返回对象
+    - 不要让类继承具体类，而是继承抽象类或者实现interface接口
+    - 不要覆盖基类中已经实现的方法
  
+# 创建型-原型模式
+## 问题引入-克隆羊
+[top](#catalog)
+- 需求
+    1. 创建一只羊
+    2. 使用第一只羊来克隆其他羊
+
+- 传统方式完成需求
+    - UML图
+        - ![problem_uml](imgs/pattern/prototype/import_problem/problem_uml.png)
+    - Sheep类
+        - 提供基本的属性
+        - 参考代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/prototype/cloneSheep/Sheep.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/prototype/cloneSheep/Sheep.java)
+        - 代码内容
+            ```java
+            public class Sheep {
+                private String name;
+                private int age;
+                private String color;
+            
+                public Sheep(String name, int age, String color) {
+                    this.name = name;
+                    this.age = age;
+                    this.color = color;
+                }
+            
+                @Override
+                public String toString() {
+                    return "Sheep{" +
+                            "name='" + name + '\'' +
+                            ", age=" + age +
+                            ", color='" + color + '\'' +
+                            '}';
+                }
+            
+                public String getName() {
+                    return name;
+                }
+            
+                public void setName(String name) {
+                    this.name = name;
+                }
+            
+                public int getAge() {
+                    return age;
+                }
+            
+                public void setAge(int age) {
+                    this.age = age;
+                }
+            
+                public String getColor() {
+                    return color;
+                }
+            
+                public void setColor(String color) {
+                    this.color = color;
+                }
+            }
+            ```
+    - Client类
+        ```java
+        public class ClientTest {
+            @Test
+            public void test01(){
+                // 创建1只羊
+                Sheep sheep = new Sheep("aa", 1, "aaaa");
+        
+                // 克隆9只
+                Sheep clone1 = new Sheep(sheep.getName(), sheep.getAge(), sheep.getColor());
+                Sheep clone2 = new Sheep(sheep.getName(), sheep.getAge(), sheep.getColor());
+                Sheep clone3 = new Sheep(sheep.getName(), sheep.getAge(), sheep.getColor());
+                Sheep clone4 = new Sheep(sheep.getName(), sheep.getAge(), sheep.getColor());
+                Sheep clone5 = new Sheep(sheep.getName(), sheep.getAge(), sheep.getColor());
+                Sheep clone6 = new Sheep(sheep.getName(), sheep.getAge(), sheep.getColor());
+                Sheep clone7 = new Sheep(sheep.getName(), sheep.getAge(), sheep.getColor());
+                Sheep clone8 = new Sheep(sheep.getName(), sheep.getAge(), sheep.getColor());
+                Sheep clone9 = new Sheep(sheep.getName(), sheep.getAge(), sheep.getColor());
+        
+                System.out.println(sheep);
+                System.out.println(clone1);
+                System.out.println(clone2);
+                System.out.println(clone3);
+                System.out.println(clone4);
+                System.out.println(clone5);
+                System.out.println(clone6);
+                System.out.println(clone7);
+                System.out.println(clone8);
+                System.out.println(clone9);
+            }
+        }
+        ```
+
+- 传统方式的优缺点
+    - 优点：容易理解，操作简单
+    - 缺点
+        - 使用原始对象来克隆新对象时，总是需要获取原始对象的属性，如果对象比较复杂，效率会比较低
+        - 每次克隆对象时都需要重新初始化，而不是动态的获取原始对象运行时的状态，当原始对象发生改变时，克隆对象无法作出相同的改变。整体不够灵活
+
+
+## 原型模式的基本概念
+[top](#catalog)
+- 什么是原型模式？
+    - 用原型实例指定创建对象的种类，并且通过拷贝这些原型来创建新的对象
+    - 原型模式允许一个对象再创建另一个可定制的对象，并且无需知道创建的细节
+- 原型模式的工作原理
+    - 将一个原型对象传给要执行创建的对象，并通过请求原型对象拷贝自身来完成创建过程，即：`原型对象.clone()`
+- 原型模式的UML
+    - [prototype_uml](imgs/pattern/prototype/base/prototype_uml.png)
+- java中原型模式的使用方法
+    - 实现`Cloneable`接口，该接口表示该类能够复制且具有复制的能力
+    - 可以重写`clone()`方法
+        - Object类是所有类的根类，`Object`类提供了一个`clone()`方法，该方法可以将一个Java对象复制一份
+    - 使用`clone()`方法克隆对象
+    
+- 使用原型模式改造克隆羊项目
+    - 改造方法
+        - `Sheep`实现`Cloneable`接口，并重写`clone()`方法
+        - 在`ClientTest`中通过`clone()`方法来克隆对象
+    - Sheep类
+        - 参考代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/prototype/base/Sheep.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/prototype/base/Sheep.java)
+        - 代码内容
+            ```java
+            public class Sheep implements Cloneable {
+                private String name;
+                private int age;
+                private String color;
+            
+                public Sheep(String name, int age, String color) {
+                    this.name = name;
+                    this.age = age;
+                    this.color = color;
+                }
+            
+                // 克隆该实例，使用默认的clone方法来完成
+                @Override
+                protected Object clone()  {
+                    Sheep sheep = null;
+                    try {
+                        sheep = (Sheep) super.clone();
+                    } catch (CloneNotSupportedException e) {
+                        e.printStackTrace();
+                    }
+                    return sheep;
+                }
+              ...
+              ...
+            }
+            ```
+    - ClientTest类
+        - 参考代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/prototype/base/ClientTest.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/prototype/base/ClientTest.java)
+        - 代码内容
+            ```java
+            @Test
+            public void test01(){
+                // 创建1只羊
+                Sheep sheep = new Sheep("aa", 1, "aaaa");
+        
+                // 克隆9只
+                Sheep clone1 = (Sheep) sheep.clone();
+                Sheep clone2 = (Sheep) sheep.clone();
+                Sheep clone3 = (Sheep) sheep.clone();
+                Sheep clone4 = (Sheep) sheep.clone();
+                Sheep clone5 = (Sheep) sheep.clone();
+                Sheep clone6 = (Sheep) sheep.clone();
+                Sheep clone7 = (Sheep) sheep.clone();
+                Sheep clone8 = (Sheep) sheep.clone();
+                Sheep clone9 = (Sheep) sheep.clone();
+        
+                System.out.println(sheep);
+                System.out.println(clone1);
+                System.out.println(clone2);
+                System.out.println(clone3);
+                System.out.println(clone4);
+                System.out.println(clone5);
+                System.out.println(clone6);
+                System.out.println(clone7);
+                System.out.println(clone8);
+                System.out.println(clone9);
+            }
+            ```
 
 # 结构型-代理模式
 ## 代理模式简介
@@ -1762,7 +2515,8 @@
     - UML图
         - ![static_sample_uml](imgs/pattern/proxy/staticProxy/static_sample_uml.png)
     - 接口
-        - 参考代码:[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/proxy/staticProxy/ITeacherDao.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/proxy/staticProxy/ITeacherDao.java)
+        - 参考代码:[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/proxy/staticProxy/ITeacherDao.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/proxy/staticProxy/ITeacherDao.java)
+                  
         - 代码内容
             ```java
             public class TeacherDao implements ITeacherDao{
@@ -1773,7 +2527,7 @@
             }
             ```
     - 被代理类
-        - 参考代码:[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/proxy/staticProxy/ITeacherDao.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/proxy/staticProxy/ITeacherDao.java)
+        - 参考代码:[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/proxy/staticProxy/TeacherDao.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/proxy/staticProxy/TeacherDao.java)
         - 代码内容
             ```java
             public class TeacherDao implements ITeacherDao{
@@ -1784,7 +2538,7 @@
             }
             ```
     - 代理类
-        - 参考代码:[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/proxy/staticProxy/TeacherDaoProxy.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/proxy/staticProxy/TeacherDaoProxy.java)
+        - 参考代码:[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/proxy/staticProxy/TeacherDaoProxy.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/proxy/staticProxy/TeacherDaoProxy.java)
         - 代码内容
             ```java
             public class TeacherDaoProxy implements ITeacherDao {
@@ -1803,7 +2557,7 @@
             }
             ```
     - 测试类
-        - 参考代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/proxy/staticProxy/ClientTest.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/proxy/staticProxy/ClientTest.java)
+        - 参考代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/proxy/staticProxy/ClientTest.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/proxy/staticProxy/ClientTest.java)
         - 代码内容
             ```java
             public class ClientTest {
