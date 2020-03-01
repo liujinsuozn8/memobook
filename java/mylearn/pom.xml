@@ -12,6 +12,7 @@
     <module>myjdbc</module>
     <module>weblearn</module>
       <module>javabase</module>
+      <module>myrpc</module>
   </modules>
 
   <properties>
