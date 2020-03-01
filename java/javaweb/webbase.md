@@ -1046,11 +1046,11 @@
         - 获取打印流对象
         - 通过打印流对象的`write()`，可以直接将内容打印到**响应的html中**
             - 示例：将会在响应的html中打印：helloworld
-            ```java
-            PrintWriter out = servletResponse.getWriter();
-            out.write("helloworld");
-            ```
-        - **通过该方法可以返回html，但是比较麻烦，所以会使用jsp**
+                ```java
+                PrintWriter out = servletResponse.getWriter();
+                out.write("helloworld");
+                ```
+        - **通过该方法可以返回html，但是比较麻烦，所以会使用jsp**
 
     - <label style="color:red">public void setContentType(String type);</labe>
         - 设置响应内容的类型

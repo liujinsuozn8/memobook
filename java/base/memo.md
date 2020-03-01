@@ -589,22 +589,22 @@
             char[] arr1 = new char[10];
             System.out.println(arr1); //输出10个特殊字符
             ```
-* 代码块
-    * 用法：对java类或对象进行初始化
-    * 只能被static修饰 
-        * 被static修饰的叫静态代码块，通常用来初始化static属性
-            * 可以有输出语句。
-            * 可以对类的属性、类的声明进行初始化操作。
-            * 不可以对非静态的属性初始化。即:不可以调用非静态的属性和方法。
-            * 多个静态的代码块，从上到下的顺序依次执行。
-            * 静态代码块的执行要**先于非静态代码块**。
-            * 静态代码块**随着类的加载而加载，且只执行一次**。
-        * 没有修饰的叫非静态代码块
-            * 可以有输出语句。
-            * 可以对类的属性、类的声明进行初始化操作。
-            * 除了调用非静态的结构外，还**可以调用静态的变量或方法**。
-            * 多个非静态的代码块，从上到下的顺序依次执行。 
-            * 每次创建对象的时候，都会执行一次。且先于构造器执行。
+- 代码块
+    - 用法：对java类或对象进行初始化
+    - 只能被static修饰 
+    - 被static修饰的叫静态代码块，通常用来初始化static属性
+        - 可以有输出语句
+        - 可以对类的属性、类的声明进行初始化操作
+        - 不可以对非静态的属性初始化。即:不可以调用非静态的属性和方法
+        * 多个静态的代码块，从上到下的顺序依次执行
+        * 静态代码块的执行要**先于非静态代码块**
+        * 静态代码块**随着类的加载而加载，且只执行一次**
+    * 没有修饰的叫非静态代码块
+        * 可以有输出语句
+        * 可以对类的属性、类的声明进行初始化操作
+        * 除了调用非静态的结构外，还**可以调用静态的变量或方法**
+        * 多个非静态的代码块，从上到下的顺序依次执行
+        * 每次创建对象的时候，都会执行一次。且先于构造器执行
 
 * 内部类
     * 内部类所在的类是外部类
@@ -717,15 +717,15 @@
             System.out.println(a.b);
         }
         ```
-    * **方法的重写(oriride)**
-        * 重写的要求
+    - **方法的重写(oriride)**
+        - 重写的要求
             1. 子类的方法名(参数列表) = 父类的方法名(参数列表) 
             2. 子类返回值类型 <= 父类返回值类型
-                * 如果大于，则子类调用时不能明确返回值的类型，会导致编译失败
+                - 如果大于，则子类调用时不能明确返回值的类型，会导致编译失败
             3. 子类中的权限 >= 父类中的权限
             4. private方法**不能重写**
             5. 子类中抛出的异常 <= 父类中抛出的异常
-        * 子类与父类中同名同参数的方法必须同时声明为非static的(即为重写)，或者同时声明为 static的(不是重写)。因为static方法是属于类的，子类无法覆盖父类的static方法。
+        - 子类与父类中同名同参数的方法必须同时声明为非static的(即为重写)，或者同时声明为 static的(不是重写)。因为static方法是属于类的，子类无法覆盖父类的static方法
     
     * **父类子类相互转化**
         * 转化的前提是：**使用的父类对象是子类对象的引用**，即使用的对象本身是子类对象
@@ -2003,7 +2003,7 @@ public class CommandPara {
 [top](#catalog)
 - 从jDK5.0开始开始，Java增加对元数据MetaDate的支持，即注解Annotation
 - Annotation其实就是代码里的**特殊标记**，这些特殊标记可以在**编译、类加载、运行时**被读取，并执行响应的处理
-- 使用Annotation，可以在不改变原有逻辑的情况下，在源文件中潜入一些补充信息。代码分析工具、开发工具、部署工具等可以通过这些补充信息进行验证或者进行部署
+- 使用Annotation，可以在不改变原有逻辑的情况下，在源文件中嵌入一些补充信息。代码分析工具、开发工具、部署工具等可以通过这些补充信息进行验证或者进行部署
 - 使用Annotation时需要在前面添加`@`符号，并把注解当成一个修饰符来修饰它支持的程序元素，注解可以修饰：
     - 包
     - 类
@@ -2782,7 +2782,7 @@ public @interface SuppressWarnings {
 - 同步中使用到的概念
     - 同步的代码：操作共享数据的代码
     - 共享数据：多个线程共同操作的变量
-    - 同步监视器/锁：任何一个类的对象，都可以充当锁。但是多个线程必须共用一把锁
+    - 同步监视器/锁：任何一个类的对象，都可以充当锁。但是<label style="color:red">多个线程必须共用一把锁</label>
         - 在Runnable的实现类中，可以使用`this`作为同步监视器
         - 在Thread的子类中可以使用`XXX.Class`作为同步监视器
 
@@ -3531,7 +3531,7 @@ public @interface SuppressWarnings {
 - 示例
     1. 客户端发送信息给服务端，服务端将数据显示在控制台
         - 参考代码：[/java/mylearn/javabase/src/test/java/com/ljs/learn/net/tcp/TcpTest.java](/java/mylearn/javabase/src/test/java/com/ljs/learn/net/tcp/TcpTest.java)
-        - 服务端代码
+        - 客户端代码
             ```java
             @Test
             public void client(){
@@ -3557,7 +3557,7 @@ public @interface SuppressWarnings {
                     ...
             }
             ```
-        - 客户端代码
+        - 服务端代码
             ```java
             @Test
             public void server(){
@@ -4713,20 +4713,21 @@ public class Person extends Creature<String> implements Comparable<String>, MyIn
 - `Class.getDeclaredConstructor(Class...参数列表)`，获取当前运行时类中指定重载的构造器
 - 示例
     - 参考代码：[/java/mylearn/javabase/src/test/java/com/ljs/learn/reflect/structure/ConstructorTest.java](/java/mylearn/javabase/src/test/java/com/ljs/learn/reflect/structure/ConstructorTest.java)
-    ```java
-    @Test
-    public void test4() throws Exception{
-        Class<Person> cls = Person.class;
-        // 获取构造器：private Person(String name)
-        Constructor<Person> con = cls.getDeclaredConstructor(String.class);
-        con.setAccessible(true);
+    - 调用指定构造器
+        ```java
+        @Test
+        public void test4() throws Exception{
+            Class<Person> cls = Person.class;
+            // 获取构造器：private Person(String name)
+            Constructor<Person> con = cls.getDeclaredConstructor(String.class);
+            con.setAccessible(true);
 
-        //创建运行时类的对象
-        Person testCon = con.newInstance("testCon");
-        // 输出：Person{name='testCon', age=0, id=0}
-        System.out.println(testCon); 
-    }
-    ```
+            //创建运行时类的对象
+            Person testCon = con.newInstance("testCon");
+            // 输出：Person{name='testCon', age=0, id=0}
+            System.out.println(testCon); 
+        }
+        ```
 
 # 应用
 ## 字符串

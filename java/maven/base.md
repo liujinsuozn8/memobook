@@ -720,7 +720,7 @@
     
 - 依赖范围测试
     1. junit的测试是test范围，无法在main程序中使用
-        - 在HelloFriend.java中添加引用：`import org.junit.Test;，执行编译时发生异常，执行compile阶段时，找不到jar包
+        - 在HelloFriend.java中添加引用：`import org.junit.Test;`，执行编译时发生异常，执行compile阶段时，找不到jar包
             - ![HelloFriend_mvn_cmd_02.png](./imgs/base/HelloFriend_mvn_cmd_02.png)
 
 ## 依赖的传递性
@@ -945,7 +945,7 @@
     5. 在子工程中删除依赖的版本号部分：`<version>4.10</version>`，其他部分不要删除
         - 如果不删除，则以子工程中的依赖版本为主
 
-- <label style="color:red">配置继承后，需要先安装父工程，然后在安装子工程</label>
+- <label style="color:red">配置继承后，需要先安装父工程，然后再安装子工程</label>
 
 - 参考示例：[/java/maven/sample/multiple](/java/maven/sample/multiple)
     - 在父工程`multiple`中配置了全局的junit依赖：[/java/maven/sample/multiple/pom.xml](/java/maven/sample/multiple/pom.xml)

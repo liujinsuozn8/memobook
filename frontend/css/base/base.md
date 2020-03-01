@@ -631,7 +631,7 @@
                 ```
             
             - 页面结果
-                - ![](?????)
+                - ![html_result_01.png](imgs/selector/pseudoClass/html_result_01.png)
         2. 选择 ul下的第3个li子元素
             - css
                 ```css
@@ -657,7 +657,7 @@
                 ```
             
             - 页面结果
-                - ![](?????)
+                - ![html_result_02](imgs/selector/pseudoClass/html_result_02.png)
         3. 选择 ol下的所有li子元素
             - css
                 ```css
@@ -680,7 +680,7 @@
                 ```
             
             - 页面结果
-                - ![](?????)
+                - ![html_result_03](imgs/selector/pseudoClass/html_result_03.png)
 
         4. 选择ul下的所有偶数li子元素，通过2n的方式
             - css
@@ -702,7 +702,7 @@
                 ```
             
             - 页面结果
-                - ![](?????)
+                - ![html_result_04](imgs/selector/pseudoClass/html_result_04.png)
         5. 选择ul下的所有偶数li子元素，通过even的方式
             - css
                 ```css
@@ -722,7 +722,7 @@
                 </ul>
                 ```
             - 页面结果
-                - ![](?????)
+                - ![html_result_05](imgs/selector/pseudoClass/html_result_05.png)
         
         6. 选择ul下的所有奇数li子元素，通过2n+1的方式
             - css
@@ -744,7 +744,7 @@
                 ```
             
             - 页面结果
-                - ![](?????)
+                - ![html_result_06](imgs/selector/pseudoClass/html_result_06.png)
         
         7. 选择ul下的所有奇数li子元素，通过odd的方式
             - css
@@ -765,7 +765,7 @@
                 </ul>
                 ```
             - 页面结果
-                - ![](?????)
+                - ![html_result_07](imgs/selector/pseudoClass/html_result_07.png)
 
 
     - 只对同类元素排序
@@ -796,7 +796,7 @@
                 ```
             
             - 页面结果
-                - ![](?????)
+                - ![html_result_08_09](imgs/selector/pseudoClass/html_result_08_09.png)
         
         2. 选择ul下的所有的li元素，忽略其他元素
             - css
@@ -821,7 +821,7 @@
                 ```
             
             - 页面结果
-                - ![](?????)
+                - ![html_result_10](imgs/selector/pseudoClass/html_result_10.png)
         
         3. 选择ul下的所有的偶数li元素，忽略其他元素，使用2n方式
             - css
@@ -846,7 +846,7 @@
                 ```
             
             - 页面结果
-                - ![](?????)
+                - ![html_result_11](imgs/selector/pseudoClass/html_result_11.png)
         
         4. 选择ul下的所有的偶数li元素，忽略其他元素，使用event方式
             - css
@@ -871,7 +871,7 @@
                 ```
             
             - 页面结果
-                - ![](?????)
+                - ![html_result_12](imgs/selector/pseudoClass/html_result_12.png)
         
         5. 选择ul下的所有的奇数li元素，忽略其他元素，使用2n+1方式
             - css
@@ -896,7 +896,7 @@
                 ```
             
             - 页面结果
-                - ![](?????)
+                - ![html_result_13](imgs/selector/pseudoClass/html_result_13.png)
         
         6. 选择ul下的所有的奇数li元素，忽略其他元素，使用odd方式
             - css
@@ -921,7 +921,7 @@
                 ```
             
             - 页面结果
-                - ![](?????)
+                - ![html_result_14](imgs/selector/pseudoClass/html_result_14.png)
     
     - 否定伪类
         - 否定伪类，将title属性是 abcd 的li去除
@@ -945,7 +945,7 @@
                 ```
             
             - 页面结果
-                - ![](?????)
+                - ![html_result_15](imgs/selector/pseudoClass/html_result_15.png)
 
 
 ## 伪元素选择器
@@ -965,7 +965,7 @@
 - 在短引用标签`<q>`中，页面中自动出现的`""`或`[]`，就是通过在css中设置`::before`和`::after`来实现的
 
 - 示例
-    - 参考代码:[/frontend/css/base/src/selector/pseudo_class.html](/frontend/css/base/src/selector/pseudo_class.html)
+    - 参考代码:[/frontend/css/base/src/selector/pseudo_element.html](/frontend/css/base/src/selector/pseudo_element.html)
     - css
         ```css
         /* 1. 设置所有p标签的第一个字符的大小 */
@@ -1034,10 +1034,10 @@
         <div class="test03">div test03</div>
         ```
     - 页面结果
-        - ![](?????)
+        - ![html_result_01](imgs/selector/pseudoElement/html_result_01.png)
 
     - 控制台中的页面元素
-        - ![](?????)
+        - ![html_result_02](imgs/selector/pseudoElement/html_result_02.png)
 
 
 # 选择器的权重
@@ -1098,7 +1098,7 @@
             <div id="box1" style="color:green">div with inner css</div>
             ```
 
-        - ![](?????)
+        - ![html_result_01](imgs/selector/selectorLevel/html_result_01.png)
 
     - 测试交集选择器的权重
         - css
@@ -1123,7 +1123,7 @@
             <br>
             ```
 
-        - ![](?????)
+        - ![html_result_02](imgs/selector/selectorLevel/html_result_02.png)
 
     - 测试 `!important`
         - css
@@ -1138,7 +1138,7 @@
             <div class="test01" style="color:orange">div class="test01" style="color:orange"</div>
             <div style="color:orange">div style="color:orange"</div>
             ```
-        - ![](?????)
+        - ![html_result_04](imgs/selector/selectorLevel/html_result_04.png)
 
     - 测试权重相同的选择器
         - css
@@ -1160,7 +1160,7 @@
             <div class="test0201 test0202">div class="test0201 test0202"</div>
             <br>
             ```
-        - ![](?????)
+        - ![html_result_05](imgs/selector/selectorLevel/html_result_05.png)
 
     - 测试通配符选择器和继承样式的权重
         - css
@@ -1189,7 +1189,7 @@
                 </div>
             </div>
             ```
-        - ![](?????)
+        - ![html_result_06](imgs/selector/selectorLevel/html_result_06.png)
 
 # 继承
 [top](#catalog)
@@ -1236,7 +1236,7 @@
         </div>
         ```
 
-    - ![](?????)
+    - ![html_result_01](imgs/inherit/html_result_01.png)
 
 # web页面中的单位
 ## 页面的长度单位
@@ -1288,7 +1288,7 @@
             <div class="box2">dddd</div>
             <br>
             ```
-        - ![](?????)
+        - ![html_result_01](imgs/sizeunit/sizeunit/html_result_01.png)
 
     - em测试: 分别使用不同的文字大小
         - css
@@ -1313,7 +1313,7 @@
             <div class="box3"></div>
             <div class="box4"></div>
             ```
-        - ![](?????)
+        - ![html_result_02](imgs/sizeunit/sizeunit/html_result_02.png)
     
     - 3. rem测试 
         - css
@@ -1340,7 +1340,7 @@
             <div class="box5"></div>
             <div class="box6"></div>
             ```
-        - ![](?????)
+        - ![html_result_03](imgs/sizeunit/sizeunit/html_result_03.png)
 
 ## 颜色单位
 [top](#catalog)
@@ -1389,7 +1389,7 @@
             <section>1. 颜色名测试</section>
             <div class="box1"></div>
             ```
-        - ![](?????)
+        - ![html_result_01](imgs/sizeunit/color/html_result_01.png)
 
     - RGB颜色值测试 
         - css
@@ -1405,7 +1405,7 @@
             <section>2.RGB颜色值测试</section>
             <div class="box2"></div>
             ```
-        - ![](?????)
+        - ![html_result_02](imgs/sizeunit/color/html_result_02.png)
 
     - RGB颜色百分比测试
         - css
@@ -1421,7 +1421,7 @@
             <section>3.RGB颜色百分比测试</section>
             <div class="box3"></div>
             ```
-        - ![](?????)
+        - ![html_result_03](imgs/sizeunit/color/html_result_03.png)
 
     - 4. 16进制RGB值 测试
         - css
@@ -1437,7 +1437,8 @@
             <section>4. 16进制RGB值 测试</section>
             <div class="box4"></div>
             ```
-        - ![](?????)
+        - ![html_result_04](imgs/sizeunit/color/html_result_04.png)
+
 
     - RGBA测试
         - css
@@ -1459,7 +1460,7 @@
             <div class="box5"></div>
             <div class="box6"></div>
             ```
-        - ![](?????)
+        - ![html_result_05](imgs/sizeunit/color/html_result_05.png)
 
     - HSL值 测试
         - css
@@ -1475,7 +1476,7 @@
             <section>6. HSL值 测试</section>
             <div class="box7"></div>
             ```
-        - ![](?????)
+        - ![html_result_06](imgs/sizeunit/color/html_result_06.png)
 
 # 文档流
 [top](#catalog)
@@ -1504,7 +1505,7 @@
 - 为了方便页面布局，css将页面中的每个元素都设置为一个矩形盒子。将元素设置为矩形盒子后，页面的布局就变成了如何安排这些盒子的位置
 
 - 盒子模型的示例
-    - ![](?????)
+    - ![boxSample](imgs/boxModel/base/boxSample.png)
 
 - 盒子的组成
     - 组成元素
@@ -1634,7 +1635,8 @@
             <div class="box5"></div>
             ```
         - 页面结果
-            - ![](?????)
+            - ![html_result_02_01](imgs/boxModel/border/html_result_02_01.png)
+            - ![html_result_02_02](imgs/boxModel/border/html_result_02_02.png)
 
     - 通过4个边的宽度属性来设置边框
         - css
@@ -1698,7 +1700,7 @@
             <div class="box7"></div>
             ```
         - 页面结果
-            - ![](?????)
+            - ![html_result_03](imgs/boxModel/border/html_result_03.png)
 
     - 简写属性测试
         - css
@@ -1736,7 +1738,7 @@
             <div class="box9"></div>
             ```
         - 页面结果
-            - ![](?????)
+            - ![html_result_04](imgs/boxModel/border/html_result_04.png)
 
     - 统一属性和单边属性的配合
         - css
@@ -1759,7 +1761,7 @@
             <div class="box10"></div>
             ```
         - 页面结果
-            - ![](?????)
+            - ![html_result_05](imgs/boxModel/border/html_result_05.png)
 
 ## 内边距padding
 [top](#catalog)
@@ -1779,7 +1781,7 @@
         - 4个值：上 右 下 左        
 
 - 示例
-    - [/frontend/css/base/src/boxModel/padding.html](/frontend/css/base/src/boxModel/padding.html)
+    - 参考代码：[/frontend/css/base/src/boxModel/padding.html](/frontend/css/base/src/boxModel/padding.html)
       
     - 通过单边属性分别设置4个方向的内边距
         - css
@@ -1815,7 +1817,7 @@
             </div>
             ```
         - 页面结果
-            - ![](?????)        
+            - ![html_result_01](imgs/boxModel/padding/html_result_01.png)
     
     - 通过简写属性统一设置内边距
         - css
@@ -1848,7 +1850,7 @@
             </div>
             ```
         - 页面结果
-            - ![](?????)
+            - ![html_result_02](imgs/boxModel/padding/html_result_02.png)
 
 ## 外边距margin
 [top](#catalog)
@@ -1911,7 +1913,7 @@
             <div class="box2"></div>
             ```
         - 页面结果
-            - ![](?????)
+            - ![html_result_01](imgs/boxModel/margin/html_result_01.png)
     
     - 通过简写属性设置外边距
         - css
@@ -1936,7 +1938,7 @@
             <div class="box2"></div>
             ```
         - 页面结果
-            - ![](?????)
+            - ![html_result_02](imgs/boxModel/margin/html_result_02.png)
 
     - 测试负数的margin值
         - css
@@ -1961,7 +1963,7 @@
             <div class="box2"></div>
             ```
         - 页面结果
-            - ![](?????)
+            - ![html_result_03](imgs/boxModel/margin/html_result_03.png)
 
 ## 盒子模型中可以设置为auto的属性
 [top](#catalog)
@@ -2023,7 +2025,7 @@
             </div>
             ```
         - 页面结果
-            - ![](?????)
+            - ![html_result_01](imgs/boxModel/horizontalLayout/html_result_01.png)
 
     - 过度约束测试。子元素.width = auto
         - css
@@ -2050,7 +2052,7 @@
             </div>
             ```
         - 页面结果
-            - ![](?????)
+            - ![html_result_02](imgs/boxModel/horizontalLayout/html_result_02.png)
 
     - 过度约束测试。子元素中包含多个auto
         - css
@@ -2098,7 +2100,7 @@
             </div>
             ```
         - 页面结果
-            - ![](?????)
+            - ![html_result_03](imgs/boxModel/horizontalLayout/html_result_03.png)
     
     - 父元素.width < 子元素.sum
         - css
@@ -2123,7 +2125,7 @@
             </div>
             ```
         - 页面结果
-            - ![](?????)
+            - ![html_result_04](imgs/boxModel/horizontalLayout/html_result_04.png)
                     
 ## 盒子模型的垂直方向布局
 [top](#catalog)
@@ -2207,7 +2209,7 @@
             <div class="box2"></div>
             ```
         - 页面结果
-            - ![](?????)
+            - ![html_result_01](imgs/boxModel/marginFold/html_result_01.png)
 
     - 兄弟元素之间的外边距折叠，一正一负
         - css
@@ -2235,7 +2237,7 @@
             <div class="box4"></div>
             ```
         - 页面结果
-            - ![](?????)
+            - ![html_result_02](imgs/boxModel/marginFold/html_result_02.png)
 
     - 兄弟元素之间的外边距折叠，两者都是负数
         - css
@@ -2263,7 +2265,7 @@
             <div class="box6"></div>
             ```
         - 页面结果
-            - ![](?????)
+            - ![html_result_03](imgs/boxModel/marginFold/html_result_03.png)
 
     - 父子元素之间的外边距折叠，子元素的外边距会传递给父元素
         - css
@@ -2292,7 +2294,7 @@
             </div>
             ```
         - 页面结果
-            - ![](?????)
+            - ![html_result_04](imgs/boxModel/marginFold/html_result_04.png)
 
     - 父子元素之间的外边距折叠。解决方式1：子元素不使用margin-top，同时调整父元素
         - css
@@ -2325,7 +2327,7 @@
             </div>
             ```
         - 页面结果
-            - ![](?????)
+            - ![html_result_05](imgs/boxModel/marginFold/html_result_05.png)
 
     - 父子元素之间的外边距折叠。解决方式2：在父元素中添加边框来隔离父子元素
         - css
@@ -2359,7 +2361,7 @@
             </div>
             ```
         - 页面结果
-            - ![](?????)
+            - ![html_result_06](imgs/boxModel/marginFold/html_result_06.png)
 
 ## 行内元素的盒子模型
 [top](#catalog)
@@ -2408,8 +2410,15 @@
                 border:black 1px solid;
             }
             ```
+        - html
+            ```html
+            <section>1. 去除body的默认css</section>
+            <div class="box1"></div>
+            <p>p1</p>
+            <p>p2</p>
+            ```
         - 页面结果
-            - ![](?????)
+            - ![html_result_01](imgs/browserDefalutCss/defalutCss/html_result_01.png)
 
     - 去除ul的样式
         - 参考代码：[/frontend/css/base/src/browserDefalutCss/defalutCss.html](/frontend/css/base/src/browserDefalutCss/defalutCss.html)
@@ -2430,7 +2439,7 @@
             </ul>
             ```
         - 页面结果
-            - ![](?????)
+            - ![html_result_02](imgs/browserDefalutCss/defalutCss/html_result_02.png)
 
     - 使用通配符统一去除浏览器的默认样式
         - 参考代码：[/frontend/css/base/src/browserDefalutCss/deleteDefaultCss.html](/frontend/css/base/src/browserDefalutCss/deleteDefaultCss.html)
@@ -2459,7 +2468,7 @@
             </body>
             ```
         - 页面结果
-            - ![](?????)
+            - ![html_result_01](imgs/browserDefalutCss/deleteDefaultCss/html_result_01.png)
             
 # 常用的通用属性
 ## display
