@@ -43,9 +43,14 @@
     - [工厂方法模式](#工厂方法模式)
     - [抽象工厂模式](#抽象工厂模式)
     - [工厂模式总结](#工厂模式总结)
-- [创建型-原型模式](#创建型-原型模式)
+- 创建型-原型模式
     - [问题引入-克隆羊](#问题引入-克隆羊)
-    - [原型模式的基本概念](#原型模式的基本概念)
+    - [原型模式的基本原理](#原型模式的基本原理)
+    - [浅拷贝和深拷贝](#浅拷贝和深拷贝)
+    - [原型模式的注意事项和细节](#原型模式的注意事项和细节)
+- [](#)
+- [](#)
+- [](#)
 - [](#)
 - 结构型-代理模式
     - [代理模式简介](#代理模式简介)
@@ -2369,27 +2374,13 @@
                 // 创建1只羊
                 Sheep sheep = new Sheep("aa", 1, "aaaa");
         
-                // 克隆9只
+                // 克隆2只
                 Sheep clone1 = new Sheep(sheep.getName(), sheep.getAge(), sheep.getColor());
                 Sheep clone2 = new Sheep(sheep.getName(), sheep.getAge(), sheep.getColor());
-                Sheep clone3 = new Sheep(sheep.getName(), sheep.getAge(), sheep.getColor());
-                Sheep clone4 = new Sheep(sheep.getName(), sheep.getAge(), sheep.getColor());
-                Sheep clone5 = new Sheep(sheep.getName(), sheep.getAge(), sheep.getColor());
-                Sheep clone6 = new Sheep(sheep.getName(), sheep.getAge(), sheep.getColor());
-                Sheep clone7 = new Sheep(sheep.getName(), sheep.getAge(), sheep.getColor());
-                Sheep clone8 = new Sheep(sheep.getName(), sheep.getAge(), sheep.getColor());
-                Sheep clone9 = new Sheep(sheep.getName(), sheep.getAge(), sheep.getColor());
         
                 System.out.println(sheep);
                 System.out.println(clone1);
                 System.out.println(clone2);
-                System.out.println(clone3);
-                System.out.println(clone4);
-                System.out.println(clone5);
-                System.out.println(clone6);
-                System.out.println(clone7);
-                System.out.println(clone8);
-                System.out.println(clone9);
             }
         }
         ```
@@ -2401,7 +2392,7 @@
         - 每次克隆对象时都需要重新初始化，而不是动态的获取原始对象运行时的状态，当原始对象发生改变时，克隆对象无法作出相同的改变。整体不够灵活
 
 
-## 原型模式的基本概念
+## 原型模式的基本原理
 [top](#catalog)
 - 什么是原型模式？
     - 用原型实例指定创建对象的种类，并且通过拷贝这些原型来创建新的对象
@@ -2459,29 +2450,187 @@
                 // 创建1只羊
                 Sheep sheep = new Sheep("aa", 1, "aaaa");
         
-                // 克隆9只
+                // 克隆2只
                 Sheep clone1 = (Sheep) sheep.clone();
                 Sheep clone2 = (Sheep) sheep.clone();
-                Sheep clone3 = (Sheep) sheep.clone();
-                Sheep clone4 = (Sheep) sheep.clone();
-                Sheep clone5 = (Sheep) sheep.clone();
-                Sheep clone6 = (Sheep) sheep.clone();
-                Sheep clone7 = (Sheep) sheep.clone();
-                Sheep clone8 = (Sheep) sheep.clone();
-                Sheep clone9 = (Sheep) sheep.clone();
         
                 System.out.println(sheep);
                 System.out.println(clone1);
                 System.out.println(clone2);
-                System.out.println(clone3);
-                System.out.println(clone4);
-                System.out.println(clone5);
-                System.out.println(clone6);
-                System.out.println(clone7);
-                System.out.println(clone8);
-                System.out.println(clone9);
             }
             ```
+
+## 浅拷贝和深拷贝
+[top](#catalog)
+- 浅拷贝
+    - 对于基本数据类型的成员变量，浅拷贝会直接进行值传递，也就是将该属性值复制一份给新对象
+    - 对于引用数据类型的成员变量，比如成员变量是数组、某个类的对象等，那么浅拷贝会进行引用传递，也就是将该成员变量的引用值(内存地址)复制一份给新的对象
+        - 复制后两个对象的成员变量都会指向同一个实例。当一方修改成员变量内部的属性值时会影响到另一方
+    - 使用默认的`clone()`就是浅拷贝
+
+- 深拷贝
+    - 对于基本数据类型的成员变量直接复制
+    - 对于引用数据类型的成员变量，申请内存空间，并复制每个引用数据类型成员变量所引用的对象，直到该对象可达的所有对象。即拷贝整个对象
+    - 实现方式
+        1. 重写`clone()`方法来实现深拷贝
+        2. 通过对象序列化实现深拷贝(**推荐使用**)
+            - 类及其内部的引用对象的类可以不实现`Cloneable`接口，但是必须都实现`Serializable`接口
+        
+- 重写`clone()`方法来实现深拷贝
+    - 深拷贝实现类
+        - 参考代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/prototype/deepCopy/type01/DeepProtoType.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/prototype/deepCopy/type01/DeepProtoType.java)
+        - 该类需要实现序列化接口
+        - 代码内容
+            ```java
+            public class DeepProtoType implements Serializable, Cloneable {
+                private static final long serialVersionUID = 1940210468835235379L;
+            
+                public String name;
+                // 一个引用类型的成员属性
+                public DeepCloneableTarget target;
+            
+                public DeepProtoType(String name, DeepCloneableTarget target) {
+                    this.name = name;
+                    this.target = target;
+                }
+            
+                // 深拷贝方式1：重写clone()方法
+                @Override
+                protected Object clone()  {
+                    // 克隆自身的基本数据类型的成员对象
+                    DeepProtoType result = null;
+                    try {
+                        result = (DeepProtoType) super.clone();
+                        // 逐一克隆引用数据类型的成员对象
+                        result.target = (DeepCloneableTarget) target.clone();
+                    } catch (CloneNotSupportedException e) {
+                        e.printStackTrace();
+                    }
+            
+                    return result;
+                }
+            }
+            ```
+    - 成员对象类
+        - 参考代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/prototype/deepCopy/type01/DeepCloneableTarget.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/prototype/deepCopy/type01/DeepCloneableTarget.java)
+        - 成员对象类中也需要实现`Cloneable`接口
+        - 代码内容
+            ```java
+            public class DeepCloneableTarget implements Serializable, Cloneable {
+            
+                private static final long serialVersionUID = 4688066927065335857L;
+                String param1;
+                String param2;
+            
+                public DeepCloneableTarget(String param1, String param2) {
+                    this.param1 = param1;
+                    this.param2 = param2;
+                }
+            
+                @Override
+                protected Object clone(){
+                    DeepCloneableTarget result = null;
+                    try {
+                        result = (DeepCloneableTarget) super.clone();
+                    } catch (CloneNotSupportedException e) {
+                        e.printStackTrace();
+                    }
+                    return result;
+                }
+            }
+            ```
+    - 测试方法
+        - 参考代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/prototype/deepCopy/type01/ClientTest.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/prototype/deepCopy/type01/ClientTest.java)
+        - 代码内容
+            ```java
+            @Test
+            public void deepCopyType01(){
+                DeepProtoType d1 = new DeepProtoType("aa", new DeepCloneableTarget("bb", "cc"));
+                DeepProtoType clone1 = (DeepProtoType) d1.clone();
+        
+                System.out.println(d1.target.hashCode() == clone1.target.hashCode());
+            }
+            ```
+
+- 通过对象序列化实现深拷贝
+    - 深拷贝实现类
+        - 参考代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/prototype/deepCopy/type02/DeepProtoType.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/prototype/deepCopy/type02/DeepProtoType.java)  
+        - 代码内容
+            ```java
+            public class DeepProtoType implements Serializable {
+                private static final long serialVersionUID = 1940210468835235379L;
+            
+                public String name;
+                // 一个引用类型的成员属性
+                public DeepCloneableTarget target;
+            
+                public DeepProtoType(String name, DeepCloneableTarget target) {
+                    this.name = name;
+                    this.target = target;
+                }
+            
+                // 深拷贝方式2：通过对象序列化实现深拷贝
+                public Object deepClone(){
+                    try (
+                        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                        ObjectOutputStream oos = new ObjectOutputStream(bos);
+                    ){
+                        // 将数据写如临时区
+                        oos.writeObject(this);
+            
+                        try(
+                            ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
+                            ObjectInputStream ois = new ObjectInputStream(bis);
+                        ) {
+                            // 使用序列化属性重新构造对象
+                            return (DeepProtoType)ois.readObject();
+                        } catch (ClassNotFoundException e) {
+                            e.printStackTrace();
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+            
+                    return null;
+                }
+            }
+            ```
+    - 成员对象类
+        - 参考代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/prototype/deepCopy/type02/DeepCloneableTarget.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/prototype/deepCopy/type02/DeepCloneableTarget.java)
+        - 代码参考
+            ```java
+            public class DeepCloneableTarget implements Serializable {
+                private static final long serialVersionUID = 4688066927065335857L;
+                String param1;
+                String param2;
+            
+                public DeepCloneableTarget(String param1, String param2) {
+                    this.param1 = param1;
+                    this.param2 = param2;
+                }
+            }
+            ```    
+    - 测试内容
+        - 参考代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/prototype/deepCopy/type02/ClientTest.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/prototype/deepCopy/type02/ClientTest.java)
+        - 代码内容
+            ```java
+            @Test
+            public void deepCopyType02(){
+                DeepProtoType d1 = new DeepProtoType("aa", new DeepCloneableTarget("bb", "cc"));
+                DeepProtoType clone1 = (DeepProtoType) d1.deepClone();
+        
+                System.out.println(d1.target.hashCode() == clone1.target.hashCode());
+            }
+            ```
+        
+## 原型模式的注意事项和细节
+[top](#catalog)
+- 创建的对象比较复杂时，可以利用原型模式简化创建的过程
+- 不用重新始化对象，而是动态地获取对象运行时的状态
+- ~~如果原始对象发生变化，如增加或减少属性时，其他克隆对象也会发生相应的变化，无需修改代码~~
+- Java原型模式的缺点
+    - 需要为每一个类实现`Cloneable`接口，对于已有的类，需要直接修改源代码，违反了ocp原则   
+
 
 # 结构型-代理模式
 ## 代理模式简介

@@ -10,24 +10,14 @@ public class ClientTest {
 
         // 克隆9只
         Sheep clone1 = (Sheep) sheep.clone();
-        Sheep clone2 = (Sheep) sheep.clone();
-        Sheep clone3 = (Sheep) sheep.clone();
-        Sheep clone4 = (Sheep) sheep.clone();
-        Sheep clone5 = (Sheep) sheep.clone();
-        Sheep clone6 = (Sheep) sheep.clone();
-        Sheep clone7 = (Sheep) sheep.clone();
-        Sheep clone8 = (Sheep) sheep.clone();
-        Sheep clone9 = (Sheep) sheep.clone();
 
         System.out.println(sheep);
         System.out.println(clone1);
-        System.out.println(clone2);
-        System.out.println(clone3);
-        System.out.println(clone4);
-        System.out.println(clone5);
-        System.out.println(clone6);
-        System.out.println(clone7);
-        System.out.println(clone8);
-        System.out.println(clone9);
+
+        // 修改原始对象的属性
+        sheep.setAge(22);
+
+        System.out.println(sheep);
+        System.out.println(clone1);
     }
 }
