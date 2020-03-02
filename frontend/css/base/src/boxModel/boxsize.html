@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>boxsize test</title>
+    <style>
+        /* 1. box-sizing: content-box;使用width/height 设置内容区的大小 */
+        .box1{
+            width:100px;
+            height: 100px;
+            background-color: rgb(117, 218, 23);
+            padding:10px;
+            border:10px red solid;
+
+            /* 设置内容区的大小 */
+            box-sizing: content-box;
+        }
+        /* 2. box-sizing:border-box; 使用width/height 设置整个盒子的可见大小 */
+        .box2{
+            width:100px;
+            height: 100px;
+            background-color: rgb(117, 218, 23);
+            padding:10px;
+            border:10px red solid;
+
+            /* 设置整个盒子的可见大小 */
+            box-sizing:border-box;
+        }
+    </style>
+</head>
+<body>
+    
+    <section>1. box-sizing: content-box;使用width/height 设置内容区的大小</section>
+    <div class="box1"></div>
+    <br>
+    
+    <section>2. box-sizing:border-box; 使用width/height 设置整个盒子的可见大小</section>
+    <div class="box2"></div>
+    <br>
+
+</body>
+</html>
