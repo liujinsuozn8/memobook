@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>common properties display test</title>
+
+    <style>
+        /* 1. 测试行内元素转化为 display:block */
+        .s1{
+            background-color: rgb(214, 177, 54);
+            /* 转化为块元素之后可以设置 width 和 height */
+            width: 250px;
+            height:250px;
+
+            display: block;
+        }
+        .box1{
+            width:200px;
+            height:200px;
+            background-color: green;
+        }
+
+        /* 2. 测试行内块元素 display:inline-block */
+        .s2{
+            background-color: rgb(214, 177, 54);
+
+            width: 50px;
+            height:50px;
+
+            display: inline-block;
+        }
+        .box2{
+            width:200px;
+            height:200px;
+            background-color: green;
+        }
+
+        /* 3. 测试元素隐藏 display:none */
+        .s3{
+            background-color: rgb(214, 177, 54);
+
+            width: 50px;
+            height:50px;
+
+            display: none;
+        }
+        .box3{
+            width:200px;
+            height:200px;
+            background-color: green;
+        }
+    </style>
+</head>
+<body>
+    <section>1. 测试行内元素的 display:block</section>
+    <span class="s1">this is span5</span>
+    <div class="box1"></div>
+    <br>
+
+    <section>2. 测试行内块元素 display:inline-block</section>
+    <section>2.1. 多个行内块元素之间有换行</section>
+    <span class="s2">span2 01</span>
+    <span class="s2">span2 02</span>
+    <span class="s2">span2 03</span>
+
+    <br>
+    <br>
+    <section>2.2. 多个行内块元素之间没有换行</section>
+    <span class="s2">span2 04</span><span class="s2">span2 05</span><span class="s2">span2 06</span>
+    <div class="box2"></div>
+    <br>
+    
+    <section>3. 测试元素隐藏 display:none</section>
+    <span class="s3">span3 01</span>
+    abcdefg
+    <span class="s3">span3 02</span>
+    <div class="box3"></div>
+    <br>
+</body>
+</html>
