@@ -34,7 +34,13 @@
     - [盒子模型的垂直方向布局](#盒子模型的垂直方向布局)
     - [垂直外边距的折叠](#垂直外边距的折叠)
     - [行内元素的盒子模型](#行内元素的盒子模型)
+    - [盒子的大小](#盒子的大小)
+    - [盒子的轮廓](#盒子的轮廓)
 - [浏览器的默认样式](#浏览器的默认样式)
+- [](#)
+- [](#)
+- [](#)
+- [](#)
 - [](#)
 - [](#)
 - [常用的通用属性](#常用的通用属性)
@@ -1517,7 +1523,8 @@
         |`padding`|内边距|表示是内容区与边框的内容|
         |`margin`|外边距|当两个盒子放在一起时，两个盒子的间距|
     
-- <label style="color:red">盒子的可见大小 = `context` + `border` + `padding`</label>
+- <label style="color:red">盒子的可见大小 = `width/height` + `border`×2 + `padding`×2</label>
+    - 计算方式与属性设置的关系：[盒子的大小](#盒子的大小)
 
 ## 内容区content
 [top](#catalog)
@@ -2146,6 +2153,191 @@
 - overflow-x，处理水平方向的溢出
 - overflow-y，处理垂直方向的溢出
 
+- 示例
+    - 参考代码：[/frontend/css/base/src/boxModel/verticalLayout.html](/frontend/css/base/src/boxModel/verticalLayout.html)
+    - 父元素没有设置高度
+        - css
+            ```css
+            .outer1{
+                background-color: rgb(121, 219, 56);
+            }
+
+            .inner1{
+                height:100px;
+
+                width:100px;
+                background-color: orange;
+                
+                /* 如果当前元素下方没有其他元素，则该属性没有显示效果 */
+                margin-bottom:50px;
+            }
+            ```
+        - html
+            ```html
+            <section>1. 父元素没有设置高度，子元素设置了高度</section>
+            <div class="outer1">
+                <div class="inner1">outer1.inner1 01</div>
+                <div class="inner1">outer1.inner1 02</div>
+            </div>
+            ```
+        - [](????)
+
+    - 父元素设置高度
+        - css
+            ```css
+            .outer2{
+                width:300px;
+                height: 300px;
+                background-color: rgb(121, 219, 56);
+            }
+
+            .inner2{
+                height:100px;
+
+                width:100px;
+                background-color: orange;
+                
+                /* 如果当前元素下方没有其他元素，则该属性没有显示效果 */
+                margin-bottom:50px;
+            }
+            ```
+        - html
+            ```html
+            <section>2. 父元素设置高度，子元素设置了高度</section>
+            <div class="outer2">
+                <div class="inner2">outer2.inner2 01</div>
+                <div class="inner2">outer2.inner2 02</div>
+            </div>
+            ```
+        - [](????)
+
+    - 子元素没有设置高度
+        - css
+            ```css
+            <section>3. 父元素设置高度，子元素没有设置高度</section>
+            <section>(子元素中如果没有文字内容或下一层的子元素，则这个子元素不会显示)</section>
+            <div class="outer3">
+                <div class="inner3">outer3.inner3</div>
+                <div class="inner3"></div>
+            </div>
+            ```
+        - html
+            ```html
+            <section>3. 父元素设置高度，子元素没有设置高度</section>
+            <section>(子元素中如果没有文字内容或下一层的子元素，则这个子元素不会显示)</section>
+            <div class="outer3">
+                <div class="inner3">outer3.inner3</div>
+                <div class="inner3"></div>
+            </div>
+            ```
+        - [](????)
+
+    - 子元素的高度 > 父元素的高度
+        - css
+            ```css
+            .outer4{
+                width:200px;
+                height: 200px;
+                background-color: rgb(121, 219, 56);
+            }
+
+            .inner4{
+                height:250px;
+
+                width:100px;
+                background-color: orange;
+                
+            }
+            ```
+        - html
+            ```html
+            <section>4. 子元素的高度 > 父元素的高度，子元素会从父元素中溢出</section>
+            <div class="outer4">
+                <div class="inner4">outer4.inner4</div>
+            </div>
+            ```
+        - [](????)
+
+    - 处理子元素溢出，`overflow=hidden`
+        - css
+            ```css
+            .outer5{
+                width:200px;
+                height: 200px;
+                background-color: rgb(121, 219, 56);
+                overflow: hidden;
+            }
+
+            .inner5{
+                height:300px;
+
+                width:100px;
+                background-color: orange;
+            }
+            ```
+        - html
+            ```html
+            <section>5. 处理子元素溢出，overflow=hidden</section>
+            <div class="outer5">
+                <div class="inner5">outer5.inner5</div>
+            </div>
+            ```
+        - [](????)
+
+    - 处理子元素溢出，`overflow=scroll`
+        - css
+            ```css
+            .outer6{
+                width:200px;
+                height: 200px;
+                background-color: rgb(121, 219, 56);
+                overflow: scroll;
+            }
+
+            .inner6{
+                height:300px;
+
+                width:100px;
+                background-color: orange;
+            }
+            ```
+        - html
+            ```html
+            <section>6. 处理子元素溢出，overflow=scroll</section>
+            <div class="outer6">
+                <div class="inner6">outer6.inner6</div>
+            </div>
+            ```
+        - [](????)
+
+    - 处理子元素溢出，`overflow=auto`
+        - css
+            ```css
+            .outer7{
+                width:200px;
+                height: 200px;
+                background-color: rgb(121, 219, 56);
+                overflow:auto;
+            }
+
+            .inner7{
+                height:300px;
+
+                width:100px;
+                background-color: orange;
+            }
+            ```
+        - html
+            ```html
+            <section>7. 处理子元素溢出，overflow=auto</section>
+            <div class="outer7">
+                <div class="inner7">outer7.inner7</div>
+            </div>
+            ```
+        - [](????)
+
+
+
 ## 垂直外边距的折叠
 [top](#catalog)
 - 垂直方向的、相邻的外边距会发生折叠
@@ -2370,6 +2562,154 @@
 - 行内元素可以设置`border`，并且垂直方向的属性不会影响页面布局，但是可能会覆盖某些元素
 - 行内元素可以设置`margin`，并且垂直方向的属性不会影响页面布局，但是垂直方向的margin看不到
 - 通过[通用属性：display](#display)可以将行内模型转换为块元素
+
+## 盒子的大小
+[top](#catalog)
+- 默认情况下
+- 可以通过`box-sizing`属性来设置盒子大小的计算方式，即设置`width`和`height`的作用范围
+    - `content-box`，默认值，宽度和高度设置内容区的大小
+        - 盒子的可见大小 = `width/height` + `border`×2 + `padding`×2
+    - `border-box`，宽度和高度用来设置整个盒子的可见大小
+        - 盒子的可见大小 = `width/height`
+        - `width/height` = `content + padding*2 + border*2`
+
+- 示例
+    - 参考代码：[/frontend/css/base/src/boxModel/boxsize.html](/frontend/css/base/src/boxModel/boxsize.html)
+    - `content-box`和`border-box`的区别
+        - css
+            ```css
+            /* 1. box-sizing: content-box;使用width/height 设置内容区的大小 */
+            .box1{
+                width:100px;
+                height: 100px;
+                background-color: rgb(117, 218, 23);
+                padding:10px;
+                border:10px red solid;
+
+                /* 设置内容区的大小 */
+                box-sizing: content-box;
+            }
+            /* 2. box-sizing:border-box; 使用width/height 设置整个盒子的可见大小 */
+            .box2{
+                width:100px;
+                height: 100px;
+                background-color: rgb(117, 218, 23);
+                padding:10px;
+                border:10px red solid;
+
+                /* 设置整个盒子的可见大小 */
+                box-sizing:border-box;
+            }
+            ```
+        - html
+            ```html
+            <section>1. box-sizing: content-box;使用width/height 设置内容区的大小</section>
+            <div class="box1"></div>
+            <br>
+            
+            <section>2. box-sizing:border-box; 使用width/height 设置整个盒子的可见大小</section>
+            <div class="box2"></div>
+            <br>
+            ```
+        - [](?????)
+
+
+## 盒子的轮廓
+[top](#catalog)
+- 轮廓的语法： `outline : 宽度 颜色 样式`，与`border`属性的设置方法相同
+- 轮廓与边框的不同点
+    - 在默认情况下(`box-sizing:content-box`)，添加边框会增加盒子可见框的大小，会使后边的元素向下移动，影响页面布局
+    - 轮廓不会影响**可见框**的大小，不会影响布局
+- 常用的使用场景
+    - 鼠标移入某个元素时，给元素添加边框
+- 轮廓属性在实际开发中不太常用
+- 示例
+    - 参考代码：[/frontend/css/base/src/boxModel/outline.html](/frontend/css/base/src/boxModel/outline.html)
+    - `outline`和`border`的比较
+        - css
+            ```css
+            /* 0. 测试基准 */
+            .box0{
+                width:200px;
+                height:200px;
+                background-color: rgb(170, 226, 80);
+            }
+            
+            /* 1. 给box1添加border，会导致span中的文字下移，破坏页面整体布局 */
+            .box1{
+                width:200px;
+                height:200px;
+                background-color: rgb(170, 226, 80);
+                border: 10px red solid;
+            }
+
+            /* 2. 给box0添加轮廓outline */
+            .box2{
+                width:200px;
+                height:200px;
+                background-color: rgb(170, 226, 80);
+
+                /* 设置元素的轮廓线 */
+                outline: 10px red solid;
+            }
+            ```
+        - html
+            ```html
+            <section>0. 测试基准</section>
+            <div class="box0"></div>
+            <span>test string0</span>
+            <br>
+            <br>
+            
+            <section>1. 给box0添加border，会导致span中的文字下移，破坏页面整体布局</section>
+            <div class="box1"></div>
+            <span>test string1</span>
+            <br>
+            <br>
+            
+            <section>2. 给box0添加轮廓outline</section>
+            <br>
+            <div class="box2"></div>
+            <span>test string2</span>
+            ```
+        - [](?????)
+
+    - outline的使用场景：当鼠标移入时，为元素添加边框
+        - css
+            ```css
+            .box3{
+                width:200px;
+                height:200px;
+                background-color: rgb(170, 226, 80);
+            }
+
+            .box3:hover{
+                outline:10px red solid;
+            }
+            ```
+        - html
+            ```html
+            <section>3. outline的使用场景：当鼠标移入时，为元素添加边框</section>
+            <div class="box3"></div>
+            <span>test string3</span>
+            ```
+        - [](?????)
+
+    - 
+        - css
+            ```css
+            ```
+        - html
+            ```html
+            ```
+        - [](?????)
+
+
+## 阴影和圆角
+[top](#catalog)
+- 盒子的阴影
+    - 语法
+
 
 # 浏览器的默认样式
 [top](#catalog)
