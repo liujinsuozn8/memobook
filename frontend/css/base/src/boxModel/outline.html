@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>outline test</title>
+    <style>
+        /* 0. 测试基准 */
+        .box0{
+            width:200px;
+            height:200px;
+            background-color: rgb(170, 226, 80);
+        }
+        
+        /* 1. 给box1添加border，会导致span中的文字下移，破坏页面整体布局 */
+        .box1{
+            width:200px;
+            height:200px;
+            background-color: rgb(170, 226, 80);
+            border: 10px red solid;
+        }
+
+        /* 2. 给box0添加轮廓outline */
+        .box2{
+            width:200px;
+            height:200px;
+            background-color: rgb(170, 226, 80);
+
+            /* 设置元素的轮廓线 */
+            outline: 10px red solid;
+        }
+
+        /* 3. outline的使用场景：当鼠标移入时，为元素添加边框 */
+        .box3{
+            width:200px;
+            height:200px;
+            background-color: rgb(170, 226, 80);
+        }
+
+        .box3:hover{
+            outline:10px red solid;
+        }
+    </style>
+</head>
+<body>
+    <section>0. 测试基准</section>
+    <div class="box0"></div>
+    <span>test string0</span>
+    <br>
+    <br>
+    
+    <section>1. 给box0添加border，会导致span中的文字下移，破坏页面整体布局</section>
+    <div class="box1"></div>
+    <span>test string1</span>
+    <br>
+    <br>
+    
+    <section>2. 给box0添加轮廓outline</section>
+    <br>
+    <div class="box2"></div>
+    <span>test string2</span>
+    <br>
+    <br>
+    <br>
+
+    <section>3. outline的使用场景：当鼠标移入时，为元素添加边框</section>
+    <div class="box3"></div>
+    <span>test string3</span>
+    <br>
+    <br>
+    <br>
+</body>
+</html>
