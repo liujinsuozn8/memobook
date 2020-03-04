@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <style>
+        /* 1. 阴影在盒子的正下方 */
+        .box1{
+            width: 100px;
+            height: 100px;
+            background-color: rgb(139, 235, 49);
+            box-shadow:0px 0px orange ;
+        }
+
+        /* 2. 阴影偏移-正数，阴影向右/下偏移 */
+        .box2{
+            width:100px;
+            height:100px;
+            background-color: rgb(139, 235, 49);
+            box-shadow:10px 10px 0px rgba(253, 190, 0, 0.6) ;
+        }
+        
+        /* 3. 阴影偏移-负数，阴影向左/上偏移 */
+        .box3{
+            width:100px;
+            height:100px;
+            background-color: rgb(139, 235, 49);
+            box-shadow:-10px -10px 0px rgba(253, 190, 0, 0.6) ;
+        }
+        
+        /* 4. 阴影的模糊半径 */
+        .box4{
+            width:100px;
+            height:100px;
+            background-color: rgb(139, 235, 49);
+            box-shadow:10px 10px 10px rgba(253, 190, 0, 0.6) ;
+        }
+
+        /* 5. 使用0偏移量和阴影的模糊半径来制造羽化效果 */
+        .box5{
+            width:100px;
+            height:100px;
+            background-color: rgb(139, 235, 49);
+            box-shadow:0px 0px 10px rgba(253, 190, 0, 0.6) ;
+        }
+    </style>
+</head>
+<body>
+    <section>1. 阴影在盒子的正下方</section>
+    <div class="box1"></div>
+    <br>
+    
+    <section>2. 阴影偏移-正数，阴影向右/下偏移</section>
+    <div class="box2"></div>
+    <br>
+    
+    <section>3. 阴影偏移-负数，阴影向左/上偏移</section>
+    <br>
+    <div class="box3"></div>
+    <br>
+
+    <section>4. 阴影的模糊半径</section>
+    <div class="box4"></div>
+    <br>
+    
+    <section>5. 使用0偏移量和阴影的模糊半径来制造羽化效果</section>
+    <br>
+    <div class="box5"></div>
+    <br>
+</body>
+</html>
