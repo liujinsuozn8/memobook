@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>borderRadius test</title>
+    <style>
+        /* 1. 使用单角属性来设置正圆圆角 */
+        .box1{
+            width: 150px;
+            height: 150px;
+            background-color: rgb(142, 224, 49);
+            
+            border-top-left-radius: 20px;
+            border-top-right-radius: 30px;
+            border-bottom-left-radius: 40px;
+            border-bottom-right-radius: 50px;
+        }
+        
+        /* 2. 使用单角属性来设置椭圆圆角 */
+        .box2{
+            width: 150px;
+            height: 150px;
+            background-color: rgb(142, 224, 49);
+            
+            border-top-left-radius: 30px 60px;
+        }
+
+        /* 3. 使用统一属性，给4个角设置相同的半径 */
+        .box3{
+            width: 100px;
+            height: 100px;
+            background-color: rgb(142, 224, 49);
+
+            border-radius: 30px;
+        }
+        
+        /* 4. 使用统一属性，分别设置：左上 右上 右下 左下 */
+        .box4{
+            width: 150px;
+            height: 150px;
+            background-color: rgb(142, 224, 49);
+
+            border-radius: 20px 30px 40px 50px;
+        }
+        
+        /* 5. 使用统一属性，分别设置：左上 右上/左下 右下 */
+        .box5{
+            width: 200px;
+            height: 200px;
+            background-color: rgb(142, 224, 49);
+
+            border-radius: 30px 50px 70px;
+        }
+        
+        /* 6. 使用统一属性，分别设置：左上/右下 右上/左下 */
+        .box6{
+            width: 200px;
+            height: 200px;
+            background-color: rgb(142, 224, 49);
+
+            border-radius: 30px  70px;
+        }
+
+        /* 7. 在统一属性设置椭圆 */
+        .box7{
+            width: 200px;
+            height: 200px;
+            background-color: rgb(142, 224, 49);
+
+            border-radius: 30px / 70px;
+        }
+
+        /* 8. 通过：border-radius: 50%，将盒子设置为50% */
+        .box8{
+            width: 200px;
+            height: 200px;
+            background-color: rgb(142, 224, 49);
+
+            border-radius:50%;
+        }
+
+    </style>
+</head>
+<body>
+    <section>1. 使用单角属性来设置正圆圆角</section>
+    <div class="box1"></div>
+    <br>
+
+    <section>2. 使用单角属性来设置椭圆圆角</section>
+    <div class="box2"></div>
+    <br>
+    
+    <section>3. 使用统一属性，给4个角设置相同的半径</section>
+    <div class="box3"></div>
+    <br>
+    
+    <section>4. 使用统一属性，分别设置：左上 右上 右下 左下</section>
+    <div class="box4"></div>
+    <br>
+    
+    <section>5. 使用统一属性，分别设置：左上 右上/左下 右下</section>
+    <div class="box5"></div>
+    <br>
+    
+    <section>6. 使用统一属性，分别设置：左上/右下 右上/左下</section>
+    <div class="box6"></div>
+    <br>
+    
+    <section>7. 在统一属性设置椭圆</section>
+    <div class="box7"></div>
+    <br>
+
+    <section>8. 通过：border-radius: 50%，将盒子设置为50%</section>
+    <div class="box8"></div>
+</body>
+</html>
