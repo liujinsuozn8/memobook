@@ -36,9 +36,9 @@
     - [行内元素的盒子模型](#行内元素的盒子模型)
     - [盒子的大小](#盒子的大小)
     - [盒子的轮廓](#盒子的轮廓)
+    - [盒子的阴影](#盒子的阴影)
+    - [盒子的圆角](#盒子的圆角)
 - [浏览器的默认样式](#浏览器的默认样式)
-- [](#)
-- [](#)
 - [](#)
 - [](#)
 - [](#)
@@ -2619,7 +2619,7 @@
 - 轮廓的语法： `outline : 宽度 颜色 样式`，与`border`属性的设置方法相同
 - 轮廓与边框的不同点
     - 在默认情况下(`box-sizing:content-box`)，添加边框会增加盒子可见框的大小，会使后边的元素向下移动，影响页面布局
-    - 轮廓不会影响**可见框**的大小，不会影响布局
+    - 轮廓不会影响**可见框**的大小，**不会影响布局**
 - 常用的使用场景
     - 鼠标移入某个元素时，给元素添加边框
 - 轮廓属性在实际开发中不太常用
@@ -2693,22 +2693,282 @@
             <div class="box3"></div>
             <span>test string3</span>
             ```
-        - [](?????)
+        - 测试结果
+            - 正常显示
+                - [](?????)
+            - 鼠标移入
+                - [](?????)
 
-    - 
+## 盒子的阴影
+[top](#catalog)
+- 语法：`box-shadow: 水平偏移量 垂直偏移量 阴影的模糊半径 阴影颜色 `
+    - 偏移量
+        - 正数：阴影向右/下偏移
+        - 负数：阴影向左/上偏移
+    - 阴影的模糊半径越大越模糊
+    - 一般情况下，为了使阴影具有透明效果，阴影颜色会使用`rgba`来设定
+- **阴影不会影响页面布局**
+- 阴影默认是在盒子的正下方，即：`box-shadow: 0px 0px`
+- 示例
+    - 参考代码:[/frontend/css/base/src/boxModel/boxshadow.html](/frontend/css/base/src/boxModel/boxshadow.html)
+    - 阴影在盒子的正下方
         - css
             ```css
+            .box1{
+                width: 100px;
+                height: 100px;
+                background-color: rgb(139, 235, 49);
+                box-shadow:0px 0px orange ;
+            }
             ```
         - html
             ```html
+            <section>1. 阴影在盒子的正下方</section>
+            <div class="box1"></div>
             ```
-        - [](?????)
+        - ![](?????)
 
+    - 阴影偏移-正数，阴影向右/下偏移
+        - css
+            ```css
+            .box2{
+                width:100px;
+                height:100px;
+                background-color: rgb(139, 235, 49);
+                box-shadow:10px 10px 0px rgba(253, 190, 0, 0.6) ;
+            }
+            ```
+        - html
+            ```html
+            <section>2. 阴影偏移-正数，阴影向右/下偏移</section>
+            <div class="box2"></div>
+            ```
+        - ![](?????)
 
-## 阴影和圆角
+    - 阴影偏移-负数，阴影向左/上偏移
+        - css
+            ```css
+            .box3{
+                width:100px;
+                height:100px;
+                background-color: rgb(139, 235, 49);
+                box-shadow:-10px -10px 0px rgba(253, 190, 0, 0.6) ;
+            }
+            ```
+        - html
+            ```html
+            <section>3. 阴影偏移-负数，阴影向左/上偏移</section>
+            <br>
+            <div class="box3"></div>
+            ```
+        - ![](?????)
+
+    - 阴影的模糊半径
+        - css
+            ```css
+            .box4{
+                width:100px;
+                height:100px;
+                background-color: rgb(139, 235, 49);
+                box-shadow:10px 10px 10px rgba(253, 190, 0, 0.6) ;
+            }
+            ```
+        - html
+            ```html
+            <section>4. 阴影的模糊半径</section>
+            <div class="box4"></div>
+            ```
+        - ![](?????)
+
+    - 使用0偏移量和阴影的模糊半径来制造羽化效果
+        - css
+            ```css
+            .box5{
+                width:100px;
+                height:100px;
+                background-color: rgb(139, 235, 49);
+                box-shadow:0px 0px 10px rgba(253, 190, 0, 0.6) ;
+            }
+            ```
+        - html
+            ```html
+            <section>5. 使用0偏移量和阴影的模糊半径来制造羽化效果</section>
+            <br>
+            <div class="box5"></div>
+            ```
+        - ![](?????)
+    
+
+## 盒子的圆角
 [top](#catalog)
-- 盒子的阴影
-    - 语法
+- 语法：
+    - 统一属性
+        - `border-radius: 4个方向的正圆圆角半径`
+        - `border-radius: 左上 右上 右下 左下`，仍然遵守顺时针的顺序
+        - `border-radius: 左上 右上/左下 右下`，仍然遵守顺时针的顺序
+        - `border-radius: 左上/右下 右上/左下 `，仍然遵守顺时针的顺序
+        - 在统一属性设置椭圆
+            - `border-radius: 正圆圆角半径 / 椭圆圆角半径`
+
+    - 单角属性
+        - `border-top-left-radius: 正圆圆角半径，椭圆圆角半径`
+        - `border-top-right-radius: 正圆圆角半径，椭圆圆角半径`
+        - `border-bottom-left-radius: 正圆圆角半径，椭圆圆角半径`
+        - `border-bottom-right-radius: 正圆圆角半径，椭圆圆角半径`
+
+- 当`正圆圆角半径=椭圆圆角半径`时，页面显示的仍然是圆角
+- 常用方式
+    - 可以直接使用：`border-radius: 50%`将盒子设置为圆
+
+- 示例
+    - 参考代码：[/frontend/css/base/src/boxModel/borderRadius.html](/frontend/css/base/src/boxModel/borderRadius.html)
+    - 使用单角属性来设置正圆圆角
+        - css
+            ```css
+            .box1{
+                width: 150px;
+                height: 150px;
+                background-color: rgb(142, 224, 49);
+                
+                border-top-left-radius: 20px;
+                border-top-right-radius: 30px;
+                border-bottom-left-radius: 40px;
+                border-bottom-right-radius: 50px;
+            }
+            ```
+        - html
+            ```html
+            <section>1. 使用单角属性来设置正圆圆角</section>
+            <div class="box1"></div>
+            ```
+        - ![](?????)
+
+    - 使用单角属性来设置椭圆圆角
+        - css
+            ```css
+            .box2{
+                width: 150px;
+                height: 150px;
+                background-color: rgb(142, 224, 49);
+                
+                border-top-left-radius: 30px 60px;
+            }
+            ```
+        - html
+            ```html
+            <section>2. 使用单角属性来设置椭圆圆角</section>
+            <div class="box2"></div>
+            ```
+        - ![](?????)
+
+    - 使用统一属性，给4个角设置相同的半径
+        - css
+            ```css
+            .box3{
+                width: 100px;
+                height: 100px;
+                background-color: rgb(142, 224, 49);
+
+                border-radius: 30px;
+            }
+            ```
+        - html
+            ```html
+            <section>3. 使用统一属性，给4个角设置相同的半径</section>
+            <div class="box3"></div>
+            ```
+        - ![](?????)
+
+    - 使用统一属性，分别设置：左上 右上 右下 左下
+        - css
+            ```css
+            .box4{
+                width: 150px;
+                height: 150px;
+                background-color: rgb(142, 224, 49);
+
+                border-radius: 20px 30px 40px 50px;
+            }
+            ```
+        - html
+            ```html
+            <section>4. 使用统一属性，分别设置：左上 右上 右下 左下</section>
+            <div class="box4"></div>
+            ```
+        - ![](?????)
+
+    - 使用统一属性，分别设置：左上 右上/左下 右下
+        - css
+            ```css
+            .box5{
+                width: 200px;
+                height: 200px;
+                background-color: rgb(142, 224, 49);
+
+                border-radius: 30px 50px 70px;
+            }
+            ```
+        - html
+            ```html
+            <section>5. 使用统一属性，分别设置：左上 右上/左下 右下</section>
+            <div class="box5"></div>
+            ```
+        - ![](?????)
+
+    - 使用统一属性，分别设置：左上/右下 右上/左下
+        - css
+            ```css
+            .box6{
+                width: 200px;
+                height: 200px;
+                background-color: rgb(142, 224, 49);
+
+                border-radius: 30px  70px;
+            }
+            ```
+        - html
+            ```html
+            <section>6. 使用统一属性，分别设置：左上/右下 右上/左下</section>
+            <div class="box6"></div>
+            ```
+        - ![](?????)
+
+    - 在统一属性设置椭圆
+        - css
+            ```css
+            .box7{
+                width: 200px;
+                height: 200px;
+                background-color: rgb(142, 224, 49);
+
+                border-radius: 30px / 70px;
+            }
+            ```
+        - html
+            ```html
+            <section>7. 在统一属性设置椭圆</section>
+            <div class="box7"></div>
+            ```
+        - ![](?????)
+
+    - 通过：border-radius: 50%，将盒子设置为50%
+        - css
+            ```css
+            .box8{
+                width: 200px;
+                height: 200px;
+                background-color: rgb(142, 224, 49);
+
+                border-radius:50%;
+            }
+            ```
+        - html
+            ```html
+            <section>8. 通过：border-radius: 50%，将盒子设置为50%</section>
+            <div class="box8"></div>
+            ```
+        - ![](?????)
+
 
 
 # 浏览器的默认样式
@@ -2958,6 +3218,9 @@
 
 - 行内元素的宽和高默认都是元素内容的宽和高
 - 如果父元素中没有设置`height`，当子元素中使用负数的`margin`时，会导致下方的元素向上移动。
+
+- 阴影不会影响页面布局
+- 轮廓不会影响**可见框**的大小，**不会影响布局**
 
 # 练习
 [top](#catalog)
