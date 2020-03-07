@@ -37,17 +37,25 @@
     - [单例模式形式7-枚举](#单例模式形式7-枚举)
     - [单例模式在JDK中的应用](#单例模式在JDK中的应用)
 - 创建型-工厂模式
-    - [问题引入-pizza订购](#问题引入-pizza订购)
+    - [引入问题-pizza订购](#引入问题-pizza订购)
     - [简单工厂模式](#简单工厂模式)
     - [静态工厂模式](#静态工厂模式)
     - [工厂方法模式](#工厂方法模式)
     - [抽象工厂模式](#抽象工厂模式)
     - [工厂模式总结](#工厂模式总结)
 - 创建型-原型模式
-    - [问题引入-克隆羊](#问题引入-克隆羊)
+    - [引入问题-克隆羊](#引入问题-克隆羊)
     - [原型模式的基本原理](#原型模式的基本原理)
     - [浅拷贝和深拷贝](#浅拷贝和深拷贝)
     - [原型模式的注意事项和细节](#原型模式的注意事项和细节)
+- 创建型-建造者模式
+    - [引入问题-盖房子](#引入问题-盖房子)
+    - [建造者模式的概念](#建造者模式的概念)
+    - [使用建造者模式改造引入问题](#使用建造者模式改造引入问题)
+    - [建造者模式的注意事项和细节](#建造者模式的注意事项和细节)
+    - [建造者模式在JDK中的使用-StringBuilder](#建造者模式在JDK中的使用-StringBuilder)
+- [](#)
+- [](#)
 - [](#)
 - [](#)
 - [](#)
@@ -409,7 +417,7 @@
         }
         ```
     - UML类图
-        - ![imgs/principle/Dependency_Inversion/DeliverByInterface.png](imgs/principle/Dependency_Inversion/DeliverByInterface.png)
+        - ![DeliverByInterface.png](imgs/principle/Dependency_Inversion/DeliverByInterface.png)
         
 - 构造方法传递
     - 接口之间完全看不出依赖关系，只是通过实现类的构造器来关联
@@ -1741,7 +1749,7 @@
 - `java.lang.Runtime`采用的是饿汉式-静态常量的方式
 
 # 创建型-工厂模式
-## 问题引入-pizza订购
+## 引入问题-pizza订购
 [top](#catalog)
 - 需求
     - 披萨店项目：要便于披萨种类的扩展，要便于维护
@@ -2307,7 +2315,7 @@
     - 不要覆盖基类中已经实现的方法
  
 # 创建型-原型模式
-## 问题引入-克隆羊
+## 引入问题-克隆羊
 [top](#catalog)
 - 需求
     1. 创建一只羊
@@ -2400,7 +2408,7 @@
 - 原型模式的工作原理
     - 将一个原型对象传给要执行创建的对象，并通过请求原型对象拷贝自身来完成创建过程，即：`原型对象.clone()`
 - 原型模式的UML
-    - [prototype_uml](imgs/pattern/prototype/base/prototype_uml.png)
+    - ![prototype_uml](imgs/pattern/prototype/base/prototype_uml.png)
 - java中原型模式的使用方法
     - 实现`Cloneable`接口，该接口表示该类能够复制且具有复制的能力
     - 可以重写`clone()`方法
@@ -2630,6 +2638,333 @@
 - ~~如果原始对象发生变化，如增加或减少属性时，其他克隆对象也会发生相应的变化，无需修改代码~~
 - Java原型模式的缺点
     - 需要为每一个类实现`Cloneable`接口，对于已有的类，需要直接修改源代码，违反了ocp原则   
+
+# 创建型-建造者模式
+## 引入问题-盖房子
+[top](#catalog)
+- 需求
+    - 需要建房子：这一过程为打桩、砌墙、封顶
+    - 房子有各种各样的，如普通房、高楼、别墅，各种房子的过程虽然一样，但是要求不同
+- 传统的实现方法
+    - 实现方法
+        1. 创建接口或抽象类来规范创建过程
+        2. 创建接口或抽象类的实现类来负责不同类型房子的创建
+        3. 客户端使用不同的实现类来创建房子
+    - UML图
+        - ![problem_uml](imgs/pattern/builder/builderHouse/problem_uml.png)
+    - 抽象类
+        - 参考代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/builder/buildHouse/AbstractHouse.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/builder/buildHouse/AbstractHouse.java)
+        - 代码内容
+            ```java
+            public abstract class AbstractHouse {
+                public abstract void buildBasic();
+                public abstract void buildWalls();
+                public abstract void roofed();
+            
+                public void build(){
+                    buildBasic();
+                    buildWalls();
+                    roofed();
+                }
+            }
+            ```
+    - 实现类
+        - 参考代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/builder/buildHouse/CommonHose.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/builder/buildHouse/CommonHose.java)
+        - 代码内容
+            ```java
+            public class CommonHose extends AbstractHouse {
+                @Override
+                public void buildBasic() {
+                    System.out.println("CommonHose buildBasic");
+                }
+            
+                @Override
+                public void buildWalls() {
+                    System.out.println("CommonHose buildWalls");
+                }
+            
+                @Override
+                public void roofed() {
+                    System.out.println("CommonHose roofed");
+                }
+            }
+            ```
+    - 测试类
+        - 参考代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/builder/buildHouse/ClientTest.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/builder/buildHouse/ClientTest.java)
+        - 代码内容
+            ```java
+            @Test
+            public void test01(){
+                CommonHose commonHose = new CommonHose();
+                commonHose.build();
+            }
+            ```
+        
+- 传统方法的问题
+    - 优点：容易理解，操作简单
+    - 缺点
+        - 程序结果过于简单，没有设计**缓存层**对象
+        - 产品和产品的创建过程被封装在一起，耦合性强，不利于扩展和维护
+- 解决的方法
+    - 使用建造者模式，将产品和产品的创建过程解耦
+    
+## 建造者模式的概念
+[top](#catalog)
+- 建造者模式相对与传统方式的优点
+    1. 产品与创建过程的解耦
+        - 建造者模式**可以将复杂对象的建造过程抽象出来，变成抽象类**，这个抽象类的不同实现方法可以构造出不同表现(属性)的对象
+    2. 产品的创建比较方便
+        - 建造者模式会一步一步创建一个复杂的对象，它允许用户通过指定复杂对象的类型和内容就可以构建他们，用户不需要知道内部的具体构建细节
+    3. 扩展容易
+        - 扩展时，无需修改产品类，直接添加一个新的具体建造者
+- 建造者模式的4个角色
+    1. Product，产品：一个具体的产品对象
+    2. Builder，抽象建造者：接口/抽象类，负责指定创建Product对象的流程
+    3. ConcreteBuilder，具体建造者：实现Builder，负责各个创建流程的实现，但是**不包含整体的创建流程**
+    4. Director，指挥者：
+        - 控制建造者，完成产品的整体创建流程（即按顺序调用建造者的方法）
+        - 指挥者的两个主要作用：
+            1. 隔离客户与产品的生产过程
+            2. 控制产品的生产过程
+
+- 建造者模式的原理图
+    - ![builder_principle](imgs/pattern/builder/base/builder_principle.png)
+    
+## 使用建造者模式改造引入问题
+[top](#catalog)
+- 改进方式
+    - 将房子作为产品类：`House`
+    - 创建一个抽象建造者：`HouseBuilder`，负责指定`House`的各个创建流程
+    - 构造具体建造者：`CommonHouseBuilder`、`HightBuildingBuilder`负责具体的创建流程
+    - 创建指挥者：`HouseDirector`，通过方法`constructHouse()`来创建具体类型的House
+    - 在`Client`中，通过向指挥者`HouseDirector`注入不同的具体建造者，来创建不同的`House`
+
+- UML图
+    - ![problem_uml](imgs/pattern/builder/base/problem_uml.png)
+
+-　`Product`产品类
+    - 参考代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/builder/base/House.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/builder/base/House.java)
+    - 代码内容
+        ```java
+        public class House {
+            private String basic;
+            private String wall;
+            private String roofed;
+        
+            @Override
+            public String toString() {
+                return "House{" +
+                        "basic='" + basic + '\'' +
+                        ", wall='" + wall + '\'' +
+                        ", roofed='" + roofed + '\'' +
+                        '}';
+            }
+        
+            public String getBasic() {
+                return basic;
+            }
+        
+            public void setBasic(String basic) {
+                this.basic = basic;
+            }
+        
+            public String getWall() {
+                return wall;
+            }
+        
+            public void setWall(String wall) {
+                this.wall = wall;
+            }
+        
+            public String getRoofed() {
+                return roofed;
+            }
+        
+            public void setRoofed(String roofed) {
+                this.roofed = roofed;
+            }
+        }
+        ```
+
+- `Builder`抽象建造者
+    - 参考代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/builder/base/HouseBuilder.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/builder/base/HouseBuilder.java)
+    - 代码内容
+        ```java
+        public abstract class HouseBuilder {
+            protected House house = new House();
+        
+            // 构建流程
+            public abstract void buildBasic();
+            public abstract void buildWalls();
+            public abstract void roofed();
+        
+            // 获取产品
+            public House getHouse (){
+                return house;
+            }
+        }
+        ```
+    
+- `ConcreteBuilder`具体建造者
+    - `CommonHouseBuilder`
+        - 参考代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/builder/base/CommonHouseBuilder.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/builder/base/CommonHouseBuilder.java)
+        
+        - 代码内容
+            ```java
+            public class CommonHouseBuilder extends HouseBuilder {
+                @Override
+                public void buildBasic() {
+                    System.out.println("CommonHouse buildBasic");
+                    this.house.setBasic("basic from CommonHouse");
+                }
+            
+                @Override
+                public void buildWalls() {
+                    System.out.println("CommonHouse buildWalls");
+                    this.house.setWall("walls from CommonHouse");
+                }
+            
+                @Override
+                public void roofed() {
+                    System.out.println("CommonHouse roofed");
+                    this.house.setRoofed("roofed from CommonHouse");
+                }
+            }
+            ```
+    - `HightBuildingBuilder`
+        - 参考代码：[/Users/liujinsuo/myGit/memobook/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/builder/base/HightBuildingBuilder.java](/Users/liujinsuo/myGit/memobook/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/builder/base/HightBuildingBuilder.java)
+        - 代码内容
+            ```java
+            public class HightBuildingBuilder extends HouseBuilder {
+                @Override
+                public void buildBasic() {
+                    System.out.println("HightBuilding buildBasic");
+                    this.house.setBasic("basic from HightBuilding");
+                }
+            
+                @Override
+                public void buildWalls() {
+                    System.out.println("HightBuilding buildWalls");
+                    this.house.setWall("walls from HightBuilding");
+                }
+            
+                @Override
+                public void roofed() {
+                    System.out.println("HightBuilding roofed");
+                    this.house.setRoofed("roofed from HightBuilding");
+                }
+            }
+            ```
+
+## 建造者模式的注意事项和细节
+[top](#catalog)
+- 客户端不必知道产品内部的组成细节，将产品本身与产品的创建过程解耦，使相同的创建过程可以创建不同的产品对象
+- 每一个具体建造者都相对独立，且与其他的建造者无关，因此可以很方便的替换或增加具体建造者。客户端使用不同的具体建造者即可得到不同的产品对象
+- 可以更加精细的控制产品的创建过程，将复杂产品的创建步骤分解在不同的方法中，使创建过程更加清晰、更方便使用程序来控制创建过程
+- 新增具体建造者无需修改原有代码，指挥这针对抽象建造者编程，系统扩展方便，符合开闭原则
+- 建造者模式所创建的<label style="color:red">产品一般具有较多的共同点，其组成部分相似，如果产品之间的差异性很大，则不适合使用建造者模式</label>，因此使用范围受限
+- 如果产品的**内部变化复杂**，可能会导致需要**定义很多具体建造者类**来实现这种变化，导致系统变得很庞大。这种情况下，需要考虑是否选择建造者模式
+- 抽象工厂 与 建造者
+    - 抽象工厂是对一系列产品的创建，具有不同分类纬度的产品组合。采用抽象工厂是不需要关心构建过程，更注重由什么工厂生产产品
+    - 建造者是对相似产品的创建，更注重按照指定的构建过程来生产产品
+          
+## 建造者模式在JDK中的使用-StringBuilder
+[top](#catalog)
+- StringBuilder的类图
+    - ![StringBuilder_class](imgs/pattern/builder/jdk_StringBuilder/StringBuilder_class.png)
+- StringBuilder中的角色分析
+    - 产品类：`String`    
+    - 抽象建造者：`Appendable`
+        - 接口中定义了多个`append`方法，相当于具体的创建流程
+            - 方法返回自身，是为了对象复用或链式调用 
+        - 源码
+            ```java
+            public interface Appendable {
+                Appendable append(CharSequence csq) throws IOException;
+                Appendable append(CharSequence csq, int start, int end) throws IOException;
+                Appendable append(char c) throws IOException;
+            }
+            ```
+    - 具体建造者：`AbstractStringBuilder`
+        - 该抽象类已经实现了`Appendable`，只是不能实例化
+        - 源码
+            ```java
+            abstract class AbstractStringBuilder implements Appendable, CharSequence {
+                  @Override
+                  public AbstractStringBuilder append(CharSequence s) {
+                      if (s == null) {
+                          return appendNull();
+                      }
+                      if (s instanceof String) {
+                          return this.append((String)s);
+                      }
+                      if (s instanceof AbstractStringBuilder) {
+                          return this.append((AbstractStringBuilder)s);
+                      }
+                      return this.append(s, 0, s.length());
+                  }
+          
+                  @Override
+                  public AbstractStringBuilder append(CharSequence s, int start, int end) {
+                      if (s == null) {
+                          s = "null";
+                      }
+                      checkRange(start, end, s.length());
+                      int len = end - start;
+                      ensureCapacityInternal(count + len);
+                      if (s instanceof String) {
+                          appendChars((String)s, start, end);
+                      } else {
+                          appendChars(s, start, end);
+                      }
+                      return this;
+                  }
+            }
+          
+            @Override
+            public AbstractStringBuilder append(char c) {
+                ensureCapacityInternal(count + 1);
+                if (isLatin1() && StringLatin1.canEncode(c)) {
+                    value[count++] = (byte)c;
+                } else {
+                    if (isLatin1()) {
+                        inflate();
+                    }
+                    StringUTF16.putCharSB(value, count++, c);
+                }
+                return this;
+            }
+            ```
+          
+    - 指挥者：`StringBuilder`
+        - `StringBuilder`即是指挥者，又是建造者
+        - 建造方法的实现是由`AbstractStringBuilder`提供的
+        - 源码
+            ```java
+            public final class StringBuilder
+                extends AbstractStringBuilder
+                implements java.io.Serializable, Comparable<StringBuilder>, CharSequence{
+          
+                @Override
+                public StringBuilder append(CharSequence s) {
+                    super.append(s);
+                   return this;
+                }
+          
+                @Override
+                public StringBuilder append(CharSequence s, int start, int end) {
+                    super.append(s, start, end);
+                    return this;
+                }
+          
+                @Override
+                @HotSpotIntrinsicCandidate
+                public StringBuilder append(char c) {
+                    super.append(c);
+                    return this;
+                }
+            }
+            ```
 
 
 # 结构型-代理模式

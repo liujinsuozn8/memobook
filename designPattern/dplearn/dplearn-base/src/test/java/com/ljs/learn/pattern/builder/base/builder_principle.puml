@@ -1,0 +1,33 @@
+@startuml
+
+abstract class Builder{
+    + void buildPartA()
+    + void buildPartB()
+    + void buildPartC()
+    + getResult()
+}
+
+class ConcreteBuilder{
+    + void buildPartA()
+    + void buildPartB()
+    + void buildPartC()
+    + getResult()
+}
+
+class Director{
+    - builder:Builder
+    + construct()
+}
+
+note bottom of Director
+    builder.buildPartA();
+    builder.buildPartB();
+    builder.buildPartC();
+    builder.getResult();
+end note
+
+Builder *-right- Product
+Builder <|-- ConcreteBuilder
+Director o-right- Builder
+
+@enduml

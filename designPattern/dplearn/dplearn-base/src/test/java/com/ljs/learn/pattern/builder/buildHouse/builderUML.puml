@@ -1,0 +1,34 @@
+@startuml
+
+abstract class AbstractHouse{
+
+    abstract void buildBasic()
+    abstract void buildWalls()
+    abstract void roofed()
+    void build()
+}
+
+note right of AbstractHouse
+产品与创建过程耦合，
+build()没有返回值，执行即创建自身
+end note
+
+class CommonHouse{
+    void buildBasic()
+    void buildWalls()
+    void roofed()
+}
+class HighBuilding{
+    void buildBasic()
+    void buildWalls()
+    void roofed()
+}
+
+
+AbstractHouse<|--CommonHouse
+AbstractHouse<|--HighBuilding
+
+
+CommonHouse<..client
+HighBuilding<..client
+@enduml
