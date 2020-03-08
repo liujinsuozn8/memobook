@@ -1,0 +1,34 @@
+@startuml
+
+Interface Dst{
+    + void operation1()
+    + void operation2()
+    + void operation3()
+    + void operation4()
+}
+
+abstract class AdstractAdapter{
+    + void operation1()
+    + void operation2()
+    + void operation3()
+    + void operation4()
+}
+
+class SubClass{
+    + void operation2()
+    + void operation3()
+}
+
+note right of SubClass
+根据需求，只覆盖父类的部分方法
+end note
+
+note right of AdstractAdapter
+通过空方法来实现接口
+end note
+
+Dst <|-- AdstractAdapter
+AdstractAdapter <|.. SubClass
+
+
+@enduml

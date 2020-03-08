@@ -54,6 +54,17 @@
     - [使用建造者模式改造引入问题](#使用建造者模式改造引入问题)
     - [建造者模式的注意事项和细节](#建造者模式的注意事项和细节)
     - [建造者模式在JDK中的使用-StringBuilder](#建造者模式在JDK中的使用-StringBuilder)
+- 结构型-适配器模式
+    - [适配器模式的基本介绍](#适配器模式的基本介绍)
+    - [类适配器模式](#类适配器模式)
+        - [类适配器模式的使用方法](#类适配器模式的使用方法)
+        - [类适配器模式的注意事项和细节](#类适配器模式的注意事项和细节)
+    - [对象适配器](#对象适配器)
+        - [对象配器模式的使用方法](#对象配器模式的使用方法)
+        - [对象配器模式的注意事项和细节](#对象配器模式的注意事项和细节)
+    - [接口适配器模式](#接口适配器模式)
+        - [接口配器模式的使用方法](#接口配器模式的使用方法)
+    - [适配器模式在SpringMVC中的应用](#适配器模式在SpringMVC中的应用)
 - [](#)
 - [](#)
 - [](#)
@@ -2966,6 +2977,229 @@
             }
             ```
 
+
+# 结构型-适配器模式
+
+## 适配器模式的基本介绍
+[top](#catalog)
+- 适配器模式也被称为包装器(Wrapper)
+- 适配器模式（Adapter Pattern）的作用
+    - 将某个类的接口转化成客户端希望的另一个接口，主要目的是兼容性，让原本接口不匹配、不能一起工作的两个类可以协同工作
+- 适配器模式中的角色
+    - 被适配者：src
+    - 适配器：adapter
+    - 目标类接口：dst
+- 适配器模式的3中经典分类，是根据src是如何交给Adapter来区分的，**但是实际开发中不只限于这3中方式**
+    1. 类适配器模式
+    2. 对象适配器模式
+    3. 接口适配器模式
+    
+- 适配器模式的工作原理
+    - 将一个类的接口转换成另一种接口，让原本接口不兼容的类可以兼容
+        - 即：dst<--adapter<--src
+    - 从用户角度，看不到被适配者，是解耦的
+    - 用户调用适配器转换后的目标接口方法，然后适配器再调用被适配者的相关接口方法
+    - 用收到反馈结果，感觉只是和目标接口交互
+    
+## 类适配器模式
+[top](#catalog)
+### 类适配器模式的使用方法
+- 使用方法
+    - Adapter类，通过继承src类，实现dst类接口，完成src-->dst的适配
+- 示例：手机充电器
+    - 需求
+        - 默认提供的电压是220V，手机充电需要的是5V
+        - 通过充电器将220V电压转化为5V的电压，为手机供电
+    - 实现方法
+        - 创建被适配者，220V电压类：`Voltage220V`
+        - 创建目标接口，5V电压接口：`IVoltage5V`
+        - 手机类：`Phone`，`charging`方法只能接收**5V电压接口实现类的供电**
+        - 创建适配器，`VoltageAdapter`，同时继承`Voltage220V`，并实现`IVoltage5V`接口，在内部完成220V-->5V的转化
+    - UML图
+        - ![problem_uml](imgs/pattern/adapter/classAdapter/problem_uml.png)
+
+    - 被适配者`Voltage220V`
+        - 参考代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/adapter/classAdapter/chargePhone/Voltage220V.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/adapter/classAdapter/chargePhone/Voltage220V.java)
+        - 代码内容
+            ```java
+            public class Voltage220V {
+                public int output220V(){
+                    int src = 220;
+                    System.out.println("Voltage220V output");
+                    return src;
+                }
+            }
+            ```
+    - 目标接口
+        - 参考代码:[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/adapter/classAdapter/chargePhone/IVoltagge5V.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/adapter/classAdapter/chargePhone/IVoltagge5V.java)
+        - 代码内容
+            ```java
+            public interface IVoltagge5V {
+                public int output5V();
+            }
+            ```
+    - 适配器
+        - 参考代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/adapter/classAdapter/chargePhone/VoltageAdapter.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/adapter/classAdapter/chargePhone/VoltageAdapter.java)
+        - 代码内容
+            ```java
+            public class VoltageAdapter extends Voltage220V implements IVoltagge5V {
+                @Override
+                public int output5V() {
+                    // 获取被适配对象的电压
+                    int src = output220V();
+                    //将电压转换为5伏
+                    int dst = src/44;
+            
+                    System.out.println("Adapter = " + dst + "V");
+                    return dst;
+                }
+            }
+            ```
+    - 手机类
+        - 参考代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/adapter/classAdapter/chargePhone/Phone.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/adapter/classAdapter/chargePhone/Phone.java)
+        - 代码内容
+            ```java
+            public class Phone {
+                public void charging(IVoltagge5V iVoltagge5V){
+                    if (iVoltagge5V.output5V() == 5)
+                        System.out.println("Voltagge = 5V,charging");
+                    else
+                        System.out.println("Voltagge != 5V,can't charge");
+                }
+            }
+            ```
+    - 测试类
+        - 参考代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/adapter/classAdapter/chargePhone/ClientTest.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/adapter/classAdapter/chargePhone/ClientTest.java)
+        - 代码内容
+            ```java
+            @Test
+            public void test01(){
+                Phone phone = new Phone();
+                // 直接提供适配器对象，将220V电压转化为5V
+                phone.charging(new VoltageAdapter());
+            }
+            ```
+        
+### 类适配器模式的注意事项和细节
+[top](#catalog)   
+- 缺点
+    - 适配器需要继承src类，dst必须是接口，有一定的局限性
+    - src类的方法在Adapter中都会暴露出来，增加了使用的成本
+- 优点
+    - adapter继承了src类，所以可以根据需要重写src类的方法，增加了adapter类的灵活性 
+    
+## 对象适配器
+### 对象配器模式的使用方法
+[top](#catalog)
+- 使用方法
+    - adapter**聚合src类的实例**，并实现dst接口，完成src-->dst的适配
+- adapter放弃了继承，而是聚合被适配者。符合合成复用原则，使用关联关系来替代继承关系
+- **对象适配器是适配器模式常用的一种**
+- 示例：手机充电器
+    - 需求
+        - 默认提供的电压是220V，手机充电需要的是5V
+        - 通过充电器将220V电压转化为5V的电压，为手机供电
+    - 实现方法
+        - 创建被适配者，220V电压类：`Voltage220V`
+        - 创建目标接口，5V电压接口：`IVoltage5V`
+        - 手机类：`Phone`，`charging`方法只能接收**5V电压接口实现类的供电**
+        - 创建适配器，`VoltageAdapter`，实现`IVoltage5V`接口。内部聚合`Voltage220V`实例对象，完成220V-->5V的转化
+    - UML图
+        - ![problem_uml](imgs/pattern/adapter/objAdapter/problem_uml.png)
+
+    - 被适配者`Voltage220V`
+        - 参考代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/adapter/objAdapter/chargePhone/Voltage220V.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/adapter/objAdapter/chargePhone/Voltage220V.java)
+        - 代码内容
+            ```java
+            public class Voltage220V {
+                public int output220V(){
+                    int src = 220;
+                    System.out.println("Voltage220V output");
+                    return src;
+                }
+            }
+            ```
+    - 目标接口
+        - 参考代码:[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/adapter/objAdapter/chargePhone/IVoltagge5V.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/adapter/objAdapter/chargePhone/IVoltagge5V.java)
+        - 代码内容
+            ```java
+            public interface IVoltagge5V {
+                public int output5V();
+            }
+            ```
+    - 适配器
+        - 参考代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/adapter/objAdapter/chargePhone/VoltageAdapter.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/adapter/objAdapter/chargePhone/VoltageAdapter.java)
+        - 代码内容
+            ```java
+            public class VoltageAdapter implements IVoltagge5V {
+                private Voltage220V voltage220V;
+            
+                public VoltageAdapter(Voltage220V voltage220V) {
+                    this.voltage220V = voltage220V;
+                }
+            
+                @Override
+                public int output5V() {
+                    // 获取被适配对象的电压
+                    int src = voltage220V.output220V();
+                    //将电压转换为5伏
+                    int dst = src/44;
+            
+                    System.out.println("Adapter = " + dst + "V");
+                    return dst;
+                }
+            }
+            ```
+    - 手机类
+        - 参考代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/adapter/objAdapter/chargePhone/Phone.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/adapter/objAdapter/chargePhone/Phone.java)
+        - 代码内容
+            ```java
+            public class Phone {
+                public void charging(IVoltagge5V iVoltagge5V){
+                    if (iVoltagge5V.output5V() == 5)
+                        System.out.println("Voltagge = 5V,charging");
+                    else
+                        System.out.println("Voltagge != 5V,can't charge");
+                }
+            }
+            ```
+    - 测试类
+        - 参考代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/adapter/objAdapter/chargePhone/ClientTest.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/adapter/objAdapter/chargePhone/ClientTest.java)
+        - 代码内容
+            ```java
+            @Test
+            public void test01(){
+                Phone phone = new Phone();
+                // 将Voltage220V注入到VoltageAdapter中
+                // 将VoltageAdapter注入到Phone中
+                phone.charging(new VoltageAdapter(new Voltage220V()));
+            }
+            ```
+### 对象配器模式的注意事项和细节
+[top](#catalog)
+- 对象适配器和类适配器是用一种思想，只是现实方式不同
+- 对象适配器根据合成复用原则，使用聚合替代继承，所以它解决了类适配器必须继承src的局限性问题，也不再要求dst必须是接口
+- 对象适配器的成本更低，更灵活
+
+## 接口适配器模式
+### 接口配器模式的使用方法
+[top](#catalog)
+- 接口适配器也被成为缺省适配器
+- 使用场景
+    - 只使用目标接口的部分方法，不需要实现目标接口的全部方法
+- 使用方法
+    1. 创建一个抽象类实现目标接口的所有方法，并为接口中的每个方法提供一个默认实现，即**空方法**
+    2. 创建抽象类的子类，有选择的覆盖父类中的部分方法来实现需求
+
+- UML
+    - [principle_uml](imgs/pattern/adapter/interfaceAdapter/principle_uml.png)
+
+
+## 适配器模式在SpringMVC中的应用
+[top](#catalog)
+
+??????
+P64
 
 # 结构型-代理模式
 ## 代理模式简介

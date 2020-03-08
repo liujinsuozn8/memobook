@@ -1,0 +1,39 @@
+@startuml
+
+class Voltage220V{
+    + int output220V()
+}
+
+note top of Voltage220V
+src
+end note
+
+interface IVoltagge5V{
+    + int output5V()
+}
+
+note top of IVoltagge5V
+dsc
+end note
+
+class VoltageAdapter{
+    + int output5V()
+}
+
+note right of VoltageAdapter
+adapter
+end note
+
+
+class Phone{
+    void charging(IVoltagge5V)
+}
+
+IVoltagge5V <|.. VoltageAdapter
+Voltage220V <|-- VoltageAdapter
+
+Phone .right.> IVoltagge5V
+
+Client .up.> Phone
+Client .up.> VoltageAdapter
+@enduml

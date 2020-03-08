@@ -1,0 +1,51 @@
+@startuml
+
+class Voltage220V{
+    + int output220V()
+}
+
+note top of Voltage220V
+src
+end note
+
+interface IVoltagge5V{
+    + int output5V()
+}
+
+note top of IVoltagge5V
+dsc
+end note
+
+class VoltageAdapter{
+    + Voltage220V voltage220V
+    + VoltageAdapter(Voltage220V)
+    + int output5V()
+}
+
+note bottom of VoltageAdapter
+adapter
+end note
+
+
+class Phone{
+    + void charging(IVoltagge5V)
+}
+
+class Client {
+
+}
+
+note right of Client
+    负责将Voltage220V注入到VoltageAdapter中
+    负责将VoltageAdapter注入到Phone中
+end note
+
+IVoltagge5V <|.. VoltageAdapter
+Voltage220V --right-o VoltageAdapter
+
+Phone .right.> IVoltagge5V
+
+Client ..up.> Phone
+Client ..up.> VoltageAdapter
+Client ..up.> Voltage220V
+@enduml
