@@ -65,10 +65,12 @@
     - [接口适配器模式](#接口适配器模式)
         - [接口配器模式的使用方法](#接口配器模式的使用方法)
     - [适配器模式在SpringMVC中的应用](#适配器模式在SpringMVC中的应用)
-- [](#)
-- [](#)
-- [](#)
-- [](#)
+- 结构型-桥接模式
+    - [引入问题-不同品牌的手机编程](#引入问题-不同品牌的手机编程)
+    - [桥接模式的基本介绍](#桥接模式的基本介绍)
+    - [使用桥接模式改进引入问题](#使用桥接模式改进引入问题)
+    - [桥接模式的注意事项和细节](#桥接模式的注意事项和细节)
+    - [JDBC中的桥接模式](#JDBC中的桥接模式)
 - [](#)
 - [](#)
 - 结构型-代理模式
@@ -127,7 +129,7 @@
 - 基本介绍：对类来说，即<label style="color:red">一个类应该只负责一项职责</label>
 - 多职责的问题？
     - 如果存在A负责两个不同职责：`职责1`、`职责2`，当`职责1`需要改变A时，可能会造成`职责2`的执行错误
-    - 为了避免为题，可以将类A分解为A1、A2
+    - 为了避免问题，可以将类A分解为A1、A2
     
 - 结合实例说明:交通工具的功能分解
     - 方案1
@@ -3192,7 +3194,7 @@
     2. 创建抽象类的子类，有选择的覆盖父类中的部分方法来实现需求
 
 - UML
-    - [principle_uml](imgs/pattern/adapter/interfaceAdapter/principle_uml.png)
+    - ![principle_uml](imgs/pattern/adapter/interfaceAdapter/principle_uml.png)
 
 
 ## 适配器模式在SpringMVC中的应用
@@ -3200,6 +3202,255 @@
 
 ??????
 P64
+
+
+# 结构型-桥接模式
+## 引入问题-不同品牌的手机编程
+[top](#catalog)
+- 需求
+    - 实现对不同手机类型的不同品牌实现操作编程，包括：开机、关机、上网、打电话等
+    - 不同手机类型及其品牌
+        - 折叠式
+            - 华为
+            - 小米
+            - vivo
+        - 直立式
+            - 华为
+            - 小米
+            - vivo
+        - 滑盖式
+            - 华为
+            - 小米
+            - vivo
+            
+- 传统的设计方式
+    - UML图
+        - ![problem_uml](imgs/pattern/bridge/problem/problem_uml.png) 
+
+- 传统设计方式的缺点
+    - 扩展性问题，类爆炸
+        - 每次新增一种手机类型时，都需要为该类型编写所有品牌的子类
+        - 当新增一个手机品牌时，需要同时在每个手机类型下添加子类
+    - 违反单一职责原则
+        - 当增加手机样式时，需要同时增加所有品牌的手机，增加了代码维护的成本
+           
+## 桥接模式的基本介绍
+[top](#catalog)
+- 桥接模式的目的
+    - 分离抽象与实现，并放在不同的层次中，保持两个层次的独立性和扩展性
+- 桥接模式基于**单一职责原则**，使用封装、聚合、继承等行为让不同类承担不同的职责
+- 桥接模式的原理
+    - 原理UML图
+        - ![principle_uml](imgs/pattern/bridge/base/principle_uml.png)
+
+    - 角色说明
+        - `Client`：桥接模式的调用者
+        - `Abstraction`，抽象类
+            - `Abstraction`和`Implementor`是聚合关系，`Abstraction`维护了`Implementor`的实现类
+            - `Abstraction`充当桥接类
+        - `RefinedAbstraction`：`Abstraction`的子类
+        - `Implementor`：行为实现类的接口
+        - `ConcreteImplementor`：行为的具体实现类
+    - 原理说明
+        - 在UML图中，抽象类和接口是聚合的关系，本质是调用者和被调用关系
+        
+## 使用桥接模式改进引入问题
+[top](#catalog)
+- 改进方式
+    - 实现部分
+        - 创建手机品牌接口：`Brand`，并创建该接口的实例:`XiaoMi`、`Vivo`
+    - 抽象部分
+        - 创建手机(类型)抽象类`Phone`，内部聚合手机品牌`Brand`
+        - 创建抽象类`Phone`的子类：`FoldedPhone`、`UprightPhone`，实现不同的手机类型
+    - 抽象与实现之间的桥接
+        - `Brand`、`Brand`的实现类，Phone`、Phone`的子类，都实现相同的方法，其中使用`Phone`充当Bridge，在`Phone`子类的方法中直接调用父类的方法，然后`Phone`在调用聚合的`Brand`实例的对应方法
+        - 最终将手机的类型、品牌分离，并通过`Phone`进行桥接
+    - 使用Client时，将`Brand`注入到`Phone`的子类中
+- UML图
+    - ![problem_uml](imgs/pattern/bridge/base/problem_uml.png)
+
+- `Brand`及其实现类
+    - 参考代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/bridge/base/Brand.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/bridge/base/Brand.java)
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/bridge/base/Vivo.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/bridge/base/Vivo.java)
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/bridge/base/XiaoMi.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/bridge/base/XiaoMi.java)
+    - 代码内容
+        ```java
+        public interface Brand {
+            void open();
+            void close();
+            void call();
+        }
+      
+        public class XiaoMi implements Brand {
+            @Override
+            public void open() {
+                System.out.println("XiaoMi open");
+            }
+        
+            @Override
+            public void close() {
+                System.out.println("XiaoMi close");
+            }
+        
+            @Override
+            public void call() {
+                System.out.println("XiaoMi call");
+            }
+        }
+      
+        public class Vivo implements Brand {
+            @Override
+            public void open() {
+                System.out.println("Vivo open");
+            }
+        
+            @Override
+            public void close() {
+                System.out.println("Vivo close");
+            }
+        
+            @Override
+            public void call() {
+                System.out.println("Vivo call");
+            }
+        }
+        ```
+
+- `Phone`及其子类
+    - 参考代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/bridge/base/Phone.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/bridge/base/Phone.java)
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/bridge/base/FoldedPhone.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/bridge/base/FoldedPhone.java)
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/bridge/base/UprightPhone.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/bridge/base/UprightPhone.java)
+    - 代码内容
+        ```java
+        public abstract class Phone {
+            private Brand brand;
+        
+            public Phone(Brand brand) {
+                this.brand = brand;
+            }
+        
+            protected void open(){
+                this.brand.open();
+            }
+        
+            protected void close(){
+                this.brand.close();
+            }
+        
+            protected void call(){
+                this.brand.call();
+            }
+        }
+      
+        // 折叠手机类
+        public class FoldedPhone extends Phone {
+            public FoldedPhone(Brand brand) {
+                super(brand);
+            }
+        
+            @Override
+            protected void open() {
+                super.open();
+                System.out.println("FoldedPhone open");
+            }
+        
+            @Override
+            protected void close() {
+                super.close();
+                System.out.println("FoldedPhone close");
+            }
+        
+            @Override
+            protected void call() {
+                super.call();
+                System.out.println("FoldedPhone call");
+            }
+        }
+        
+        // 直立式手机类
+        public class UprightPhone extends Phone {
+            public UprightPhone(Brand brand) {
+                super(brand);
+            }
+        
+            @Override
+            protected void open() {
+                super.open();
+                System.out.println("UprightPhone open");
+            }
+        
+            @Override
+            protected void close() {
+                super.close();
+                System.out.println("UprightPhone close");
+            }
+        
+            @Override
+            protected void call() {
+                super.call();
+                System.out.println("UprightPhone call");
+            }
+        }
+        ```
+      
+- 测试类
+    - 参考代码:[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/bridge/base/ClientTest.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/bridge/base/ClientTest.java)
+    - 代码内容
+        ```java
+        @Test
+        public void test01(){
+            Phone foldedPhone = new FoldedPhone(new XiaoMi());
+            foldedPhone.open();
+            foldedPhone.call();
+            foldedPhone.close();
+    
+            System.out.println("-----------------");
+    
+            FoldedPhone foldedPhone2 = new FoldedPhone(new Vivo());
+            foldedPhone2.open();
+            foldedPhone2.call();
+            foldedPhone2.close();
+    
+            System.out.println("-----------------");
+    
+            UprightPhone uprightPhone = new UprightPhone(new XiaoMi());
+            uprightPhone.open();
+            uprightPhone.call();
+            uprightPhone.close();
+        }
+        ```
+      
+## 桥接模式的注意事项和细节
+[top](#catalog)
+- **桥接模式完成了抽象与实现的分离**，提高了系统的灵活性，有助于系统进行分层设计
+- 对于系统高层部分，只需要知道抽象部分和实现部分接口就可以了，其他部分有具体业务完成
+- 桥接模式替代多层继承方案，可以减少子类的个数，降低系统的管理和维护成本
+- 桥接模式的引入增加了系统给的理解和设计难度，由于聚合关联关系建立在抽象层，要求开发者针对抽象进行设计和编程
+- 桥接模式要求正确识别出系统中两个独立变化的纬度，因此使用范围有一定的局限性，即需要有这样的应用场景
+- 桥接模式的应用场景
+    - 对于那些不希望使用继承或因为多层次继承导致系统类的个数急剧增加的系统
+    - 常见场景
+        - JDBC驱动
+        - 银行转账
+            - 转账分类(抽象部分):网上转账、柜台转账、ATM转账
+            - 转账用户类型(实现部分):普通用户，Vip用户
+        - 消息管理
+            - 消息类型(抽象部分):即使消息、延时消息
+            - 消息分类(实现部分):手机短信、邮件、qq信息
+            
+
+
+## JDBC中的桥接模式
+[top](#catalog)
+- UML类图
+    - ![bridge_uml](imgs/pattern/bridge/jdbcAnalyze/bridge_uml.png)
+- 分析
+    - `Connection`接口及其子类(各种数据库的实现)相当于桥接模式的接口部分
+    - `DriverManage`类相当于桥接模式中的类及其子类，只不过这里没有子类，全部子类的功能和桥接的部分全部由`DriverManage`负责
+    - 执行`DriverManage.registerDriver(driver)`时，相当于实例化时的接口类注入
+
 
 # 结构型-代理模式
 ## 代理模式简介

@@ -1,0 +1,76 @@
+@startuml
+
+class Phone{
+    + void call()
+}
+
+'折叠式
+class Folded{
+    + void call()
+}
+
+'直立式
+class Upright{
+    + void call()
+}
+
+'滑盖式
+class Silde{
+    + void call()
+}
+
+class HuaWeiFolded{
+    + void call()
+}
+
+class VivoFolded{
+    + void call()
+}
+
+class XiaoMiFolded{
+    + void call()
+}
+
+class HuaWeiUpright{
+    + void call()
+}
+
+class VivoUpright{
+    + void call()
+}
+
+class XiaoMiUpright{
+    + void call()
+}
+
+class HuaWeiSilde{
+    + void call()
+}
+
+class VivoSilde{
+    + void call()
+}
+
+class XiaoMiSilde{
+    + void call()
+}
+
+
+Phone <|-- Folded
+Phone <|-- Upright
+Phone <|-- Silde
+
+Folded <|-- HuaWeiFolded
+Folded <|-- VivoFolded
+Folded <|-- XiaoMiFolded
+
+Upright <|-- HuaWeiUpright
+Upright <|-- VivoUpright
+Upright <|-- XiaoMiUpright
+
+
+Silde <|-- HuaWeiSilde
+Silde <|-- VivoSilde
+Silde <|-- XiaoMiSilde
+
+@enduml
