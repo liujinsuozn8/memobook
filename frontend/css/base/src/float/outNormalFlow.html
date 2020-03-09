@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>out normal flow test</title>
+    <style>
+        /* 1. 块元素脱离文档流 测试 */
+        .box101{
+            background-color: orange;
+            /* 块元素脱离文档流 */
+            float: left;
+        }
+
+        .box102{
+            background-color: green;
+        }
+
+        .box103{
+            width:100px;
+            height: 100px;
+            background-color: green;
+        }
+    </style>
+</head>
+<body>
+    <section>1. 块元素脱离文档流 测试: 不再独占一行，宽高=元素内容的宽高 </section>
+    <section>1.1 </section>
+    <div class="box101">123456</div>
+    <div class="box102">qwet</div>
+    <br>
+    
+    <section>1.2 </section>
+    <div class="box101">123456</div>
+    <div class="box103"></div>
+</body>
+</html>

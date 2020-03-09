@@ -1486,23 +1486,25 @@
 
 # 文档流
 [top](#catalog)
-- normal flow
+- 文档流：normal flow
 - 什么是文档流：网页是一个多层次的结构，通过css可以分别为每一层设置样式，但是作为用户只能看到最上面的一层，最下面的一层被称为文档流
 - <label style="color:red">文档流是网页的基础，所有元素默认都是在文档流中进行排列</label>
 - 元素相对于文档流的两种状态
     - 在文档流中
     - 不再文档流中，即脱离文档流
+        - 使用[浮动](#浮动)属性后，元素将脱离文档流
 - 元素**在文档流中**的特点
     - 块元素
         - 块元素在页面内独占一行
+            - 参考：[为什么块元素独占一行](#reasonofblockelementuseline)
         - 多个块元素在页面内从上到下垂直排列
         - 默认宽度是父元素的的宽度，会将父元素撑满
         - 默认高度是元素内容的高度，即子元素
         - 如`<div></div>`元素，没有元素内容时，不会在页面中显示;有内容时，默认宽度与页面块度相同
     - 行内元素
-        - 行内元素不会堆栈页面的一行，只占自身的大小
+        - 行内元素不会独占页面的一行，只占自身的大小
         - 多个行内元素在页面中从左到右水平排列，如果一行无法容纳多个行内元素，则自动切换到第二行显示
-        - **行内元素的宽和高默认都是元素内容的宽和高**
+        - **行内元素的宽和高默认都是该元素内容的宽和高**
 
 # 盒子模型
 ## 盒子模型的基本组成
@@ -2003,6 +2005,9 @@
                     - 如果只有`margin-left`和`margin-right`，则将剩余的宽度区平均，使得`margin-left = margin-right`
         - `父元素.width < 子元素.sum`时，调整方法：
             - 浏览器会将`margin-right`设为负数，来满足等式
+
+    - <label style="color:red"><span id="reasonofblockelementuseline">为什么块元素会独占一行？</span></label> 
+        - 因为需要强制满足
 
 - 示例
     - 参考代码：[/frontend/css/base/src/boxModel/horizontalLayout.html](/frontend/css/base/src/boxModel/horizontalLayout.html)
@@ -3209,6 +3214,172 @@
             <div class="box1"></div>
             ```
 
+# 浮动
+## 浮动简介
+[top](#catalog)
+- 通过浮动可以使一个元素向其**父元素**的左侧或右侧移动
+- 语法： `float: 属性值`
+    - 属性值包括
+        - `none`，默认值元素不会浮动
+        - `left`，元素向左浮动
+        - `right`，元素向右浮动
+- 使用了`float:left`或`float:right`之后，<label style="color:red">元素将脱离文档流</label>，使得[块元素盒子模型的水平方向布局](#块元素盒子模型的水平方向布局)中的水平布局等式不再强制成立
+    - 如：对一个`div`使用了`float`属性之后，在元素检查器中会发现，盒子模型中不会强制产生用于满足水平布局等式的`margin-right`或`margin-left`
+        - 参考代码：[/frontend/css/base/src/float/floatBase.html](/frontend/css/base/src/float/floatBase.html)
+        - css
+            ```css
+            /* 0. 不使用float 的div盒子模型 */
+            .box0{
+                width:100px;
+                height:100px;
+                background-color: rgb(80, 207, 7);
+            }
+            
+            /* 1. 使用float:left 后 的div盒子模型 */
+            .box1{
+                width:100px;
+                height:100px;
+                background-color: rgb(80, 207, 7);
+                float:left;
+            }
+            ```
+        
+        - html
+            ```html
+            <section>0. 不使用float 的div盒子模型</section>
+            <div class="box0"></div>
+            
+            <section>1. 使用float:left 后的div盒子模型</section>
+            <div class="box1"></div>
+            ```
+        - 元素检查器中的结果
+            - ![](?????)
+
+- 浮动元素的特点
+    - 浮动元素会脱离文档流，不用遵守水平布局的等式
+    - 设置浮动之后，浮动元素会向父元素的左/右侧移动。默认情况下，不会从父元素中移出
+    - 默认情况下，浮动元素不会覆盖/超过其前面的兄弟浮动元素，会接在前一个浮动元素的后面
+    - 如果浮动元素前面不是浮动元素，则无法移动
+    - 浮动元素不会覆盖文字，**文字会自动环绕**在浮动元素周围
+
+
+- **通过浮动元素可以进行水平布局**
+
+- 示例
+    - 参考代码：[/frontend/css/base/src/float/floatBase.html](/frontend/css/base/src/float/floatBase.html)
+    - 测试使用float属性后，元素脱离文档流
+        - css
+            ```css
+            .box201{
+                width:100px;
+                height: 100px;
+                background-color: green;
+                float: left;
+            }
+            .box202{
+                width:200px;
+                height: 200px;
+                background-color: orange;
+            }
+            ```
+        - html
+            ```html
+            <section>2. 测试使用float属性后，元素脱离文档流</section>
+            <div class="box101"></div>
+            <div class="box102"></div>
+            ```
+        - ![](?????)
+
+    - 多个使用float属性的元素横向排列
+        - css
+            ```css
+            .box301{
+                width:100px;
+                height: 100px;
+                background-color: green;
+                float: left;
+            }
+            .box302{
+                width:100px;
+                height: 100px;
+                background-color: orange;
+                float: left;
+            }
+            .box303{
+                width:100px;
+                height: 100px;
+                background-color: yellow;
+                float: left;
+            }
+            ```
+        - html
+            ```html
+            <section>3. 多个使用float属性的元素横向排列</section>
+            <div class="box301"></div>
+            <div class="box302"></div>
+            <div class="box303"></div>
+            ```
+        - ![](?????)
+
+    - 默认情况下，浮动元素不会从父元素中移出
+        - css
+            ```css
+            .box401{
+                width:200px;
+                height: 200px;
+                background-color: green;
+            }
+            
+            .box402{
+                width:50px;
+                height: 50px;
+                background-color: orange;
+                float: left;
+            }
+            
+            .box403{
+                width:50px;
+                height: 50px;
+                background-color: orange;
+                float:right;
+            }
+            ```
+        - html
+            ```html
+            <div class="box401">
+                <div class="box402"></div>
+                <div class="box403"></div>
+            </div>
+            ```
+        - ![](?????)
+
+    - 浮动不会覆盖文字--文字自动环绕效果
+        - css
+            ```css
+            .box5{
+                width:50px;
+                height: 50px;
+                background-color: orange;
+                float:left;
+            }
+            ```
+        - html
+            ```html
+            <section>5. 浮动不会覆盖文字--文字自动环绕效果</section>
+            <div class="box5"></div>
+            <p>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Cumque adipisci doloribus praesentium similique dignissimos eaque velit accusantium nisi, dolores facilis dolorem inventore non, eos placeat. Molestias rerum odio esse culpa.</p>
+            <br>
+            ```
+        - ![](?????)
+
+
+# 元素脱离文档流之后的特点
+[top](#catalog)
+- 块元素
+    - 块元素不再独占一行
+    - 块元素的宽、高等于元素内容的宽、高
+- 行内元素
+    - 行内元
 
 # 总结
 [top](#catalog)
@@ -3221,6 +3392,31 @@
 
 - 阴影不会影响页面布局
 - 轮廓不会影响**可见框**的大小，**不会影响布局**
+
+- 默认情况下，块元素独占一行是因为要强制遵守水平布局的等式
+    - [为什么块元素独占一行](#reasonofblockelementuseline)
+
+- 浮动相关的连锁问题（根本原因：在不在文档流中与水平布局等式）
+    - 块元素的特点
+    - 块元素为什么能独占一行
+    - 浮动为什么不会独占一行
+
+- 行内元素、块元素的互相转化
+    - 行内元素---> 块元素
+        - float，脱离文档流
+        - display:block，将元素设置为块元素
+    - 块元素 ---> 行内元素
+        - displ
+
+
+    |属性值|描述|备注|
+    |-|-|-|
+    |inline|将元素设置为行内元素||
+    |block|将元素设置为块元素||
+    |inline-block|行内块元素|<ul><li>优缺点<ul><li>同时兼具行内元素和块元素的优点：既可以设置`width`和`height`(块元素)，又**不会独占一行**（行内元素）</li><li>同时兼具行内元素和块元素的缺点：换行符会被解析为空白距离。即如果行内块元素间有换行，页面上的两个元素之间会产生一个空白的距离</li></ul></li><li>一般开发时尽量不要使用</li></ul>|
+    |table|将元素设置为表格元素||
+    |none|元素不再页面中显示。|可以用来隐藏元素，在需要的时候，通过页面控制再显示出来|
+
 
 # 练习
 [top](#catalog)

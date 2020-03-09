@@ -1,0 +1,44 @@
+@startuml
+
+abstract class Drink{
+    - des:String
+    + cost()
+}
+
+class Espresso{
+    + cost()
+}
+class ShortBlack{
+    + cost()
+}
+class LongBlack{
+    + cost()
+}
+
+class Espresso_Milk{
+    + cost()
+}
+class Espresso_Soy{
+    + cost()
+}
+class Espresso_Chocolate{
+    + cost()
+}
+
+
+class ShortBlack_Milk{
+    + cost()
+}
+
+Drink <|-- Espresso
+Drink <|-- ShortBlack
+Drink <|-- LongBlack
+
+Drink <|--- Espresso_Milk
+Drink <|--- Espresso_Soy
+Drink <|--- Espresso_Chocolate
+
+Drink <|--- ShortBlack_Milk
+
+
+@enduml

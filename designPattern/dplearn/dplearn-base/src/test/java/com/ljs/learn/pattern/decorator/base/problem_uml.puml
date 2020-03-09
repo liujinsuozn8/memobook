@@ -1,0 +1,52 @@
+@startuml
+
+abstract class Drink{
+    - String description
+    + getDescription()
+    + cost()
+}
+
+abstract class Decorator{
+    + getDescription()
+    + cost()
+}
+
+class Espresso{
+    + cost()
+}
+class ShortBlack{
+    + cost()
+}
+class LongBlack{
+    + cost()
+}
+
+
+class Milk{
+    + cost()
+}
+class Soy{
+    + cost()
+}
+class Chocolate{
+    + cost()
+}
+
+class Coffee{
+    + cost()
+}
+
+Espresso --|> Coffee
+ShortBlack --|> Coffee
+LongBlack -right-|> Coffee
+
+Coffee -right-|> Drink
+
+Drink -right-|>Decorator
+
+Decorator <|-right- Milk
+Decorator <|-- Soy
+Decorator <|-- Chocolate
+
+
+@enduml

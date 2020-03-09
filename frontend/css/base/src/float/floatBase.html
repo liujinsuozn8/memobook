@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>float base test</title>
+    <style>
+        /* 0. 不使用float 的div盒子模型 */
+        .box0{
+            width:100px;
+            height:100px;
+            background-color: rgb(80, 207, 7);
+        }
+        
+        /* 1. 使用float:left 后 的div盒子模型 */
+        .box1{
+            width:100px;
+            height:100px;
+            background-color: rgb(80, 207, 7);
+            float:left;
+        }
+
+        /* 2. 测试使用float属性后，元素脱离文档流 */
+        .box201{
+            width:100px;
+            height: 100px;
+            background-color: green;
+            float: left;
+        }
+        .box202{
+            width:200px;
+            height: 200px;
+            background-color: orange;
+        }
+
+        /* 3. 多个使用float属性的元素横向排列 */
+        .box301{
+            width:100px;
+            height: 100px;
+            background-color: green;
+            float: left;
+        }
+        .box302{
+            width:100px;
+            height: 100px;
+            background-color: orange;
+            float: left;
+        }
+        .box303{
+            width:100px;
+            height: 100px;
+            background-color: yellow;
+            float: left;
+        }
+
+        /* 4. 默认情况下，浮动元素不会从父元素中移出 */
+        .box401{
+            width:200px;
+            height: 200px;
+            background-color: green;
+        }
+        
+        .box402{
+            width:50px;
+            height: 50px;
+            background-color: orange;
+            float: left;
+        }
+        
+        .box403{
+            width:50px;
+            height: 50px;
+            background-color: orange;
+            float:right;
+        }
+
+        /* 5. 浮动不会覆盖文字--文字自动环绕效果 */
+        .box5{
+            width:50px;
+            height: 50px;
+            background-color: orange;
+            float:left;
+        }
+    </style>
+</head>
+<body>
+    <section>0. 不使用float 的div盒子模型</section>
+    <div class="box0"></div>
+    <br>
+
+    <section>1. 使用float:left 后的div盒子模型</section>
+    <div class="box1"></div>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+
+    <section>2. 测试使用float属性后，元素脱离文档流</section>
+    <div class="box201"></div>
+    <div class="box202"></div>
+    <br>
+    
+    <section>3. 多个使用float属性的元素横向排列</section>
+    <div class="box301"></div>
+    <div class="box302"></div>
+    <div class="box303"></div>
+    <br>
+    
+    <br>
+    <br>
+    <br>
+    <br>
+
+    <section>4. 默认情况下，浮动元素不会从父元素中移出</section>
+    <div class="box401">
+        <div class="box402"></div>
+        <div class="box403"></div>
+    </div>
+    <br>
+    <br>
+
+    <section>5. 浮动不会覆盖文字--文字自动环绕效果</section>
+    <div class="box5"></div>
+    <p>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Cumque adipisci doloribus praesentium similique dignissimos eaque velit accusantium nisi, dolores facilis dolorem inventore non, eos placeat. Molestias rerum odio esse culpa.</p>
+    <br>
+</body>
+</html>

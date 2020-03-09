@@ -1,0 +1,34 @@
+@startuml
+
+abstract class Drink{
+    - des:String
+    - Milk:int
+    - Soy:int
+    - Chocolate:int
+    + cost()
+    + int hasMilk()
+    + setMilk(int)
+    + int hasSoy()
+    + setSoy(int)
+    + int hasChocolate()
+    + setChocolate(int)
+}
+
+class Espresso{
+    + cost()
+}
+class ShortBlack{
+    + cost()
+}
+class LongBlack{
+    + cost()
+}
+
+
+Drink <|-- Espresso
+Drink <|-- ShortBlack
+Drink <|-- LongBlack
+
+
+
+@enduml

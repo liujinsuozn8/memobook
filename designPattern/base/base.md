@@ -71,6 +71,14 @@
     - [使用桥接模式改进引入问题](#使用桥接模式改进引入问题)
     - [桥接模式的注意事项和细节](#桥接模式的注意事项和细节)
     - [JDBC中的桥接模式](#JDBC中的桥接模式)
+- 结构型-装饰器模式
+    - [问题引入-咖啡订单](#问题引入-咖啡订单)
+    - [装饰者模式简介](#装饰者模式简介)
+    - [使用装饰者模式改进引入问题](#使用装饰者模式改进引入问题)
+    - [装饰者模式在JDK中的应用-FilterInputStream](#装饰者模式在JDK中的应用-FilterInputStream)
+- [](#)
+- [](#)
+- [](#)
 - [](#)
 - [](#)
 - 结构型-代理模式
@@ -3450,6 +3458,254 @@ P64
     - `Connection`接口及其子类(各种数据库的实现)相当于桥接模式的接口部分
     - `DriverManage`类相当于桥接模式中的类及其子类，只不过这里没有子类，全部子类的功能和桥接的部分全部由`DriverManage`负责
     - 执行`DriverManage.registerDriver(driver)`时，相当于实例化时的接口类注入
+
+
+# 结构型-装饰器模式
+## 问题引入-咖啡订单
+[top](#catalog)
+- 需求
+    - 咖啡：Espresso(意大利浓咖啡)、ShortBlack、LongBlack(美式咖啡)、Decaf(无因咖啡)
+    - 调料：Milk、Soy(豆浆)、Chocolate
+    - 要求在扩展新的咖啡种类时，具有良好的扩展性、改动方便、维护方便
+    - 使用OO来计算不同种类咖啡的费用：用户可以点咖啡、也可以点咖啡+调料的组合
+- 解决方案
+    - 解决方案1
+        - UML
+            - ![problem_uml01](imgs/pattern/decorator/problem/problem_uml01.png)
+        - 分析
+            - 抽象类`Drink`表示饮料
+                - `des`表示对咖啡的描述
+                - `cost()`计算费用
+            - 咖啡作为子类继承`Drink`并提供`cost`的实现
+            - 咖啡+调料也作为子类继承`Drink`并提供`cost`的实现
+        - 方案1的问题
+            - 咖啡和调料的组合会产生大量的类
+            - 当增加一种咖啡或新的调料时，类的数量会倍增，会导致类爆炸
+    - 解决方案2
+        - UML
+            - ![problem_uml02](imgs/pattern/decorator/problem/problem_uml02.png)
+        - 分析
+            - 在Drink中内置调料，并添加对应的方法设置调料数量，和返回调料数量
+            - 各子类在各自的子类中设置计算方式，并对调料进行逐个的判断、计算
+        - 方案2的优缺点
+            - 优点：可以控制类的数量，不会导致类爆炸
+            - 缺点： 在增加或者删除调料种类时，代码的维护量很大，需要从各个子类中清除对应的调料计算方法
+            
+## 装饰者模式简介
+[top](#catalog)
+- 装饰者模式的目的：**动态的将新功能附加到对象上**
+    - 在对象功能扩展方面，比继承更有弹性。装饰者模式体现了开闭原则
+- 装饰者模式的原理
+    - 装饰者模式中的角色
+        - Component：抽象主体
+        - ConcreteComponent：具体的主体
+        - Decorator：装饰者
+        - ConcreteDecorator：具体的装饰者
+    - 原理UML图
+        - ![principle_uml](imgs/pattern/decorator/base/principle_uml.png)
+    - Decorator是装饰类，含有一个被装饰的对象，即Component类对象
+    - 通过在装饰者中聚合一个主体，可以直接为主体添加新的功能
+        - 每次实例化一个装饰者，并传入被装饰者，即可获取新的功能
+    
+    - Decorotar的`cost()`方法进行费用计算。使用时会递归的计算价格
+
+    - 进行多层装饰之后，调用发方法时，会通过递归调用来完成
+    
+## 使用装饰者模式改进引入问题
+[top](#catalog)
+- 改进方法
+    - 构建主体部分
+        - `Drink`作为抽象主体
+        - 提供各种咖啡作为`Drink`的子类。在中间额外添加一层`Coffee`，封装通用部分
+    - 构建装饰者
+        - `Decorator`继承`Drink`类，内部聚合另一个`Drink`类对象，作为抽象装饰者。并对`cost`进行重写，添加新的功能
+        - 调味料作为`Decorator`的子类   
+    - 使用时，将调味料作为装饰者，包装咖啡，来动态提供新的功能
+- UML图
+    - ![problem_uml](imgs/pattern/decorator/base/problem_uml.png)
+
+- 使用装饰者模式后的订单示例:2份巧克力+1份牛奶的LongBlack
+    - ![problem_order](imgs/pattern/decorator/base/problem_order.png)
+    - 说明
+        - Milk包含了LongBlack
+        - 一个Chocolate包含了：Milk + LongBlack
+        - 另一个Chocolate包含了：Chocolate + Milk + LongBlack
+- 通过层层包含的方式，无论是什么形式的咖啡+调料，都可以通过递归方式来组合和维护
+    
+- 抽象主体及具体主体
+    - 参考代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/decorator/base/Drink.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/decorator/base/Drink.java)
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/decorator/base/Coffee.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/decorator/base/Coffee.java)
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/decorator/base/Espresso.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/decorator/base/Espresso.java)
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/decorator/base/LongBlack.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/decorator/base/LongBlack.java)
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/decorator/base/ShortBlack.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/decorator/base/ShortBlack.java)
+    - 代码内容
+        ```java
+        public abstract class Drink {
+            // 描述
+            public String des;
+            // 单价
+            private float price = 0.0f;
+        
+            public String getDes() {
+                return des;
+            }
+        
+            public void setDes(String des) {
+                this.des = des;
+            }
+        
+            public float getPrice() {
+                return price;
+            }
+        
+            public void setPrice(float price) {
+                this.price = price;
+            }
+        
+            // 计算费用的抽象方法
+            public abstract float cost();
+        }
+      
+        public class Coffee extends Drink {
+            // 金额默认是父类的单价
+            @Override
+            public float cost() {
+                return super.getPrice();
+            }
+        }
+
+        public class Espresso extends Coffee {
+            public Espresso() {
+                setDes("Espresso");
+                setPrice(10.0f);
+            }
+        }
+      
+        public class LongBlack extends Coffee {
+            public LongBlack() {
+                setDes("LongBlack");
+                setPrice(30.0f);
+            }
+        }
+
+        public class ShortBlack extends Coffee {
+            public ShortBlack() {
+                setDes("ShortBlack");
+                setPrice(20.0f);
+            }
+        }
+        ```  
+      
+- 装饰者
+    - 参考代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/decorator/base/Decorator.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/decorator/base/Decorator.java)
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/decorator/base/Milk.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/decorator/base/Milk.java)
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/decorator/base/Soy.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/decorator/base/Soy.java)
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/decorator/base/Coffee.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/decorator/base/Coffee.java)
+    - 代码内容
+        ```java
+        public class Decorator extends Drink {
+            private Drink obj;
+        
+            public Decorator(Drink obj) {
+                this.obj = obj;
+            }
+        
+            @Override
+            public float cost() {
+                return super.getPrice() + obj.cost();
+            }
+        
+            @Override
+            public String getDes() {
+                return this.des +getPrice() + "&&" + obj.getDes();
+            }
+        }
+
+        public class Milk extends Decorator {
+            public Milk(Drink obj) {
+                super(obj);
+                setDes("Milk");
+                setPrice(2.0f);
+            }
+        }
+
+        public class Soy extends Decorator {
+            public Soy(Drink obj) {
+                super(obj);
+                setDes("Soy");
+                setPrice(3.0f);
+            }
+        }
+
+        public class Chocolate extends Decorator {
+            public Chocolate(Drink obj) {
+                super(obj);
+                setDes("Chocolate");
+                setPrice(5.0f);
+            }
+        }
+        ```
+      
+- 测试类
+    - 参考代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/decorator/base/ClientTest.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/decorator/base/ClientTest.java)
+    - 代码内容
+        ```java
+        @Test
+        public void test01(){
+            Drink coffee = new LongBlack();
+    
+            //添加1份牛奶
+            coffee = new Milk(coffee);
+            //添加2份巧克力
+            coffee = new Chocolate(new Chocolate(coffee));
+    
+            System.out.println(coffee.cost());
+            System.out.println(coffee.getDes());
+        }
+        ```
+    
+## 装饰者模式在JDK中的应用-FilterInputStream
+[top](#catalog)   
+- `FilterInputStream`的子类`BufferedInputStream`基本使用
+    ```java
+    // 将FileInputStream作为被装饰者，使用BufferedInputStream来包装并提供新的功能
+    BufferedInputStream bis = new BufferedInputStream(new FileInputStream(...));
+    ```
+- UML图
+    - ![/designPattern/base/imgs/pattern/decorator/jdkAnalyze/io_uml.png](/designPattern/base/imgs/pattern/decorator/jdkAnalyze/io_uml.png)
+    
+- 模式分析
+    - `Component`抽象主体：抽象类`InputStream`
+    - `ConcreteComponent`具体主体：`InputStream`的实现类，包括：`FileInputStream`等等
+    - `Decorator`抽象装饰者：`FilterInputStream`也是`InputStream`子类，并且在内部聚合了`InputStream`实例，及包含了被装饰者
+        ```java
+        public
+        class FilterInputStream extends InputStream {
+            /**
+            * The input stream to be filtered.
+            */
+            protected volatile InputStream in;
+        
+            /**
+            * Creates a <code>FilterInputStream</code>
+            * by assigning the  argument <code>in</code>
+            * to the field <code>this.in</code> so as
+            * to remember it for later use.
+            *
+            * @param   in   the underlying input stream, or <code>null</code> if
+            *          this instance is to be created without an underlying stream.
+            */
+            protected FilterInputStream(InputStream in) {
+                this.in = in;
+            }
+            ...
+        }
+        ```
+    
+    - `ConcreteDecorator`具体装饰者：`FilterInputStream`的子类，如：`BufferedInputStream`等
+    - 所以在jdk的io体系中，使用了装饰者模式增加了抽象主体`InputStream`的功能
 
 
 # 结构型-代理模式
