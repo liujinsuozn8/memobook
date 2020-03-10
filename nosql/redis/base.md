@@ -27,9 +27,17 @@
     - [Redis键--key](#Redis键--key)
     - [Redis字符串--String](#Redis字符串--String)
     - [Redis列表--List](#Redis列表--List)
-- [](#)
-- [](#)
-- [](#)
+    - [Redis有序集合Zset--sortedSet](#Redis有序集合Zset--sortedSet)
+- [redis配置文件](#redis配置文件)
+    - [参考配置文件](#参考配置文件)
+    - [Unit单位](#Unit单位)
+    - [Includes包含](#Includes包含)
+    - [General通用](#General通用)
+    - [Network网络](#Network网络)
+    - [Security安全](#Security安全)
+    - [Limit限制](#Limit限制)
+    - [Sanpshotting](#Sanpshotting)
+- [持久化](#持久化)
 - [](#)
 - [](#)
 - [](#)
@@ -130,7 +138,7 @@
 ## nosql是什么
 [top](#catalog)
 - **NoSql泛指非关系型数据库**
-- nosql的产生就是为了解决大规模数据集合多重数据种类带来的挑战，尤其是海量数据应用难题，包括超大规模数据的存储
+- nosql的产生就是为了解决大规模数据集合中数据种类多样化带来的挑战，尤其是海量数据应用难题，包括超大规模数据的存储
     - **这些类型的数据存储不需要固定的模式，无需多余操作就可以横向扩展**
 
 ## 为什么用nosql
@@ -440,7 +448,7 @@
         - 很多web实时系统并不要求严格的数据库事务，对读一致性的要求很多，有些场合对**写一致性**要求并不高，允许实现最终一致性
 
     - 数据库的写实时性和读实时性需求
-        - 对关系数据库来说，插入一条数据之后立刻查询，是肯定可以对出这条数据的，**但是对于很多web应用来说，并不要这么高的实时性**，如发一条信息之后，过几秒乃至十几秒之后，订阅者才看到这条动态是完全可以接受的
+        - 对关系数据库来说，插入一条数据之后立刻查询，是肯定可以读出这条数据的，**但是对于很多web应用来说，并不要这么高的实时性**，如发一条信息之后，过几秒乃至十几秒之后，订阅者才看到这条动态是完全可以接受的
     - 对复杂的SQL查询，特别是多表关联查询的需求
         - <label style="color:red">任何大数据量的web系统，都非常忌讳多个大表的关联查询</label>
 
@@ -454,7 +462,7 @@
 - BASE的思想
     - **在某一时刻，通过让系统放松对数据一致性的要求，来换取系统整体伸缩性和性能**
 - 为什么需要BASE
-    - 大型系统往往由于地域分布对和极高性能的追求，不可能采用分布式事务来完成这些指标。如果想获得这些指标，必须采用另一种方式来完成，所以使用BASE
+    - 大型系统往往由于地域分布和对极高性能的追求，不可能采用分布式事务来完成这些指标。如果想获得这些指标，必须采用另一种方式来完成，所以使用BASE
 
 ## 分布式与集群简介
 [top](#catalog)
@@ -481,7 +489,7 @@
 # Redis简介
 [top](#catalog)
 - 是什么
-    - <label style="color:red">KV + Cache + Persisten</label>
+    - <label style="color:red">KV + Cache + Persistent</label>
     - Redis： REmote DIcationary Server， 远程字典服务器
     - **分布式数据库**
     - Redis是完全开源免费的，用C语言编写的，遵守BSD协议，是一个高性能的（key/value）分布式内存数据库，基于内存运行，并支持持久化的NoSQL数据库，是当前最热门的NoSql数据库之一，也被人们称为**数据结构服务器**
@@ -520,7 +528,7 @@
         - 2次make时，缺少某些目录
             - 运行：`make distclean`，然后再执行：`make`
     - 执行测试程序
-        - Redis Test
+        - Redis Test，指令：`make test`
         
 - **安装**：如果`make`完成后继续执行`make install`
     - `redis-3.0.4`目录下会生成配置文件：`redis.conf`
@@ -695,7 +703,7 @@
     |添加元素/新建list|rpush key value1 [value2]|rigth push，将一个或多个值插入到队尾，可以对一个list变量进行多次插入<br/>如果输入`rpush k2 1 2 3 4 5`<br/>`lrange k2 0 -1`的输出顺序是12345，<br/>即插入每个元素时都从队尾插入|
     |list重置|ltrim key start stop|key = key[start:end], 包含end；<br/>如果`start >= length`，则list将**因为没有元素而被删除**<br/>如果`end >= length`, 则只截取到length-1，不会异常，不会扩容|
     |修改元素|lset key index value|通过索引设置列表元素的值|
-    |list切片|lrange key start stop|从对头方向，获取列表指定范围内的元素， [0 , 1]表示全部元素|
+    |list切片|lrange key start stop|从对头方向，获取列表指定范围内的元素， `0 -1`表示全部元素|
     |弹出元素|lpop key|移出并返回队头元素|
     |弹出元素|rpop key|移出并返回队尾元素|
     |获取元素|lindex key index|通过索引获取列表中的元素|
@@ -791,7 +799,7 @@
 
 
 
-## Redis有序集合Zset--sorted set
+## Redis有序集合Zset--sortedSet
 [top](#catalog)
 - zset就是在set的基础上，加上一个score值
     - set是：k1 v1 v2 v3
@@ -801,28 +809,157 @@
 
 |操作类型|命令|命令内容|
 |-|-|-|
-||zadd key score1 member1 [score2 member2]|向有序集合添加一个或多个成员，或者更新已存在成员的分数|
-||zcard key|获取有序集合的成员数|
+|添加|zadd key score1 member1 [score2 member2]|向有序集合添加一个或多个成员，或者更新已存在成员的分数|
+|查询|zcard key|获取有序集合中的member数|
 ||zcount key min max|计算在有序集合中指定区间分数的成员数|
 ||zincrby key increment member|有序集合中对指定成员的分数加上增量 increment|
 ||zinterstore destination numkeys key [key ...]|计算给定的一个或多个有序集的交集并将结果集存储在新的有序集合 key 中|
 ||zlexcount key min max|在有序集合中计算指定字典区间内成员数量|
-||zrange key start stop [WITHSCORES]|通过索引区间返回有序集合指定区间内的成员|
-||zrangebylex key min max [LIMIT offset count]|通过字典区间返回有序集合的成员|
-||zrangebyscore key min max [WITHSCORES] [LIMIT]|通过分数返回有序集合指定区间内的成员|
-||zrank key member|返回有序集合中指定成员的索引|
-||zrem key member [member ...]|移除有序集合中的一个或多个成员|
+|查询|zrange key start stop [WITHSCORES]|通过索引区间返回有序集合指定区间内的member，如果后面添加了`WITHSCORES`则返回socre和member|
+| |zrangebylex key min max [LIMIT offset count]|通过字典区间返回有序集合的成员|
+|查询|zrangebyscore key min max [WITHSCORES] [LIMIT 开始下标，返回数量]|通过分数返回有序集合指定区间内的成员<br>在最大最小值之前添加`(`，表是不包含该值|
+|查询|zrank key member|返回有序集合中指定成员的索引|
+|删除|zrem key member [member ...]|移除有序集合中的一个或多个成员|
 ||zremrangebylex key min max|移除有序集合中给定的字典区间的所有成员|
 ||zremrangebyrank key start stop|移除有序集合中给定的排名区间的所有成员|
 ||zremrangebyscore key min max|移除有序集合中给定的分数区间的所有成员|
 ||zrevrange key start stop [WITHSCORES]|返回有序集中指定区间内的成员，通过索引，分数从高到低|
 ||zrevrangebyscore key max min [WITHSCORES]|返回有序集中指定分数区间内的成员，分数从高到低排序|
-||zrevrank key member|返回有序集合中指定成员的排名，有序集成员按分数值递减(从大到小)排序|
-||zscore key member|返回有序集中，成员的分数值|
+|查询|zrevrank key member|返回有序集合中指定成员的排名，有序集成员按分数值递减(从大到小)排序|
+|查询|zscore key member|返回有序集中，成员的分数值|
 ||zunionstore destination numkeys key [key ...]|计算给定的一个或多个有序集的并集，并存储在新的 key 中|
 ||zscan key cursor [MATCH pattern] [COUNT count]|迭代有序集合中的元素（包括元素成员和元素分值）|
 
 
+# redis配置文件
+## 参考配置文件
+[top](#catalog)
+- 参考地址：https://raw.githubusercontent.com/antirez/redis/5.0/redis.conf
+- 参考配置：[/nosql/redis/conf/redis.conf](/nosql/redis/conf/redis.conf)
+
+## Unit单位
+[top](#catalog)
+- 配置说明
+    - 配置存储单位，定义了一些基本度量单位
+    - 只支持bytes，不支持bit 
+    - 设置时对大小不敏感，`gb`、`GB`都可以
+- 配置内容
+    ```xml
+    # Note on units: when memory size is needed, it is possible to specify
+    # it in the usual form of 1k 5GB 4M and so forth:
+    #
+    # 1k => 1000 bytes
+    # 1kb => 1024 bytes
+    # 1m => 1000000 bytes
+    # 1mb => 1024*1024 bytes
+    # 1g => 1000000000 bytes
+    # 1gb => 1024*1024*1024 bytes
+    #
+    # units are case insensitive so 1GB 1Gb 1gB are all the same.
+    ```
+
+## Includes包含
+[top](#catalog)
+- 配置说明 
+    - 通过includes包含，可以将redis.conf作为管理者，来包含其他配置
+
+- ?????
+
+## General通用
+[top](#catalog)
+- `daemonize yes/no`
+    - redis默认不是以守护进程的方式运行，可通过设置为`yes`来启动守护进程
+- `pidfile /var/run/redis_6379.pid`
+    - 当redis以守护进程方式运行时，redis默认会把pid写入指定文件中
+- `loglevel 级别`
+    - 4种日志级别
+        1. debug
+        2. verbose
+        3. notice，默认级别
+        4. warning 
+
+- `logfile 文件名`
+    - 设置日志文件
+    - `""`、`stdout`表示输出到标准输出
+    - 如果`daemonize yes`，redis以守护进程的方式运行，并通过`logfile stdout`将日志记录方式设为标准输出，则日志将会发送给`/dev/null`
+
+- `syslog-enabled yes/no`
+    - 是否把日志输出到syslog中
+
+- `syslog-ident redis`
+    - `syslog-enabled yes`时，指定个syslog里的日志
+
+- `syslog-facility local0`
+    - 指定syslog设备，值可以是USER或LOCAL0-LOCAL7
+
+- `databases`
+    - 设置redis中可用库的数量
+
+## Network网络
+[top](#catalog)
+- `tcp-backlog 511`
+    - 设置tcp的backlog，backlog是一个连接队列，backlog队列总和=未完成三次握手队列+已完成三次握手队列
+    - 在高并发环境下需要一个高backlog值来避免慢客户端的连接问题
+    - Linux内核会将这个值减小到`/proc/sys/net/core/somaxconn`的值，所以需要确认增大`somaxconn`和`tcp_max_syn_backlog`两个值来达到目标结果
+- `timeout`
+    - 当客户端空闲了`timeout`的时间，则关闭客户端
+    - `timeout 0`，表示不关闭
+
+- `tcp-keepalive 300`
+    - 相当于心跳测试，单位为秒
+    - 建议设成60
+    - `tcp-keepalive 0`，表示不会进行Keepalive检测
+
+## Security安全
+[top](#catalog)
+- `requirepass`，登陆密码
+    - 默认是:`""`，即没有密码
+    - 可以通过指令在客户端查询、修改密码
+        - 获取当前密码的指令：`config get requirepass`
+        - 设置当前密码的指令：`config set requirepass "xxx"`
+    - 设置了密码之后，登录客户端之后，第一次执行指令前需要输入密码
+        - `auth 密码`
+
+## Limit限制
+[top](#catalog)
+- `maxclients`
+    - 最大连接数
+    - 默认值`10000`
+- `maxmemory <bytes>`
+    - 设置最大缓存，需要配合`maxmemory-policy`来使用
+- `maxmemory-policy noeviction`
+    - 设置缓存的过期策略
+    - 5种缓存过期策略
+        1. volatile-lru，使用LRU算法移除key，只针对设置了过期时间的key
+        2. allkeys-lru，使用LRU算法移除key
+        3. volatile-lfu，
+        4. allkeys-lfu，
+        5. volatile-random，在过期集合中随机移除key，只针对设置了过期时间的key
+        6. allkeys-random，随机删除key
+        7. volatile-ttl，移除tll值最小的key，即那些最近要过期的key
+        8. noeviction 永不过期，默认值
+    - LRU算法：最近最少使用
+
+- `maxmemory-samples`
+    - 设置需要检查的样本数量
+    - 因为LRU算法和最小TLL算法都不是精确的算法，只是估算值，所以可以设置样本的大小，reids默认会检查`maxmemory-samples`个key并选择其中LRU的那个值
+
+## Sanpshotting
+[top](#catalog)
+- `dir`
+    - 指定本地数据库的存储位置
+    - 默认是`./`，会跟随启动的目录而变化
+
+# 持久化
+## RDB
+[top](#catalog)
+- Redis DataBase
+- 在指定的时间间隔内将内存中的数据集快照写入磁盘。使用快照恢复时是将快照文件直接读到内存中
+ s
+
+## AOF
+[top](#catalog)
+- Append Only File
 
 
 # 总结

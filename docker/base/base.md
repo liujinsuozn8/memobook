@@ -701,7 +701,7 @@
 [top](#catalog)
 - 拉取???????????????
 - 创建容器
-    - `docker run -d -p 6379:6379 -v /???/myredis/data:/data -v /???/myredis/conf/redis.conf:/usr/lacal/etc/redis/redis.conf redis:版本号 redis-server /usr/local/etc/redis/redis.conf --appendonly yes`
+    - `docker run -d -p 6379:6379 -v /???/myredis/data:/data -v /???/myredis/conf/redis.conf:/usr/local/etc/redis/redis.conf redis:版本号 redis-server /usr/local/etc/redis/redis.conf --appendonly yes`
 - 在宿主机的数据卷上添加配置文件
     - 在主机`/???/myredis/conf/redis.conf`目录下新建`redis.conf`文件
     - `/???/myredis/conf/redis.conf/redis.conf`,第一层的`redis.conf`是目录
@@ -709,7 +709,8 @@
 - 测试：连接redis
     - `docker exec -it 容器ID redis-cli`
 - 测试：持久化文件生成
-    - 容器内:`cd /data` ,存在文件`appendonly.aof`
+    - 执行`shutdown`
+    - 在`/data`容器卷内，存在文件`appendonly.aof`
 
 # 镜像推送
 [top](#catalog)
