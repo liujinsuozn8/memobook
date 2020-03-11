@@ -703,8 +703,6 @@
 - 创建容器
     - `docker run -d -p 6379:6379 -v /???/myredis/data:/data -v /???/myredis/conf/redis.conf:/usr/local/etc/redis/redis.conf redis:版本号 redis-server /usr/local/etc/redis/redis.conf --appendonly yes`
 - 在宿主机的数据卷上添加配置文件
-    - 在主机`/???/myredis/conf/redis.conf`目录下新建`redis.conf`文件
-    - `/???/myredis/conf/redis.conf/redis.conf`,第一层的`redis.conf`是目录
     - 添加基本配置，但是要注释`binds`部分，不绑定到本机
 - 测试：连接redis
     - `docker exec -it 容器ID redis-cli`
@@ -752,6 +750,7 @@
     - 查看容器内部细节:`docker inspect 容器ID`
     - 直接进入指定容器:`docker attach 容器ID`
     - 在外部执行指令`docker exec [-dit] 容器 指令 指令参数`
+        - 进入某个容器控制台：`docker exec -it 容器 /bin/bash`
     - 从容器内部拷贝文件到宿主机上:`docker cp 容器ID：容器内路径 宿主机路径`
 - 数据卷操作
     - `docker run -it -v /宿主机绝对路径:/容器内目录[:ro] 镜像名`
