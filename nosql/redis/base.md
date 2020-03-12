@@ -37,11 +37,22 @@
     - [Security安全](#Security安全)
     - [Limit限制](#Limit限制)
     - [Sanpshotting持久化](#Sanpshotting持久化)
+    - [AppendOnlyMode](#AppendOnlyMode)
 - [持久化](#持久化)
     - [RDB](#RDB)
     - [AOF](#AOF)
     - [AOF和RDB的对比](#AOF和RDB的对比)
 - [redis事务](#redis事务)
+    - [redis事务的介绍](#redis事务的介绍)
+    - [redis事务的常用命令](#redis事务的常用命令)
+    - [redis事务的使用分析](#redis事务的使用分析)
+        - [正常使用](#正常使用)
+        - [放弃事务](#放弃事务)
+        - [全体连坐](#全体连坐)
+        - [冤头债主](#冤头债主)
+        - [watch监控](#watch监控)
+- [消息发布与订阅](#消息发布与订阅)
+- [](#)
 - [](#)
 - [](#)
 - [总结](#总结)
@@ -1085,7 +1096,7 @@
         3. 恢复：重启redis，redis会自动加载aof文件并恢复数据
     - 异常aof文件的恢复
         1. 启动：`appendonly yes`
-        2. 备份别脏写的aof文件
+        2. 备份被脏写的aof文件
         3. 修复：`redis-check-aof --fix aof文件路径`
         4. 恢复：重启redis，redis会自动加载aof文件并恢复数据
 
@@ -1097,8 +1108,8 @@
         - 基本过程
             1. aof文件大小超过阀值
             2. fork一个新的进程
-            3. 遍历新进程的内存中的数据，为每条数据生成一条Set语句
-            3. 生成的内存先写入临时文件，全部写完后在rename
+            3. **遍历新进程的内存中的数据，为每条数据生成一条Set语句**
+            4. 生成的内存先写入临时文件，全部写完后在rename
         - 重写的原理与RDB类似
     - 如何触发Rewrite
         - Redis会记录上次重写时的aof文件大小，默认配置时当aof文件大小是上次rewrite后大小的一倍且文件大于64M时触发
@@ -1112,7 +1123,7 @@
     - 可以配置同步方式：`appendfsync`
 - AOF的劣势
     - 对于相同数据集的数据，aof文件要远大于rdb文件，且恢复速度aof也比rdb慢
-    - aof的运行效率比rdb慢，每秒同步侧侧露效率较好，不同步效率和rdb相同
+    - aof的运行效率比rdb慢，每秒同步策略的效率较好，不同步时效率和rdb相同
 
 ## 使用建议
 [top](#catalog)
@@ -1131,7 +1142,7 @@
         - 代价是：
             - 带来了持续的IO（`appendfsync always/everysec/no`）
             - rewrite的最后，将rewrite过程中产生的新数据写到新文件时会造成阻塞
-        - 只要硬盘许可，应该尽量减少rewrite的频率
+        - 如果硬盘容量许可，应该尽量减少rewrite的频率
             - aof重写的触发条件太小了，可以把64M提升到5G、默认超过原大小100%可以适当调整
     - 如果不使用AOF，也可以靠主从复制来实现高可用
         - 可以节省IO和减少rewrite操作带来的系统波动
@@ -1140,23 +1151,314 @@
             2. 启动脚本需要比较主从节点的RDB文件，载入较新的那个文件(新浪微博使用了这种架构)
 
 # redis事务
+## redis事务的介绍
 [top](#catalog)
 - redis事务是什么
     - 就是**批处理命令**。可以一次执行多个命令,本质是一组命令的集合
     - 一个事务中的所有命令都会序列化，按顺序的串行化执行，而**不会被其他命令插入**
 - redis事务能做什么
     - 一个队列中，一次性、顺序性、排他性的执行一系列命令
-- redis事务的常用命令
+- redis事务的3阶段
+    1. 开启：以指令`multi`启动一个事务
+    2. 入队：将多个命令添加到事务队列中，这些命令不会被立即执行
+    3. 执行：通过`exec`命令触发事务
 
-    |命令|说明|
+- redis事务的3大特性
+    1. 单独隔离
+        - 事务中的所有命令都会序列化、按顺序的执行。事务在执行的过程中，不会被其他命令打断
+    2. 没有隔离级别
+        - 事务队列中的命令在没有提交之前，都不会执行
+        - 因为事务提交前任何命令都不会被执行，所以不存在**事务内的查询要看到事务里的更新，而事务外的查询无法看到事务内部的更新**
+    3. 不保证原子性
+        - 事务中的某个指令如果失败了，不会影响其他指令的执行，并且**没有回滚**
+
+## redis事务的常用命令
+[top](#catalog)
+
+|命令|说明|
+|-|-|
+|`multi`|<ul><li>标记一个事物块的开始</li><li>指令执行后会返回ok，但只是代表redis接收到了指令，不表示执行成功</li><li>启动后，多个redis指令会全部入队，并顺序执行</li></ul>|
+|`exec`|执行事务块中的所有指令|
+|`discard`|取消事务，放弃执行事务块内的所有命令（**放弃当前批处理的所有操作**）|
+|`watch key [key ...]`|<ul><li>监视一个或多个key</li><li>如果在事务执行之前，key被其他命令改动，则事务将被打断</li><li><label style="color:red">如果执行了`exec`，`multi`之前添加的监控锁都会被取消</label></li></ul>|
+|`unwatch`|取消`WATCH`指令对**所有**key的监视|
+
+## redis事务的使用分析
+### 正常使用
+[top](#catalog)
+```
+127.0.0.1:6379[5]> multi            启动事务
+OK                                  redis接收指令，并返回OK
+127.0.0.1:6379[5]> set k1 123       添加指令
+QUEUED                              添加指令后，现实QUEUED，表示指令已经进入队列
+127.0.0.1:6379[5]> set k2 234
+QUEUED
+127.0.0.1:6379[5]> get k2           除了写指令，也可以有读指令
+QUEUED
+127.0.0.1:6379[5]> exec             执行事务中的所有指令
+1) OK
+2) OK
+3) "234"
+127.0.0.1:6379[5]> mget k1 k2
+1) "123"
+2) "234"
+127.0.0.1:6379[5]> 
+```
+
+### 放弃事务
+[top](#catalog)
+```
+127.0.0.1:6379[5]> multi            启动事务
+OK
+127.0.0.1:6379[5]> set k1 qwer      添加指令
+QUEUED                              指令入队
+127.0.0.1:6379[5]> set k2 zxcv
+QUEUED
+127.0.0.1:6379[5]> discard          放弃事务
+OK
+127.0.0.1:6379[5]> mget k1 k2       key对应的value没有被修改
+1) "123"
+2) "234"
+127.0.0.1:6379[5]> 
+```
+
+### 全体连坐
+[top](#catalog)
+- 添加指令的过程中如果出现了异常，则执行`exec`时，**全部指令失效**
+    ```
+    127.0.0.1:6379[5]> multi            启动事务
+    OK
+    127.0.0.1:6379[5]> set k1 11111     添加指令
+    QUEUED
+    127.0.0.1:6379[5]> set k2 22222
+    QUEUED
+    127.0.0.1:6379[5]> set k3 33333
+    QUEUED
+    127.0.0.1:6379[5]> set k4 44444
+    QUEUED
+    127.0.0.1:6379[5]> setget k4        添加一个错误的指令，并显示异常
+    (error) ERR unknown command `setget`, with args beginning with: `k4`, 
+    127.0.0.1:6379[5]> set k5 55555     继续添加指令
+    QUEUED
+    127.0.0.1:6379[5]> exec             执行事务中的所有指令。
+    (error) EXECABORT Transaction discarded because of previous errors.                     因为添加指令时发生了异常，所以事务被
+    127.0.0.1:6379[5]> get k1
+    "123"
+    127.0.0.1:6379[5]> 
+    ```
+
+### 冤头债主
+[top](#catalog)
+- 有些指令在输入到事务队列时，不会产生异常，但是执行时会产生异常。这种情况下有异常的指令影响数据，其他指令会正常执行
+    ```
+    127.0.0.1:6379[5]> get k1
+    "aaa"
+    127.0.0.1:6379[5]> multi                启动事务
+    OK
+    127.0.0.1:6379[5]> incr k1              做k1+1，但是k1的值是字符串，但是添加到事务时不会报错
+    QUEUED
+    127.0.0.1:6379[5]> set k2 zzzzz         继续添加指令
+    QUEUED
+    127.0.0.1:6379[5]> set k3 vvvvv
+    QUEUED
+    127.0.0.1:6379[5]> set k6 bbbbb
+    QUEUED
+    127.0.0.1:6379[5]> exec                 执行指令，incr k1会产生异常，无法执行，但是其他指令会正常执行
+    1) (error) ERR value is not an integer or out of range
+    2) OK
+    3) OK
+    4) OK
+    127.0.0.1:6379[5]> get k2
+    "zzzzz"
+    127.0.0.1:6379[5]> get k3
+    "vvvvv"
+    127.0.0.1:6379[5]> get k1
+    "aaa"
+    127.0.0.1:6379[5]> 
+    ```
+### watch监控
+[top](#catalog)
+- 悲观锁/乐观锁/CAS(Check And Set)
+    - 悲观锁，Pessimistic Lock
+        - 默认每次拿数据时别人都会修改，所以**每次拿数据时都会上锁**。其他人在使用时会被阻塞知道拿到锁
+        - 传统的关系型数据库中就用到了很多这种锁机制，如：
+            - 行锁
+            - 表锁
+            - 读锁
+            - 写锁
+
+    - 乐观锁，Optimistic Lock
+        - 默认每次拿数据时别人不会修改，**所以不会上锁**。但是在更新时会判断一下在此期间有没有人更新过当前数据
+        - 可以使用版本号策略
+            - 核心策略：<label style="color:red">提交版本必须大于当前版本才能执行更新</label>
+            - 该策略在每一条数据后面添加一个字段`Version`，每次修改时都会在该字段的基础上`+1`
+            - 当两个人同时操作，但不同时提交时，第一个人提交后会将`Version+1`，第二个人再提交时，由于`Version`值和当前数据库中的值不同，自会导致异常，需要重新从数据库中获取数据并重新修改
+        - 乐观锁适用于多读的应用类型，这样可以提高吞吐量
+
+- `watch`指令类似**乐观锁**。当事务提交了，如果Key的值已经被其他的客户端修改，则整个事务队列都不会被执行
+- 当`watch`命令在`nulti`执行之前监控了多个key时，如果`watch`的key有任何变化，`exec`命令执行的事务都将被放弃，同时返回`nil`表示事务执行失败
+
+- watch监控示例
+    1. 初始化信用卡可用余额
+        ```
+        127.0.0.1:6379[5]> set balance 100      设置金额
+        OK
+        127.0.0.1:6379[5]> set debt 0           设置欠款
+        OK
+        ```
+    2. 无加塞篡改，先用`watch`监控再开启`multi`，保证两笔金额变动在同一个事务内
+        ```
+        127.0.0.1:6379[5]> watch balance
+        OK
+        127.0.0.1:6379[5]> multi
+        OK
+        127.0.0.1:6379[5]> DECRBY balance 20
+        QUEUED
+        127.0.0.1:6379[5]> INCRBY debt 20
+        QUEUED
+        127.0.0.1:6379[5]> exec
+        1) (integer) 80
+        2) (integer) 20
+        127.0.0.1:6379[5]>  
+        ``
+    3. `watch`防止有加塞篡改数据
+        - 第一个用户进行`watch` key
+            ```
+            127.0.0.1:6379[5]> get balance
+            "80"
+            127.0.0.1:6379[5]> watch balance
+            OK
+            127.0.0.1:6379[5]> 
+            ```
+        - 第二个用户对key进行修改
+            ```
+            127.0.0.1:6379[5]> set balance 500
+            OK
+            127.0.0.1:6379[5]> get balance
+            "500"
+            127.0.0.1:6379[5]> 
+            ```
+        - 第一个用户继续启动事务，操作金额
+            ```
+            127.0.0.1:6379[5]> get balance          已经可以观察到数据的修改
+            "500"
+            127.0.0.1:6379[5]> multi                启动事务
+            OK
+            127.0.0.1:6379[5]> DECRBY balance 30    修改金额
+            QUEUED
+            127.0.0.1:6379[5]> INCRBY debt 30
+            QUEUED
+            127.0.0.1:6379[5]> exec                 执行事务
+            (nil)                                   执行失败
+            127.0.0.1:6379[5]> get balance
+            "500"
+            127.0.0.1:6379[5]> get debt
+            "20"
+            127.0.0.1:6379[5]> 
+            ```
+        - `unwatch`解除对所有key的监控
+            ```
+            127.0.0.1:6379[5]> unwatch              放弃对key的监视，重新获取数据
+            OK
+            127.0.0.1:6379[5]> multi                启动事务
+            OK
+            127.0.0.1:6379[5]> set balance 80       添加指令
+            QUEUED
+            127.0.0.1:6379[5]> set debt 20
+            QUEUED
+            127.0.0.1:6379[5]> exec                 执行事务
+            1) OK                                   事务执行成功
+            2) OK
+            127.0.0.1:6379[5]> get balance          数据被还原
+            "80"
+            127.0.0.1:6379[5]> get debt
+            "20"
+            127.0.0.1:6379[5]> 
+            ```
+
+# 消息发布与订阅
+[top](#catalog)
+- redis的消息发布与订阅 是什么
+    - 进程间的一种消息通信模式：发送者(pub)发送消息，订阅者(sub)接收消息
+    - 原理图
+        - channel1以及订阅这个channel的三个客户端：client1、client2、client5之间的关系
+            - [](?????)
+
+        - 当有新的消息通过PUBLISH命令发送给频道channel1时，这个消息就会发送给订阅该channel的三个客户端
+
+- **实际开发中很少使用redis来做消息中间件**
+
+- 相关命令
+
+    |命令|序号|
     |-|-|
-    |`multi`|<ul><li>标记一个事物块的开始</li><li>指令执行后会返回ok，但只是代表redis接收到了指令，不表示执行成功</li><li>启动后，多个redis指令会全部入队，并顺序执行</li></ul>|
-    |`exec`|执行事务块中的所有指令|
-    |`discard`|取消事务，放弃执行事务块内的所有命令（**放弃当前批处理的所有操作**）|
-    |`WATCH key [key ...]`|<ul><li>监视一个或多个key</li><li>如果在事务执行之前，key被其他命令改动</li></ul>|
-    |`UNWATCH`|取消`WATCH`指令对所有key的监视|
+    |`psubscribe pattern [pattern..]`|订阅一个或多个符合给定模式的channel|
+    |`pubsub subcommand [arg...]`|查看订阅与发布系统状态|
+    |`publish channel message`|将消息发送到指定的channel|
+    |`punsubscribe [pattern...]`|退订所有给定模式的channel|
+    |`subscribe channel [channel...]`|订阅给定的一个或多个channel|
+    |`unsubscribe channel [channel...]`|退订指定的channel|
 
-    
+- 使用示例
+    - 先订阅后发布，才能收到消息
+    - 订阅多个
+        - 可以一次性订阅多个channel：`subscribe c1 c2 c3`
+            ```
+            127.0.0.1:6379[5]> SUBSCRIBE c1 c2 c3
+            Reading messages... (press Ctrl-C to quit)
+            1) "subscribe"
+            2) "c1"
+            3) (integer) 1
+            1) "subscribe"
+            2) "c2"
+            3) (integer) 2
+            1) "subscribe"
+            2) "c3"
+            3) (integer) 3
+            ```
+
+        - 消息发布：`publish c2 testmsg`
+            ```
+            127.0.0.1:6379[5]> PUBLISH c2 testmsg
+            (integer) 1
+            ```
+            ```
+            1) "message"
+            2) "c2"
+            3) "testmsg"
+            ```
+    - 通过通配符来订阅
+        - 订阅多个，通配符`*`，`psubscribe new*`
+            ```
+            127.0.0.1:6379> psubscribe new*
+            Reading messages... (press Ctrl-C to quit)
+            1) "psubscribe"
+            2) "new*"
+            3) (integer) 1
+            ```
+        - 接收消息，`publish new1 helloWorld`
+            ```
+            127.0.0.1:6379[5]> PUBLISH new1 helloWorld
+            (integer) 1
+            127.0.0.1:6379[5]> PUBLISH new12 helloWorld
+            (integer) 1
+            127.0.0.1:6379[5]> 
+            ```
+            ```
+            1) "pmessage"
+            2) "new*"
+            3) "new1"
+            4) "helloWorld"
+            1) "pmessage"
+            2) "new*"
+            3) "new12"
+            4) "helloWorld"
+            ```
+```
+127.0.0.1:6379[5]> PUBLISH c4 "hello world"
+(integer) 0
+127.0.0.1:6379[5]> 
+```
 
 # 总结
 [top](#catalog)
