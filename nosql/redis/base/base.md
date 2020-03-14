@@ -1,3 +1,8 @@
+
+- 参考
+    - https://www.bilibili.com/video/av20974126
+    - https://www.bilibili.com/video/av90763746
+
 <span id="catalog"></span>
 
 - [NoSql入门](#NoSql入门)
@@ -53,7 +58,9 @@
         - [watch监控](#watch监控)
 - [消息发布与订阅](#消息发布与订阅)
 - [主从复制](#主从复制)
-- [](#)
+    - [主从复制的基本概念](#主从复制的基本概念)
+    - [主从复制的基本使用](#主从复制的基本使用)
+    - [主从复制的原理](#主从复制的原理)
 - [](#)
 - [总结](#总结)
 
@@ -882,6 +889,7 @@
 [top](#catalog)
 - `daemonize yes/no`
     - redis默认不是以守护进程的方式运行，可通过设置为`yes`来启动守护进程
+    - 默认值是`no`
 - `pidfile /var/run/redis_6379.pid`
     - 当redis以守护进程方式运行时，redis默认会把pid写入指定文件中
 - `loglevel 级别`
@@ -1456,30 +1464,115 @@ OK
             ```
 
 # 主从复制
+## 主从复制的基本概念
 [top](#catalog)
 - 主从复制是什么
-    - `master/slaver机制`:主机数据更新后根据配置和策略，自动同步到备机的
+    - `master/slaver机制`:主机数据更新后根据配置和策略，自动同步到备机
     - **Master以写为主，Slave以读为主**
 
 - 主从复制的主要功能
-    - 读写分离
-    - 容灾备份
+    - 读写分离  
+        - 只能减少读写压力，无法减少内存压力
+    - 容灾备份，快速恢复
 
-- 主从复制的几种使用方式
+## 主从复制的基本使用
+[top](#catalog)
+- 配置方式
     1. 配从不配主
-    2. 从库配置：`slaveof 主库IP 主库端口`
+        - 查看个库的状态：`info replication`
+        - 如果没有配置，每个库启动时默认就是主库，通过指令挂载其他库来创建主从关系
+    2. 从库配置：
+        - 绑定主库指令：`slaveof 主库IP 主库端口`
         - 如果没有配置redis.conf文件，每次与master断开之后，都需要重新连接
-        - Info replication
-    3. 修改配置文件的细节
-        - 拷贝多个redis.conf 文件
+    3. 修改主库和从库的配置文件
+        - 拷贝多个`redis.conf`文件
         - 启动守护线程：`daemonize yes`
-        - 配置Pid文件:- `pidfile /var/run/redis_6379.pid`
-        - 指定端口：`pore`
-    4. 常用3招
-        - 1主2仆
-        - 薪火相传
-        - 反客为主
+            - 如果是通过docker启动需要设置：`daemonize no`
+        - 指定端口：`port XXXX`
+        - 配置Pid文件: `pidfile /var/run/redis_6379.pid`
+        - 配置redis的日志文件: `logfile /.../log_6379.log`
+        - 配置RDB备份文件: `dbfilename dump6379.rdb`
+        - 如果启动了aof，配置aof的日志文件：`appendfilename "appendonly6379.aof"`
+- 相关的配置内容示例
+    ```
+    daemonize no
+    port 6379
+    logfile /var/run/log_6379.log
+    dbfilename dump6379.rdb
+    dir /data/
+    appendonly no
+    ```
+- 常用3种主从复制的形式
+    1. 1主2仆
+        - 主库可以读写(set/get)，从库只能读(get)
+        - 如果主库挂了，从库会原地待命
+        - 如果主库挂了，并重新启动了主库，在主库上新增记录时，可以继续同步到从库
+        - 如果从库挂了，重新连接master后，会重新执行一次全量复制，仍然与master同步
+    2. 薪火相传
+        - 目的是：**减轻master的写压力，去中心化降低风险**
+        - 上一个slave可以是下一个slave的Master，slave同样可以接收其他slave的连接和同步请求，那么该salve作为链条中下一个master可以有效减轻master的写压力
+        - 如果中途变更主从关系：从库会清除之前的数据，重新拷贝最新的数据
+        - `slaveof 新主库IP 新主库端口`
+        - 缺点：**如果中间的某个slave挂了，则后面的其他slave都无法备份**
+    3. 反客为主
+        - `slaveof no one`，使当前数据库停止与其他数据库的同步，转成主数据库
+        - 如果是薪火相传的形式，则主库挂了，通过该指令可以使下一级从库成为主库
 
+- 示例：
+    - 在docker中启动三个容器
+        - ![masterSlaveCopy01](imgs/masterSlave/masterSlaveCopy01.png)
+    - 1主2仆
+        - 6379是主库，6380、6381是从库
+        - 在主库中输入数据，从库也会进行同步，但是无法写入，只能读取
+            - ![masterSlaveCopy02](imgs/masterSlave/masterSlaveCopy02.png)
+        - 关闭主库，从库会原地待命，并且详细信息中显示主库的状态是`down`
+            - ![masterSlaveCopy03](imgs/masterSlave/masterSlaveCopy03.png)
+        - 重新在主库中添加数据，将继续同步到从库中
+            - ![masterSlaveCopy04](imgs/masterSlave/masterSlaveCopy04.png)
+    - 薪火相传
+        - 三个redis库的关系：`6379<--6380<--6381`
+            - ![masterSlaveCopy05](imgs/masterSlave/masterSlaveCopy05.png)
+        - 两个从库不能写只能读，主库写入数据后，会依次同步
+            - ![masterSlaveCopy06](imgs/masterSlave/masterSlaveCopy06.png)
+        
+## 主从复制的原理
+[top](#catalog)
+- 复制流程
+    - 建立主从关系
+    - slave成功连接到master后，slave给master发送一个sync命令
+    - master接到命令后立刻进行备份操作，并将RDB文件发送给slave ????
+    - 同步之后，每次master的写操作都会立刻发送给slave，slave执行相同的命令
+
+- 复制的方式
+    - 全量复制：slave服务在接收到数据库文件后，将其存盘并加载到内存
+    - 增量复制：Master继续将新的收集到的修改命令依次传给slave，完成同步
+
+- 只要重新连接master，会自动执行一次全量复制
+
+- 复制的缺点
+    - 由于所有的写操作都是现在master上操作，然后同步更新到slave上，所以master同步到slave机器有一定的延迟，当系统很繁忙的时候，延迟问题会更加严重，slave机器数量的增加也会是这个问题更加严重
+
+## 哨兵模式
+[top](#catalog)
+- 哨兵模式是什么
+    - 是反客为主的自动版，能够后台监控主机是否故障，如果故障了根据投票数自动将从库转换为主库
+    - 哨兵模式是建立在主从复制的基础上的
+- 使用方法
+    - 调整结构：6379+80、81
+    - 目录下新建`sentinel.conf`文件（名字不能错）
+    - 配置哨兵
+        - sentinel monitor 被监控数据库的名字 127.0.0.1 6379 1
+        - 最后的数字`1`表示：主机挂掉后slave投票选主机时，得票数多少后成为主机
+        - 1表示至少有多少个哨兵同意迁移的数量
+    - 启动哨兵
+        - redis-sentinel /.../sentinel.conf
+    - 正常主从演示
+    - 原有的master改了
+    - 投票选新
+    - 重新主从继续开工，`info replication`查看
+    - 问题：如果之前的master重启，会不会导致两个master冲突
+        - 之前的master会变成slave
+- 一组sentimel能同时监控多个Master
 
 # 总结
 [top](#catalog)

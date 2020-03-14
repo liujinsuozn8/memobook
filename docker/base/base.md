@@ -172,66 +172,66 @@
 
 ## 在CentOS7中安装
 [top](#catalog)
-    - 官方参考：https://docs.docker.com/install/linux/docker-ce/centos/
-    - 详细安装流程参考：[/docker/install/centos7/centos7Install.md](/docker/install/centos7/centos7Install.md)
-    - 对系统的要求
-        - CentOS7(64-bit)，系统内核版本为`3.10`以上
-    - 安装步骤
-        1. 检查Centos的版本
-            - `cat /etc/redhat-release`
-        2. yum安装gcc相关工具
-            - `yum -y install gcc`
-            - `yum -y install gcc-c++`
-        3. 卸载旧版本的docker 
-            ```
-            yum remove docker \
-                docker-client \
-                docker-client-latest \
-                docker-common \
-                docker-latest \
-                docker-latest-logrotate \
-                docker-logrotate \
-                docker-engine
-            ```
-        4. 安装需要的软件包
-            - `yum install -y yum-utils device-mapper-persistent-data lvm2`
-        5. 设置稳定的镜像仓库
-            - **只有设定了仓库，才能继续获取docker资源并安装和更新**
-            - **可以重复设置，新的地址会覆盖旧的地址**
-            - 设置及确认方式
-                1. 两种地址设置
-                    - 直接使用官方镜像地址，改地址可能无法连接，最好使用镜像加速地址
-                        - `yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo`
-                    - 使用过aliyun镜像
-                        - `yum-config-manager --add-repo https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo`
-                2. 执行后查看设置结果：`cat /etc/yum.repos.d/docker-ce.repo`
+- 官方参考：https://docs.docker.com/install/linux/docker-ce/centos/
+- 详细安装流程参考：[/docker/install/centos7/centos7Install.md](/docker/install/centos7/centos7Install.md)
+- 对系统的要求
+    - CentOS7(64-bit)，系统内核版本为`3.10`以上
+- 安装步骤
+    1. 检查Centos的版本
+        - `cat /etc/redhat-release`
+    2. yum安装gcc相关工具
+        - `yum -y install gcc`
+        - `yum -y install gcc-c++`
+    3. 卸载旧版本的docker 
+        ```
+        yum remove docker \
+            docker-client \
+            docker-client-latest \
+            docker-common \
+            docker-latest \
+            docker-latest-logrotate \
+            docker-logrotate \
+            docker-engine
+        ```
+    4. 安装需要的软件包
+        - `yum install -y yum-utils device-mapper-persistent-data lvm2`
+    5. 设置稳定的镜像仓库
+        - **只有设定了仓库，才能继续获取docker资源并安装和更新**
+        - **可以重复设置，新的地址会覆盖旧的地址**
+        - 设置及确认方式
+            1. 两种地址设置
+                - 直接使用官方镜像地址，改地址可能无法连接，最好使用镜像加速地址
+                    - `yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo`
+                - 使用过aliyun镜像
+                    - `yum-config-manager --add-repo https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo`
+            2. 执行后查看设置结果：`cat /etc/yum.repos.d/docker-ce.repo`
 
-        6. 更新yum软件包索引
-            - `yum makecache fast`
-        7. 安装docker社区版
-            - `yum install docker-ce docker-ce-cli containerd.io`
-        8. 启动docker
-            - `systemctl start docker`
-        9. 测试
-            - `docker version`
-            - `docker run hello-world`
-                - 初次使用时会自动从仓库拉去测试镜像，并创建容器来进行测试
-        10. 配置镜像加速
-            - `mkdir -p /etc/docker`
-            - `vim /etc/docker/daemon.json`
-                ```
-                #阿里云镜像
-                {
-                    "registry-mirrors":["https://{用户编码}.mirror.aliyuncs.com"],
-                }
-                ```
-            - `systemctl daemon-reload`
-            - `systemctl restart docker`
-        10. 卸载
-            - `systemctl stop docker`
-            - `yum remove docker-ce`
-            - `rm -rf /var/lib/docker`
-    
+    6. 更新yum软件包索引
+        - `yum makecache fast`
+    7. 安装docker社区版
+        - `yum install docker-ce docker-ce-cli containerd.io`
+    8. 启动docker
+        - `systemctl start docker`
+    9. 测试
+        - `docker version`
+        - `docker run hello-world`
+            - 初次使用时会自动从仓库拉去测试镜像，并创建容器来进行测试
+    10. 配置镜像加速
+        - `mkdir -p /etc/docker`
+        - `vim /etc/docker/daemon.json`
+            ```
+            #阿里云镜像
+            {
+                "registry-mirrors":["https://{用户编码}.mirror.aliyuncs.com"],
+            }
+            ```
+        - `systemctl daemon-reload`
+        - `systemctl restart docker`
+    10. 卸载
+        - `systemctl stop docker`
+        - `yum remove docker-ce`
+        - `rm -rf /var/lib/docker`
+
 ## 获取镜像加速
 [top](#catalog)
 - 阿里云镜像
