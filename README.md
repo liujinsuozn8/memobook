@@ -1,7 +1,10 @@
-- docker
-    - [基本知识](docker/base/base.md)
-    - 详细安装过程
-        - [centos7下安装docker](docker/install/centos7/centos7Install.md)
+- DevOps
+    - maven
+        - [基本知识](devops/maven/base/base.md)
+    - docker
+        - [基本知识](devops/docker/base/base.md)
+        - 详细安装过程
+            - [centos7下安装docker](devops/docker/install/centos7/centos7Install.md)
 - go
     - [基本知识](go/base.md)
     - [并发](go/multithreading/multithreading.md)
@@ -12,7 +15,6 @@
 - java
     - [基本知识](java/base/memo.md)
     - [JDBC](java/jdbc/jdbc.md)
-    - [maven](java/maven/base.md)
     - [java8实战](java/base/inAction.md)
     - javaweb
         - [idea创建web工程](java/javaweb/createProject.md)

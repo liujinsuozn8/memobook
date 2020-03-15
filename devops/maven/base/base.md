@@ -226,7 +226,7 @@
     │       └── resources
     ```
   
-- pom.xml配置：[/java/maven/sample/Hello/pom.xml](/java/maven/sample/Hello/pom.xml)
+- pom.xml配置：[/devops/maven/base/sample/Hello/pom.xml](/devops/maven/base/sample/Hello/pom.xml)
     ```xml
     <?xml version="1.0" ?>
     <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -257,7 +257,7 @@
     ```
   
 - 代码
-    - 主程序源代码，Hello.java：[/java/maven/sample/Hello/src/main/java/com/ljs/mavenlearn/Hello.java](/java/maven/sample/Hello/src/main/java/com/ljs/mavenlearn/Hello.java)
+    - 主程序源代码，Hello.java：[/devops/maven/base/sample/Hello/src/main/java/com/ljs/mavenlearn/Hello.java](/devops/maven/base/sample/Hello/src/main/java/com/ljs/mavenlearn/Hello.java)
         ```java
         public class Hello {
         	public String sayHello(String name){
@@ -266,7 +266,7 @@
         }
         ```
     
-    - 测试源代码，HelloTest.java：[/java/maven/sample/Hello/src/test/java/com/ljs/mavenlearn/HelloTest.java](/java/maven/sample/Hello/src/test/java/com/ljs/mavenlearn/HelloTest.java)
+    - 测试源代码，HelloTest.java：[/devops/maven/base/sample/Hello/src/test/java/com/ljs/mavenlearn/HelloTest.java](/devops/maven/base/sample/Hello/src/test/java/com/ljs/mavenlearn/HelloTest.java)
         ```java
         import org.junit.Test;
         import static org.junit.Assert.assertEquals;
@@ -609,7 +609,7 @@
 
 ## 依赖范围示例工程---HelloFriend
 [top](#catalog)
-- 示例工程地址：HelloFriend，[/java/maven/sample/HelloFriend](/java/maven/sample/HelloFriend)
+- 示例工程地址：HelloFriend，[/devops/maven/base/sample/HelloFriend](/devops/maven/base/sample/HelloFriend)
 - **在主程序中需要使用：[目录结构示例工程---Hello](#目录结构示例工程---Hello) 中的类，所以需要添加依赖**
 - 目录结构
 
@@ -633,7 +633,7 @@
             └── resources
     ```
 
-- pom.xml：[/java/maven/sample/HelloFriend/pom.xml](/java/maven/sample/HelloFriend/pom.xml)
+- pom.xml：[/devops/maven/base/sample/HelloFriend/pom.xml](/devops/maven/base/sample/HelloFriend/pom.xml)
     
     ```xml
     <?xml version="1.0" ?>
@@ -672,7 +672,7 @@
     ```
 
 - 代码
-    - 主程序代码，HelloFriend.java : [/java/maven/sample/HelloFriend/src/main/java/com/ljs/mavenlearn/HelloFriend.java](/java/maven/sample/HelloFriend/src/main/java/com/ljs/mavenlearn/HelloFriend.java)
+    - 主程序代码，HelloFriend.java : [/devops/maven/base/sample/HelloFriend/src/main/java/com/ljs/mavenlearn/HelloFriend.java](/devops/maven/base/sample/HelloFriend/src/main/java/com/ljs/mavenlearn/HelloFriend.java)
         ```java
         package com.ljs.mavenlearn;        
         import com.ljs.mavenlearn.Hello;
@@ -693,7 +693,7 @@
             }
         }
         ```
-    - 测试程序代码，HelloFriendTest.java : [/java/maven/sample/HelloFriend/src/test/java/com/ljs/mavenlearn/HelloFriendTest.java](/java/maven/sample/HelloFriend/src/test/java/com/ljs/mavenlearn/HelloFriendTest.java)
+    - 测试程序代码，HelloFriendTest.java : [/devops/maven/base/sample/HelloFriend/src/test/java/com/ljs/mavenlearn/HelloFriendTest.java](/devops/maven/base/sample/HelloFriend/src/test/java/com/ljs/mavenlearn/HelloFriendTest.java)
         ```java
         package com.ljs.mavenlearn;
         
@@ -757,7 +757,7 @@
         - 0路径：当前工程配置的依赖优先与从其他依赖中传递过来的依赖
         - 在依赖中出现了依赖的覆盖与传递时，路径最短优先
     2. 路径长度相同时，先在`<dependency>`中声明的优先
-- 测试依赖原则的示例：[/java/maven/sample/multiple](/java/maven/sample/multiple)
+- 测试依赖原则的示例：[/devops/maven/base/sample/multiple](/devops/maven/base/sample/multiple)
     - 基本结构
         ```
         Maven模块：one
@@ -947,8 +947,8 @@
 
 - <label style="color:red">配置继承后，需要先安装父工程，然后再安装子工程</label>
 
-- 参考示例：[/java/maven/sample/multiple](/java/maven/sample/multiple)
-    - 在父工程`multiple`中配置了全局的junit依赖：[/java/maven/sample/multiple/pom.xml](/java/maven/sample/multiple/pom.xml)
+- 参考示例：[/devops/maven/base/sample/multiple](/devops/maven/base/sample/multiple)
+    - 在父工程`multiple`中配置了全局的junit依赖：[/devops/maven/base/sample/multiple/pom.xml](/devops/maven/base/sample/multiple/pom.xml)
         ```xml        
         <groupId>com.ljs.mavenlearn</groupId>
         <artifactId>multiple</artifactId>
@@ -966,7 +966,7 @@
             </dependencies>
         </dependencyManagement>
         ```
-    - 在各子工程中配置父工程引用，并使用junit，如`two01/pom.xml`：[/java/maven/sample/multiple/two01/pom.xml](/java/maven/sample/multiple/two01/pom.xml)
+    - 在各子工程中配置父工程引用，并使用junit，如`two01/pom.xml`：[/devops/maven/base/sample/multiple/two01/pom.xml](/devops/maven/base/sample/multiple/two01/pom.xml)
         ```xml
         <!--配置当前maven模块的信息-->
         <artifactId>two01</artifactId>
@@ -992,7 +992,7 @@
         </dependencies>
         ```
       
-    - 在子工程`one/pom.xml`中覆盖父工程的依赖版本，[/java/maven/sample/multiple/one/pom.xml](/java/maven/sample/multiple/one/pom.xml)
+    - 在子工程`one/pom.xml`中覆盖父工程的依赖版本，[/devops/maven/base/sample/multiple/one/pom.xml](/devops/maven/base/sample/multiple/one/pom.xml)
         ```xml
         <dependencies>
             <dependency>
@@ -1033,8 +1033,8 @@
 - 聚合与继承之间并不冲突，继承是为了管理依赖，聚合是为了方便安装。**一般两者可以配置在一起**
 
 - 示例：
-    - 工程目录：[/java/maven/sample/multiple](/java/maven/sample/multiple)
-    - 聚合工程的配置：`multiple/pom.xml`：[/java/maven/sample/multiple/pom.xml](/java/maven/sample/multiple/pom.xml)
+    - 工程目录：[/devops/maven/base/sample/multiple](/devops/maven/base/sample/multiple)
+    - 聚合工程的配置：`multiple/pom.xml`：[/devops/maven/base/sample/multiple/pom.xml](/devops/maven/base/sample/multiple/pom.xml)
         ```xml
         <modules>
             <module>three02</module>

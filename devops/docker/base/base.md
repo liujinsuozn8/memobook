@@ -173,7 +173,7 @@
 ## 在CentOS7中安装
 [top](#catalog)
 - 官方参考：https://docs.docker.com/install/linux/docker-ce/centos/
-- 详细安装流程参考：[/docker/install/centos7/centos7Install.md](/docker/install/centos7/centos7Install.md)
+- 详细安装流程参考：[/devops/docker/install/centos7/centos7Install.md](/devops/docker/install/centos7/centos7Install.md)
 - 对系统的要求
     - CentOS7(64-bit)，系统内核版本为`3.10`以上
 - 安装步骤

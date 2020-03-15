@@ -23,7 +23,7 @@
 - <label style="color:red">安装的版本：Docker v19.03</label>
 - 基本流程参考：
     - 官网说明：https://docs.docker.com/install/linux/docker-ce/centos/
-    - [/docker/base/base.md#Docker安装](/docker/base/base.md#Docker安装)
+    - [/devops/docker/base/base.md#Docker安装](/devops/docker/base/base.md#Docker安装)
 
 
 # 安装步骤
