@@ -1,5 +1,7 @@
 - docker
     - [基本知识](docker/base/base.md)
+    - 详细安装过程
+        - [centos7下安装docker](docker/install/centos7/centos7Install.md)
 - go
     - [基本知识](go/base.md)
     - [并发](go/multithreading/multithreading.md)
@@ -21,6 +23,9 @@
         - [基本原理](/java/rpc/base.md)
     - jdk源码分析
         - [集合框架](java/jdkAnalyze/collection.md)
+- nosql
+    - redis
+        - [基本知识](nosql/redis/base/base.md)
 - linux
     - [基本知识](linux/base/base.md)
     - [通配符、正则表达式、转义字符](linux/cmd/regular.md)
