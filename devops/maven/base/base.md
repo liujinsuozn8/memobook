@@ -594,7 +594,7 @@
             |例子|junit|
     
     - provided
-        - 有些依赖只是在开发阶段和测试阶段使用，在运行是服务器会提供对应的实现，所以可以使用provided。如果使用compile，可能会造成依赖冲突。如servlet-api
+        - 有些依赖只是在开发阶段和测试阶段使用，在运行时服务器会提供对应的实现，所以可以使用provided。如果使用compile，可能会造成依赖冲突。如servlet-api
             - ![provided_scope.png](./imgs/base/provided_scope.png)  
         - 有效范围
         
@@ -677,7 +677,7 @@
         package com.ljs.mavenlearn;        
         import com.ljs.mavenlearn.Hello;
       
-        // 测试依赖范围，但是并没有使用
+        // test依赖范围，但是并没有使用
         // 由于test范围的依赖对于main程序不可见，所以无法编译
         // import org.junit.Test;
         
@@ -700,7 +700,7 @@
         import org.junit.Test;
         import static org.junit.Assert.assertEquals;
       
-        // 测试依赖范围，但是并没有使用
+        // compile依赖范围，但是并没有使用
         import com.ljs.mavenlearn.Hello;
         
         public class HelloFriendTest {
