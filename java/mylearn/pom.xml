@@ -13,6 +13,7 @@
     <module>weblearn</module>
       <module>javabase</module>
       <module>myrpc</module>
+    <module>myspring</module>
   </modules>
 
   <properties>

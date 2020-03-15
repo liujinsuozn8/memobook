@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd">
+
+<!--使用Spring来创建对象，-->
+<!--分别配置类的全类名及类对应的id-->
+<bean id="hello" class="com.ljs.learn.ioc.springHello.Hello">
+    <!--通过该标签为实例对象中的属性设值-->
+    <property name="str" value="helloTest"/>
+</bean>
+
+</beans>
