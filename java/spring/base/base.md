@@ -18,10 +18,15 @@
     - [示例-XML配置来创建对象Hello](#示例-XML配置来创建对象Hello)
     - [对创建Hello对象的分析](#对创建Hello对象的分析)
     - [使用Spring改进引入问题](#使用Spring改进引入问题)
-- [Spring最终解决的问题](#spring最终解决的问题)
-- [spring配置与对象获取](#spring配置与对象获取)
-- [对象获取](#对象获取)
-- [配置方法](#配置方法)
+
+- [Spring配置](#Spring配置)
+    - [配置文件的基本内容](#配置文件的基本内容)
+    - [通过配置文件获取bean的方法](#通过配置文件获取bean的方法)
+    - [配置构造器注入](#配置构造器注入)
+    - [配置bean的别名](#配置bean的别名)
+    - [Bean的配置](#Bean的配置)
+    - [import](#import)
+
 - [常用的复杂类型配置](#常用的复杂类型配置)
 - [命名空间注入](#命名空间注入)
 - [bean的作用域](#bean的作用域)
@@ -258,7 +263,7 @@
         - Spring容器在初始化时先读取配置文件
         - 根据配置文件或元数据创建与组织对象存入容器
         - 程序使用时再从IoC容器中去除需要的对象
-        - [springIoC_HowWork](imgs/ioc/springIoC_HowWork.png)
+        - ![springIoC_HowWork](imgs/ioc/springIoC_HowWork.png)
 
 
 ## 示例-XML配置来创建对象Hello
@@ -422,101 +427,296 @@
         }
         ```
 
-# spring最终解决的问题
+# Spring配置
+## 配置文件的基本内容
 [top](#catalog)
-- 对象完全由Spring创建
-    - 在配置文件加载的时候，容器中管理的对象就已经完成初始化了
-- 对象的属性通过xml配置，由Spring容器自动进行设定
-- 使用对象时，直接从容器中通过`id`获取
-
-
-# spring配置与对象获取
-## 对象获取
-[top](#catalog)
-- `resources`目录下添加`beans.xml`文件
--  官方说明：`docs.spring.io/spring/docs/5.2.0.RELEASE/spring-framework-reference/core.html`
-- 实例化容器
-    - `ApplicationContext context = new ClassPathXmlApplicationContext("services.xml", "daos.xml");`
-        - 获取spring的上下文对象
-            - 使用xml来配置必须使用`ClassPathXmlApplicationContext`
-            - 可以传入多个配置文件明
-    - ![ClassPathXmlApplicationContext的继承关系](./imgs/ClassPathXmlApplicationContext_Diagrams.png)
-
-## 配置方法
-[top](#catalog)
-- 基本配置框架
+- 官方配置参考
+    - https://docs.spring.io/spring/docs/5.2.4.RELEASE/spring-framework-reference/core.html#beans-factory-metadata
+- 配置文件的基本内容
     ```xml
     <?xml version="1.0" encoding="UTF-8"?>
     <beans xmlns="http://www.springframework.org/schema/beans"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.springframework.org/schema/beans
             https://www.springframework.org/schema/beans/spring-beans.xsd">
-
+    
         <bean id="..." class="...">
             <!-- collaborators and configuration for this bean go here -->
         </bean>
-
+    
         <bean id="..." class="...">
             <!-- collaborators and configuration for this bean go here -->
         </bean>
-
+    
         <!-- more bean definitions go here -->
-
+    
     </beans>
     ```
-- Bean的配置
-    - 同一个`class`下，不同的`id`代表不同的实例对象
-    - `name`也相当于别名
-        - 可以有多个别名
-        - 多个别名可以用`,`、空格、`;`分隔
+
+## 通过配置文件获取bean的方法
+[top](#catalog)
+- xml配置文件
+    - 文件需要保存在`main/resources`目录下，文件名任意，使用时作为参数注入到上下文对象中
+
+- 通过配置文件从Spring中获取类时，通过Spring的上下文对象即bean的id来获取实例化对象
+    `ApplicationContext context = new ClassPathXmlApplicationContext("services.xml", "daos.xml");`
+
+- `ClassPathXmlApplicationContext`的继承关系
+    - ![ClassPathXmlApplicationContext的继承关系](./imgs/ClassPathXmlApplicationContext_Diagrams.png)
+
+## 配置构造器注入
+[top](#catalog)
+- **在配置文件加载时，容器中管理的对象就已经被初始化了**
+- 默认使用无参构造器创建对象
+- 使用有参数构造器
+    1. 使用数据类型
+        - 通过`type="属性"`显示指定构造参数的类型，容器可以使用简单类型的类型匹配
+        - **不推荐使用，不方便处理多个类型相同参数的构造函数**
+        ```xml
+        <bean id="exampleBean" class="examples.ExampleBean">
+            <constructor-arg type="int" value="7500000"/>
+            <constructor-arg type="java.lang.String" value="42"/>
+        </bean>
+        ```
+    2. 使用构造函数的参数下标
+        - 通过`index="XX"`来明确指定构造参数的索引
+        - 这种方式，可以解决多个简单值的歧义性
+        ```xml
+        <bean id="exampleBean" class="examples.ExampleBean">
+            <constructor-arg index="0" value="7500000"/>
+            <constructor-arg index="1" value="42"/>
+        </bean>
+        ```
+    4. 直接使用参数名
+        ```xml
+        <bean id="user" class="com.ljs.pojo.User">
+            <constructor-arg name="name" value="MyName"></constructor-arg>
+        </bean>
+        ```
+       
+- 示例
+    - Hello类
+        - 参考代码
+            - [/java/mylearn/myspring/src/main/java/com/ljs/learn/config/constructor/Hello.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/config/constructor/Hello.java)  
+        - 代码内容
+            ```java
+            public class Hello {
+                private String name;
+                private String address;
+            
+                public Hello(String n, String a) {
+                    this.name = n;
+                    this.address = a;
+            
+                    System.out.println(n + " Constructor");
+                }
+            
+                public String getName() {
+                    return name;
+                }
+            
+                public void setName(String name) {
+                    this.name = name;
+                }
+            
+                public String getAddress() {
+                    return address;
+                }
+            
+                public void setAddress(String address) {
+                    this.address = address;
+                }
+            
+                @Override
+                public String toString() {
+                    return "Hello{" +
+                            "name='" + name + '\'' +
+                            ", address='" + address + '\'' +
+                            '}';
+                }
+            }
+            ```
+    - 配置文件
+        - 文件路径
+            - [/java/mylearn/myspring/src/main/resources/config/constructor/bean.xml](/java/mylearn/myspring/src/main/resources/config/constructor/bean.xml)
+        - 配置内容
+            ```xml
+            <?xml version="1.0" encoding="UTF-8"?>
+            <beans xmlns="http://www.springframework.org/schema/beans"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+            
+                <!--使用数据类型来实例化对象-->
+                <bean id="hello1" class="com.ljs.learn.config.constructor.Hello">
+                    <constructor-arg type="java.lang.String" value="TestHello01"/>
+                    <constructor-arg type="java.lang.String" value="TestAddress01"/>
+                </bean>
+            
+                <!--使用参数索引来实例化对象-->
+                <bean id="hello2" class="com.ljs.learn.config.constructor.Hello">
+                    <constructor-arg index="0" value="TestHello02"/>
+                    <constructor-arg index="1" value="TestAddress02"/>
+                </bean>
+                
+                <!--通过有参构造器中的参数名来实例化对象-->
+                <bean id="hello3" class="com.ljs.learn.config.constructor.Hello">
+                    <constructor-arg name="n" value="TestHello03"/>
+                    <constructor-arg name="a" value="TestAddress03"/>
+                </bean>
+            </beans>
+            ```
+
+    - 测试类
+        - 参考代码
+            - [/java/mylearn/myspring/src/test/java/com/ljs/learn/config/constructor/HelloTest.java](/java/mylearn/myspring/src/test/java/com/ljs/learn/config/constructor/HelloTest.java)   
+        - 测试内容
+            ```java
+            @Test
+            public void test(){
+                ApplicationContext context = new ClassPathXmlApplicationContext("config/constructor/bean.xml");
+                Hello hello01 = (Hello) context.getBean("hello1");
+                Hello hello02 = (Hello) context.getBean("hello2");
+                Hello hello03 = (Hello) context.getBean("hello3");
+        
+                System.out.println(hello01);
+                System.out.println(hello02);
+                System.out.println(hello03);
+            }
+            ```
+        - 测试结果
+            ```
+            TestHello01 Constructor
+            TestHello02 Constructor
+            TestHello03 Constructor
+            Hello{name='TestHello01', address='TestAddress01'}
+            Hello{name='TestHello02', address='TestAddress02'}
+            Hello{name='TestHello03', address='TestAddress03'}
+            ```
+
+## 配置bean的别名
+[top](#catalog)
+- 给已有bean的Id添加别名，添加后可以通过别名来获取对象
+- **一个bean可以有多个别名**
+- 两种添加别名的方式
+    1. 方式1：使用`alias`标签
+        ```xml
+        <bean id="user" class="com.ljs.learn.User">
+            <constructor-arg name="name" value="MyName"></constructor-arg>
+        </bean>
+      
+        <!--为对象user添加别名otheruser-->
+        <alias name="user" alias="otheruser"></alias>
+        <alias name="user" alias="otheruser2"></alias>
+        ```
+    2. 方式2：通过`bean`标签的`name`属性，可以一次性设置多个别名，需要使用`空格`、`,`、`;`来分割字符串
+        ```xml
+        <bean id="user" class="com.ljs.learn.User" name="u1 u2,u3;U3">
+            <property name="str" value="Spring"></property>
+        </bean>
+        ```
+       
+- 示例
+    - Hello类
+        - 参考代码
+            - [/java/mylearn/myspring/src/main/java/com/ljs/learn/config/alias/Hello.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/config/alias/Hello.java)
+        - 代码内容
+            ```java
+            public class Hello {
+                private String name;
+                private String address;
+            
+                public Hello(String n, String a) {
+                    this.name = n;
+                    this.address = a;
+                }
+            
+                public String getName() {
+                    return name;
+                }
+            
+                public void setName(String name) {
+                    this.name = name;
+                }
+            
+                public String getAddress() {
+                    return address;
+                }
+            
+                public void setAddress(String address) {
+                    this.address = address;
+                }
+            }
+            ```
+    - 配置文件
+        - 文件路径：
+            - [/java/mylearn/myspring/src/main/resources/config/alias/bean.xml](/java/mylearn/myspring/src/main/resources/config/alias/bean.xml)
+        - 配置内容
+            ```xml
+            <?xml version="1.0" encoding="UTF-8"?>
+            <beans xmlns="http://www.springframework.org/schema/beans"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+            
+                <!--在bean标签的name属性中设置bean的别名-->
+                <bean id="hello" class="com.ljs.learn.config.alias.Hello" name="h1 h2,h3;h4">
+                    <constructor-arg index="0" value="TestHello"/>
+                    <constructor-arg index="1" value="TestAddress"/>
+                </bean>
+            
+                <!-- 使用alias来为bean添加别名 -->
+                <alias name="hello" alias="helloA"/>
+                <alias name="hello" alias="helloB"/>
+            </beans>
+            ```
+    - 测试类
+        - 参考代码：
+            - [/java/mylearn/myspring/src/test/java/com/ljs/learn/config/alias/HelloAliasTest.java](/java/mylearn/myspring/src/test/java/com/ljs/learn/config/alias/HelloAliasTest.java)
+        - 测试内容
+            ```java
+            @Test
+            public void test(){
+                // 分别通过Id和别名来获取bean，检验这些对象是否是同一个对象
+                ApplicationContext context = new ClassPathXmlApplicationContext("config/constructor/bean.xml");
+                Hello hello01 = (Hello) context.getBean("hello1");
+                Hello hello02 = (Hello) context.getBean("hello2");
+                Hello hello03 = (Hello) context.getBean("hello3");
+        
+                System.out.println(hello01);
+                System.out.println(hello02);
+                System.out.println(hello03);
+            }
+            ```
+      
+## Bean的配置
+[top](#catalog)
+- 2个要素+别名
+- 要素1：`class`，表示类的全类名
+- 要素2：`id`，同一个`class`下，不同的`id`代表不同的实例对象
     ```xml
     <bean id="hello" class="com.ljs.pojo.Hello" name="h1, h2, h3">
         <property name="str" value="Spring"></property>
     </bean>
-    ```
-- 别名
-    - 使用时，通过bean名或别名都可以从容器中获取对象
-    ```xml
-    <bean id="user" class="com.ljs.pojo.User">
-        <constructor-arg name="name" value="MyName"></constructor-arg>
+    
+    <bean id="hello2" class="com.ljs.pojo.Hello">
+        <property name="str" value="Spring"></property>
     </bean>
+    ```
+- 别名配置参考：[配置bean的别名](#配置bean的别名)
 
-    <alias name="user" alias="otheruser"></alias>
-    ```
-- import
-    - 一般用于团队开发使用，可以将多个配置文件，引入合并为一个配置
-    - 标准的配置文件名：`applicationContext.xml`
-    - 使用的时候直接使用合并后的配置
+## import
+[top](#catalog)
+- 这个import，一般用于团队开发使用，可以将多个配置文件，导入合并一个总的配置文件：`applicationContext.xml`
+- 如果多人开发，不同的类注册在不同的bean中，可以利用import将所有人的beans.xml合并为一个总的。使用时直接使用总配置就可以了
+    - 合并时内容相同的会
+- 配置方法
     ```xml
-    <import resource="其他配置文件的文件名"></import>
+    <import resource="其他配置文件的路径"></import>
     ```
-- 构造函数配置
-    - 默认使用无参构造创建对象
-    - 对于有参构造函数的配置
-        - 构造函数的参数类型进行匹配
-            - 通过`type="属性"`显示指定构造参数的类型，容器可以使用简单类型的类型匹配
-            - 不推荐使用，不好处理多个类型相同参数的构造函数
-            ```xml
-            <bean id="exampleBean" class="examples.ExampleBean">
-                <constructor-arg type="int" value="7500000"/>
-                <constructor-arg type="java.lang.String" value="42"/>
-            </bean>
-            ```
-        - 构造函数的参数下标
-            - 通过`index="XX"`来明确指定构造参数的索引
-            - 这种方式，可以解决多个简单值的歧义性
-            ```xml
-            <bean id="exampleBean" class="examples.ExampleBean">
-                <constructor-arg index="0" value="7500000"/>
-                <constructor-arg index="1" value="42"/>
-            </bean>
-            ```
-        - 直接同参数名来创建
-            ```xml
-            <bean id="user" class="com.ljs.pojo.User">
-                <constructor-arg name="name" value="MyName"></constructor-arg>
-            </bean>
-            ```
+
+????????
+
+
+
 ## 常用的复杂类型配置
 [top](#catalog)
 - 类
