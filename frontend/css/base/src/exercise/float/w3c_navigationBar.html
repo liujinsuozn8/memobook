@@ -1,0 +1,84 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>navigation bar</title>
+        <style>
+            /* 去除html的默认样式 */
+            /* 去除ul li的默认样式 */
+            a, ul, li {
+                margin: 0;
+                padding: 0;
+                border: 0;
+                font-size: 100%;
+                font: inherit;
+                vertical-align: baseline;
+            }
+
+            /* 去除所有链接的下划线 */
+            a {
+                text-decoration: none;
+            }
+
+            ul {
+                list-style: none;
+            }
+
+            /* 导航条样式 */
+            /* 设置ul的长宽 */
+            .naviBar{
+                /* 设置宽高 */
+                width:900px;
+                height:100px;
+                
+                /* 设置外边距:上下100px，左右通过auto使用水平公式做自动适应 */
+                margin:100px auto;
+                /* 设置背景 */
+                background-color:rgb(179, 179, 179);
+            }
+            
+            .naviBar li{
+                /* 将li转换成浮动元素，来完成横向布局*/
+                float:left;
+                /* 水平垂直居中 */
+                line-height: 100px;
+                text-align: center;
+            }
+
+            .naviBar a{
+                /* 转换成块元素，来为a标签设置宽和高 */
+                display: block;
+
+                /* 设置a标签的宽高，使其在整个区域内都可以点击，而不是只有文字部分可以点击 */
+                width:300px;
+                height:100%;
+
+                /* 设置连接的字体 */
+                color: rgb(39, 36, 36);
+                font-size: 15px;
+
+                /* 设置整个链接区域的颜色 */
+                background-color:rgb(179, 179, 179);
+            }
+
+            /* 设置链接区域的选中效果 */
+            .naviBar a:hover{
+                background-color:rgb(104, 104, 104);
+                color:white;
+            }
+        </style>
+    </head>
+    <body>
+        <ul class="naviBar">
+            <li>
+                <a href="javascript:;" >AAA</a>
+            </li>
+            <li>
+                <a href="javascript:;" >BBB</a>
+            </li>
+            <li>
+                <a href="javascript:;" >CCC</a>
+            </li>
+        </ul>
+    </body>
+</html>
