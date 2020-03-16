@@ -23,6 +23,9 @@
     - [页面的长度单位](#页面的长度单位)
     - [颜色单位](#颜色单位)
 - [文档流](#文档流)
+    - [文档流简介](#文档流简介)
+    - [元素在文档流中的特点](#元素在文档流中的特点)
+    - [元素脱离文档流之后的特点](#元素脱离文档流之后的特点)
 - [盒子模型](#盒子模型)
     - [盒子模型的基本组成](#盒子模型的基本组成)
     - [内容区content](#内容区content)
@@ -38,14 +41,20 @@
     - [盒子的轮廓](#盒子的轮廓)
     - [盒子的阴影](#盒子的阴影)
     - [盒子的圆角](#盒子的圆角)
+    - [文字水平垂直居中](文字水平垂直居中)
 - [浏览器的默认样式](#浏览器的默认样式)
-- [](#)
-- [](#)
-- [](#)
-- [](#)
 - [常用的通用属性](#常用的通用属性)
     - [display](#display)
     - [visibility](#visibility)
+- [元素浮动](#元素浮动)
+    - [元素浮动基本知识](#元素浮动基本知识)
+    - [元素浮动示例-导航条](#元素浮动示例-导航条)
+- [网页布局](#网页布局)
+- [](#)
+- [](#)
+- [](#)
+- [](#)
+    
 - [总结](#总结)
 - [练习](#练习)
 
@@ -605,7 +614,8 @@
     |`:not(选择器|伪类)`|否定伪类，将符合条件的元素从选择器中删除|如果使用`属性选择器`，只写`[属性名=属性值]`部分即可|
 
 - 示例
-    - 参考代码：[/frontend/css/base/src/selector/pseudo_class.html](/frontend/css/base/src/selector/pseudo_class.html)
+    - 参考代码
+        - [/frontend/css/base/src/selector/pseudo_class.html](/frontend/css/base/src/selector/pseudo_class.html)
 
     - 对所有元素排序
         1. 选择 ul下的第一个和最后一个li子元素（与并集选择器混合）
@@ -971,7 +981,8 @@
 - 在短引用标签`<q>`中，页面中自动出现的`""`或`[]`，就是通过在css中设置`::before`和`::after`来实现的
 
 - 示例
-    - 参考代码:[/frontend/css/base/src/selector/pseudo_element.html](/frontend/css/base/src/selector/pseudo_element.html)
+    - 参考代码
+        - [/frontend/css/base/src/selector/pseudo_element.html](/frontend/css/base/src/selector/pseudo_element.html)
     - css
         ```css
         /* 1. 设置所有p标签的第一个字符的大小 */
@@ -1078,7 +1089,8 @@
         ```
 
 - 示例
-    - 参考代码：[/frontend/css/base/src/selector/selector_level.html](/frontend/css/base/src/selector/selector_level.html)
+    - 参考代码
+        - [/frontend/css/base/src/selector/selector_level.html](/frontend/css/base/src/selector/selector_level.html)
     
     - 权重大小测试 id > 类选择 > 元素选择器
         - css
@@ -1210,7 +1222,8 @@
     - 布局相关等样式
 
 - 示例
-    - 参考代码[/frontend/css/base/src/inherit/inherit.html](/frontend/css/base/src/inherit/inherit.html)
+    - 参考代码
+        - [/frontend/css/base/src/inherit/inherit.html](/frontend/css/base/src/inherit/inherit.html)
     - css
         ```css
         p{
@@ -1266,7 +1279,8 @@
     - rem是相对于根元素`<html>`的字体大小而计算的
 
 - 示例
-    - 参考代码：[/frontend/css/base/src/sizeunit/sizeunit.html](/frontend/css/base/src/sizeunit/sizeunit.html)
+    - 参考代码
+        - [/frontend/css/base/src/sizeunit/sizeunit.html](/frontend/css/base/src/sizeunit/sizeunit.html)
     - 百分比自动变化测试
         - css
             ```css
@@ -1380,7 +1394,8 @@
         - A，表示透明度
 
 - 示例
-    - 参考代码：[/frontend/css/base/src/sizeunit/color.html](/frontend/css/base/src/sizeunit/color.html)
+    - 参考代码
+        - [/frontend/css/base/src/sizeunit/color.html](/frontend/css/base/src/sizeunit/color.html)
     - 颜色名测试
         - css
             ```css
@@ -1485,6 +1500,7 @@
         - ![html_result_06](imgs/sizeunit/color/html_result_06.png)
 
 # 文档流
+## 文档流简介
 [top](#catalog)
 - 文档流：normal flow
 - 什么是文档流：网页是一个多层次的结构，通过css可以分别为每一层设置样式，但是作为用户只能看到最上面的一层，最下面的一层被称为文档流
@@ -1493,18 +1509,70 @@
     - 在文档流中
     - 不再文档流中，即脱离文档流
         - 使用[浮动](#浮动)属性后，元素将脱离文档流
-- 元素**在文档流中**的特点
-    - 块元素
-        - 块元素在页面内独占一行
-            - 参考：[为什么块元素独占一行](#reasonofblockelementuseline)
-        - 多个块元素在页面内从上到下垂直排列
-        - 默认宽度是父元素的的宽度，会将父元素撑满
-        - 默认高度是元素内容的高度，即子元素
-        - 如`<div></div>`元素，没有元素内容时，不会在页面中显示;有内容时，默认宽度与页面块度相同
-    - 行内元素
-        - 行内元素不会独占页面的一行，只占自身的大小
-        - 多个行内元素在页面中从左到右水平排列，如果一行无法容纳多个行内元素，则自动切换到第二行显示
-        - **行内元素的宽和高默认都是该元素内容的宽和高**
+
+## 元素在文档流中的特点
+[top](#catalog)
+- **文档流中的元素需要严格区分块元素和行内元素**
+- 块元素
+    - 块元素在页面内独占一行
+        - 参考：[为什么块元素独占一行](#reasonofblockelementuseline)
+    - 多个块元素在页面内从上到下垂直排列
+    - 默认宽度是父元素的的宽度，会将父元素撑满
+    - 默认高度是元素内容的高度，即子元素
+    - 如`<div></div>`元素，没有元素内容时，不会在页面中显示;有内容时，默认宽度与页面块度相同
+- 行内元素
+    - 行内元素不会独占页面的一行，只占自身的大小
+    - 多个行内元素在页面中从左到右水平排列，如果一行无法容纳多个行内元素，则自动切换到第二行显示
+    - **行内元素的宽和高默认都是该元素内容的宽和高**
+
+## 元素脱离文档流之后的特点
+[top](#catalog)
+- **块元素和行内元素脱离文档流之后，就不划分块元素和行内元素了，两者的属性相同**
+
+- 通过[元素浮动](#元素浮动)来使元素脱离文档流
+
+- 元素脱离文档流之后的特点
+    - 元素不会独占一行
+    - 元素的宽、高等于元素内容的宽、高
+- 示例
+    - 参考代码
+        - [/frontend/css/base/src/float/outNormalFlow.html](/frontend/css/base/src/float/outNormalFlow.html)
+
+    - 块元素脱离文档流 测试: 不再独占一行，宽高=元素内容的宽高
+        - css
+            ```css
+            /* 1. 块元素脱离文档流 测试 */
+            .box101{
+                background-color: orange;
+                /* 块元素脱离文档流 */
+                float: left;
+            }
+
+            .box102{
+                background-color: green;
+            }
+
+            .box103{
+                width:100px;
+                height: 100px;
+                background-color: green;
+            }
+            ```
+        
+        - html
+            ```html
+            <section>1. 块元素脱离文档流 测试: 不再独占一行，宽高=元素内容的宽高 </section>
+            <section>1.1 </section>
+            <div class="box101">123456</div>
+            <div class="box102">qwet</div>
+            <br>
+            
+            <section>1.2 </section>
+            <div class="box101">123456</div>
+            <div class="box103"></div>
+            ```
+        - ![](?????)
+
 
 # 盒子模型
 ## 盒子模型的基本组成
@@ -1575,7 +1643,8 @@
         ```
 
 - 示例
-    - 参考代码：[/frontend/css/base/src/boxModel/border.html](/frontend/css/base/src/boxModel/border.html)
+    - 参考代码
+        - [/frontend/css/base/src/boxModel/border.html](/frontend/css/base/src/boxModel/border.html)
     - 通过border-width设置边框的宽度
         - css
             ```css
@@ -1790,7 +1859,8 @@
         - 4个值：上 右 下 左        
 
 - 示例
-    - 参考代码：[/frontend/css/base/src/boxModel/padding.html](/frontend/css/base/src/boxModel/padding.html)
+    - 参考代码
+        - [/frontend/css/base/src/boxModel/padding.html](/frontend/css/base/src/boxModel/padding.html)
       
     - 通过单边属性分别设置4个方向的内边距
         - css
@@ -2007,10 +2077,11 @@
             - 浏览器会将`margin-right`设为负数，来满足等式
 
     - <label style="color:red"><span id="reasonofblockelementuseline">为什么块元素会独占一行？</span></label> 
-        - 因为需要强制满足
+        - 因为需要强制满足**水平布局等式**
 
 - 示例
-    - 参考代码：[/frontend/css/base/src/boxModel/horizontalLayout.html](/frontend/css/base/src/boxModel/horizontalLayout.html)
+    - 参考代码
+        - [/frontend/css/base/src/boxModel/horizontalLayout.html](/frontend/css/base/src/boxModel/horizontalLayout.html)
     - 过度约束测试。子元素的各属性中没有auto
         - css
             ```css
@@ -2159,7 +2230,8 @@
 - overflow-y，处理垂直方向的溢出
 
 - 示例
-    - 参考代码：[/frontend/css/base/src/boxModel/verticalLayout.html](/frontend/css/base/src/boxModel/verticalLayout.html)
+    - 参考代
+        - [/frontend/css/base/src/boxModel/verticalLayout.html](/frontend/css/base/src/boxModel/verticalLayout.html)
     - 父元素没有设置高度
         - css
             ```css
@@ -2379,7 +2451,8 @@
                 - `margin-top`减去`1px`，抵消父元素增加`1px`边框导致的子元素布局下移
 
 - 示例
-    - 参考代码：[/frontend/css/base/src/boxModel/marginFold.html](/frontend/css/base/src/boxModel/marginFold.html)
+    - 参考代码
+        - [/frontend/css/base/src/boxModel/marginFold.html](/frontend/css/base/src/boxModel/marginFold.html)
     - 兄弟元素之间的外边距折叠，两者都是正数
         - css
             ```css
@@ -2579,7 +2652,8 @@
         - `width/height` = `content + padding*2 + border*2`
 
 - 示例
-    - 参考代码：[/frontend/css/base/src/boxModel/boxsize.html](/frontend/css/base/src/boxModel/boxsize.html)
+    - 参考代码
+        - [/frontend/css/base/src/boxModel/boxsize.html](/frontend/css/base/src/boxModel/boxsize.html)
     - `content-box`和`border-box`的区别
         - css
             ```css
@@ -2629,7 +2703,8 @@
     - 鼠标移入某个元素时，给元素添加边框
 - 轮廓属性在实际开发中不太常用
 - 示例
-    - 参考代码：[/frontend/css/base/src/boxModel/outline.html](/frontend/css/base/src/boxModel/outline.html)
+    - 参考代
+        - ：[/frontend/css/base/src/boxModel/outline.html](/frontend/css/base/src/boxModel/outline.html)
     - `outline`和`border`的比较
         - css
             ```css
@@ -2715,7 +2790,8 @@
 - **阴影不会影响页面布局**
 - 阴影默认是在盒子的正下方，即：`box-shadow: 0px 0px`
 - 示例
-    - 参考代码:[/frontend/css/base/src/boxModel/boxshadow.html](/frontend/css/base/src/boxModel/boxshadow.html)
+    - 参考代码
+        - [/frontend/css/base/src/boxModel/boxshadow.html](/frontend/css/base/src/boxModel/boxshadow.html)
     - 阴影在盒子的正下方
         - css
             ```css
@@ -2826,7 +2902,8 @@
     - 可以直接使用：`border-radius: 50%`将盒子设置为圆
 
 - 示例
-    - 参考代码：[/frontend/css/base/src/boxModel/borderRadius.html](/frontend/css/base/src/boxModel/borderRadius.html)
+    - 参考代码
+        - [/frontend/css/base/src/boxModel/borderRadius.html](/frontend/css/base/src/boxModel/borderRadius.html)
     - 使用单角属性来设置正圆圆角
         - css
             ```css
@@ -2974,6 +3051,18 @@
             ```
         - ![](?????)
 
+## 文字水平垂直居中
+[top](#catalog)
+- 文字水平居中
+    - `text-align: center;`
+- 文字垂直居中：需要`height = line-height`
+    ```css
+    height:200px;
+    line-height:200px;
+    ```
+
+- 示例：
+    - ???????
 
 
 # 浏览器的默认样式
@@ -3002,7 +3091,8 @@
 
 - 示例
     - 去除body的默认css
-        - 参考代码：[/frontend/css/base/src/browserDefalutCss/defalutCss.html](/frontend/css/base/src/browserDefalutCss/defalutCss.html)
+        - 参考代码
+            - [/frontend/css/base/src/browserDefalutCss/defalutCss.html](/frontend/css/base/src/browserDefalutCss/defalutCss.html)
         - css
             ```css
             body{
@@ -3026,7 +3116,8 @@
             - ![html_result_01](imgs/browserDefalutCss/defalutCss/html_result_01.png)
 
     - 去除ul的样式
-        - 参考代码：[/frontend/css/base/src/browserDefalutCss/defalutCss.html](/frontend/css/base/src/browserDefalutCss/defalutCss.html)
+        - 参考代
+            - [/frontend/css/base/src/browserDefalutCss/defalutCss.html](/frontend/css/base/src/browserDefalutCss/defalutCss.html)
         - css
             ```css
             ul{
@@ -3047,7 +3138,8 @@
             - ![html_result_02](imgs/browserDefalutCss/defalutCss/html_result_02.png)
 
     - 使用通配符统一去除浏览器的默认样式
-        - 参考代码：[/frontend/css/base/src/browserDefalutCss/deleteDefaultCss.html](/frontend/css/base/src/browserDefalutCss/deleteDefaultCss.html)
+        - 参考代码
+            - [/frontend/css/base/src/browserDefalutCss/deleteDefaultCss.html](/frontend/css/base/src/browserDefalutCss/deleteDefaultCss.html)
         - css
             ```css
             *{
@@ -3090,7 +3182,8 @@
     |none|元素不再页面中显示。|可以用来隐藏元素，在需要的时候，通过页面控制再显示出来|
 
 - 示例
-    - 参考代码：[/frontend/css/base/src/commonProperties/display.html](/frontend/css/base/src/commonProperties/display.html)
+    - 参考代码
+        - [/frontend/css/base/src/commonProperties/display.html](/frontend/css/base/src/commonProperties/display.html)
     - 测试行内元素转化为`display:block`
         - css
             ```css
@@ -3189,7 +3282,8 @@
     - 隐藏元素，但是元素仍然会占据页面的位置
 
 - 示例
-    - 参考代码：[/frontend/css/base/src/commonProperties/visibility.html](/frontend/css/base/src/commonProperties/visibility.html)
+    - 参考代
+        - [/frontend/css/base/src/commonProperties/visibility.html](/frontend/css/base/src/commonProperties/visibility.html)
     - 1. 测试元素隐藏`visibility:hidden`
         - css
             ```css
@@ -3214,8 +3308,8 @@
             <div class="box1"></div>
             ```
 
-# 浮动
-## 浮动简介
+# 元素浮动
+## 元素浮动基本知识
 [top](#catalog)
 - 通过浮动可以使一个元素向其**父元素**的左侧或右侧移动
 - 语法： `float: 属性值`
@@ -3225,7 +3319,8 @@
         - `right`，元素向右浮动
 - 使用了`float:left`或`float:right`之后，<label style="color:red">元素将脱离文档流</label>，使得[块元素盒子模型的水平方向布局](#块元素盒子模型的水平方向布局)中的水平布局等式不再强制成立
     - 如：对一个`div`使用了`float`属性之后，在元素检查器中会发现，盒子模型中不会强制产生用于满足水平布局等式的`margin-right`或`margin-left`
-        - 参考代码：[/frontend/css/base/src/float/floatBase.html](/frontend/css/base/src/float/floatBase.html)
+        - 参考代码
+            - [/frontend/css/base/src/float/floatBase.html](/frontend/css/base/src/float/floatBase.html)
         - css
             ```css
             /* 0. 不使用float 的div盒子模型 */
@@ -3256,17 +3351,20 @@
             - ![](?????)
 
 - 浮动元素的特点
-    - 浮动元素会脱离文档流，不用遵守水平布局的等式
-    - 设置浮动之后，浮动元素会向父元素的左/右侧移动。默认情况下，不会从父元素中移出
-    - 默认情况下，浮动元素不会覆盖/超过其前面的兄弟浮动元素，会接在前一个浮动元素的后面
+    - 脱离文档流：浮动元素会脱离文档流，不用遵守水平布局的等式
+    - 无法脱离父元素：设置浮动之后，浮动元素会向父元素的左/右侧移动。默认情况下，不会从父元素中移出
+    - 浮动元素紧挨：默认情况下，浮动元素不会覆盖/超过其前面的兄弟浮动元素，会接在前一个浮动元素的后面
     - 如果浮动元素前面不是浮动元素，则无法移动
-    - 浮动元素不会覆盖文字，**文字会自动环绕**在浮动元素周围
+    - 如果浮动元素后面是仍然是文档流中的元素，则该元素会接在浮动元素的后边
+    - 文字环绕：浮动元素不会覆盖文字，**文字会自动环绕**在浮动元素周围
+    
 
 
 - **通过浮动元素可以进行水平布局**
 
 - 示例
-    - 参考代码：[/frontend/css/base/src/float/floatBase.html](/frontend/css/base/src/float/floatBase.html)
+    - 参考代码
+        - [/frontend/css/base/src/float/floatBase.html](/frontend/css/base/src/float/floatBase.html)
     - 测试使用float属性后，元素脱离文档流
         - css
             ```css
@@ -3372,14 +3470,82 @@
             ```
         - ![](?????)
 
-
-# 元素脱离文档流之后的特点
+## 元素浮动示例-导航条
 [top](#catalog)
-- 块元素
-    - 块元素不再独占一行
-    - 块元素的宽、高等于元素内容的宽、高
-- 行内元素
-    - 行内元
+- 参考代码
+    - [/frontend/css/base/src/exercise/float/w3c_navigationBar.html](/frontend/css/base/src/exercise/float/w3c_navigationBar.html)
+
+- css
+    ```css
+    /* 导航条样式 */
+    /* 设置ul的长宽 */
+    .naviBar{
+        /* 设置宽高 */
+        width:900px;
+        height:100px;
+        
+        /* 设置外边距:上下100px，左右通过auto使用水平公式做自动适应 */
+        margin:100px auto;
+        /* 设置背景 */
+        background-color:rgb(179, 179, 179);
+    }
+    
+    .naviBar li{
+        /* 将li转换成浮动元素，来完成横向布局*/
+        float:left;
+        /* 水平垂直居中 */
+        line-height: 100px;
+        text-align: center;
+    }
+
+    .naviBar a{
+        /* 转换成块元素，来为a标签设置宽和高 */
+        display: block;
+
+        /* 设置a标签的宽高，使其在整个区域内都可以点击，而不是只有文字部分可以点击 */
+        width:300px;
+        height:100%;
+
+        /* 设置连接的字体 */
+        color: rgb(39, 36, 36);
+        font-size: 15px;
+
+        /* 设置整个链接区域的颜色 */
+        background-color:rgb(179, 179, 179);
+    }
+
+    /* 设置链接区域的选中效果 */
+    .naviBar a:hover{
+        background-color:rgb(104, 104, 104);
+        color:white;
+    }
+    ```
+
+- html
+    ```html
+    <ul class="naviBar">
+        <li>
+            <a href="javascript:;" >AAA</a>
+        </li>
+        <li>
+            <a href="javascript:;" >BBB</a>
+        </li>
+        <li>
+            <a href="javascript:;" >CCC</a>
+        </li>
+    </ul>
+    ```
+
+- 页面结果
+    - 普通显示
+        - ![](???)
+    - 鼠标移入
+        - ![](???)
+
+# 网页布局
+[top](#catalog)
+- 使用`header`、`main`、`footer`来创建一个`上中下`的页面布局(也可以替换成3个div)
+
 
 # 总结
 [top](#catalog)
