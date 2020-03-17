@@ -34,7 +34,8 @@
     - [外边距margin](#外边距margin)
     - [盒子模型中可以设置为auto的属性](#盒子模型中可以设置为auto的属性)
     - [块元素盒子模型的水平方向布局](#块元素盒子模型的水平方向布局)
-    - [盒子模型的垂直方向布局](#盒子模型的垂直方向布局)
+    - [元素的高度](#元素的高度)
+    - [处理子元素的溢出](#处理子元素的溢出)
     - [垂直外边距的折叠](#垂直外边距的折叠)
     - [行内元素的盒子模型](#行内元素的盒子模型)
     - [盒子的大小](#盒子的大小)
@@ -48,13 +49,18 @@
     - [visibility](#visibility)
 - [元素浮动](#元素浮动)
     - [元素浮动基本知识](#元素浮动基本知识)
-    - [元素浮动示例-导航条](#元素浮动示例-导航条)
+    - [元素浮动示例-导航条](#元素浮动示例-导航条)    
+- [BFC块级格式化环境](#BFC块级格式化环境)
+    - [浮动产生的问题](#浮动产生的问题)
+    - [BFC元素的特点](#BFC元素的特点)
+    - [开启BFC](#开启BFC)
 - [网页布局](#网页布局)
+    - [基本的页面布局思路](#基本的页面布局思路)
 - [](#)
 - [](#)
 - [](#)
 - [](#)
-    
+- [](#)
 - [总结](#总结)
 - [练习](#练习)
 
@@ -2210,27 +2216,33 @@
         - 页面结果
             - ![html_result_04](imgs/boxModel/horizontalLayout/html_result_04.png)
                     
-## 盒子模型的垂直方向布局
+## 元素的高度
 [top](#catalog)
 - 元素的高度
     - 如果元素没有设置高度，则`元素.height = 子元素/文字内容.height`
     - 如果元素设置了高度，则使用自身的高度
     - 子元素是在父元素的内容区排列的，如果子元素的高度超过了父元素的高度，则子元素会从父元素中溢出
-- 通过`overflow`属性，设置父元素如何处理溢出的子元素
-    - visible，默认值，子元素会从父元素中溢出，并在父元素的外部显示
-    - hidden，隐藏溢出的部分
-    - scroll，在父元素上同时生成水平和垂直方向的两个滚动条，可以通过滚动条来查看子元素的完整内容
-    - auto，在父元素上，根据需要生成水平或垂直方向的滚动条，可以通过滚动条来查看子元素的完整内容
-    - inherit， ?????
-    - initial， ?????
-    - unset， ?????
-    - -moz-hidden-unscrollable， ?????
 
-- overflow-x，处理水平方向的溢出
-- overflow-y，处理垂直方向的溢出
+## 处理子元素的溢出
+[top](#catalog)
+- 通过`overflow`属性，设置父元素如何处理溢出的子元素
+
+    |属性值|说明|
+    |-|-|
+    |visible|默认值，子元素会从父元素中溢出，并在父元素的外部显示|
+    |hidden|隐藏溢出的部分|
+    |scroll|在父元素上同时生成水平和垂直方向的两个滚动条，可以通过滚动条来查看子元素的完整内容|
+    |auto|在父元素上，根据需要生成水平或垂直方向的滚动条，可以通过滚动条来查看子元素的完整内容|
+    |inherit|?????|
+    |initial|?????|
+    |unset|?????|
+    |-moz-hidden-unscrollable|?????|
+
+- `overflow-x`，处理水平方向的溢出
+- `overflow-y`，处理垂直方向的溢出
 
 - 示例
-    - 参考代
+    - 参考代码
         - [/frontend/css/base/src/boxModel/verticalLayout.html](/frontend/css/base/src/boxModel/verticalLayout.html)
     - 父元素没有设置高度
         - css
@@ -2291,12 +2303,16 @@
     - 子元素没有设置高度
         - css
             ```css
-            <section>3. 父元素设置高度，子元素没有设置高度</section>
-            <section>(子元素中如果没有文字内容或下一层的子元素，则这个子元素不会显示)</section>
-            <div class="outer3">
-                <div class="inner3">outer3.inner3</div>
-                <div class="inner3"></div>
-            </div>
+            /* 3. 子元素没有设置高度 */
+            .outer3{
+                width:200px;
+                height: 200px;
+                background-color: rgb(121, 219, 56);
+            }
+
+            .inner3{
+                background-color: orange;
+            }
             ```
         - html
             ```html
@@ -2432,7 +2448,7 @@
 
 - 父子元素
     - 父子元素在垂直方向上相邻的外边距属性：`margin-top`
-    - 子元素的`margin-top`会传递给父元素，所以父子元素间的外边距折叠会影响整个页面的布局，**必须要进行处理**
+    - **子元素的`margin-top`会传递给父元素，所以父子元素间的外边距折叠会影响整个页面的布局，必须要进行处理**
     - 为什么子元素的`margin-top`会传递给父元素？
         - 父元素中没有设置边框来隔离，导致了`margin-top`的传递
     - 解决方式
@@ -3542,9 +3558,309 @@
     - 鼠标移入
         - ![](???)
 
+
+# BFC块级格式化环境
+## 浮动产生的问题
+[top](#catalog)
+- 使用浮动后会产生的问题
+    - 元素间的遮盖、外部块元素的`height`和`width`变为0
+        - 当块元素没有设定`height`和`width`的时候，该块元素的宽和高等于子元素的块和高的总和。如果将子元素全部设置元素浮动，会导致块元素`content`区的`height`和`width`变为0，后续的其他块元素向上移动，并且会被浮动的元素盖住，破坏页面布局
+        
+- 为什么会产生元素遮盖问题
+    - 两点前提
+        - 浮动元素脱离的文档流，但是仍外无法脱离父元素；
+        - 父元素中因为全部是浮动元素，`height`和`width`变为0导致后续元素上移
+    - 原因：浮动元素、浮动元素的父元素、后续的块元素仍然在同一个**布局空间**。
+        - 由于浮动元素无法脱离父元素，会保持在父元素的范围内，遮挡后面自动上移的其他元素
+
+- 示例
+    - 代码路径：
+        - [/frontend/css/base/src/bfc/usageBfc.html](/frontend/css/base/src/bfc/usageBfc.html)
+
+    - 外部块元素 跟随内部块元素自动变化
+        - css
+            ```css
+            .outter1{
+                border: black 5px solid;
+            }
+
+            .inner1{
+                width: 50px;
+                height: 50px;
+                background-color: #bfa;
+            }
+            ```
+        - html
+            ```html
+            <section>1. 外部块元素 跟随内部块元素自动变化</section>
+            <div class="outter1">
+                <div class="inner1"></div>
+            </div>
+            <div class="other"></div>
+            ```
+        - 页面结果
+            - ![](?????)
+
+    - 外部块元素自动变化，内部元素设置多个浮动元素来进行水平排列
+        - css
+            ```css
+            .outter2{
+                border: black 5px solid;
+            }
+
+            .inner201{
+                float: left;
+                width: 50px;
+                height: 50px;
+                background-color: #bfa;
+            }
+            .inner202{
+                float: left;
+                width: 50px;
+                height: 50px;
+                background-color: rgb(205, 133, 253);
+            }
+            ```
+        - html
+            ```html
+            <section>2. 外部块元素自动变化，内部元素设置多个浮动元素来进行水平排列</section>
+            <section> 使用浮动后，外部的块元素因为没有子元素所以height、width变为0，后续元素上移，并被浮动元素覆盖</section>
+            <div class="outter2">
+                <div class="inner201"></div>
+                <div class="inner202"></div>
+            </div>
+            <div class="other"></div>
+            ```
+
+        - 页面结果
+            - ![](?????)
+
+## BFC元素的特点
+[top](#catalog)
+- BFC(Block Formatting Context)块级格式化环境
+    - BFC是CSS中的一个隐含属性
+    - 可以为一个元素开启BFC
+    - <label stlye="color:red">开启BFC的元素会处于一个独立的布局空间，与文档流所处的布局空间相隔离</label>
+    - 开启BFC之后，元素的特点
+        - 开启BFC的元素不会被浮动元素覆盖
+        - 开启BFC的子元素和它的父元素的外边距不会重叠
+        - 开启BFC的元素可以包含浮动元素
+
+## 开启BFC
+[top](#catalog)
+- **BFC都是间接开启的，所以会产生副作用，使用时需要使用副作用最小的**
+- 几种开启的特殊方法
+    1. 父子元素都设置浮动（**不推荐**）
+        - 副作用
+            - 父元素也脱离文档流，父元素后面的元素自动上移，仍然会有元素间遮盖和破坏页面布局的问题
+            - 因为父元素脱离文档流，所以父元素的宽度没有了
+    2. 子元素设置浮动，父元素设置为`行内块元素`（**不推荐**）
+        - 副作用
+            - 行内块元素本身的特性不适合于页面布局 ??????
+            - 父元素元素的宽度没有了
+    3. 子元素设置浮动，父元素使用`overflow`并设置一个非`visible`的属性值（[处理子元素的溢出](#处理子元素的溢出)）（**推荐**）
+
+- 最常用的方式
+    - <label style="color:red">子元素设置浮动，父元素设置：`overflow:hidden`</label>
+
+- 开启bfc的示例
+    - 参考代码
+        - [/frontend/css/base/src/bfc/usageBfc.html](/frontend/css/base/src/bfc/usageBfc.html)
+    - 开启BFC的特殊方法1：父子元素都设置float
+        - css
+            ```css
+            .outter3{
+                border: black 5px solid;
+                float:left;
+            }
+            .inner3{
+                float: left;
+                width: 50px;
+                height: 50px;
+                background-color: #bfa;
+            }
+            ```
+        
+        - html
+            ```html
+            <section>3. 开启BFC的特殊方法1：父子元素都设置float</section>
+            <div class="outter3">
+                <div class="inner3"></div>
+            </div>
+            <div class="other"></div>
+            ```
+        
+        - ![](?????)
+
+    - 开启BFC的特殊方法2：将元素设置为行内块元素
+        - css
+            ```css
+            .outter4{
+                border: black 5px solid;
+                display: inline-block;
+            }
+
+            .inner4{
+                float: left;
+                width: 50px;
+                height: 50px;
+                background-color: #bfa;
+            }
+            ```
+        
+        - html
+            ```html
+            <section>4. 开启BFC的特殊方法2：将元素设置为行内块元素</section>
+            <div class="outter4">
+                <div class="inner4"></div>
+            </div>
+            <div class="other"></div>
+            ```
+        
+        - ![](?????)
+
+    - 开启BFC的特殊方法3：使用`overflow:hidden;`
+        - css
+            ```css
+            .outter5{
+                border: black 5px solid;
+                overflow: hidden;
+            }
+
+            .inner5{
+                float: left;
+                width: 50px;
+                height: 50px;
+                background-color: #bfa;
+            }
+            ```
+        
+        - html
+            ```html
+            <div class="outter5">
+                <div class="inner5"></div>
+            </div>
+            <div class="other"></div>
+            ```
+        
+        - ![](?????)
+    
+    - 开启BFC的特殊方法3：使用`overflow:auto;`
+        - css
+            ```css
+            .outter6{
+                border: black 5px solid;
+                overflow: auto;
+            }
+
+            .inner6{
+                float: left;
+                width: 50px;
+                height: 50px;
+                background-color: #bfa;
+            }
+            ```
+        
+        - html
+            ```html
+            <section>6. 开启BFC的特殊方法3：使用overflow:auto; </section>
+            <div class="outter6">
+                <div class="inner6"></div>
+            </div>
+            <div class="other"></div>
+            ```
+        
+        - ![](?????)
+
+
+
 # 网页布局
 [top](#catalog)
-- 使用`header`、`main`、`footer`来创建一个`上中下`的页面布局(也可以替换成3个div)
+## 基本的页面布局思路
+- 基本布局思路
+    - 垂直排列：堆砌块元素
+    - 水平排列：设置浮动`float`
+
+- 示例：使用h5中的`header`、`main`、`footer`来创建一个`上中下`的页面布局(也可以替换成多个div)
+    - 布局思路
+        - 使用多个块元素，划分垂直方向的布局
+        - 在`main`标签内部继续划分，使用`float`进行水平方向的布局
+    - **该示例中的缺点**
+        - 在外部的块元素`main`中已经固定了`height`和`width`，不能跟随内容进行变化
+    - 参考代码
+        - [/frontend/css/base/src/layout/baseLayout.html](/frontend/css/base/src/layout/baseLayout.html)
+        
+    - css
+        ```css
+        /* 设置外层的整体布局，垂直布局，堆砌块元素 */
+        header, main, footer{
+            width:800px;
+            margin-left: auto;
+            margin-right: auto;
+            margin-top: 0px;
+            margin-bottom: 0px;
+        }
+        header{
+            background-color: rgb(168, 168, 168);
+            height: 100px;
+        }
+
+        main{
+            background-color: #bfa;
+            height: 500px;
+            
+            /* 添加上下外边距，将上中下三部分分开 */
+            margin-top:20px;
+            margin-bottom: 10px;
+        }
+
+        footer{
+            background-color: rgb(245, 198, 69);
+            height: 150px
+        }
+
+        /* 设置main部分的布局，水平布局，设置元素浮动 */
+        /* 抽取通用属性 */
+        nav, article, aside{
+            float:left;
+            box-sizing: border-box;
+            height: 100%;
+            border: black 1px solid;
+        }
+
+        nav{
+            width: 180px;
+            background-color: rgb(94, 158, 241);
+            
+        }
+
+        article{
+            width: 400px;
+            background-color: rgb(168, 137, 96);
+            margin:0 20px;
+        }
+
+        aside{
+            width: 180px;
+            background-color: rgb(94, 116, 241);
+        }
+        ```
+
+    - html
+        ```html
+        <header></header>
+        <main>
+            <nav></nav>
+            <article></article>
+            <aside></aside>
+        </main>
+        <footer></footer>
+        ```
+    
+    - 页面结果
+        - ![](?????)
+
+
 
 
 # 总结
