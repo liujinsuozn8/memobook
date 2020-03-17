@@ -1,0 +1,141 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>bfc test</title>
+        <style>
+            /* 1. 外部块元素 跟随内部块元素自动变化 */
+            .outter1{
+                border: black 5px solid;
+            }
+
+            .inner1{
+                width: 50px;
+                height: 50px;
+                background-color: #bfa;
+            }
+
+            /* 2. 外部块元素自动变化，内部元素设置多个浮动元素来进行水平排列 */
+            .outter2{
+                border: black 5px solid;
+            }
+
+            .inner201{
+                float: left;
+                width: 50px;
+                height: 50px;
+                background-color: #bfa;
+            }
+            .inner202{
+                float: left;
+                width: 50px;
+                height: 50px;
+                background-color: rgb(205, 133, 253);
+            }
+
+            /* 3. 开启BFC的特殊方法1：父子元素都设置float */
+            .outter3{
+                border: black 5px solid;
+                float:left;
+            }
+            .inner3{
+                float: left;
+                width: 50px;
+                height: 50px;
+                background-color: #bfa;
+            }
+
+            /* 4. 开启BFC的特殊方法2：将元素设置为行内块元素 */
+            .outter4{
+                border: black 5px solid;
+                display: inline-block;
+            }
+
+            .inner4{
+                float: left;
+                width: 50px;
+                height: 50px;
+                background-color: #bfa;
+            }
+
+            /* 5. 开启BFC的特殊方法3：使用overflow:hidden; */
+            .outter5{
+                border: black 5px solid;
+                overflow: hidden;
+            }
+
+            .inner5{
+                float: left;
+                width: 50px;
+                height: 50px;
+                background-color: #bfa;
+            }
+            
+            /* 6. 开启BFC的特殊方法3：使用overflow:auto; */
+            .outter6{
+                border: black 5px solid;
+                overflow: auto;
+            }
+
+            .inner6{
+                float: left;
+                width: 50px;
+                height: 50px;
+                background-color: #bfa;
+            }
+
+            .other{
+                width:100px;
+                height:100px;
+                background-color: orange;
+            }
+
+        </style>
+    </head>
+    <body>
+        <section>1. 外部块元素 跟随内部块元素自动变化</section>
+        <div class="outter1">
+            <div class="inner1"></div>
+        </div>
+        <div class="other"></div>
+        <br>
+        
+        <section>2. 外部块元素自动变化，内部元素设置多个浮动元素来进行水平排列</section>
+        <section> 使用浮动后，外部的块元素因为没有子元素所以height、width变为0，后续元素上移，并被浮动元素覆盖</section>
+        <div class="outter2">
+            <div class="inner201"></div>
+            <div class="inner202"></div>
+        </div>
+        <div class="other"></div>
+        <br>
+        
+        <section>3. 开启BFC的特殊方法1：父子元素都设置float</section>
+        <div class="outter3">
+            <div class="inner3"></div>
+        </div>
+        <div class="other"></div>
+        <br>
+        
+        <section>4. 开启BFC的特殊方法2：将元素设置为行内块元素</section>
+        <div class="outter4">
+            <div class="inner4"></div>
+        </div>
+        <div class="other"></div>
+        <br>
+        
+        <section>5. 开启BFC的特殊方法3：使用overflow:hidden; </section>
+        <div class="outter5">
+            <div class="inner5"></div>
+        </div>
+        <div class="other"></div>
+        <br>
+        
+        <section>6. 开启BFC的特殊方法3：使用overflow:auto; </section>
+        <div class="outter6">
+            <div class="inner6"></div>
+        </div>
+        <div class="other"></div>
+        <br>
+        
+    </body>
+</html>
