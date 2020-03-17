@@ -76,10 +76,11 @@
     - [装饰者模式简介](#装饰者模式简介)
     - [使用装饰者模式改进引入问题](#使用装饰者模式改进引入问题)
     - [装饰者模式在JDK中的应用-FilterInputStream](#装饰者模式在JDK中的应用-FilterInputStream)
-- [](#)
-- [](#)
-- [](#)
-- [](#)
+- 结构型-组合模式
+    - [引入问题-学校院系展示](#引入问题-学校院系展示)
+    - [组合模式简介](#组合模式简介)
+    - [使用组合模式改进引入问题](#使用组合模式改进引入问题)
+    - [组合模式在JDK源码中的应用-HashMap](#组合模式在JDK源码中的应用-HashMap)
 - [](#)
 - 结构型-代理模式
     - [代理模式简介](#代理模式简介)
@@ -2763,7 +2764,7 @@
 - UML图
     - ![problem_uml](imgs/pattern/builder/base/problem_uml.png)
 
--　`Product`产品类
+- `Product`产品类
     - 参考代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/builder/base/House.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/builder/base/House.java)
     - 代码内容
         ```java
@@ -3706,6 +3707,245 @@ P64
     
     - `ConcreteDecorator`具体装饰者：`FilterInputStream`的子类，如：`BufferedInputStream`等
     - 所以在jdk的io体系中，使用了装饰者模式增加了抽象主体`InputStream`的功能
+
+# 结构型-组合模式
+## 引入问题-学校院系展示
+[top](#catalog)
+- 需求
+    - 在一个页面中展示出学校的院系组成
+    - 一个学校有多个学院，一个学院有多个系
+        - 级别关系：学校 --> 学院 --> 系
+    
+- 传统解决方式
+    - UML图
+        - [problem_uml](imgs/pattern/composite/problem/problem_uml.png)
+    - 学校、学院、系之间是继承的关系
+    
+- 传统方式的问题
+    - 按照组织大小进行分层：将学院作为学校的子类，将系作为学院的子类
+    - 实际情况是：一个学校有多个学院，一个学院有多个系，所以传统方案不能实现**管理操作**，如对学院、系的增删改查
+- 改进方法
+    - 将学校、学院、系作为组织结构，没有继承关系，3者之间是一个树形结构，可以实现更好的管理操作
+
+# 结构型-组合模式
+## 组合模式简介
+[top](#catalog)
+- 组合模式的概念
+    - 组合模式又叫部分整体模式
+    - 组合模式会创建对象组的树形结构，将对象组合成树状结构以表示整体/部分的层次关系
+    - 组合模式能让客户以一致的方式处理个别对象以及组合对象
+- 组合模式可以解决的问题
+    - 可解决问题的两大特征
+        1. 需要处理的对象可以生成一颗树型结构 
+        2. 需要统一的方式操作树干上的节点和叶子，而不用考虑是节点还是叶子
+    - 问题抽象图
+        - ![problemAbstract](imgs/pattern/composite/base/problemAbstract.png)
+
+- 组合模式的原理
+    - Component(抽象部分)：组合中对象的接口，在适当情况下，实现所有类共有的接口默认行为，用于访问和管理Component子部件
+        - Component可以是抽象类，也可以是接口
+    - Leaf(被管理者)：在组合中表示叶子节点，没有子节点。用于定义组合内元素的行为
+    - Composite(管理者)：非叶子节点，用于存储子部件，在Component接口中实现子部件的相关操作，如：增加、删除等
+
+- 原理UML图
+    - ![principle_uml](imgs/pattern/composite/base/principle_uml.png)
+
+- 组合模式的优点
+    - 组合模式可以简化客户端操作
+        - 客户端只需要面对一致的对象而不用考虑整体/部分、节点/叶子的问题
+    - 具有较强的扩展性
+        - 当需要更改内部的对象组合方式时，只需要调整内部的层次关系，客户端不需要改变
+    - 方便创建出复杂的层次结构，客户端不用参与组合的细节，容易添加节点/叶子来创建更加复杂的树形结构
+    - <label style="color:red">需要遍历组织机构、或者处理的对象就有树形结构时，非常适合使用组合模式</label>
+- 组合模式的缺点
+    - 要求较高的抽象性
+        - 如果节点和叶子有很多的差异性，如方法、属性都不一样，则不适合使用组合模式
+
+## 使用组合模式改进引入问题
+[top](#catalog)
+- 实现方法
+    - 创建叶子和节点的抽象类：`OrganizationComponent`，提供添加、删除、打印方法
+    - 分别实现学校、学院、系三个类
+    - 在学校类中组合一个`OrganizationComponent`型数组用来管理学院
+    - 在学院中组合一个`OrganizationComponent`型数组用来管理系
+    - 学校、学院分别有各自的下一级的管理对象，所以在打印方法中需要循环打印内部的管理对象
+
+- UML图
+    - [problem_improve](imgs/pattern/composite/base/problem_improve.png)
+
+- 抽象类`OrganizationComponent`
+    - 参考代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/composite/base/OrganizationComponent.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/composite/base/OrganizationComponent.java)
+    - 代码内容
+        ```java
+        package com.ljs.learn.pattern.composite.base;
+        
+        public abstract class OrganizationComponent {
+            private String name;
+        
+            public OrganizationComponent(String name) {
+                this.name = name;
+            }
+        
+            public String getName() {
+                return name;
+            }
+        
+            public void setName(String name) {
+                this.name = name;
+            }
+        
+            // 提供默认实现，在叶子上不做重写，防止在叶子上添加管理对象
+            public void add (OrganizationComponent node){
+                throw new UnsupportedOperationException();
+            }
+        
+            // 提供默认实现，在叶子上不做重写，防止在叶子上添加管理对象
+            public void remove(OrganizationComponent node){
+                throw new UnsupportedOperationException();
+            }
+        
+            public abstract void print();
+        }
+        ```
+
+- 学校、学院、系
+    - 参考代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/composite/base/University.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/composite/base/University.java)
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/composite/base/College.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/composite/base/College.java)
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/composite/base/Department.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/composite/base/Department.java)
+    - 代码内容
+        ```java
+        public class University extends OrganizationComponent {
+            // 保存下一级的管理对象：学院
+            List<OrganizationComponent> componentList = new ArrayList<>();
+        
+            public University(String name) {
+                super(name);
+            }
+        
+            @Override
+            public void add(OrganizationComponent node) {
+                componentList.add(node);
+            }
+        
+            @Override
+            public void remove(OrganizationComponent node) {
+                componentList.remove(node);
+            }
+        
+            @Override
+            public void print() {
+                System.out.println("-----University:" + super.getName() + "------");
+                // 循环输出下一级的节点信息
+                for (OrganizationComponent node : componentList) {
+                    node.print();
+                }
+            }
+        }
+      
+        public class College extends OrganizationComponent {
+            // 保存下一级的管理对象：系
+            List<OrganizationComponent> componentList = new ArrayList<>();
+        
+            public College(String name) {
+                super(name);
+            }
+        
+            @Override
+            public void add(OrganizationComponent node) {
+                componentList.add(node);
+            }
+        
+            @Override
+            public void remove(OrganizationComponent node) {
+                componentList.remove(node);
+            }
+        
+            @Override
+            public void print() {
+                System.out.println("---College:" + super.getName() + "---");
+                // 循环输出下一级的节点信息
+                for (OrganizationComponent node : componentList) {
+                    node.print();
+                }
+            }
+        }
+      
+        public class Department extends OrganizationComponent {
+            public Department(String name) {
+                super(name);
+            }
+        
+            @Override
+            public void print() {
+                System.out.println(getName());
+            }
+        }
+        ```
+
+- 测试类
+    - 参考代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/composite/base/Client.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/composite/base/Client.java)
+    - 代码内容
+        ```java
+        @Test
+        public void test01(){
+            // 创建大学
+            University university01 = new University("University01");
+    
+            // 创建学院
+            College college01 = new College("College01");
+            College college02 = new College("College02");
+    
+            // 创建系
+            Department department01 = new Department("Department01");
+            Department department02 = new Department("Department02");
+    
+            Department department03 = new Department("Department03");
+            Department department04 = new Department("Department04");
+    
+            // 将三中对象组合成树形结构
+            college01.add(department01);
+            college01.add(department02);
+    
+            college02.add(department03);
+            college02.add(department04);
+    
+            university01.add(college01);
+            university01.add(college02);
+    
+            // 从学校级别开始输出
+            university01.print();
+            System.out.println("##########################");
+    
+            // 从学院级别开始输出
+            college02.print();
+            
+            // 输出结果
+            // -----University:University01------
+            // ---College:College01---
+            // Department01
+            // Department02
+            // ---College:College02---
+            // Department03
+            // Department04
+            // ###################
+            // ---College:College02---
+            // Department03
+            // Department04
+            // ###################
+        }
+        ```
+      
+## 组合模式在JDK源码中的应用-HashMap
+[top](#catalog)
+- 集合类`HashMap`中就使用到了组合模式
+- 组合方式：Map --> AbstracMap --> HashMap --> HashMap.Node
+- `HashMap`相当于`Composite`，实现了`put`、`putAll`方法，统一的添加叶子
+- `HashMap.Node`是静态内部类，相当于`Left`叶子节点，内部没有`put`、`putAll`方法
+- UML图
+    - [HashMapUML](imgs/pattern/composite/jdktest/HashMapUML.png)
 
 
 # 结构型-代理模式

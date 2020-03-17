@@ -1,0 +1,27 @@
+@startuml
+
+interface Component{
+    + opreation()
+    + add(Component)
+    + remove(Component)
+    + getChild(int)
+}
+
+class Composite{
+    + opreation()
+    + add(Component)
+    + remove(Component)
+    + getChild(int)
+}
+
+class Leaf{
+    + opreation()
+}
+
+Component <|--- Composite
+Component ---o Composite
+Component <|--- Leaf
+
+Client .right..> Component
+
+@enduml

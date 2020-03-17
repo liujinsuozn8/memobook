@@ -1,0 +1,36 @@
+@startuml
+
+
+
+abstract OrganizationComponent{
+    + add(OrganizationComponent)
+    + remove(OrganizationComponent)
+    + print()
+}
+
+
+'学校
+class University{
+
+}
+
+'学院
+class College{
+
+}
+
+'系
+class Department{
+
+}
+
+
+OrganizationComponent <|-- Department
+OrganizationComponent <|-- College
+OrganizationComponent <|-- University
+
+University o-left-- College
+College o-left-- Department
+
+Client .right.> OrganizationComponent
+@enduml

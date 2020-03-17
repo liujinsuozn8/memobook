@@ -1,0 +1,14 @@
+@startuml
+
+interface Map{
+    + put():void
+    + putall():void
+}
+
+Map <|-- AbstractHashMap
+AbstractHashMap <|--- HashMap
+HashMap *-right- Node
+
+Client .right..> Map
+Client .right..> HashMap
+@enduml
