@@ -83,6 +83,36 @@
                 height: 50px;
                 background-color: #bfa;
             }
+            
+            /* 7. 开启BFC后，子元素和父元素的外边距不会重叠 */
+            /* 7.1 不开启bfc，测试子元素的margin-top向父元素传递 */
+            .outter701{
+                width: 100px;
+                height: 100px;
+                background-color: burlywood;
+            }
+            .inner701{
+                width:50px;
+                height: 50px;
+                background-color: #bfa;
+                margin-top: 50px;
+            }
+
+            /* 7.2 开启BFC */
+            .outter702{
+                width: 100px;
+                height: 100px;
+                background-color: burlywood;
+                overflow:hidden;
+            }
+
+            .inner702{
+                float: left;
+                width:50px;
+                height: 50px;
+                background-color: #bfa;
+                margin-top:50px;
+            }
 
             .other{
                 width:100px;
@@ -137,5 +167,22 @@
         <div class="other"></div>
         <br>
         
+        
+        <section>7. 开启BFC后，子元素和父元素的外边距不会重叠</section>
+        <section>7.1 不开启BFC，子元素的margin会传递个给父元素</section>
+        <div>
+            <div class="outter701">
+                <div class="inner701"></div>
+            </div>
+            <div class="other"></div>
+        </div>
+        <br>
+
+        <section>7.2 开启BFC</section>
+        <div class="outter702">
+            <div class="inner702"></div>
+        </div>
+        <div class="other"></div>
+        <br>
     </body>
 </html>
