@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>improve problem test</title>
+    <style>
+        /* 1. 使用clear解决高度塌陷，方式1：添加clear子元素 */
+        .outter1{
+            border: black 5px solid;
+        }
+
+        .inner101{
+            width:50px;
+            height: 50px;
+            background-color: #bfa;
+            float: left;
+        }
+
+        /* 清除浮动元素的影响 */
+        .inner102{
+            clear:left;
+        }
+
+        /* 2. 使用clear解决高度塌陷，方式2：通过伪元素来隔离 */
+        .outter2{
+            border: black 5px solid;
+        }
+
+        .inner2{
+            width:50px;
+            height: 50px;
+            background-color: orange;
+            float: left;
+        }
+        
+        .outter2::after{
+            /* 1. 通过clear属性清除浮动元素的影响 */
+            clear:both;
+            /* 2. 设置空content使伪元素生效 */
+            content: "";
+            /* 3. 伪元素本身是行内元素，通过display属性转换成块元素 */
+            display:block;
+        }
+
+        /* 3. 自定义样式解决高度塌陷和父子元素间的外边距折叠 */
+        /* 高度塌陷测试 */
+        .outter301{
+            border: black 5px solid;
+        }
+
+        .inner301{
+            width:50px;
+            height: 50px;
+            background-color:rgb(45, 136, 255);
+            float: left;
+        }
+
+        /* 父子元素间外边距折叠测试 */
+        .outter302{
+            width: 100px;
+            height: 100px;
+            background-color:#bfa;
+        }
+
+        .inner302{
+            width: 50px;
+            height: 50px;
+            background-color: orange;
+            margin-top: 50px;
+        }
+
+        /* 自定义类选择器 */
+        .clearfix::before,
+        .clearfix::after{
+            /* 1. 通过clear属性清除浮动元素的影响 */
+            clear:both;
+            /* 2. 设置空content使伪元素生效 */
+            content: "";
+            /* 3. 分割元素，并且不会占用像素位置；同时解决 高度塌陷和父子元素间的外边距折叠 */
+            display:table;
+        }
+    </style>
+</head>
+<body>
+    <section>1. 使用clear解决高度塌陷，方式1：添加clear子元素</section>
+    <div class="outter1">
+        <div class="inner101"></div>
+        <div class="inner102"></div>
+    </div>
+    <br>
+
+    <section>2. 使用clear解决高度塌陷，方式2：通过伪元素来隔离</section>
+    <div class="outter2">
+        <div class="inner2"></div>
+    </div>
+    <br>
+
+    <section>3. 自定义样式解决高度塌陷和父子元素间的外边距折叠</section>
+    <section>3.1. 解决高度塌陷</section>
+    <div class="outter301 clearfix">
+        <div class="inner301"></div><br>
+        <div class="inner301"></div>
+    </div>
+    <br>
+    
+    <section>3.2. 解决高度塌陷</section>
+    <div class="outter302 clearfix">
+        <div class="inner302"></div>
+    </div>
+    <br>
+</body>
+</html>
