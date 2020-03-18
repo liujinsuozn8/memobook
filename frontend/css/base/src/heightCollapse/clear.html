@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>clear test</title>
+    <style>
+        /* 1. 默认情况下，浮动元素会影响其他元素的布局 */
+        .box0101{
+            width:50px;
+            height: 50px;
+            background-color: #bfc;
+            float:left;
+        }
+
+        .box0102{
+            width: 80px;
+            height: 80px;
+            background-color: orange;
+        }
+        
+        /* 2. 使用 clear:left 清除 float:left浮动元素的影响 */
+        .box0201{
+            width:50px;
+            height: 50px;
+            background-color: #bfc;
+            float:left;
+        }
+
+        .box0202{
+            width: 80px;
+            height: 80px;
+            background-color: orange;
+            clear:left;
+        }
+
+        /* 3. 使用 clear:right 清除 float:right 浮动元素的影响 */
+        .outter3{
+            width:250px;
+            background-color: rgb(184, 184, 184);
+            overflow: hidden;
+        }
+        .box0301{
+            width:50px;
+            height: 50px;
+            background-color: #bfc;
+            float:right;
+        }
+
+        .box0302{
+            width: 80px;
+            height: 80px;
+            background-color: orange;
+            clear:right;
+        }
+
+        /* 4. 使用 clear：both 清楚 left和right中较大的那一侧 */
+        .outter4{
+            width:250px;
+            background-color: rgb(184, 184, 184);
+            overflow: hidden;
+        }
+
+        .box0401{
+            width:50px;
+            height: 50px;
+            background-color: #bfc;
+            float:left;
+        }
+
+        .box0402{
+            width:100px;
+            height: 100px;
+            background-color: rgb(82, 149, 255);
+            float:right;
+        }
+
+        .box0403{
+            width: 80px;
+            height: 80px;
+            background-color: orange;
+            clear:right;
+        }
+    </style>
+</head>
+<body>
+    <section>1. 默认情况下，浮动元素会影响其他元素的布局</section>
+    <div class="box0101">box0101</div>
+    <div class="box0102">box0102</div>
+    <br>
+    
+    <section>2. 使用 clear:left 清除 float:left浮动元素的影响</section>
+    <div class="box0201">box0201</div>
+    <div class="box0202">box0202</div>
+    <br>
+    
+    <section>3. 使用 clear:right 清除 float:right 浮动元素的影响</section>
+    <div class="outter3">
+        <div class="box0301">box0301</div>
+        <div class="box0302">box0302</div>
+    </div>
+    <br>
+    
+    <section>4. 使用 clear：both 清楚 left和right中较大的那一侧</section>
+    <div class="outter4">
+        <div class="box0401">box0401</div>
+        <div class="box0402">box0402</div>
+        <div class="box0403">box0403</div>
+    </div>
+
+</body>
+</html>
