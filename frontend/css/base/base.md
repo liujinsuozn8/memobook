@@ -1605,7 +1605,7 @@
             <div class="box103"></div>
             ```
         - 页面结果
-            - ![](?????)
+            - ![outNormalFlow_html_result](imgs/float/outNormalFlow/outNormalFlow_html_result.png)
 
 
 # 盒子模型
@@ -2298,7 +2298,7 @@
             </div>
             ```
         - 页面结果
-            - [](????)
+            - [html_result_01](imgs/boxModel/verticalLayout/html_result_01.png)
 
     - 父元素设置高度
         - css
@@ -2328,7 +2328,7 @@
             </div>
             ```
         - 页面结果
-            - [](????)
+            - [html_result_02](imgs/boxModel/verticalLayout/html_result_02.png)
 
     - 子元素没有设置高度
         - css
@@ -2354,7 +2354,7 @@
             </div>
             ```
         - 页面结果
-            - [](????)
+            - [html_result_03](imgs/boxModel/verticalLayout/html_result_03.png)
 
     - 子元素的高度 > 父元素的高度
         - css
@@ -2381,7 +2381,7 @@
             </div>
             ```
         - 页面结果
-            - [](????)
+            - [html_result_04](imgs/boxModel/verticalLayout/html_result_04.png)
 
     - 处理子元素溢出，`overflow=hidden`
         - css
@@ -2408,7 +2408,7 @@
             </div>
             ```
         - 页面结果
-            - [](????)
+            - [html_result_05](imgs/boxModel/verticalLayout/html_result_05.png)
 
     - 处理子元素溢出，`overflow=scroll`
         - css
@@ -2435,7 +2435,7 @@
             </div>
             ```
         - 页面结果
-            - [](????)
+            - [html_result_06](imgs/boxModel/verticalLayout/html_result_06.png)
 
     - 处理子元素溢出，`overflow=auto`
         - css
@@ -2462,7 +2462,7 @@
             </div>
             ```
         - 页面结果
-            - [](????)
+            - [html_result_07](imgs/boxModel/verticalLayout/html_result_07.png)
 
 
 
@@ -2744,7 +2744,8 @@
             <br>
             ```
         - 页面结果
-            - [](?????)
+            - [html_result_01](imgs/boxModel/boxsize/html_result_01.png)
+
 
 
 ## 盒子的轮廓
@@ -2807,7 +2808,8 @@
             <span>test string2</span>
             ```
         - 页面结果
-            - [](?????)
+            - [html_result_01](imgs/boxModel/outline/html_result_01.png)
+
 
     - outline的使用场景：当鼠标移入时，为元素添加边框
         - css
@@ -2830,9 +2832,10 @@
             ```
         - 测试结果
             - 正常显示
-                - [](?????)
+                - [html_result_02](imgs/boxModel/outline/html_result_02.png)
+
             - 鼠标移入
-                - [](?????)
+                - [html_result_02_mousein](imgs/boxModel/outline/html_result_02_mousein.png)
 
 ## 盒子的阴影
 [top](#catalog)
@@ -2863,7 +2866,7 @@
             <div class="box1"></div>
             ```
         - 页面结果
-            - ![](?????)
+            - ![html_result_01](imgs/boxModel/boxshadow/html_result_01.png)
 
     - 阴影偏移-正数，阴影向右/下偏移
         - css
@@ -2881,7 +2884,7 @@
             <div class="box2"></div>
             ```
         - 页面结果
-            - ![](?????)
+            - ![html_result_02](imgs/boxModel/boxshadow/html_result_02.png)
 
     - 阴影偏移-负数，阴影向左/上偏移
         - css
@@ -2900,7 +2903,7 @@
             <div class="box3"></div>
             ```
         - 页面结果
-            - ![](?????)
+            - ![html_result_03](imgs/boxModel/boxshadow/html_result_03.png)
 
     - 阴影的模糊半径
         - css
@@ -2918,7 +2921,7 @@
             <div class="box4"></div>
             ```
         - 页面结果
-            - ![](?????)
+            - ![html_result_04](imgs/boxModel/boxshadow/html_result_04.png)
 
     - 使用0偏移量和阴影的模糊半径来制造羽化效果
         - css
@@ -2937,7 +2940,7 @@
             <div class="box5"></div>
             ```
         - 页面结果
-            - ![](?????)
+            - ![html_result_05](imgs/boxModel/boxshadow/html_result_05.png)
     
 
 ## 盒子的圆角
@@ -2984,7 +2987,7 @@
             <div class="box1"></div>
             ```
         - 页面结果
-            - ![](?????)
+            - ![html_result_01](imgs/boxModel/borderRadius/html_result_01.png)
 
     - 使用单角属性来设置椭圆圆角
         - css
@@ -3003,7 +3006,7 @@
             <div class="box2"></div>
             ```
         - 页面结果
-            - ![](?????)
+            - ![html_result_02](imgs/boxModel/borderRadius/html_result_02.png)
 
     - 使用统一属性，给4个角设置相同的半径
         - css
@@ -3022,7 +3025,7 @@
             <div class="box3"></div>
             ```
         - 页面结果
-            - ![](?????)
+            - ![html_result_03](imgs/boxModel/borderRadius/html_result_03.png)
 
     - 使用统一属性，分别设置：左上 右上 右下 左下
         - css
@@ -3041,7 +3044,7 @@
             <div class="box4"></div>
             ```
         - 页面结果
-            - ![](?????)
+            - ![html_result_04](imgs/boxModel/borderRadius/html_result_04.png)
 
     - 使用统一属性，分别设置：左上 右上/左下 右下
         - css
@@ -3060,7 +3063,7 @@
             <div class="box5"></div>
             ```
         - 页面结果
-            - ![](?????)
+            - ![html_result_05](imgs/boxModel/borderRadius/html_result_05.png)
 
     - 使用统一属性，分别设置：左上/右下 右上/左下
         - css
@@ -3079,7 +3082,7 @@
             <div class="box6"></div>
             ```
         - 页面结果
-            - ![](?????)
+            - ![html_result_06](imgs/boxModel/borderRadius/html_result_06.png)
 
     - 在统一属性设置椭圆
         - css
@@ -3098,7 +3101,7 @@
             <div class="box7"></div>
             ```
         - 页面结果
-            - ![](?????)
+            - ![html_result_07](imgs/boxModel/borderRadius/html_result_07.png)
 
     - 通过：border-radius: 50%，将盒子设置为50%
         - css
@@ -3117,7 +3120,7 @@
             <div class="box8"></div>
             ```
         - 页面结果
-            - ![](?????)
+            - ![html_result_08](imgs/boxModel/borderRadius/html_result_08.png)
 
 ## 文字水平垂直居中
 [top](#catalog)
@@ -3258,14 +3261,14 @@
             .s1{
                 background-color: rgb(214, 177, 54);
                 /* 转化为块元素之后可以设置 width 和 height */
-                width: 250px;
-                height:250px;
+                width: 100px;
+                height:100px;
 
                 display: block;
             }
             .box1{
-                width:200px;
-                height:200px;
+                width:50px;
+                height:50px;
                 background-color: green;
             }
             ```
@@ -3277,7 +3280,7 @@
             <br>
             ```
         - 页面结果
-            - ![](?????)
+            - ![html_result_01](imgs/commonProperties/display/html_result_01.png)
 
     - 测试行内块元素`display:inline-block`
         - css
@@ -3312,7 +3315,7 @@
             <br>
             ```
         - 页面结果
-            - ![](?????)
+            - ![html_result_02](imgs/commonProperties/display/html_result_02.png)
 
     - 测试元素隐藏`display:none`
         - css
@@ -3340,7 +3343,7 @@
             <div class="box7"></div>
             ```
         - 页面结果
-            - ![](?????)
+            - ![html_result_03](imgs/commonProperties/display/html_result_03.png)
 
 ## visibility
 [top](#catalog)
@@ -3377,7 +3380,8 @@
             ```
         
         - 页面结果
-            - [](?????)
+            - [html_result_01](imgs/commonProperties/visibility/html_result_01.png)
+
 
 # 元素浮动
 ## 元素浮动基本知识
@@ -3419,7 +3423,9 @@
             <div class="box1"></div>
             ```
         - 元素检查器中的结果
-            - ![](?????)
+            - ![html_result_00](imgs/float/floatBase/html_result_00.png)
+            - ![html_result_01](imgs/float/floatBase/html_result_01.png)
+
 
 - 浮动元素的特点
     - 脱离文档流：浮动元素会脱离文档流，不用遵守水平布局的等式
@@ -3456,7 +3462,7 @@
             <div class="box102"></div>
             ```
         - 页面结果
-            - ![](?????)
+            - ![html_result_02](imgs/float/floatBase/html_result_02.png)
 
     - 多个使用float属性的元素横向排列
         - css
@@ -3488,7 +3494,7 @@
             <div class="box303"></div>
             ```
         - 页面结果
-            - ![](?????)
+            - ![html_result_03](imgs/float/floatBase/html_result_03.png)
 
     - 默认情况下，浮动元素不会从父元素中移出
         - css
@@ -3515,13 +3521,14 @@
             ```
         - html
             ```html
+            <section style="clear:both">4. 默认情况下，浮动元素不会从父元素中移出</section>
             <div class="box401">
                 <div class="box402"></div>
                 <div class="box403"></div>
             </div>
             ```
         - 页面结果
-            - ![](?????)
+            - ![html_result_04](imgs/float/floatBase/html_result_04.png)
 
     - 浮动不会覆盖文字--文字自动环绕效果
         - css
@@ -3541,7 +3548,7 @@
             <br>
             ```
         - 页面结果
-            - ![](?????)
+            - ![html_result_05](imgs/float/floatBase/html_result_05.png)
 
 ## 元素浮动示例-导航条
 [top](#catalog)
@@ -3659,7 +3666,7 @@
             <div class="other"></div>
             ```
         - 页面结果
-            - ![](?????)
+            - ![html_result_01](imgs/bfc/usageBfc/html_result_01.png)
 
     - 外部块元素自动变化，内部元素设置多个浮动元素来进行水平排列
         - css
@@ -3693,7 +3700,7 @@
             ```
 
         - 页面结果
-            - ![](?????)
+            - ![html_result_02](imgs/bfc/usageBfc/html_result_02.png)
 
 
 ## 解决方式1-BFC块级格式化环境
@@ -3754,7 +3761,7 @@
             <div class="other"></div>
             ```
         - 页面结果
-            - ![](?????)
+            - ![html_result_03](imgs/bfc/usageBfc/html_result_03.png)
 
     - 开启BFC的特殊方法2：将元素设置为行内块元素
         - css
@@ -3781,7 +3788,7 @@
             <div class="other"></div>
             ```
         - 页面结果
-            - ![](?????)
+            - ![html_result_04](imgs/bfc/usageBfc/html_result_04.png)
 
     - 开启BFC的特殊方法3：使用`overflow:hidden;`
         - css
@@ -3808,7 +3815,7 @@
             ```
         
         - 页面结果
-            - ![](?????)
+            - ![html_result_05](imgs/bfc/usageBfc/html_result_05.png)
     
     - 开启BFC的特殊方法3：使用`overflow:auto;`
         - css
@@ -3836,7 +3843,7 @@
             ```
         
         - 页面结果
-            - ![](?????)
+            - ![html_result_06](imgs/bfc/usageBfc/html_result_06.png)
 
     - 开启BFC后，子元素和父元素的外边距不会重叠
         - css
@@ -3891,7 +3898,7 @@
             <br>
             ```
         - 页面结果
-            - ![](?????)
+            - ![html_result_07](imgs/bfc/usageBfc/html_result_07.png)
 
 
 ## 解决方式2-clear属性
@@ -3936,7 +3943,7 @@
             ```
 
         - 页面结果
-            - ![](?????)
+            - ![html_result_02](imgs/heightCollapse/clear/html_result_02.png)
 
     - 使用 clear:right 清除 float:right 浮动元素的影响
         - css
@@ -3971,7 +3978,7 @@
             ```
 
         - 页面结果
-            - ![](?????)
+            - ![html_result_03](imgs/heightCollapse/clear/html_result_03.png)
 
     - 使用 clear：both 清楚 left和right中较大的那一侧
         - css
@@ -4006,7 +4013,7 @@
         
         - html
             ```html
-            <section>4. 使用 clear：both 清楚 left和right中较大的那一侧</section>
+            <section>4. 使用 clear：both 清除 left和right中较大的那一侧</section>
             <div class="outter4">
                 <div class="box0401">box0401</div>
                 <div class="box0402">box0402</div>
@@ -4014,7 +4021,7 @@
             </div>
             ```
         - 页面结果
-            - ![](?????)
+            - ![html_result_04](imgs/heightCollapse/clear/html_result_04.png)
 
 ### 使用clear解决高度塌陷
 [top](#catalog)
@@ -4059,8 +4066,7 @@
             </div>
             ```
         - 页面结果
-            - ![](?????)
-
+            - ![html_result_01](imgs/heightCollapse/improveProblem/html_result_01.png)
 
 - 解决方式2：通过伪元素`after`来隔离(**推荐使用**)
     - 基本css代码
@@ -4115,7 +4121,7 @@
             </div>
             ```
         - 页面结果
-            - ![](?????)
+            - ![html_result_02](imgs/heightCollapse/improveProblem/html_result_02.png)
 
 ## 解决方式3-自定义类选择器解决高度塌陷和父子元素间的外边距折叠
 - 基本css代码
@@ -4198,7 +4204,7 @@
         ```
 
     - 页面结果
-        - ![](?????)
+        - ![html_result_03](imgs/heightCollapse/improveProblem/html_result_03.png)
 
 # 定位
 ## 定位简介
@@ -4278,7 +4284,7 @@
         ```
     
     - 页面结果
-        - ![](????? 标记相对位置)
+        - ![html_result_01](imgs/position/relative/html_result_01.png)
 
 ## 绝对定位
 [top](#catalog)
@@ -4320,7 +4326,7 @@
         ```css
         /* 设置外层的整体布局，垂直布局，堆砌块元素 */
         header, main, footer{
-            width:800px;
+            width:400px;
             margin-left: auto;
             margin-right: auto;
             margin-top: 0px;
@@ -4328,21 +4334,21 @@
         }
         header{
             background-color: rgb(168, 168, 168);
-            height: 100px;
+            height: 50px;
         }
 
         main{
             background-color: #bfa;
-            height: 500px;
+            height: 250px;
             
             /* 添加上下外边距，将上中下三部分分开 */
-            margin-top:20px;
-            margin-bottom: 10px;
+            margin-top:10px;
+            margin-bottom: 5px;
         }
 
         footer{
             background-color: rgb(245, 198, 69);
-            height: 150px
+            height: 75px
         }
 
         /* 设置main部分的布局，水平布局，设置元素浮动 */
@@ -4355,19 +4361,19 @@
         }
 
         nav{
-            width: 180px;
+            width: 90px;
             background-color: rgb(94, 158, 241);
             
         }
 
         article{
-            width: 400px;
+            width: 200px;
             background-color: rgb(168, 137, 96);
-            margin:0 20px;
+            margin:0 10px;
         }
 
         aside{
-            width: 180px;
+            width: 90px;
             background-color: rgb(94, 116, 241);
         }
         ```
@@ -4384,9 +4390,7 @@
         ```
     
     - 页面结果
-        - ![](?????)
-
-
+        - ![html_result_01](imgs/layout/baseLayout/html_result_01.png)
 
 
 # 总结
