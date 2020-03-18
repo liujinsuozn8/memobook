@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>position absolute test</title>
+    <style>
+        /* 1. 开启绝对定位，设置：偏移量=0 */
+        .box0101{
+            width: 50px;
+            height: 50px;
+            background-color: #bfa;
+        }
+        .box0102{
+            width: 50px;
+            height: 50px;
+            background-color: orange;
+            /* 使用绝对定位 */
+            position: absolute;
+            /* 偏移量 = 0 */
+            top:0;
+            left:0;
+        }
+        .box0103{
+            width: 100px;
+            height: 100px;
+            background-color: rgb(42, 102, 240);
+        }
+
+        /* 2. 开启绝对定位，没有设置偏移量，元素的位置不会发生变化 */
+        .box0201{
+            width: 50px;
+            height: 50px;
+            background-color: #bfa;
+        }
+        .box0202{
+            width: 50px;
+            height: 50px;
+            background-color: orange;
+            /* 使用绝对定位 */
+            position: absolute;
+            /* 不设置偏移量 */
+        }
+        .box0203{
+            width: 100px;
+            height: 100px;
+            background-color: rgb(42, 102, 240);
+        }
+        
+        /* 4. 在多层嵌套的块元素中，开启相对定位，开启绝对定位，设置：偏移量=0 */
+        .outter0401{
+            width: 150px;
+            height: 150px;
+            background-color: #bfa;
+            position:relative;
+        }
+        .outter0402{
+            width: 100px;
+            height: 100px;
+            background-color: orange;
+            position:relative;
+        }
+        .inner0401{
+            width: 50px;
+            height: 50px;
+            background-color: rgb(42, 102, 240);
+            /* 使用绝对定位 */
+            position: absolute;
+            top:0;
+            left:0;
+        }
+
+        /* 4. 在多层嵌套的块元素中，开启相对定位，开启绝对定位，设置：偏移量=0 */
+        .outter0501{
+            width: 150px;
+            height: 150px;
+            background-color: #bfa;
+            position:relative;
+        }
+        .outter0502{
+            width: 100px;
+            height: 100px;
+            background-color: orange;
+            /* position:relative; */
+        }
+        .inner0501{
+            width: 50px;
+            height: 50px;
+            background-color: rgb(42, 102, 240);
+            /* 使用绝对定位 */
+            position: absolute;
+            top:0;
+            left:0;
+        }
+    </style>
+</head>
+<body>
+    <section>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        1. 开启绝对定位，设置：偏移量=0</section>
+    <div class="box0101">1</div>
+    <div class="box0102">2</div>
+    <div class="box0103">3</div>
+    <br>
+
+    <section>2. 开启绝对定位，没有设置偏移量，元素的位置不会发生变化</section>
+    <div class="box0201">1</div>
+    <div class="box0202">2</div>
+    <div class="box0203">3</div>
+    <br>
+    
+    <section>4. 在多层嵌套的块元素中，开启绝对定位，设置：偏移量=0</section>
+    <div class="outter0401">1
+        <div class="outter0402">2
+            <div class="inner0401">3</div>
+        </div>
+    </div>
+    <br>
+    
+    <section>4. 在多层嵌套的块元素中，开启绝对定位，设置：偏移量=0</section>
+    <div class="outter0501">1
+        <div class="outter0502">2
+            <div class="inner0501">3</div>
+        </div>
+    </div>
+    <br>
+    
+</body>
+</html>
