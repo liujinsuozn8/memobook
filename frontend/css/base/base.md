@@ -24,8 +24,8 @@
     - [颜色单位](#颜色单位)
 - [文档流](#文档流)
     - [文档流简介](#文档流简介)
-    - [元素在文档流中的特点](#元素在文档流中的特点)
-    - [元素脱离文档流之后的特点](#元素脱离文档流之后的特点)
+    - [元素在文档流中](#元素在文档流中)
+    - [元素脱离文档流](#元素脱离文档流)
 - [盒子模型](#盒子模型)
     - [盒子模型的基本组成](#盒子模型的基本组成)
     - [内容区content](#内容区content)
@@ -50,17 +50,25 @@
 - [元素浮动](#元素浮动)
     - [元素浮动基本知识](#元素浮动基本知识)
     - [元素浮动示例-导航条](#元素浮动示例-导航条)    
-- [BFC块级格式化环境](#BFC块级格式化环境)
-    - [浮动产生的问题](#浮动产生的问题)
-    - [BFC元素的特点](#BFC元素的特点)
-    - [开启BFC](#开启BFC)
+- [解决浮造成的问题-高度塌陷](#解决浮造成的问题-高度塌陷)
+    - [高度塌陷的分析](#高度塌陷的分析)
+    - [解决方式1-BFC块级格式化环境](#解决方式1-BFC块级格式化环境)
+        - [BFC元素的特点](#BFC元素的特点)
+        - [开启BFC](#开启BFC)
+    - [解决方式2-clear属性](#解决方式2-clear属性)
+        - [clear属性简介](#clear属性简介)
+        - [使用clear解决高度塌陷](#使用clear解决高度塌陷)
+    - [解决方式3-自定义类选择器解决高度塌陷和父子元素间的外边距折叠（强烈推荐使用）](#解决方式3-自定义类选择器解决高度塌陷和父子元素间的外边距折叠)
+- [定位](#定位)
+    - [定位简介](#定位简介)
+    - [相对定位](#相对定位)
+    - [绝对定位](#绝对定位)
+- [](#)
+- [](#)
+- [](#)
+- [](#)
 - [网页布局](#网页布局)
     - [基本的页面布局思路](#基本的页面布局思路)
-- [](#)
-- [](#)
-- [](#)
-- [](#)
-- [](#)
 - [总结](#总结)
 - [练习](#练习)
 
@@ -725,6 +733,7 @@
             
             - 页面结果
                 - ![html_result_04](imgs/selector/pseudoClass/html_result_04.png)
+
         5. 选择ul下的所有偶数li子元素，通过even的方式
             - css
                 ```css
@@ -981,8 +990,8 @@
     |`::first-letter`|表示第一个字母||
     |`::first-line`|表示第一行||
     |`::selection`|表示选中的内容||
-    |`::before`|表示元素的开始|1.该元素的位置处于开始标签后，标签内容之前<br>如：`<tag>|文字`，假设`|`不真实存在，`|`就是`::before`的位置<br><br>2. `before`必须结合`content`属性来使用，所有的样式都是在设置`content`中的内容<br><br>3. 如果使用了`content`属性，在控制台可以看到该元素；如果不使用`content`属性则无法看到|
-    |`::after`|表示元素的最后|1.该元素的位置处于标签内容之后，结束标签之前<br>如：`文字|<tag>`，假设`|`不真实存在，`|`就是`::after`的位置<br><br>2. `after`必须结合`content`属性来使用，所有的样式都是在设置`content`中的内容<br><br>3. 如果使用了`content`属性，在控制台可以看到该元素；如果不使用`content`属性则无法看到|
+    |`::before`|表示元素的开始|<ol><li>该元素的位置处于开始标签后，标签内容之前<ul><li>如：`<tag>|文字`，假设`|`不真实存在，`|`就是`::before`的位置</li></ul></li><li>**`before`必须结合`content`属性来使用，所有的样式都是在设置`content`中的内容**</li><li>如果使用了`content`属性，在控制台可以看到该元素；如果不使用`content`属性则无法看到</li></ol>|
+    |`::after`|表示元素的最后|<ol><li>该元素的位置处于标签内容之后，结束标签之前<ul><li>如：`文字|<tag>`，假设`|`不真实存在，`|`就是`::after`的位置</li></ul></li><li>**`after`必须结合`content`属性来使用，所有的样式都是在设置`content`中的内容**</li><li>如果使用了`content`属性，在控制台可以看到该元素；如果不使用`content`属性则无法看到</li></ol>|
 
 - 在短引用标签`<q>`中，页面中自动出现的`""`或`[]`，就是通过在css中设置`::before`和`::after`来实现的
 
@@ -1121,8 +1130,8 @@
             <section>1.2. 测试内联样式</section>
             <div id="box1" style="color:green">div with inner css</div>
             ```
-
-        - ![html_result_01](imgs/selector/selectorLevel/html_result_01.png)
+        - 页面结果
+            - ![html_result_01](imgs/selector/selectorLevel/html_result_01.png)
 
     - 测试交集选择器的权重
         - css
@@ -1146,8 +1155,8 @@
             <div id="box2" class='aa bb cc dd ee ff gg hh ii jj'>div id="box2" class='aa bb cc dd ee ff gg hh ii jj'</div>
             <br>
             ```
-
-        - ![html_result_02](imgs/selector/selectorLevel/html_result_02.png)
+        - 页面结果
+            - ![html_result_02](imgs/selector/selectorLevel/html_result_02.png)
 
     - 测试 `!important`
         - css
@@ -1162,7 +1171,8 @@
             <div class="test01" style="color:orange">div class="test01" style="color:orange"</div>
             <div style="color:orange">div style="color:orange"</div>
             ```
-        - ![html_result_04](imgs/selector/selectorLevel/html_result_04.png)
+        - 页面结果            
+            - ![html_result_04](imgs/selector/selectorLevel/html_result_04.png)
 
     - 测试权重相同的选择器
         - css
@@ -1184,7 +1194,8 @@
             <div class="test0201 test0202">div class="test0201 test0202"</div>
             <br>
             ```
-        - ![html_result_05](imgs/selector/selectorLevel/html_result_05.png)
+        - 页面结果
+            - ![html_result_05](imgs/selector/selectorLevel/html_result_05.png)
 
     - 测试通配符选择器和继承样式的权重
         - css
@@ -1213,7 +1224,8 @@
                 </div>
             </div>
             ```
-        - ![html_result_06](imgs/selector/selectorLevel/html_result_06.png)
+        - 页面结果
+            - ![html_result_06](imgs/selector/selectorLevel/html_result_06.png)
 
 # 继承
 [top](#catalog)
@@ -1230,6 +1242,7 @@
 - 示例
     - 参考代码
         - [/frontend/css/base/src/inherit/inherit.html](/frontend/css/base/src/inherit/inherit.html)
+
     - css
         ```css
         p{
@@ -1260,8 +1273,8 @@
 
         </div>
         ```
-
-    - ![html_result_01](imgs/inherit/html_result_01.png)
+    - 页面结果
+        - ![html_result_01](imgs/inherit/html_result_01.png)
 
 # web页面中的单位
 ## 页面的长度单位
@@ -1287,6 +1300,7 @@
 - 示例
     - 参考代码
         - [/frontend/css/base/src/sizeunit/sizeunit.html](/frontend/css/base/src/sizeunit/sizeunit.html)
+
     - 百分比自动变化测试
         - css
             ```css
@@ -1314,7 +1328,8 @@
             <div class="box2">dddd</div>
             <br>
             ```
-        - ![html_result_01](imgs/sizeunit/sizeunit/html_result_01.png)
+        - 页面结果
+            - ![html_result_01](imgs/sizeunit/sizeunit/html_result_01.png)
 
     - em测试: 分别使用不同的文字大小
         - css
@@ -1339,7 +1354,9 @@
             <div class="box3"></div>
             <div class="box4"></div>
             ```
-        - ![html_result_02](imgs/sizeunit/sizeunit/html_result_02.png)
+
+        - 页面结果
+            - ![html_result_02](imgs/sizeunit/sizeunit/html_result_02.png)
     
     - 3. rem测试 
         - css
@@ -1366,7 +1383,8 @@
             <div class="box5"></div>
             <div class="box6"></div>
             ```
-        - ![html_result_03](imgs/sizeunit/sizeunit/html_result_03.png)
+        - 页面结果
+            - ![html_result_03](imgs/sizeunit/sizeunit/html_result_03.png)
 
 ## 颜色单位
 [top](#catalog)
@@ -1402,6 +1420,7 @@
 - 示例
     - 参考代码
         - [/frontend/css/base/src/sizeunit/color.html](/frontend/css/base/src/sizeunit/color.html)
+
     - 颜色名测试
         - css
             ```css
@@ -1416,7 +1435,8 @@
             <section>1. 颜色名测试</section>
             <div class="box1"></div>
             ```
-        - ![html_result_01](imgs/sizeunit/color/html_result_01.png)
+        - 页面结果
+            - ![html_result_01](imgs/sizeunit/color/html_result_01.png)
 
     - RGB颜色值测试 
         - css
@@ -1432,7 +1452,8 @@
             <section>2.RGB颜色值测试</section>
             <div class="box2"></div>
             ```
-        - ![html_result_02](imgs/sizeunit/color/html_result_02.png)
+        - 页面结果
+            - ![html_result_02](imgs/sizeunit/color/html_result_02.png)
 
     - RGB颜色百分比测试
         - css
@@ -1448,7 +1469,8 @@
             <section>3.RGB颜色百分比测试</section>
             <div class="box3"></div>
             ```
-        - ![html_result_03](imgs/sizeunit/color/html_result_03.png)
+        - 页面结果
+            - ![html_result_03](imgs/sizeunit/color/html_result_03.png)
 
     - 4. 16进制RGB值 测试
         - css
@@ -1464,7 +1486,8 @@
             <section>4. 16进制RGB值 测试</section>
             <div class="box4"></div>
             ```
-        - ![html_result_04](imgs/sizeunit/color/html_result_04.png)
+        - 页面结果
+            - ![html_result_04](imgs/sizeunit/color/html_result_04.png)
 
 
     - RGBA测试
@@ -1487,7 +1510,8 @@
             <div class="box5"></div>
             <div class="box6"></div>
             ```
-        - ![html_result_05](imgs/sizeunit/color/html_result_05.png)
+        - 页面结果
+            - ![html_result_05](imgs/sizeunit/color/html_result_05.png)
 
     - HSL值 测试
         - css
@@ -1503,7 +1527,8 @@
             <section>6. HSL值 测试</section>
             <div class="box7"></div>
             ```
-        - ![html_result_06](imgs/sizeunit/color/html_result_06.png)
+        - 页面结果
+            - ![html_result_06](imgs/sizeunit/color/html_result_06.png)
 
 # 文档流
 ## 文档流简介
@@ -1516,7 +1541,7 @@
     - 不再文档流中，即脱离文档流
         - 使用[浮动](#浮动)属性后，元素将脱离文档流
 
-## 元素在文档流中的特点
+## 元素在文档流中
 [top](#catalog)
 - **文档流中的元素需要严格区分块元素和行内元素**
 - 块元素
@@ -1531,11 +1556,13 @@
     - 多个行内元素在页面中从左到右水平排列，如果一行无法容纳多个行内元素，则自动切换到第二行显示
     - **行内元素的宽和高默认都是该元素内容的宽和高**
 
-## 元素脱离文档流之后的特点
+## 元素脱离文档流
 [top](#catalog)
 - **块元素和行内元素脱离文档流之后，就不划分块元素和行内元素了，两者的属性相同**
 
-- 通过[元素浮动](#元素浮动)来使元素脱离文档流
+- 元素脱离文档流的方法
+    1. [元素浮动](#元素浮动)
+    2. [绝对定位](#绝对定位)
 
 - 元素脱离文档流之后的特点
     - 元素不会独占一行
@@ -1577,7 +1604,8 @@
             <div class="box101">123456</div>
             <div class="box103"></div>
             ```
-        - ![](?????)
+        - 页面结果
+            - ![](?????)
 
 
 # 盒子模型
@@ -2269,7 +2297,8 @@
                 <div class="inner1">outer1.inner1 02</div>
             </div>
             ```
-        - [](????)
+        - 页面结果
+            - [](????)
 
     - 父元素设置高度
         - css
@@ -2298,7 +2327,8 @@
                 <div class="inner2">outer2.inner2 02</div>
             </div>
             ```
-        - [](????)
+        - 页面结果
+            - [](????)
 
     - 子元素没有设置高度
         - css
@@ -2323,7 +2353,8 @@
                 <div class="inner3"></div>
             </div>
             ```
-        - [](????)
+        - 页面结果
+            - [](????)
 
     - 子元素的高度 > 父元素的高度
         - css
@@ -2349,7 +2380,8 @@
                 <div class="inner4">outer4.inner4</div>
             </div>
             ```
-        - [](????)
+        - 页面结果
+            - [](????)
 
     - 处理子元素溢出，`overflow=hidden`
         - css
@@ -2375,7 +2407,8 @@
                 <div class="inner5">outer5.inner5</div>
             </div>
             ```
-        - [](????)
+        - 页面结果
+            - [](????)
 
     - 处理子元素溢出，`overflow=scroll`
         - css
@@ -2401,7 +2434,8 @@
                 <div class="inner6">outer6.inner6</div>
             </div>
             ```
-        - [](????)
+        - 页面结果
+            - [](????)
 
     - 处理子元素溢出，`overflow=auto`
         - css
@@ -2427,7 +2461,8 @@
                 <div class="inner7">outer7.inner7</div>
             </div>
             ```
-        - [](????)
+        - 页面结果
+            - [](????)
 
 
 
@@ -2448,9 +2483,9 @@
 
 - 父子元素
     - 父子元素在垂直方向上相邻的外边距属性：`margin-top`
-    - **子元素的`margin-top`会传递给父元素，所以父子元素间的外边距折叠会影响整个页面的布局，必须要进行处理**
+    - 子元素的**margin-top**会传递给父元素，所以父子元素间的外边距折叠会影响整个页面的布局，**必须要进行处理**
     - 为什么子元素的`margin-top`会传递给父元素？
-        - 父元素中没有设置边框来隔离，导致了`margin-top`的传递
+        - 父元素中**没有设置边框**来隔离，导致了`margin-top`的传递
     - 解决方式
         - 方式1：子元素不使用`margin-top`，同时调整父元素
             - 子元素
@@ -2465,6 +2500,8 @@
                 - `height`减去`1px`，维持整体的布局不变
             - 子元素：
                 - `margin-top`减去`1px`，抵消父元素增加`1px`边框导致的子元素布局下移
+        - 方式3：
+            - 参考： [自定义类选择器解决高度塌陷和父子元素间的外边距折叠（强烈推荐使用）](#解决方式3-自定义类选择器解决高度塌陷和父子元素间的外边距折叠)
 
 - 示例
     - 参考代码
@@ -2706,7 +2743,8 @@
             <div class="box2"></div>
             <br>
             ```
-        - [](?????)
+        - 页面结果
+            - [](?????)
 
 
 ## 盒子的轮廓
@@ -2768,7 +2806,8 @@
             <div class="box2"></div>
             <span>test string2</span>
             ```
-        - [](?????)
+        - 页面结果
+            - [](?????)
 
     - outline的使用场景：当鼠标移入时，为元素添加边框
         - css
@@ -2823,7 +2862,8 @@
             <section>1. 阴影在盒子的正下方</section>
             <div class="box1"></div>
             ```
-        - ![](?????)
+        - 页面结果
+            - ![](?????)
 
     - 阴影偏移-正数，阴影向右/下偏移
         - css
@@ -2840,7 +2880,8 @@
             <section>2. 阴影偏移-正数，阴影向右/下偏移</section>
             <div class="box2"></div>
             ```
-        - ![](?????)
+        - 页面结果
+            - ![](?????)
 
     - 阴影偏移-负数，阴影向左/上偏移
         - css
@@ -2858,7 +2899,8 @@
             <br>
             <div class="box3"></div>
             ```
-        - ![](?????)
+        - 页面结果
+            - ![](?????)
 
     - 阴影的模糊半径
         - css
@@ -2875,7 +2917,8 @@
             <section>4. 阴影的模糊半径</section>
             <div class="box4"></div>
             ```
-        - ![](?????)
+        - 页面结果
+            - ![](?????)
 
     - 使用0偏移量和阴影的模糊半径来制造羽化效果
         - css
@@ -2893,7 +2936,8 @@
             <br>
             <div class="box5"></div>
             ```
-        - ![](?????)
+        - 页面结果
+            - ![](?????)
     
 
 ## 盒子的圆角
@@ -2939,7 +2983,8 @@
             <section>1. 使用单角属性来设置正圆圆角</section>
             <div class="box1"></div>
             ```
-        - ![](?????)
+        - 页面结果
+            - ![](?????)
 
     - 使用单角属性来设置椭圆圆角
         - css
@@ -2957,7 +3002,8 @@
             <section>2. 使用单角属性来设置椭圆圆角</section>
             <div class="box2"></div>
             ```
-        - ![](?????)
+        - 页面结果
+            - ![](?????)
 
     - 使用统一属性，给4个角设置相同的半径
         - css
@@ -2975,7 +3021,8 @@
             <section>3. 使用统一属性，给4个角设置相同的半径</section>
             <div class="box3"></div>
             ```
-        - ![](?????)
+        - 页面结果
+            - ![](?????)
 
     - 使用统一属性，分别设置：左上 右上 右下 左下
         - css
@@ -2993,7 +3040,8 @@
             <section>4. 使用统一属性，分别设置：左上 右上 右下 左下</section>
             <div class="box4"></div>
             ```
-        - ![](?????)
+        - 页面结果
+            - ![](?????)
 
     - 使用统一属性，分别设置：左上 右上/左下 右下
         - css
@@ -3011,7 +3059,8 @@
             <section>5. 使用统一属性，分别设置：左上 右上/左下 右下</section>
             <div class="box5"></div>
             ```
-        - ![](?????)
+        - 页面结果
+            - ![](?????)
 
     - 使用统一属性，分别设置：左上/右下 右上/左下
         - css
@@ -3029,7 +3078,8 @@
             <section>6. 使用统一属性，分别设置：左上/右下 右上/左下</section>
             <div class="box6"></div>
             ```
-        - ![](?????)
+        - 页面结果
+            - ![](?????)
 
     - 在统一属性设置椭圆
         - css
@@ -3047,7 +3097,8 @@
             <section>7. 在统一属性设置椭圆</section>
             <div class="box7"></div>
             ```
-        - ![](?????)
+        - 页面结果
+            - ![](?????)
 
     - 通过：border-radius: 50%，将盒子设置为50%
         - css
@@ -3065,7 +3116,8 @@
             <section>8. 通过：border-radius: 50%，将盒子设置为50%</section>
             <div class="box8"></div>
             ```
-        - ![](?????)
+        - 页面结果
+            - ![](?????)
 
 ## 文字水平垂直居中
 [top](#catalog)
@@ -3323,6 +3375,9 @@
             <span class="s1"></span>
             <div class="box1"></div>
             ```
+        
+        - 页面结果
+            - [](?????)
 
 # 元素浮动
 ## 元素浮动基本知识
@@ -3374,8 +3429,6 @@
     - 如果浮动元素后面是仍然是文档流中的元素，则该元素会接在浮动元素的后边
     - 文字环绕：浮动元素不会覆盖文字，**文字会自动环绕**在浮动元素周围
     
-
-
 - **通过浮动元素可以进行水平布局**
 
 - 示例
@@ -3402,7 +3455,8 @@
             <div class="box101"></div>
             <div class="box102"></div>
             ```
-        - ![](?????)
+        - 页面结果
+            - ![](?????)
 
     - 多个使用float属性的元素横向排列
         - css
@@ -3433,7 +3487,8 @@
             <div class="box302"></div>
             <div class="box303"></div>
             ```
-        - ![](?????)
+        - 页面结果
+            - ![](?????)
 
     - 默认情况下，浮动元素不会从父元素中移出
         - css
@@ -3465,7 +3520,8 @@
                 <div class="box403"></div>
             </div>
             ```
-        - ![](?????)
+        - 页面结果
+            - ![](?????)
 
     - 浮动不会覆盖文字--文字自动环绕效果
         - css
@@ -3484,7 +3540,8 @@
             <p>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Cumque adipisci doloribus praesentium similique dignissimos eaque velit accusantium nisi, dolores facilis dolorem inventore non, eos placeat. Molestias rerum odio esse culpa.</p>
             <br>
             ```
-        - ![](?????)
+        - 页面结果
+            - ![](?????)
 
 ## 元素浮动示例-导航条
 [top](#catalog)
@@ -3559,19 +3616,22 @@
         - ![](???)
 
 
-# BFC块级格式化环境
-## 浮动产生的问题
+# 解决浮造成的问题-高度塌陷
+## 高度塌陷的分析
 [top](#catalog)
-- 使用浮动后会产生的问题
-    - 元素间的遮盖、外部块元素的`height`和`width`变为0
-        - 当块元素没有设定`height`和`width`的时候，该块元素的宽和高等于子元素的块和高的总和。如果将子元素全部设置元素浮动，会导致块元素`content`区的`height`和`width`变为0，后续的其他块元素向上移动，并且会被浮动的元素盖住，破坏页面布局
+- 高度塌陷：父元素的`height`和`width`变为0
+    - 当块元素没有设定`height`和`width`的时候，该块元素的宽和高等于子元素的块和高的总和。如果将子元素全部设置元素浮动，会导致块元素`content`区的`height`和`width`变为0，后续的其他块元素向上移动，并且会被浮动的元素盖住，破坏页面布局
         
-- 为什么会产生元素遮盖问题
-    - 两点前提
+- 因为高度塌陷而产生的另一个问题：元素间的遮盖        
+    - 产生元素遮盖的两点前提
         - 浮动元素脱离的文档流，但是仍外无法脱离父元素；
         - 父元素中因为全部是浮动元素，`height`和`width`变为0导致后续元素上移
-    - 原因：浮动元素、浮动元素的父元素、后续的块元素仍然在同一个**布局空间**。
+    - 产生的原因：浮动元素、浮动元素的父元素、后续的块元素仍然在同一个**布局空间**。
         - 由于浮动元素无法脱离父元素，会保持在父元素的范围内，遮挡后面自动上移的其他元素
+
+- 可以解决高度塌陷的几种方法
+    - 使用BFC（块级格式化环境）
+    - 设置clear属性
 
 - 示例
     - 代码路径：
@@ -3635,18 +3695,20 @@
         - 页面结果
             - ![](?????)
 
-## BFC元素的特点
+
+## 解决方式1-BFC块级格式化环境
+### BFC元素的特点
 [top](#catalog)
 - BFC(Block Formatting Context)块级格式化环境
-    - BFC是CSS中的一个隐含属性
-    - 可以为一个元素开启BFC
-    - <label stlye="color:red">开启BFC的元素会处于一个独立的布局空间，与文档流所处的布局空间相隔离</label>
-    - 开启BFC之后，元素的特点
-        - 开启BFC的元素不会被浮动元素覆盖
-        - 开启BFC的子元素和它的父元素的外边距不会重叠
-        - 开启BFC的元素可以包含浮动元素
+- BFC是CSS中的一个隐含属性
+- 可以为一个元素开启BFC
+- <label stlye="color:red">开启BFC的元素会处于一个独立的布局空间，与文档流所处的布局空间相隔离</label>
+- 开启BFC之后，元素的特点
+    - 开启BFC的元素不会被浮动元素覆盖
+    - 开启BFC的子元素和它的父元素的外边距不会重叠
+    - 开启BFC的元素可以包含浮动元素
 
-## 开启BFC
+### 开启BFC
 [top](#catalog)
 - **BFC都是间接开启的，所以会产生副作用，使用时需要使用副作用最小的**
 - 几种开启的特殊方法
@@ -3659,6 +3721,8 @@
             - 行内块元素本身的特性不适合于页面布局 ??????
             - 父元素元素的宽度没有了
     3. 子元素设置浮动，父元素使用`overflow`并设置一个非`visible`的属性值（[处理子元素的溢出](#处理子元素的溢出)）（**推荐**）
+
+    4. 其他方式： ??????????????????????????????
 
 - 最常用的方式
     - <label style="color:red">子元素设置浮动，父元素设置：`overflow:hidden`</label>
@@ -3689,8 +3753,8 @@
             </div>
             <div class="other"></div>
             ```
-        
-        - ![](?????)
+        - 页面结果
+            - ![](?????)
 
     - 开启BFC的特殊方法2：将元素设置为行内块元素
         - css
@@ -3716,8 +3780,8 @@
             </div>
             <div class="other"></div>
             ```
-        
-        - ![](?????)
+        - 页面结果
+            - ![](?????)
 
     - 开启BFC的特殊方法3：使用`overflow:hidden;`
         - css
@@ -3743,7 +3807,8 @@
             <div class="other"></div>
             ```
         
-        - ![](?????)
+        - 页面结果
+            - ![](?????)
     
     - 开启BFC的特殊方法3：使用`overflow:auto;`
         - css
@@ -3770,13 +3835,474 @@
             <div class="other"></div>
             ```
         
+        - 页面结果
+            - ![](?????)
+
+    - 开启BFC后，子元素和父元素的外边距不会重叠
+        - css
+            ```css
+            /* 7.1 不开启bfc，测试子元素的margin-top向父元素传递 */
+            .outter701{
+                width: 100px;
+                height: 100px;
+                background-color: burlywood;
+            }
+            .inner701{
+                width:50px;
+                height: 50px;
+                background-color: #bfa;
+                margin-top: 50px;
+            }
+
+            /* 7.2 开启BFC */
+            .outter702{
+                width: 100px;
+                height: 100px;
+                background-color: burlywood;
+                overflow:hidden;
+            }
+
+            .inner702{
+                float: left;
+                width:50px;
+                height: 50px;
+                background-color: #bfa;
+                margin-top:50px;
+            }
+            ```
+        
+        - html
+            ```html
+            <section>7. 开启BFC后，子元素和父元素的外边距不会重叠</section>
+            <section>7.1 不开启BFC，子元素的margin会传递个给父元素</section>
+            <div>
+                <div class="outter701">
+                    <div class="inner701"></div>
+                </div>
+                <div class="other"></div>
+            </div>
+            <br>
+
+            <section>7.2 开启BFC</section>
+            <div class="outter702">
+                <div class="inner702"></div>
+            </div>
+            <div class="other"></div>
+            <br>
+            ```
+        - 页面结果
+            - ![](?????)
+
+
+## 解决方式2-clear属性
+### clear属性简介
+[top](#catalog)
+- `clear`属性
+    - 作用：清楚浮动元素对其他元素产生的影响
+    - 可选值
+        - `left`：清除`float:left`元素对当前元素的影响
+        - `right`：清除`float:right`元素对当前元素的影响
+        - `both` : 清除`left`、`right`中较大的那一侧
+    - 原理
+        - 设置该属性之后，浏览器会自动为该元素添加`margin`，使该元素避免其他浮动元素的干扰。**但是这一点无法在控制台内进行观察**
+
+- 示例
+    - 参考代码
+        - [/frontend/css/base/src/heightCollapse/clear.html](/frontend/css/base/src/heightCollapse/clear.html)
+
+    - 使用 clear:left 清除 float:left浮动元素的影响
+        - css
+            ```css
+            .box0201{
+                width:50px;
+                height: 50px;
+                background-color: #bfc;
+                float:left;
+            }
+
+            .box0202{
+                width: 80px;
+                height: 80px;
+                background-color: orange;
+                clear:left;
+            }
+            ```
+        
+        - html
+            ```html
+            <section>2. 使用 clear:left 清除 float:left浮动元素的影响</section>
+            <div class="box0201">box0201</div>
+            <div class="box0202">box0202</div>
+            ```
+
+        - 页面结果
+            - ![](?????)
+
+    - 使用 clear:right 清除 float:right 浮动元素的影响
+        - css
+            ```css
+            .outter3{
+                width:250px;
+                background-color: rgb(184, 184, 184);
+                overflow: hidden;
+            }
+            .box0301{
+                width:50px;
+                height: 50px;
+                background-color: #bfc;
+                float:right;
+            }
+
+            .box0302{
+                width: 80px;
+                height: 80px;
+                background-color: orange;
+                clear:right;
+            }
+            ```
+        
+        - html
+            ```html
+            <section>3. 使用 clear:right 清除 float:right 浮动元素的影响</section>
+            <div class="outter3">
+                <div class="box0301">box0301</div>
+                <div class="box0302">box0302</div>
+            </div>
+            ```
+
+        - 页面结果
+            - ![](?????)
+
+    - 使用 clear：both 清楚 left和right中较大的那一侧
+        - css
+            ```css
+            .outter4{
+                width:250px;
+                background-color: rgb(184, 184, 184);
+                overflow: hidden;
+            }
+
+            .box0401{
+                width:50px;
+                height: 50px;
+                background-color: #bfc;
+                float:left;
+            }
+
+            .box0402{
+                width:100px;
+                height: 100px;
+                background-color: rgb(82, 149, 255);
+                float:right;
+            }
+
+            .box0403{
+                width: 80px;
+                height: 80px;
+                background-color: orange;
+                clear:right;
+            }
+            ```
+        
+        - html
+            ```html
+            <section>4. 使用 clear：both 清楚 left和right中较大的那一侧</section>
+            <div class="outter4">
+                <div class="box0401">box0401</div>
+                <div class="box0402">box0402</div>
+                <div class="box0403">box0403</div>
+            </div>
+            ```
+        - 页面结果
+            - ![](?????)
+
+### 使用clear解决高度塌陷
+[top](#catalog)
+- 解决方式1：添加clear子元素 (**不推荐**)
+    - 原理
+        - 父元素和浮动子元素的设置不变
+        - 在浮动子元素后边**添加一个新的子元素**，并使用`clear`属性
+        - 添加新子元素后，父元素和浮动子元素的样式保持不变。新子元素会因为`clear`属性而产生`margin-top`将整个父元素的高度撑开，并且高度等于浮动元素的高度
+    - 这种方式的问题
+        - 正确的解决问题的宗旨：高度塌陷本身是表示上的问题，即CSS自身导致的问题，应该由CSS本身来解决
+        - 方式1通过添加子元素的方式，即通过html在**结构上的变化来处理表示上的问题**，这种方式虽然可以解决高度塌陷的问题，但是并不是很好
+
+    - 参考示例
+        - 参考代码
+            - [/frontend/css/base/src/heightCollapse/improveProblem.html](/frontend/css/base/src/heightCollapse/improveProblem.html)
+
+        - css
+            ```css
+            .outter1{
+                border: black 5px solid;
+            }
+
+            .inner101{
+                width:50px;
+                height: 50px;
+                background-color: #bfa;
+                float: left;
+            }
+
+            /* 清除浮动元素的影响 */
+            .inner102{
+                clear:left;
+            }
+            ```
+
+        - html
+            ```html
+            <section>1. 使用clear解决高度塌陷，方式1：添加clear子元素</section>
+            <div class="outter1">
+                <div class="inner101"></div>
+                <div class="inner102"></div>
+            </div>
+            ```
+        - 页面结果
+            - ![](?????)
+
+
+- 解决方式2：通过伪元素`after`来隔离(**推荐使用**)
+    - 基本css代码
+        ```css
+        .父元素类选择器::after{
+            /* 1. 通过clear属性清除浮动元素的影响 */
+            clear:both;
+            /* 2. 设置空content使伪元素生效 */
+            content: "";
+            /* 3. 伪元素本身是行内元素，通过display属性转换成块元素 */
+            display:block;
+        }
+        ```
+    - 原理
+        - 与方式1类似，但是完全通过css自身来解决问题，不借助html
+        - 在**父元素**的伪元素`::after`中添加`clear`属性来自动适应浮动子元素
+        - 通过`content:""`来是伪元素生效，同时
+        - 由于伪元素都是行内元素，所以需要使用`display:block`将伪元素转换为块元素
+            - 使用`display:table`也可以生效
+    - 参考示例
+        - 参考代码
+            - [/frontend/css/base/src/heightCollapse/improveProblem.html](/frontend/css/base/src/heightCollapse/improveProblem.html)
+
+        - css
+            ```css
+            .outter2{
+                border: black 5px solid;
+            }
+
+            .inner2{
+                width:50px;
+                height: 50px;
+                background-color: orange;
+                float: left;
+            }
+            
+            .outter2::after{
+                /* 1. 通过clear属性清除浮动元素的影响 */
+                clear:both;
+                /* 2. 设置空content使伪元素生效 */
+                content: "";
+                /* 3. 伪元素本身是行内元素，通过display属性转换成块元素 */
+                display:block;
+            }
+            ```
+        
+        - html
+            ```html
+            <section>2. 使用clear解决高度塌陷，方式2：通过伪元素来隔离</section>
+            <div class="outter2">
+                <div class="inner2"></div>
+            </div>
+            ```
+        - 页面结果
+            - ![](?????)
+
+## 解决方式3-自定义类选择器解决高度塌陷和父子元素间的外边距折叠
+- 基本css代码
+    ```css
+    .clearfix::before,
+    .clearfix::after{
+        /* 1. 通过clear属性清除浮动元素的影响 */
+        clear:both;
+        /* 2. 设置空content使伪元素生效 */
+        content: "";
+        /* 3. 分割元素，并且不会占用像素位置；同时解决 高度塌陷和父子元素间的外边距折叠 */
+        display:table;
+    }
+    ```
+- 原理
+    - 自定义类选择器，同时设置伪元素：`::before`、`::after`，在css层面解决问题
+    - 使用`clear:both`属性清除浮动元素的影响
+    - 使用`display: table`可以分割元素，并且不会占用像素位置
+        - `display: inline-block`也可以分割元素，但是会占用一些像素位置，影响页面布局
+        - `display: block`可以解决高度塌陷，但是无法解决父子元素外边距折叠的问题
+
+- 示例
+    - 参考代码
+        - [/frontend/css/base/src/heightCollapse/improveProblem.html](/frontend/css/base/src/heightCollapse/improveProblem.html)
+    
+    - css
+        ```css
+        /* 高度塌陷测试 */
+        .outter301{
+            border: black 5px solid;
+        }
+
+        .inner301{
+            width:50px;
+            height: 50px;
+            background-color:rgb(45, 136, 255);
+            float: left;
+        }
+
+        /* 父子元素间外边距折叠测试 */
+        .outter302{
+            width: 100px;
+            height: 100px;
+            background-color:#bfa;
+        }
+
+        .inner302{
+            width: 50px;
+            height: 50px;
+            background-color: orange;
+            margin-top: 50px;
+        }
+
+        /* 自定义类选择器 */
+        .clearfix::before,
+        .clearfix::after{
+            /* 1. 通过clear属性清除浮动元素的影响 */
+            clear:both;
+            /* 2. 设置空content使伪元素生效 */
+            content: "";
+            /* 3. 分割元素，并且不会占用像素位置；同时解决 高度塌陷和父子元素间的外边距折叠 */
+            display:table;
+        }
+        ```
+    
+    - html
+        ```html
+        <section>3. 自定义样式解决高度塌陷和父子元素间的外边距折叠</section>
+        <section>3.1. 解决高度塌陷</section>
+        <div class="outter301 clearfix">
+            <div class="inner301"></div><br>
+            <div class="inner301"></div>
+        </div>
+        <br>
+        
+        <section>3.2. 解决高度塌陷</section>
+        <div class="outter302 clearfix">
+            <div class="inner302"></div>
+        </div>
+        ```
+
+    - 页面结果
         - ![](?????)
 
+# 定位
+## 定位简介
+[top](#catalog)
+- 通过定位可以将元素放到页面的任意位置
+- 属性`position`
+    - `static`表示没有开启定位，其他所有非`static`属性都表示开启定位
+    - 可选值
 
+        |可选值|描述|
+        |-|-|
+        |static|默认值，元素**没有开启定位**。写不写都没有区别|
+        |relative|相对定位|
+        |absolute|绝对定位|
+        |fixed|固定定位|
+        |sticky|粘滞定位|
+        |inherit|?????|
+        |initial|?????|
+        |unset|?????|
+        |-ms-page|?????|
+        |-webkit-sticky|?????|
+
+- 偏移量(offset)
+    - 开启定位后，可以通过offset来移动元素（类似于`margin`，可以移动元素）
+    - 偏移量只会影响当前元素自身，不会影响其他元素（与`margin`不同，`margin`会影响其他元素）
+    - 4个方向的偏移量属性
+        - `top` : 定位元素到定位位置上边的距离
+        - `bottom` : 定位元素到定位位置下边的距离
+        - `left` : 定位元素到定位位置左边的距离
+        - `right` : 定位元素到定位位置右边的距离
+    - 偏移量的定位位置会根据`position`的属性值变化
+
+## 相对定位
+[top](#catalog)
+- `position:relative`开启相对定位
+- **偏移量的定位位置：元素在文档流中的位置,即相对于自己的位置**
+- 相对定位的特点
+    - 开启相对定位后，如果没有设置偏移量，则元素不会发生任何变化
+    - 相对定位不会使元素脱离文档流
+    - 相对定位会提升元素的层级
+        - 层级 > float浮动 > 文档流
+        - 使用后，会产生元素遮盖
+    - 相对定位不会改变元素的性质
+        - 块元素仍然是块元素，行内元素仍然是行内元素
+- 示例
+    - 参考代码
+        - [/frontend/css/base/src/position/relative.html](/frontend/css/base/src/position/relative.html)
+
+    - css
+        ```css
+        .box1{
+            width: 50px;
+            height: 50px;
+            background-color: #bfa;
+        }
+        .box2{
+            width: 50px;
+            height: 50px;
+            background-color: orange;
+            /* 使用相对定位移动元素 */
+            position:relative;
+            top:-50px;
+            left:50px;
+        }
+        .box3{
+            width: 50px;
+            height: 50px;
+            background-color: yellow;
+        }
+        ```
+
+    - html
+        ```html
+        <div class="box1">1</div>
+        <div class="box2">2</div>
+        <div class="box3">3</div>
+        ```
+    
+    - 页面结果
+        - ![](????? 标记相对位置)
+
+## 绝对定位
+[top](#catalog)
+- `position:absolute`开启绝对定位
+- **偏移量的定位位置：元素在文档流中的位置,即相对于自己的位置**
+- 绝对定位的特点
+    - 开启绝对定位后，如果**没有设置偏移量**，则元素的位置不会发生任何变化
+    - 绝对定位会使用元素脱离文档流
+    - 绝对定位会改变元素的性质（因为脱离了文档流）
+        - 块元素的宽高消失
+    - 绝对定位会提升元素的层级
+绝对定位元素是相对于其包含块定位的
+
+包含块
+    - 一般情况包含块是离当前元素最近的祖先块元素
+
+- 开启绝对定位后，如果**没有设置偏移量**，则元素的位置不会发生任何变化
+- 开启绝对定位后，如果偏移量=0，则元素的位置会移动到页面的左上角
+    - 无论元素是`<html>`下的元素，还是多层嵌套块元素中的一个子元素，都会移动到页面的左上角
+-  在多层嵌套的块元素中，开启相对定位，开启绝对定位，设置：偏移量=0。所有祖先元素全部开启`position:relative`，绝对定位元素会移动到
 
 # 网页布局
-[top](#catalog)
 ## 基本的页面布局思路
+[top](#catalog)
 - 基本布局思路
     - 垂直排列：堆砌块元素
     - 水平排列：设置浮动`float`
@@ -3899,6 +4425,21 @@
     |table|将元素设置为表格元素||
     |none|元素不再页面中显示。|可以用来隐藏元素，在需要的时候，通过页面控制再显示出来|
 
+- 垂直方向上的布局控制可以通过 margin, top/bottom(偏移量)控制，但是一般只会使用其中一种
+- 水平方向上的布局控制可以通过 margin, left/right(偏移量)控制，但是一般只会使用其中一种
+
+- 自定义类选择器解决高度塌陷和父子元素间的外边距折叠
+    ```css
+    .clearfix::before,
+    .clearfix::after{
+        /* 1. 通过clear属性清除浮动元素的影响 */
+        clear:both;
+        /* 2. 设置空content使伪元素生效 */
+        content: "";
+        /* 3. 分割元素，并且不会占用像素位置；同时解决 高度塌陷和父子元素间的外边距折叠 */
+        display:table;
+    }
+    ```
 
 # 练习
 [top](#catalog)
