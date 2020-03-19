@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>absolute 02</title>
+    <style>
+        /* 1. auto优先级测试：开启绝对定位，width、margin、偏移量全部设为auto */
+        .outter01{
+            width: 100px;
+            height: 100px;
+            background-color: #bfa;
+            position: relative;
+        }
+
+        .inner01{
+            width: auto;
+            height: 50px;
+            background-color: orange;
+            position:absolute;
+
+            margin-left:auto;
+            margin-right:auto;
+        }
+
+        /* 2. 水平等式：开启绝对定位，通过margin:auto、left:0、right:0来设置水平居中效果 */
+        .outter02{
+            width: 100px;
+            height: 100px;
+            background-color: #bfa;
+            position: relative;
+        }
+        .inner02{
+            width: 50px;
+            height: 50px;
+            background-color: #47e;
+
+            margin-left: auto;
+            margin-right: auto;
+
+            position:absolute;
+            left:0px;
+            right:0px;
+        }
+
+        /* 3. 垂直等式：开启绝对定位，通过margin:auto、top:0、bottom:0来设置垂直居中效果 */
+        .outter03{
+            width: 100px;
+            height: 100px;
+            background-color: #bfa;
+            position: relative;
+        }
+
+        .inner03{
+            width: 50px;
+            height: 50px;
+            background-color: orange;
+
+            margin-top: auto;
+            margin-bottom: auto;
+
+            position:absolute;
+            top:0px;
+            bottom:0px;
+        }
+
+        /* 4. 开启绝对定位，水平垂直居中 */
+        .outter04{
+            width:100px;
+            height: 100px;
+            background-color: #bfa;
+            position:relative;
+        }
+        
+        .inner04{
+            width: 50px;
+            height:50px;
+            background-color:#47e;
+            position: absolute;
+            margin:auto;
+            top:0px;
+            bottom:0px;
+            left:0px;
+            right:0px;
+        }
+    </style>
+</head>
+    <section>1. auto优先级测试：开启绝对定位，width、margin、偏移量全部设为auto</section>
+    <div class="outter01">
+        <div class="inner01"></div>
+    </div>
+    <br>
+
+    <section>2. 水平等式：开启绝对定位，通过margin:auto、left:0、right:0来设置水平居中效果</section>
+    <div class="outter02">
+        <div class="inner02"></div>
+    </div>
+    <br>
+
+    <section>3. 垂直等式：开启绝对定位，通过margin:auto、top:0、bottom:0来设置垂直居中效果</section>
+    <div class="outter03">
+        <div class="inner03"></div>
+    </div>
+    <br>
+
+    <section>4. 开启绝对定位，水平垂直居中</section>
+    <div class="outter04">
+        <div class="inner04"></div>
+    </div>
+    <br>
+<body>
+    
+</body>
+</html>
