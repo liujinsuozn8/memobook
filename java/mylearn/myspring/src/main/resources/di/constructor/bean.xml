@@ -4,19 +4,19 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
     <!--使用数据类型来实例化对象-->
-    <bean id="hello1" class="com.ljs.learn.config.constructor.Hello">
+    <bean id="hello1" class="com.ljs.learn.di.constructor.Hello">
         <constructor-arg type="java.lang.String" value="TestHello01"/>
         <constructor-arg type="java.lang.String" value="TestAddress01"/>
     </bean>
 
     <!--使用参数索引来实例化对象-->
-    <bean id="hello2" class="com.ljs.learn.config.constructor.Hello">
+    <bean id="hello2" class="com.ljs.learn.di.constructor.Hello">
         <constructor-arg index="0" value="TestHello02"/>
         <constructor-arg index="1" value="TestAddress02"/>
     </bean>
 
     <!--通过有参构造器中的参数名来实例化对象-->
-    <bean id="hello3" class="com.ljs.learn.config.constructor.Hello">
+    <bean id="hello3" class="com.ljs.learn.di.constructor.Hello">
         <constructor-arg name="n" value="TestHello03"/>
         <constructor-arg name="a" value="TestAddress03"/>
     </bean>

@@ -22,19 +22,24 @@
 - [Spring配置](#Spring配置)
     - [配置文件的基本内容](#配置文件的基本内容)
     - [通过配置文件获取bean的方法](#通过配置文件获取bean的方法)
-    - [配置构造器注入](#配置构造器注入)
-    - [配置bean的别名](#配置bean的别名)
-    - [Bean的配置](#Bean的配置)
     - [import](#import)
+    - [Bean的配置方法](#Bean的配置方法)
+    - [配置bean的别名](#配置bean的别名)
 
-- [常用的复杂类型配置](#常用的复杂类型配置)
-- [命名空间注入](#命名空间注入)
-- [bean的作用域](#bean的作用域)
-- [自动装配的配置](#自动装配的配置)
 - [DI依赖注入](#di依赖注入)
+    - [依赖注入的几种方式](#依赖注入的几种方式)
+    - [构造器注入](#构造器注入)
+    - [Set注入方式](#Set注入方式)
+    - [扩展注入方式](#扩展注入方式)
+    - [bean的作用域](#bean的作用域)
+
 - [bean的自动装配](#bean的自动装配)
     - [在xml中做自动装配](#在xml中做自动装配)
     - [使用注解实现自动装配](#使用注解实现自动装配)
+- [](#)
+- [](#)
+- [](#)
+- [](#)
 - [](#)
 
 # Spring简介
@@ -461,137 +466,40 @@
 - 通过配置文件从Spring中获取类时，通过Spring的上下文对象即bean的id来获取实例化对象
     `ApplicationContext context = new ClassPathXmlApplicationContext("services.xml", "daos.xml");`
 
+- 获取方式
+    - 通过id获取bean：`Student student = (Student) context.getBean("student");`
+    - 通过id和类型获取bean：`Student student01 = context.getBean("student01", Student.class);`
+
 - `ClassPathXmlApplicationContext`的继承关系
     - ![ClassPathXmlApplicationContext的继承关系](./imgs/ClassPathXmlApplicationContext_Diagrams.png)
 
-## 配置构造器注入
+## import
 [top](#catalog)
-- **在配置文件加载时，容器中管理的对象就已经被初始化了**
-- 默认使用无参构造器创建对象
-- 使用有参数构造器
-    1. 使用数据类型
-        - 通过`type="属性"`显示指定构造参数的类型，容器可以使用简单类型的类型匹配
-        - **不推荐使用，不方便处理多个类型相同参数的构造函数**
-        ```xml
-        <bean id="exampleBean" class="examples.ExampleBean">
-            <constructor-arg type="int" value="7500000"/>
-            <constructor-arg type="java.lang.String" value="42"/>
-        </bean>
-        ```
-    2. 使用构造函数的参数下标
-        - 通过`index="XX"`来明确指定构造参数的索引
-        - 这种方式，可以解决多个简单值的歧义性
-        ```xml
-        <bean id="exampleBean" class="examples.ExampleBean">
-            <constructor-arg index="0" value="7500000"/>
-            <constructor-arg index="1" value="42"/>
-        </bean>
-        ```
-    4. 直接使用参数名
-        ```xml
-        <bean id="user" class="com.ljs.pojo.User">
-            <constructor-arg name="name" value="MyName"></constructor-arg>
-        </bean>
-        ```
-       
-- 示例
-    - Hello类
-        - 参考代码
-            - [/java/mylearn/myspring/src/main/java/com/ljs/learn/config/constructor/Hello.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/config/constructor/Hello.java)  
-        - 代码内容
-            ```java
-            public class Hello {
-                private String name;
-                private String address;
-            
-                public Hello(String n, String a) {
-                    this.name = n;
-                    this.address = a;
-            
-                    System.out.println(n + " Constructor");
-                }
-            
-                public String getName() {
-                    return name;
-                }
-            
-                public void setName(String name) {
-                    this.name = name;
-                }
-            
-                public String getAddress() {
-                    return address;
-                }
-            
-                public void setAddress(String address) {
-                    this.address = address;
-                }
-            
-                @Override
-                public String toString() {
-                    return "Hello{" +
-                            "name='" + name + '\'' +
-                            ", address='" + address + '\'' +
-                            '}';
-                }
-            }
-            ```
-    - 配置文件
-        - 文件路径
-            - [/java/mylearn/myspring/src/main/resources/config/constructor/bean.xml](/java/mylearn/myspring/src/main/resources/config/constructor/bean.xml)
-        - 配置内容
-            ```xml
-            <?xml version="1.0" encoding="UTF-8"?>
-            <beans xmlns="http://www.springframework.org/schema/beans"
-                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
-            
-                <!--使用数据类型来实例化对象-->
-                <bean id="hello1" class="com.ljs.learn.config.constructor.Hello">
-                    <constructor-arg type="java.lang.String" value="TestHello01"/>
-                    <constructor-arg type="java.lang.String" value="TestAddress01"/>
-                </bean>
-            
-                <!--使用参数索引来实例化对象-->
-                <bean id="hello2" class="com.ljs.learn.config.constructor.Hello">
-                    <constructor-arg index="0" value="TestHello02"/>
-                    <constructor-arg index="1" value="TestAddress02"/>
-                </bean>
-                
-                <!--通过有参构造器中的参数名来实例化对象-->
-                <bean id="hello3" class="com.ljs.learn.config.constructor.Hello">
-                    <constructor-arg name="n" value="TestHello03"/>
-                    <constructor-arg name="a" value="TestAddress03"/>
-                </bean>
-            </beans>
-            ```
+- 这个import，一般用于团队开发使用，可以将多个配置文件，导入合并一个总的配置文件：`applicationContext.xml`
+- 如果多人开发，不同的类注册在不同的bean中，可以利用import将所有人的beans.xml合并为一个总的。使用时直接使用总配置就可以了
+    - 合并时内容相同的会
+- 配置方法
+    ```xml
+    <import resource="其他配置文件的路径"></import>
+    ```
 
-    - 测试类
-        - 参考代码
-            - [/java/mylearn/myspring/src/test/java/com/ljs/learn/config/constructor/HelloTest.java](/java/mylearn/myspring/src/test/java/com/ljs/learn/config/constructor/HelloTest.java)   
-        - 测试内容
-            ```java
-            @Test
-            public void test(){
-                ApplicationContext context = new ClassPathXmlApplicationContext("config/constructor/bean.xml");
-                Hello hello01 = (Hello) context.getBean("hello1");
-                Hello hello02 = (Hello) context.getBean("hello2");
-                Hello hello03 = (Hello) context.getBean("hello3");
-        
-                System.out.println(hello01);
-                System.out.println(hello02);
-                System.out.println(hello03);
-            }
-            ```
-        - 测试结果
-            ```
-            TestHello01 Constructor
-            TestHello02 Constructor
-            TestHello03 Constructor
-            Hello{name='TestHello01', address='TestAddress01'}
-            Hello{name='TestHello02', address='TestAddress02'}
-            Hello{name='TestHello03', address='TestAddress03'}
-            ```
+????????
+
+## Bean的配置方法
+[top](#catalog)
+- 2个要素+别名
+- 要素1：`class`，表示类的全类名
+- 要素2：`id`，同一个`class`下，不同的`id`代表不同的实例对象
+    ```xml
+    <bean id="hello" class="com.ljs.pojo.Hello" name="h1, h2, h3">
+        <property name="str" value="Spring"></property>
+    </bean>
+    
+    <bean id="hello2" class="com.ljs.pojo.Hello">
+        <property name="str" value="Spring"></property>
+    </bean>
+    ```
+- 别名配置参考：[配置bean的别名](#配置bean的别名)
 
 ## 配置bean的别名
 [top](#catalog)
@@ -674,9 +582,151 @@
         - 测试内容
             ```java
             @Test
+            public void test01(){
+                ApplicationContext context = new ClassPathXmlApplicationContext("config/alias/bean.xml");
+                Hello hello = (Hello) context.getBean("hello");
+                Hello h1 = (Hello) context.getBean("h1");
+                Hello h2 = (Hello) context.getBean("h2");
+                Hello h3 = (Hello) context.getBean("h3");
+                Hello h4 = (Hello) context.getBean("h4");
+                Hello helloA = (Hello) context.getBean("helloA");
+                Hello helloB = (Hello) context.getBean("helloB");
+
+                System.out.println(hello);
+                System.out.println(h1);
+                System.out.println(h2);
+                System.out.println(h3);
+                System.out.println(h4);
+                System.out.println(helloA);
+                System.out.println(helloB);
+            }
+            ```
+
+# DI依赖注入
+[top](#catalog)
+## 依赖注入的几种方式
+- 依赖：bean对象的创建依赖于容器
+- 注入：bean对象中的所有属性，由容器来注入
+- 三种方式
+    - 构造器注入
+        - `bean`下使用`constructor-arg`标签，通过构造器参数名来注入
+        - 扩展注入方式中的c命名空间注入
+    - 通过set方式注入
+        - `bean`下通过`<property name="name" ....`来注入参数值
+        - 扩展注入方式中的p命名空间注入
+    - 第三方提供的其他注入方式
+
+## 构造器注入
+[top](#catalog)
+- `bean`下使用`constructor-arg`标签，通过构造器参数名来注入
+- **在配置文件加载时，容器中管理的对象就已经被初始化了**
+- 默认使用无参构造器创建对象
+- 使用有参数构造器
+    1. 使用数据类型
+        - 通过`type="属性"`显示指定构造参数的类型，容器可以使用简单类型的类型匹配
+        - **不推荐使用，不方便处理多个类型相同参数的构造函数**
+        ```xml
+        <bean id="exampleBean" class="examples.ExampleBean">
+            <constructor-arg type="int" value="7500000"/>
+            <constructor-arg type="java.lang.String" value="42"/>
+        </bean>
+        ```
+    2. 使用构造函数的参数下标
+        - 通过`index="XX"`来明确指定构造参数的索引
+        - 这种方式，可以解决多个简单值的歧义性
+        ```xml
+        <bean id="exampleBean" class="examples.ExampleBean">
+            <constructor-arg index="0" value="7500000"/>
+            <constructor-arg index="1" value="42"/>
+        </bean>
+        ```
+    4. 直接使用参数名
+        ```xml
+        <bean id="user" class="com.ljs.pojo.User">
+            <constructor-arg name="name" value="MyName"></constructor-arg>
+        </bean>
+        ```
+       
+- 示例
+    - Hello类
+        - 参考代码
+            - [/java/mylearn/myspring/src/main/java/com/ljs/learn/di/constructor/Hello.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/di/constructor/Hello.java)  
+        - 代码内容
+            ```java
+            public class Hello {
+                private String name;
+                private String address;
+            
+                public Hello(String n, String a) {
+                    this.name = n;
+                    this.address = a;
+            
+                    System.out.println(n + " Constructor");
+                }
+            
+                public String getName() {
+                    return name;
+                }
+            
+                public void setName(String name) {
+                    this.name = name;
+                }
+            
+                public String getAddress() {
+                    return address;
+                }
+            
+                public void setAddress(String address) {
+                    this.address = address;
+                }
+            
+                @Override
+                public String toString() {
+                    return "Hello{" +
+                            "name='" + name + '\'' +
+                            ", address='" + address + '\'' +
+                            '}';
+                }
+            }
+            ```
+    - 配置文件
+        - 文件路径
+            - [/java/mylearn/myspring/src/main/resources/di/constructor/bean.xml](/java/mylearn/myspring/src/main/resources/di/constructor/bean.xml)
+        - 配置内容
+            ```xml
+            <?xml version="1.0" encoding="UTF-8"?>
+            <beans xmlns="http://www.springframework.org/schema/beans"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+            
+                <!--使用数据类型来实例化对象-->
+                <bean id="hello1" class="com.ljs.learn.config.constructor.Hello">
+                    <constructor-arg type="java.lang.String" value="TestHello01"/>
+                    <constructor-arg type="java.lang.String" value="TestAddress01"/>
+                </bean>
+            
+                <!--使用参数索引来实例化对象-->
+                <bean id="hello2" class="com.ljs.learn.config.constructor.Hello">
+                    <constructor-arg index="0" value="TestHello02"/>
+                    <constructor-arg index="1" value="TestAddress02"/>
+                </bean>
+                
+                <!--通过有参构造器中的参数名来实例化对象-->
+                <bean id="hello3" class="com.ljs.learn.config.constructor.Hello">
+                    <constructor-arg name="n" value="TestHello03"/>
+                    <constructor-arg name="a" value="TestAddress03"/>
+                </bean>
+            </beans>
+            ```
+
+    - 测试类
+        - 参考代码
+            - [/java/mylearn/myspring/src/test/java/com/ljs/learn/di/constructor/HelloTest.java](/java/mylearn/myspring/src/test/java/com/ljs/learn/di/constructor/HelloTest.java)   
+        - 测试内容
+            ```java
+            @Test
             public void test(){
-                // 分别通过Id和别名来获取bean，检验这些对象是否是同一个对象
-                ApplicationContext context = new ClassPathXmlApplicationContext("config/constructor/bean.xml");
+                ApplicationContext context = new ClassPathXmlApplicationContext("di/constructor/bean.xml");
                 Hello hello01 = (Hello) context.getBean("hello1");
                 Hello hello02 = (Hello) context.getBean("hello2");
                 Hello hello03 = (Hello) context.getBean("hello3");
@@ -686,242 +736,297 @@
                 System.out.println(hello03);
             }
             ```
-      
-## Bean的配置
+        - 测试结果
+            ```
+            TestHello01 Constructor
+            TestHello02 Constructor
+            TestHello03 Constructor
+            Hello{name='TestHello01', address='TestAddress01'}
+            Hello{name='TestHello02', address='TestAddress02'}
+            Hello{name='TestHello03', address='TestAddress03'}
+            ```
+
+## Set注入方式
 [top](#catalog)
-- 2个要素+别名
-- 要素1：`class`，表示类的全类名
-- 要素2：`id`，同一个`class`下，不同的`id`代表不同的实例对象
-    ```xml
-    <bean id="hello" class="com.ljs.pojo.Hello" name="h1, h2, h3">
-        <property name="str" value="Spring"></property>
-    </bean>
-    
-    <bean id="hello2" class="com.ljs.pojo.Hello">
-        <property name="str" value="Spring"></property>
-    </bean>
-    ```
-- 别名配置参考：[配置bean的别名](#配置bean的别名)
-
-## import
-[top](#catalog)
-- 这个import，一般用于团队开发使用，可以将多个配置文件，导入合并一个总的配置文件：`applicationContext.xml`
-- 如果多人开发，不同的类注册在不同的bean中，可以利用import将所有人的beans.xml合并为一个总的。使用时直接使用总配置就可以了
-    - 合并时内容相同的会
-- 配置方法
-    ```xml
-    <import resource="其他配置文件的路径"></import>
-    ```
-
-????????
-
-
-
-## 常用的复杂类型配置
-[top](#catalog)
+- `bean`下通过`<property name="name" ....`来注入参数值
 - 类
-    ```java
-    public class Student {
-        private String name;
-        private Adderss adderss;
-        private String[] books;
-        private List<String> hobbies;
-        private Map<String, String> card;
-        private Set<String> games;
-        private String wifi;
-        private Properties info;
-        ...
-    }
-    ```
-- 配置
-    ```xml
-    <bean id="address" class="com.ljs.pojo.Adderss">
-        <property name="adderss" value="Test Address"></property>
-    </bean>
-    <bean id="student" class="com.ljs.pojo.Student">
-        <property name="name" value="MyName"></property>
+    - 参考代码
+        - [/java/mylearn/myspring/src/main/java/com/ljs/learn/di/complex/Student.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/di/complex/Student.java)
+    - 代码内容
+        ```java
+        public class Student {
+            private String name;
+            private Address address;
+            private String[] books;
+            private List<String> hobbys;
+            private Map<String, String> card;
+            private Set<String> games;
+            private String wife;
+            private Properties info;
 
-        <!--注入类Adderss-->
-        <property name="adderss" ref="address"></property>
+            ...
+        }
+        ```
+- 配置文件
+    - 文件路径
+        - [/java/mylearn/myspring/src/main/resources/di/complex/bean.xml](/java/mylearn/myspring/src/main/resources/di/complex/bean.xml)
+    - 配置内容
+        ```xml
+        <?xml version="1.0" encoding="UTF-8"?>
+        <beans xmlns="http://www.springframework.org/schema/beans"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-        <!--数组 -->
-        <property name="books">
-            <array>
-                <value>books-01</value>
-                <value>books-02</value>
-                <value>books-03</value>
-                <value>books-04</value>
-            </array>
-        </property>
+            <bean id="address" class="com.ljs.learn.config.complex.Address">
+                <property name="address" value="TestAddress"/>
+            </bean>
 
-        <!--list -->
-        <property name="hobbies">
-            <list>
-                <value>hobby01</value>
-                <value>hobby02</value>
-                <value>hobby03</value>
-            </list>
-        </property>
+            <bean id="student" class="com.ljs.learn.config.complex.Student">
+                <!--1. value注入-->
+                <property name="name" value="StudentTsetName"/>
+                <!--2. bean注入-->
+                <property name="address" ref="address"/>
+                <!--3. 注入数组-->
+                <property name="books">
+                    <array>
+                        <value>testBook01</value>
+                        <value>testBook02</value>
+                        <value>testBook03</value>
+                    </array>
+                </property>
 
-        <!--Map -->
-        <property name="card">
-            <map>
-                <entry key="id01" value="v1"></entry>
-                <entry key="id02" value="v2"></entry>
-                <entry key="id03" value="v3"></entry>
-            </map>
-        </property>
+                <!--4. 注入集合数组-->
+                <property name="hobbys">
+                    <list>
+                        <value>testHobby01</value>
+                        <value>testHobby02</value>
+                        <value>testHobby03</value>
+                    </list>
+                </property>
 
-        <!--Set -->
-        <property name="games">
-            <set>
-                <value>game01</value>
-                <value>game02</value>
-                <value>game03</value>
-            </set>
-        </property>
+                <!--5. 注入map-->
+                <property name="card">
+                    <map>
+                        <entry key="key01" value="value01"/>
+                        <entry key="key02" value="value02"/>
+                    </map>
+                </property>
 
-        <!--null -->
-        <property name="wifi">
-            <null></null>
-        </property>
+                <!--6. 注入set-->
+                <property name="games">
+                    <set>
+                        <value>game01</value>
+                        <value>game02</value>
+                        <value>game03</value>
+                    </set>
+                </property>
 
-        <!--Properties -->
-        <property name="info">
-            <props>
-                <prop key="p1">pv1</prop>
-                <prop key="p2">pv2</prop>
-                <prop key="p3">pv3</prop>
-            </props>
-        </property>
-    </bean>
-    ```
-## 命名空间注入
+                <!--7. 注入null-->
+                <property name="wife">
+                    <null/>
+                </property>
+
+                <!--8. 注入properties-->
+                <property name="info">
+                    <props>
+                        <prop key="driver">20200101</prop>
+                        <prop key="url">www.url</prop>
+                    </props>
+                </property>
+            </bean>
+        </beans>
+        ```
+- 测试内容
+    - 参考代码
+        - [/java/mylearn/myspring/src/test/java/com/ljs/learn/di/complex/StudentTest.java](/java/mylearn/myspring/src/test/java/com/ljs/learn/di/complex/StudentTest.java)
+    - 代码内容
+        ```java
+        @Test
+        public void test01(){
+            ApplicationContext context = new ClassPathXmlApplicationContext("di/complex/bean.xml");
+            Student student = (Student) context.getBean("student");
+            // System.out.println(student.getName());
+            System.out.println(student);
+        }
+        ```
+
+## 扩展注入方式
 [top](#catalog)
-- p命名空间注入
+- p命名空间注入：即在属性注入，
     - 参考:`https://docs.spring.io/spring/docs/5.2.0.RELEASE/spring-framework-reference/core.html#beans-p-namespace`
     - 是对类型的注入
     - xml头部添加：`xmlns:p="http://www.springframework.org/schema/p"`
-    - 注入方式
+    - 注入方式：`p:属性名`
         ```xml
         <bean id="user" class="com.ljs.pojo.User" p:name="Myname" p:age="18"></bean>
         ```
-- c命名空间
+- c命名空间：即构造器注入
     - 参考:`https://docs.spring.io/spring/docs/5.2.0.RELEASE/spring-framework-reference/core.html#beans-c-namespace`
     - 是对构造器参数的配置
     - xml头部添加：`xmlns:c="http://www.springframework.org/schema/c"`
-    - 注入方式
+    - 注入方式：`c:构造器参数名`
         ```xml
         <bean id="user3" class="com.ljs.pojo.User" c:age="20" c:name="CName"></bean>
         ```
 
+- 示例
+    - 类`Student`
+        - 参考代码
+            - [/java/com/ljs/learn/di/extension/Student.java](/java/com/ljs/learn/di/extension/Student.java)
+        - 代码内容
+            ```java
+            public class Student {
+                private String name;
+                private int age;
+
+                public Student() {
+                }
+
+                public Student(String n, int a) {
+                    this.name = n;
+                    this.age = a;
+                }
+
+                public String getName() {
+                    return name;
+                }
+
+                public void setName(String name) {
+                    this.name = name;
+                }
+
+                public int getAge() {
+                    return age;
+                }
+
+                public void setAge(int age) {
+                    this.age = age;
+                }
+
+                @Override
+                public String toString() {
+                    return "Student{" +
+                            "name='" + name + '\'' +
+                            ", age=" + age +
+                            '}';
+                }
+            }
+            ```
+    - 配置文件
+        - 文件路径
+            - [/java/mylearn/myspring/src/main/resources/di/extension/bean.xml](/java/mylearn/myspring/src/main/resources/di/extension/bean.xml)
+        - 配置内容
+            ```xml
+            <?xml version="1.0" encoding="UTF-8"?>
+            <beans xmlns="http://www.springframework.org/schema/beans"
+                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                xmlns:p="http://www.springframework.org/schema/p"
+                xmlns:c="http://www.springframework.org/schema/c"
+                xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+                <!--P命名空间测试-->
+                <!--p:属性名-->
+                <bean id="student01" class="com.ljs.learn.config.extension.Student" p:name="PName" p:age="15" />
+
+                <!--C命名空间测试-->
+                <!--p:构造器参数名-->
+                <bean id="student02" class="com.ljs.learn.config.extension.Student" c:n="CName" c:a="18"/>
+            </beans>
+            ```
+    - 测试类
+        - 参考代码
+            - [/java/mylearn/myspring/src/test/java/com/ljs/learn/di/extension/StudentTest.java](/java/mylearn/myspring/src/test/java/com/ljs/learn/di/extension/StudentTest.java)
+        - 代码内容
+            ```java
+            @Test
+            public void test01(){
+                ApplicationContext context = new ClassPathXmlApplicationContext("di/extension/bean.xml");
+                Student student01 = context.getBean("student01", Student.class);
+                Student student02 = context.getBean("student02", Student.class);
+
+                System.out.println(student01);
+                System.out.println(student02);
+            }
+            ```
+        - 测试结果
+            ```
+            Student{name='PName', age=15}
+            Student{name='CName', age=18}
+            ```
+
 ## bean的作用域
 [top](#catalog)
-- scope
-- 基本作用域
-    - singleton，单例模式，默认实现
-    - prototype，原型模式
-        - 每次get时都会产生一个新对象
-- 只能在web开发中使用的作用域
-    - request
-    - session
-    - application
-    - websocket
+- 参考：https://docs.spring.io/spring/docs/5.2.4.RELEASE/spring-framework-reference/core.html#beans-factory-scopes
+- 在`bean`标签中通过`scope`属性来设置bean的作用域
+- 6种作用域(两大类别)
+    - 基本类别
+        - singleton，单例模式（默认值）
+        - protetype，原型模式。每次获取时，都是一个新的元素
+    - web类别
+        - request
+        - application
+        - websocket
 
-## 自动装配的配置
-- [在xml中做自动装配](#在xml中做自动装配)
+- 示例
+    - 类`Student`
+        - 参考代码
+            - [/java/mylearn/myspring/src/main/java/com/ljs/learn/di/beanScope/Student.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/di/beanScope/Student.java)
+    - 配置文件
+        - 文件路径
+            - [/java/mylearn/myspring/src/main/resources/di/beanScope/bean.xml](/java/mylearn/myspring/src/main/resources/di/beanScope/bean.xml)
+        - 配置内容
+            ```xml
+            <?xml version="1.0" encoding="UTF-8"?>
+            <beans xmlns="http://www.springframework.org/schema/beans"
+                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-# DI依赖注入
-[top](#catalog)
-- 依赖：bean对象的创建依赖与容器
-- 注入：bean对象中的所有属性，有容器来注入
-- 三种方式
-    - 构造器注入
-        - `bean`下通过`constructor-arg`设定
-        - c命名空间注入
-    - 通过set方式注入
-        - `bean`下通过`property`设定
-        - p命名空间注入
-    - 第三方提供的其他注入方式
+                <!--使用单例模式-->
+                <bean id="studentS" class="com.ljs.learn.di.beanScope.Student" scope="singleton">
+                    <property name="name" value="TestName"/>
+                    <property name="age" value="15"/>
+                </bean>
+
+                <!--使用原型模式-->
+                <bean id="studentP" class="com.ljs.learn.di.beanScope.Student" scope="prototype">
+                    <property name="name" value="NewName"/>
+                    <property name="age" value="18"/>
+                </bean>
+            </beans>
+            ```
+    
+    - 测试类
+        - 参考代码
+            - [/java/mylearn/myspring/src/test/java/com/ljs/learn/di/beanScope/StudentTest.java](/java/mylearn/myspring/src/test/java/com/ljs/learn/di/beanScope/StudentTest.java)
+        - 测试内容
+            ```java
+            @Test
+            public void test01(){
+                ApplicationContext context = new ClassPathXmlApplicationContext("di/beanScope/bean.xml");
+
+                // 获取单例模式的bean
+                Student studentS01 = context.getBean("studentS", Student.class);
+                Student studentS02 = context.getBean("studentS", Student.class);
+
+                // 输出：true
+                System.out.println(studentS01 == studentS02);
+            }
+
+            @Test
+            public void test02(){
+                ApplicationContext context = new ClassPathXmlApplicationContext("di/beanScope/bean.xml");
+
+                // 获取原型模式的bean
+                Student studentP01 = context.getBean("studentP", Student.class);
+                Student studentP02 = context.getBean("studentP", Student.class);
+
+                // 输出：false
+                System.out.println(studentP01 == studentP02);
+            }
+            ```
 
 # bean的自动装配
 [top](#catalog)
-- 自动装配是**Spring满足bean依赖的一种方式**
-- Spring会在上下文中自动寻找，并自动给bean装配属性
-- 在Spring中有三种装配的方式
-    1. 在xml中显示的配置
-    2. 在java中显示配置
-    3. **隐式的自动装配**
-
-## 在xml中做自动装配
-[top](#catalog)
-- 类
-    ```java
-    public class Dog {
-        public void shut(){
-            System.out.println("wang");
-        }
-    }
-
-    public class Cat {
-        public void shut(){
-            System.out.println("miao");
-        }
-    }
-
-    public class People {
-        private Cat cat;
-        private Dog dog;
-        private String name;
-
-        @Override
-        public String toString() {
-            return "People{" +
-                    "cat=" + cat +
-                    ", dog=" + dog +
-                    ", name='" + name + '\'' +
-                    '}';
-        }
-
-        public Cat getCat() {
-            return cat;
-        }
-
-        public void setCat(Cat cat) {
-            this.cat = cat;
-        }
-
-        public Dog getDog() {
-            return dog;
-        }
-
-        public void setDog(Dog dog) {
-            this.dog = dog;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-    }
-    ```
-- xml配置
-    - 在`bean`的配置下添加`autowire`属性
-        ```xml
-        <bean id="people" class="com.ljs.pojo.People" autowire="byName">
-            <property name="name" value="Myname"></property>
-        </bean>
-        ```
-    - `autowire`的装配方式
-        - `byname`:会自动在容器上下文中查找和自己对象`set`方法后面的值对应的`beanid`
-            - 如`people`中有`setDog`,`setCat`，容器会去寻找`beanid`是`dog`、`cat`的`bean`
-            - 需要`beanid`是小写的
-        - `byType`:会自动在容器上下文中查找和自己对象属性类型相同的`bean`
-            - 必须保证需要使用`bean`是**全局唯一的**，否则无法使用
-            - 在这种模式下，目标`bean`也可以不写`id`
 
 ## 使用注解实现自动装配
 [top](#catalog)

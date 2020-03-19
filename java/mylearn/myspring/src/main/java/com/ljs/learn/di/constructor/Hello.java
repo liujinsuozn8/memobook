@@ -1,4 +1,4 @@
-package com.ljs.learn.config.constructor;
+package com.ljs.learn.di.constructor;
 
 public class Hello {
     private String name;
