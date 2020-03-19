@@ -56,7 +56,7 @@
     - [盒子的轮廓](#盒子的轮廓)
     - [盒子的阴影](#盒子的阴影)
     - [盒子的圆角](#盒子的圆角)
-    - [文字水平垂直居中](文字水平垂直居中)
+    - [文字水平垂直居中](#文字水平垂直居中)
 - [浏览器的默认样式](#浏览器的默认样式)
 - [常用的通用属性](#常用的通用属性)
     - [display](#display)
@@ -77,7 +77,13 @@
     - [定位简介](#定位简介)
     - [相对定位](#相对定位)
     - [绝对定位](#绝对定位)
+        - [绝对定位的基本使用](#绝对定位的基本使用)
+        - [启动绝对定位后必须满足的水平垂直等式](#启动绝对定位后必须满足的水平垂直等式)
     - [固定定位](#固定定位)
+    - [粘滞定位](#粘滞定位)
+    - [元素的层级](#元素的层级)
+- [](#)
+- [](#)
 - [](#)
 - [](#)
 - [](#)
@@ -2099,6 +2105,8 @@
     - `width`
     - `margin-left`
     - `margin-right`
+    - `left` (定位的偏移量属性)
+    - `right` (定位的偏移量属性)
 
 ## 块元素盒子模型的水平方向布局
 [top](#catalog)
@@ -3931,7 +3939,7 @@
     - 参考代码
         - [/frontend/css/base/src/heightCollapse/clear.html](/frontend/css/base/src/heightCollapse/clear.html)
 
-    - 使用 clear:left 清除 float:left浮动元素的影响
+    - 使用`clear:left`清除`float:left`浮动元素的影响
         - css
             ```css
             .box0201{
@@ -3959,7 +3967,7 @@
         - 页面结果
             - ![html_result_02](imgs/heightCollapse/clear/html_result_02.png)
 
-    - 使用 clear:right 清除 float:right 浮动元素的影响
+    - 使用`clear:right`清除`float:right`浮动元素的影响
         - css
             ```css
             .outter3{
@@ -3994,7 +4002,7 @@
         - 页面结果
             - ![html_result_03](imgs/heightCollapse/clear/html_result_03.png)
 
-    - 使用 clear：both 清楚 left和right中较大的那一侧
+    - 使用`clear：both`清楚`left`和`right`中较大的那一侧
         - css
             ```css
             .outter4{
@@ -4301,6 +4309,7 @@
         - ![html_result_01](imgs/position/relative/html_result_01.png)
 
 ## 绝对定位
+### 绝对定位的基本使用
 [top](#catalog)
 - `position:absolute`开启绝对定位
 - **偏移量的定位位置：包含块**
@@ -4464,7 +4473,7 @@
         - 页面结果
             - ![](?????)
     
-    - 
+    - 在2层嵌套的块元素中，只有第1层开启相对定位，设置：偏移量=0
         - css
             ```css
             .outter0501{
@@ -4503,6 +4512,164 @@
             - ![](?????)
 
 
+### 启动绝对定位后必须满足的水平垂直等式
+[top](#catalog)
+- 启动绝对定位后，水平等式、垂直等式**必须满足**
+- 偏移量：`left`、`right`、`top`、`bottom`的默认值是`auto`
+- 水平等式：`包含块.width = 元素.sum(left, margin-left, border-left, padding-left, width, padding-right, border-right, margin-right, right)`
+    - 当发生过度约束时
+        - 如果有`auto`，则自动调整`auto`来满足等式
+            - 自动调整时的优先级：`偏移量 > width > margin`
+    - 如果需要通过`margin-left`和`margin-right`来自动设置元素居中，必须设置`left:0`、`right:0`
+
+- 垂直等式：`包含块.height = 元素.sum(top, margin-top, border-top, padding-top, height, padding-bottom, border-bottom, margin-bottom, bottom`
+    - 当发生过度约束时
+        - 如果有`auto`，则自动调整`auto`来满足等式
+            - 自动调整时的优先级：`偏移量 > height > margin`
+    - 如果需要通过`margin-top`和`margin-bottom`来自动设置元素居中，必须设置`top:0`、`bottom:0`
+
+- 通过`margin:auto`、`top:0`、`bottom:0`、`left:0`、`right:0`，可以使元素在包含块中水平垂直居中
+
+- 示例
+    - 参考代码
+        - [/frontend/css/base/src/position/absoluteLayout.html](/frontend/css/base/src/position/absoluteLayout.html)
+
+    - auto优先级测试：开启绝对定位，width、margin、偏移量全部设为auto
+        - css
+            ```css
+            .outter01{
+                width: 100px;
+                height: 100px;
+                background-color: #bfa;
+                position: relative;
+            }
+
+            .inner01{
+                width: auto;
+                height: 50px;
+                background-color: orange;
+                position:absolute;
+
+                margin-left:auto;
+                margin-right:auto;
+            }
+            ```
+
+        - html
+            ```html
+            <section>1. 水平等式：开启绝对定位，但是不设置left、right，只设置margin-left、margin-right为auto</section>
+            <div class="outter01">
+                <div class="inner01"></div>
+            </div>
+            ```
+        
+        - 页面结果
+            - ![](?????标记控制台内容)
+
+    - 水平等式：开启绝对定位，通过margin:auto、left:0、right:0来设置水平居中效果
+        - css
+            ```css
+            .outter02{
+                width: 100px;
+                height: 100px;
+                background-color: #bfa;
+                position: relative;
+            }
+            .inner02{
+                width: 50px;
+                height: 50px;
+                background-color: #47e;
+
+                margin-left: auto;
+                margin-right: auto;
+
+                position:absolute;
+                left:0px;
+                right:0px;
+            }
+            ```
+
+        - html
+            ```html
+            <section>2. 水平等式：开启绝对定位，通过margin:auto、left:0、right:0来设置水平居中效果</section>
+            <div class="outter02">
+                <div class="inner02"></div>
+            </div>
+            ```
+        
+        - 页面结果
+            - ![](?????)
+
+    - 垂直等式：开启绝对定位，通过margin:auto、top:0、bottom:0来设置垂直居中效果
+        - css
+            ```css
+            .outter03{
+                width: 100px;
+                height: 100px;
+                background-color: #bfa;
+                position: relative;
+            }
+
+            .inner03{
+                width: 50px;
+                height: 50px;
+                background-color: orange;
+
+                margin-top: auto;
+                margin-bottom: auto;
+
+                position:absolute;
+                top:0px;
+                bottom:0px;
+            }
+            ```
+
+        - html
+            ```html
+            <section>3. 垂直等式：开启绝对定位，通过margin:auto、top:0、bottom:0来设置垂直居中效果</section>
+            <div class="outter03">
+                <div class="inner03"></div>
+            </div>
+            ```
+        
+        - 页面结果
+            - ![](?????)
+
+    - 开启绝对定位，水平垂直居中
+        - css
+            ```css
+            .outter04{
+                width:100px;
+                height: 100px;
+                background-color: #bfa;
+                position:relative;
+            }
+            
+            .inner04{
+                width: 50px;
+                height:50px;
+                background-color:#47e;
+                position: absolute;
+                margin:auto;
+                top:0px;
+                bottom:0px;
+                left:0px;
+                right:0px;
+            }
+            ```
+
+        - html
+            ```html
+            <section>4. 开启绝对定位，水平垂直居中</section>
+            <div class="outter04">
+                <div class="inner04"></div>
+            </div>
+            ```
+        
+        - 页面结果
+            - ![](?????)
+
+
 ## 固定定位
 [top](#catalog)
 - `position:fixed`开启固定定位
@@ -4510,12 +4677,97 @@
 - **偏移量的定位位置：浏览器的视口（可视窗口）**
     - 固定定位不会跟随滚动条移动，会一直固定在可是窗口的指定位置
     - 与`<html>`定位位置不同，产生滚动条时，元素只会在原有的结构位置上
+
 - 固定定位的特点，**与绝对定位相同**
     - 绝对定位会**使元素脱离文档流**
     - 开启绝对定位后，如果没有设置偏移量，则元素的位置不会发生任何变化
     - 绝对定位会改变元素的性质（因为脱离了文档流）
         - 块元素的宽高消失
     - 绝对定位会提升元素的层级
+
+- 示例
+    - 参考代码
+        - [/frontend/css/base/src/position/fixed.html](/frontend/css/base/src/position/fixed.html)
+
+    - 固定定位：居右、居中
+        - css
+            ```css
+            body{
+                height: 2000px;
+            }
+            .box1{
+                width: 50px;
+                height: 50px;
+                background-color: #bfa;
+                /* 固定定位：居右、居中 */
+                position: fixed;
+                right:0px;
+                top:50%;
+            }
+            ```
+        - html
+            ```html
+            <div class="box1"></div>
+            ```
+        
+        - 页面结果
+            - ![](?????)
+
+## 粘滞定位
+[top](#catalog)
+- 粘滞定位是新的定位方式，有些浏览器版本不支持
+- `position:sticky`开启粘滞定位
+- **偏移量的定位位置：`<body>`**
+- 粘滞定位的特点与相对定位相似
+- 粘滞定位可以在元素到达页面的某个位置时，开始固定到指定位置
+- 因为兼容性问题，实际使用的比较少。一般开发时使用js来完成相应的功能
+
+- 示例：导航条固定
+    - 参考代码
+        - [/frontend/css/base/src/position/sticky.html](/frontend/css/base/src/position/sticky.html)
+    - css
+        ```css
+        /* 导航条样式 */
+        /* 设置ul的长宽 */
+        .naviBar{
+            /* 设置宽高 */
+            width:900px;
+            /* 设置外边距:上下100px，左右通过auto使用水平公式做自动适应 */
+            margin:100px auto;
+            /* 设置背景 */
+            background-color:rgb(179, 179, 179);
+            /* 设置粘滞定位 */
+            position:sticky;
+            top:10px;
+        }
+        ```
+
+    - html
+        ```html
+        <ul class="naviBar clearfix">
+            <li>
+                <a href="javascript:;" >AAA</a>
+            </li>
+            <li>
+                <a href="javascript:;" >BBB</a>
+            </li>
+            <li>
+                <a href="javascript:;" >CCC</a>
+            </li>
+        </ul>
+        <div class="otherbox"></div>
+        ```
+
+    - 页面结果
+        - 页面初始化
+            - ![](?????)
+        - 拖动滚动条，触发粘滞定位
+            - ![](?????)
+
+
+## 元素的层级
+[top](#catalog)
+
 
 # 网页布局
 ## 基本的页面布局思路
