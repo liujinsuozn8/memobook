@@ -1,19 +1,8 @@
-<style>
-    .smallNav{
-        width: 50px;
-        height: 50px;
-        background-color: #bfa;
-        position: fixed;
-        right:0px;
-        top:50%;
-    }
-</style>
-
 - 参考
     - https://www.bilibili.com/video/av77217003
 
 
-<div class="smallNav"></div>
+<div style="width: 50px;height: 50px;background-color: #bfa;position: fixed;right:0px;top:50%;"></div>
 
 <span id="catalog"></span>
 
