@@ -1,9 +1,6 @@
 - 参考
     - https://www.bilibili.com/video/av77217003
 
-
-<div style="width: 50px;height: 50px;background-color: #bfa;position: fixed;right:0px;top:50%;"></div>
-
 <span id="catalog"></span>
 
 ### 目录
@@ -4756,7 +4753,155 @@
 
 ## 元素的层级
 [top](#catalog)
+- 对于开启了定位的元素，可以通过`z-index`属性来指定元素的层级
+    - `z-index`即3维空间中`z轴`的值
+- `z-index`需要一个整数作为参数，值越大元素的层级越高，层级越高越优先显示
 
+- 元素层级的特点
+    - **所有类型定位的默认层级都是相同的**
+    - 如果元素的层级相同，则优先显示html中靠下的元素或内部的子元素，可以引申为
+        1. 后面的元素优先
+        2. 祖先元素的层级再高也不会遮盖后代元素
+
+- 示例
+    - 参考代码
+        - [/frontend/css/base/src/position/zindex.html](/frontend/css/base/src/position/zindex.html)
+
+    - 全部开启绝对定位,优先显示靠下的元素
+        - css
+            ```css
+            .outter01{
+                position: relative;
+                width:300px; height:300px;
+            }
+            .box0101{
+                width:100px; height:100px;
+                background-color: #bfa;
+                position: absolute;
+                top:0px;
+                left:0px;
+            }
+            .box0102{
+                width:100px; height:100px;
+                background-color: #47e;
+                position: absolute;
+                top:50px;
+                left:50px;
+            }
+            .box0103{
+                width:100px; height:100px;
+                background-color: orange;
+                position: absolute;
+                top:100px;
+                left:100px;
+            }
+            /* box0103的子元素 */
+            .box0104{
+                width:50px; height:50px;
+                background-color: rgb(218, 140, 252);
+                position: absolute;
+            }
+            ```
+        - html
+            ```html
+            <section>1. 全部开启绝对定位,优先显示靠下的元素或内部的子元素</section>
+            <div class="outter01">
+                <div class="box0101">1</div>
+                <div class="box0102">2</div>
+                <div class="box0103">3
+                    <div class="box0104">4</div>
+                </div>
+            </div>
+            ```
+        - 页面结果
+            - ![](?????)
+        
+    - 全部开启绝对定位,并分别设置层级,层级越大越优先显示
+        - css
+            ```css
+            .outter02{
+                position: relative;
+                width:300px; height:300px;
+            }
+            .box0201{
+                width:100px; height:100px;
+                background-color: #bfa;
+                position: absolute;
+                top:0px;
+                left:0px;
+                z-index: 3;
+            }
+            .box0202{
+                width:100px; height:100px;
+                background-color: #47e;
+                position: absolute;
+                top:50px;
+                left:50px;
+                z-index: 2;
+            }
+            .box0203{
+                width:100px; height:100px;
+                background-color: orange;
+                position: absolute;
+                top:100px;
+                left:100px;
+                z-index: 1;
+            }
+            ```
+        - html
+            ```html
+            <section>2. 全部开启绝对定位,并分别设置层级,层级越大越优先显示</section>
+            <div class="outter02">
+                <div class="box0201">1</div>
+                <div class="box0202">2</div>
+                <div class="box0203">3</div>
+            </div>
+            ```
+        - 页面结果
+            - ![](?????)
+        
+    - 全部开启绝对定位，父元素的层级 > 子元素，但是父元素不会遮盖子元素
+        - css
+            ```css
+            .outter03{
+                position: relative;
+                width:300px; height: 300px;
+            }
+            .box0301{
+                width:100px; height:100px;
+                background-color: #bfa;
+                position: absolute;
+                top:0px;
+                left:0px;
+            }
+            .box0302{
+                width:100px; height:100px;
+                background-color: #47e;
+                position: absolute;
+                top:50px;
+                left:50px;
+                z-index: 4;
+            }
+            .box0303{
+                width: 50px; height: 50px;
+                background-color: orange;
+                position: absolute;
+                z-index:1;
+            }
+            ```
+        - html
+            ```html
+            <section>3. 全部开启绝对定位，父元素的层级 > 子元素，但是父元素不会遮盖子元素</section>
+            <div class="outter03">
+                <div class="box0301">1</div>
+                <div class="box0302">2
+                    <div class="box0303">3</div>
+                </div>
+            </div>
+            ```
+        - 页面结果
+            - ![](?????)
+        
 
 # 网页布局
 ## 基本的页面布局思路
