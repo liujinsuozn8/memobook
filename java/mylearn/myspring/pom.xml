@@ -16,12 +16,14 @@
     <url>http://www.example.com</url>
 
     <dependencies>
+        <!--注解@Resource的依赖-->
         <dependency>
             <groupId>javax.annotation</groupId>
             <artifactId>javax.annotation-api</artifactId>
             <version>1.3.1</version>
         </dependency>
 
+        <!--测试依赖-->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -29,12 +31,23 @@
             <scope>test</scope>
         </dependency>
 
+        <!--范围比较大的spring依赖-->
         <!-- https://mvnrepository.com/artifact/org.springframework/spring-webmvc -->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-webmvc</artifactId>
             <version>5.2.4.RELEASE</version>
         </dependency>
+
+        <!--springAOP需要的额外依赖-->
+        <!-- https://mvnrepository.com/artifact/org.aspectj/aspectjweaver -->
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjweaver</artifactId>
+            <version>1.9.5</version>
+        </dependency>
+
+
     </dependencies>
 
     <build>

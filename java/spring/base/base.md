@@ -8,7 +8,6 @@
 <span id="catalog"></span>
 
 ### 目录
-
 - [Spring简介](#Spring简介)
 - [Spring的组成](#Spring的组成)
 - [ioc理论](#ioc理论)
@@ -42,6 +41,14 @@
     - [JavaConfig的基本使用方法](#JavaConfig的基本使用方法)
     - [JavaConfig相关的注解分析](#JavaConfig相关的注解分析)
     - [JavaConfig配置示例](#JavaConfig配置示例)
+- [AOP](#AOP)
+    - [AOP的基础-代理模式](#AOP的基础-代理模式)
+    - [AOP简介](#AOP简介)
+    - [使用xml配置文件实现AOP](#使用xml配置文件实现AOP)
+    - [使用xml配置自定义切面](#使用xml配置自定义切面)
+    - [使用注解配置自定义切面](#使用注解配置自定义切面)
+- [](#)
+- [](#)
 - [](#)
 
 # Spring简介
@@ -1167,6 +1174,11 @@
         1. 在xmp中导入约束：context约束
             ```xml
             xmlns:context="http://www.springframework.org/schema/context"
+
+            <!-- 这两个url必须按顺序排列，中间不能插入其他的url -->
+            xsi:schemaLocation="...
+                        http://www.springframework.org/schema/context
+                        https://www.springframework.org/schema/context/spring-context.xsd"
             ```
         2. 配置注解的支持：`<context:annotation-config/>`
     
@@ -1356,6 +1368,11 @@
     1. 在xml中导入约束：context约束
         ```xml
         xmlns:context="http://www.springframework.org/schema/context"
+
+        <!-- 这两个url必须按顺序排列，中间不能插入其他的url -->
+        xsi:schemaLocation="...
+                        http://www.springframework.org/schema/context
+                        https://www.springframework.org/schema/context/spring-context.xsd"
         ```
     2. 配置注解的支持：`<context:annotation-config/>`
     3. 导入了`spring-aop`包 
@@ -1369,10 +1386,10 @@
             xmlns:context="http://www.springframework.org/schema/context"
             xmlns:aop="http://www.springframework.org/schema/aop"
             xsi:schemaLocation="http://www.springframework.org/schema/beans
-                https://www.springframework.org/schema/beans/spring-beans.xsd
-                http://www.springframework.org/schema/context
-                https://www.springframework.org/schema/context/spring-context.xsd
-                https://www.springframework.org/schema/aop/spring-aop.xsd">
+                        https://www.springframework.org/schema/beans/spring-beans.xs
+                        http://www.springframework.org/schema/context
+                        https://www.springframework.org/schema/context/spring-context.xsd">
+
         
             <context:annotation-config/>
         
@@ -1788,6 +1805,10 @@
         
 ## JavaConfig配置示例
 [top](#catalog)
+- 示例内容
+    - `MyConfig`配置类使用`@Bean`来注册类`User`
+    - `SubConfig`配置类通过扫描包来注册类`Student`
+    - 在`MyConfig`中引入配置类`SubConfig`，通过`MyConfig`就可以获取所有的类
 - bean类
     - 参考代码
         - [/java/mylearn/myspring/src/main/java/com/ljs/learn/javaconfig/bean/Student.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/javaconfig/bean/Student.java)
@@ -1900,3 +1921,517 @@
             //      : No bean named 'user' available
         }
         ```
+
+# AOP
+## AOP的基础-代理模式
+[top](#catalog)
+- 参考：[设计模式:结构型-代理模式](/designPattern/base/base.md#结构型-代理模式)
+
+## AOP简介
+[top](#catalog)
+- 什么是AOP
+    - AOP（Aspect Oriented Programming）:切面编程
+    - AOP通过**预编译**和**运行期动态代理**实现程序功能的统一维护
+    - AOP是OOP的延续，是软件开发中的一个热点，也是Spring框架中的一个重要内容
+    - AOP是函数式编程的一种衍生范式
+- AOP的优点    
+    - 利用AOP可以对业务逻辑的各个部分进行隔离，从而使得业务逻辑各部分之间的耦合度降低
+    - 提高程序的可重用性
+    
+- AOP在Spring中的作用
+    - 提供声明式事务
+        - 业务会设计到数据库交互，必须要有事务
+    - 允许用户自定义切面
+   
+- SpringAOP中相关概念
+    - 7中开发概念
+        1. 横切关注点：跨越应用程序多个模块的方法或功能。即与业务逻辑无关，但需要关注的部分，如日志、安全、缓存、事务等等
+        2. 切面/Aspect：横切关注点被模块化的特殊对象，即一个类
+        3. 通知/Advice：切面必须要完成的工作，即类中的一个方法
+        4. 目标/Target：被通知对象
+        5. 代理/Proxy：向目标对象应用通知之后创建的对象
+        6. 切入点/PointCut：切面通知执行的位置
+        7. 连接点/JoinPoint：与切入点匹配的执行点，是一个对象，可以从中获取相关信息
+    - 概念间的变化与关系
+        - ![conceptionFlow](imgs/aop/conception/conceptionFlow.png)
+        
+- SpringAOP中默认通过`Advice`定义切面逻辑，Spring中提供5种类型的`Advice`
+    
+    |通知类型|连接点|实现接口|
+    |-|-|-|
+    |前置通知|方法前|`org.springframework.aop.MethodBeforeAdvice`|
+    |后置通知|方法后|`org.springframewotd.aop.AfterReturningAdvice`|
+    |环绕通知|方法前后|`org.aopalliance.intercept.MethodInterceptor`|
+    |异常抛出通知|方法抛出异常|`org.springframework.aop.ThrowsAdvice`|
+    |引介通知|类中增加新的方法属性|`org.springframework.aop.IntroductionInterceptor`|
+    
+
+## 使用xml配置文件实现AOP
+[top](#catalog)
+- 实现步骤
+    1. 启动aop
+        1. 配置aop约束
+            ```xml
+            xmlns:aop="http://www.springframework.org/schema/aop"
+           
+            <!-- 这两个url必须按顺序排列，中间不能插入其他的url -->
+            xsi:schemaLocation="...
+                        http://www.springframework.org/schema/aop
+                        https://www.springframework.org/schema/aop/spring-aop.xsd"
+            ```
+        2. 导入aop支持
+            ```xml
+            <aop:config>
+            </aop:config>
+            ```
+    2. 编写横切逻辑类，并在xml文件中配置成bean
+        - 可以是实现了`Advice`接口的类
+        - 可以是定自定义类
+    3. 编写业务接口与业务类，并在xml文件中配置成bean
+        - 必须基于抽象进行开发，否则无法获取bean
+    
+    4. 配置切入点（可以配置多个）
+        - expression：表达式：execution(修饰词 返回值类型 类名 方法名 参数) 括号内部需要指定执行的位置! ????? 
+        ```xml
+        <aop:pointcut id="当前切入点的ID" expression="匹配表达式"/>
+        ```
+      
+    5. 配置切面逻辑（可以配置多个）
+        - `Advice`实现类的配置
+            ```xml
+            <aop:advisor advice-ref="Advice的beanID" pointcut-ref="切入点ID"/>
+            ```
+        - 自定义切面逻辑的配置
+            ```xml
+            <aop:aspect ref="自定义切面类的beanID"></aop:aspect>
+            ```
+    6. 通过`ClassPathXmlApplicationContext`获取对象，获取时必须通过结构获取，否则会产生异常
+        - BeanNotOfRequiredTypeException ?????
+        
+- 基本xml
+    ```xml
+    <?xml version="1.0" encoding="UTF-8"?>
+    <beans xmlns="http://www.springframework.org/schema/beans"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xmlns:aop="http://www.springframework.org/schema/aop"
+           xsi:schemaLocation="http://www.springframework.org/schema/beans
+                    https://www.springframework.org/schema/beans/spring-beans.xsd
+                    http://www.springframework.org/schema/aop
+                    https://www.springframework.org/schema/aop/spring-aop.xsd">
+    
+        <aop:config>
+        </aop:config>
+    </beans>
+    ```
+
+- 示例
+    - 业务接口及其实现类
+        - 参考代码
+            - [/java/mylearn/myspring/src/main/java/com/ljs/learn/aop/xml/service/UserService.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/aop/xml/service/UserService.java)
+            - [/java/mylearn/myspring/src/main/java/com/ljs/learn/aop/xml/service/UserServiceImpl.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/aop/xml/service/UserServiceImpl.java)
+        - 代码内容
+            ```java
+            public interface UserService {
+                void select();
+                void insert();
+                void delete();
+                void update();
+            }
+            ```
+     
+            ```java
+            package com.ljs.learn.aop.xml.service;
+            
+            public class UserServiceImpl implements UserService {
+                @Override
+                public void select() { System.out.println("user select"); }
+            
+                @Override
+                public void insert() { System.out.println("user insert"); }
+            
+                @Override
+                public void delete() { System.out.println("user delete"); }
+            
+                @Override
+                public void update() { System.out.println("user update"); }
+            }
+            ```
+
+    - 切面类
+        - 参考代码
+            - [/java/mylearn/myspring/src/main/java/com/ljs/learn/aop/xml/log/BeforeLog.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/aop/xml/log/BeforeLog.java)
+            - [/java/mylearn/myspring/src/main/java/com/ljs/learn/aop/xml/log/AfterLog.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/aop/xml/log/AfterLog.java)
+        - 代码内容
+            ```java
+            //方法执行前输出log
+            public class BeforeLog implements MethodBeforeAdvice {
+                @Override
+                public void before(Method method, Object[] objects, Object o) throws Throwable {
+                    System.out.println("before log");
+                }
+            }
+            ```
+            
+            ```java
+            // 方法执行后输出log
+            public class AfterLog implements AfterReturningAdvice {
+                @Override
+                public void afterReturning(Object o, Method method, Object[] objects, Object o1) throws Throwable {
+                    System.out.println("after return");
+                }
+            }
+            ```
+    - 配置文件
+        - 文件路径
+            - [/java/mylearn/myspring/src/main/resources/aop/xml/bean.xml](/java/mylearn/myspring/src/main/resources/aop/xml/bean.xml)
+        - 配置内容
+            ```xml
+            <bean id="userService" class="com.ljs.learn.aop.xml.service.UserServiceImpl"/>
+            <bean id="beforeLog" class="com.ljs.learn.aop.xml.log.BeforeLog"/>
+            <bean id="afterLog" class="com.ljs.learn.aop.xml.log.AfterLog"/>
+        
+            <aop:config>
+                <!--配置切入点-->
+                <aop:pointcut id="serviceCut" expression="execution(* com.ljs.learn.aop.xml.service.UserServiceImpl.*(..))"/>
+                
+                <aop:advisor advice-ref="beforeLog" pointcut-ref="serviceCut"/>
+                <aop:advisor advice-ref="afterLog" pointcut-ref="serviceCut"/>
+            </aop:config>
+            ```
+    - 测试类
+        - 参考代码
+            - [/java/mylearn/myspring/src/test/java/com/ljs/learn/aop/xml/ServiceTest.java](/java/mylearn/myspring/src/test/java/com/ljs/learn/aop/xml/ServiceTest.java)
+        - 测试内容
+            ```java
+            // 通过抽象类型来获取bean
+            @Test
+            public void test01(){
+                ApplicationContext context = new ClassPathXmlApplicationContext("aop/xml/bean.xml");
+                UserService userService = context.getBean("userService", UserService.class);
+                userService.select();
+                userService.delete();
+                userService.update();
+                userService.insert();
+            }
+            ```
+          
+            ```java
+            // 通过实现类的类型来获取bean
+            @Test
+            public void test02(){
+                ApplicationContext context = new ClassPathXmlApplicationContext("aop/xml/bean.xml");
+                UserServiceImpl userService = context.getBean("userService", UserServiceImpl.class);
+                //异常：
+                // BeanNotOfRequiredTypeException:
+                //     Bean named 'userService'
+                //     is expected to be of type
+                //     'com.ljs.learn.aop.xml.service.UserServiceImpl'
+                //     but was actually of type 'com.sun.proxy.$Proxy7'
+            }
+            ```
+
+## 使用xml配置自定义切面
+[top](#catalog)
+- 开发流程
+    1. 开发切面类，正常开发业务逻辑即可
+    2. 在xml中进行配置
+- xml中的配置
+    - 配置内容
+        1. 将切面类配置为bean
+        2. 使用`<aop:aspect ref="切面类beanID">`创建切片配置
+        3. 配置切入点
+            ```xml
+            <aop:pointcut id="切入点ID" expression="匹配表达式"/>
+            ```
+        4. 使用切面标签：`<aop:before>`、`<aop:after>`等来描述每个要针对哪个切入点，执行什么方法。如：
+            ```xml
+            <aop:before method="切面类中的方法名" pointcut-ref="切入点ID"/>
+            ```
+    - 配置示例
+        ```xml
+        <bean id="log" class="com.ljs.learn.aop.aspect.log.Log"/>
+        
+        <aop:config>
+            <aop:aspect ref="log">
+                <!--配置切入点-->
+                <aop:pointcut id="serviceCut" expression="execution(* com.ljs.learn.aop.aspect.service.UserServiceImpl.*(..))"/>
+                <!--方法执行前的操作-->
+                <aop:before method="before" pointcut-ref="serviceCut"/>
+                <!--方法执行后的操作-->
+                <aop:after method="after" pointcut-ref="serviceCut"/>
+            </aop:aspect>
+        </aop:config>
+        ```
+      
+- 示例
+    - 业务接口及其实现类
+        - 参考代码
+            - [/java/mylearn/myspring/src/main/java/com/ljs/learn/aop/aspect/service/UserService.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/aop/aspect/service/UserService.java)
+            - [/java/mylearn/myspring/src/main/java/com/ljs/learn/aop/aspect/service/UserServiceImpl.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/aop/aspect/service/UserServiceImpl.java)
+        - 代码内容
+            ```java
+            public interface UserService {
+                void select();
+                void insert();
+                void delete();
+                void update();
+            }
+            ```
+            
+            ```java
+            public class UserServiceImpl implements UserService {
+                @Override
+                public void select() { System.out.println("user select"); }
+            
+                @Override
+                public void insert() { System.out.println("user insert"); }
+            
+                @Override
+                public void delete() { System.out.println("user delete");}
+            
+                @Override
+                public void update() { System.out.println("user update"); }
+            }
+            ```
+          
+    - 切面类
+        - 参考代码
+            - [/java/mylearn/myspring/src/main/java/com/ljs/learn/aop/aspect/log/Log.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/aop/aspect/log/Log.java)
+        - 代码内容
+            ```java
+            public class Log {
+                public void before(){
+                    System.out.println("Log:before log");
+                }
+            
+                public void after(){
+                    System.out.println("Log:after log");
+                }
+            }
+            ```
+    - 配置文件
+        - 文件路径
+            - [/java/mylearn/myspring/src/main/resources/aop/aspect/bean.xml](/java/mylearn/myspring/src/main/resources/aop/aspect/bean.xml)
+        - 配置内容
+            ```xml
+            <bean id="userService" class="com.ljs.learn.aop.aspect.service.UserServiceImpl"/>
+            <!--配置切面类-->
+            <bean id="log" class="com.ljs.learn.aop.aspect.log.Log"/>
+        
+            <aop:config>
+                <aop:aspect ref="log">
+                    <!--配置切入点-->
+                    <aop:pointcut id="serviceCut" expression="execution(* com.ljs.learn.aop.aspect.service.UserServiceImpl.*(..))"/>
+                    <!--方法执行前的操作-->
+                    <aop:before method="before" pointcut-ref="serviceCut"/>
+                    <!--方法执行后的操作-->
+                    <aop:after method="after" pointcut-ref="serviceCut"/>
+                </aop:aspect>
+            </aop:config>
+            ```
+    - 测试类
+        - 参考代码
+            - [/java/mylearn/myspring/src/test/java/com/ljs/learn/aop/aspect/ServiceTest.java](/java/mylearn/myspring/src/test/java/com/ljs/learn/aop/aspect/ServiceTest.java)
+        - 代码内容
+            ```java
+            @Test
+            public void tet01(){
+                ApplicationContext context = new ClassPathXmlApplicationContext("aop/aspect/bean.xml");
+                UserService userService = context.getBean("userService", UserService.class);
+                userService.insert();
+                userService.select();
+                userService.update();
+                userService.delete();
+            }
+            ```
+          
+## 使用注解配置自定义切面
+[top](#catalog)
+- 开启aop的注解支持
+    - 使用标签
+        ```xml
+        <aop:aspectj-autoproxy/>
+        ```
+    - 代理模式的方式
+        - Spring-aop中有两种代理模式：JDK代理、cglibs代理
+        - 通过修改`proxy-target-class="false/true"`属性来使用不同的代理模式
+            1. `false`：JDK代理，默认值
+                ```xml
+                <aop:aspectj-autoproxy proxy-target-class="false"/>
+                ```
+            2. `true`：cglibs代理
+                ```xml
+                <aop:aspectj-autoproxy proxy-target-class="true"/>
+                ```
+- 相关注解
+    - `@Aspect`
+        - 用于修饰类，表示该类是一个自定义切面，相当于xml配置中的
+            ```xml
+            <aop:aspect ref="log"></aop:aspect>
+            ```
+        - 源码
+            ```java
+            @Retention(RetentionPolicy.RUNTIME)
+            @Target({ElementType.TYPE})
+            public @interface Aspect {
+                String value() default "";
+            }
+            ```
+    - `@Before`、`@After`等
+        - 修饰方法，相当于xml配置中的
+            ```xml
+            <aop:before method="before" pointcut-ref="serviceCut"/>
+            ```
+        - 在注解中必须配置搜索切入点的匹配表达式，如
+            ```java
+            @Before("execution(* com.ljs.learn.aop.annotation.service.UserServiceImpl.*(..))")
+            ```
+        - 只能修饰方法
+        - 源码
+            ```java
+            @Retention(RetentionPolicy.RUNTIME)
+            @Target({ElementType.METHOD})
+            public @interface Before {
+                String value();
+            
+                String argNames() default "";
+            }
+            ```
+- 示例
+    - 业务接口及其实现类
+        - 参考代码
+            - [/java/mylearn/myspring/src/main/java/com/ljs/learn/aop/annotation/service/UserService.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/aop/annotation/service/UserService.java)
+            - [/java/mylearn/myspring/src/main/java/com/ljs/learn/aop/annotation/service/UserServiceImpl.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/aop/annotation/service/UserServiceImpl.java)
+        - 代码内容
+            ```java
+            public interface UserService {
+                void select();
+                void insert();
+                void delete();
+                void update();
+            }
+            ```
+            
+            ```java
+            public class UserServiceImpl implements UserService {
+                @Override
+                public void select() { System.out.println("user select"); }
+            
+                @Override
+                public void insert() { System.out.println("user insert"); }
+            
+                @Override
+                public void delete() { System.out.println("user delete");}
+            
+                @Override
+                public void update() { System.out.println("user update"); }
+            }
+            ``` 
+    - 切面类
+        - 参考代码
+            - [/java/mylearn/myspring/src/main/java/com/ljs/learn/aop/annotation/log/Log.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/aop/annotation/log/Log.java)
+            
+        - 代码内容
+            ```java
+            @Aspect  // 表示该类是一个切面
+            public class Log {
+                //配置前置通知
+                @Before("execution(* com.ljs.learn.aop.annotation.service.UserServiceImpl.*(..))")
+                public void before(){
+                    System.out.println("Log:before log");
+                }
+            
+                //配置后置通知
+                @After("execution(* com.ljs.learn.aop.annotation.service.UserServiceImpl.*(..))")
+                public void after(){
+                    System.out.println("Log:after log");
+                }
+            
+                //配置环绕通知
+                @Around("execution(* com.ljs.learn.aop.annotation.service.UserServiceImpl.*(..))")
+                public void around(ProceedingJoinPoint p) throws Throwable {
+                    System.out.println("around before");
+                    Object proceed = p.proceed();
+                    System.out.println("around after");
+                }
+            }
+            ```
+    - 配置文件
+        - 文件路径
+            - [/java/mylearn/myspring/src/main/resources/aop/annotation/bean.xml](/java/mylearn/myspring/src/main/resources/aop/annotation/bean.xml)
+        - 配置内容
+            ```xml
+            <aop:aspectj-autoproxy/>
+        
+            <bean id="log" class="com.ljs.learn.aop.annotation.log.Log"/>
+            <bean id="userService" class="com.ljs.learn.aop.annotation.service.UserServiceImpl"/>
+            ```
+    - 测试类
+        - 参考代码
+            - [/java/mylearn/myspring/src/test/java/com/ljs/learn/aop/annotation/ServiceTest.java](/java/mylearn/myspring/src/test/java/com/ljs/learn/aop/annotation/ServiceTest.java)
+        - 测试内容
+            ```java
+            @Test
+            public void test(){
+                ApplicationContext context = new ClassPathXmlApplicationContext("aop/annotation/bean.xml");
+                UserService userService = context.getBean("userService", UserService.class);
+                userService.select();
+                
+                // 输出
+                // around before
+                // Log:before log
+                // user select
+                // around after
+                // Log:after log
+            }
+            ```
+
+# 总结
+[top](#catalog)
+- 配置文件常用内容
+    ```xml
+    <?xml version="1.0" encoding="UTF-8"?>
+    <beans xmlns="http://www.springframework.org/schema/beans"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:aop="http://www.springframework.org/schema/aop"
+        xmlns:context="http://www.springframework.org/schema/context"
+        xsi:schemaLocation="http://www.springframework.org/schema/beans
+                        https://www.springframework.org/schema/beans/spring-beans.xsd
+                        http://www.springframework.org/schema/context
+                        https://www.springframework.org/schema/context/spring-context.xsd
+                        http://www.springframework.org/schema/aop
+                        https://www.springframework.org/schema/aop/spring-aop.xsd">
+        <!--开启注解支持-->
+        <context:annotation-config/>
+        
+        <!--开启aop的注解支持-->
+        <aop:aspectj-autoproxy/>
+        
+        <!--配置包扫描-->
+        <context:component-scan base-package="包路径"/>
+
+        <!--配置bean-->
+        <bean id="userService" class="com.ljs.learn.aop.aspect.service.UserServiceImpl"/>
+        
+        <!--配置自定义切面-->
+        <aop:config>
+            <aop:aspect ref="log">
+                <!--配置切入点-->
+                <aop:pointcut id="serviceCut" expression="execution(* com.ljs.learn.aop.aspect.service.UserServiceImpl.*(..))"/>
+                <!--方法执行前的操作-->
+                <aop:before method="before" pointcut-ref="serviceCut"/>
+                <!--方法执行后的操作-->
+                <aop:after method="after" pointcut-ref="serviceCut"/>
+            </aop:aspect>
+        </aop:config>
+
+        <!--配置Advice切面-->
+        <aop:config>
+            <!--配置切入点-->
+            <aop:pointcut id="serviceCut" expression="execution(* com.ljs.learn.aop.xml.service.UserServiceImpl.*(..))"/>
+            
+            <aop:advisor advice-ref="beforeLog" pointcut-ref="serviceCut"/>
+            <aop:advisor advice-ref="afterLog" pointcut-ref="serviceCut"/>
+        </aop:config>
+    </beans>
+    ```
