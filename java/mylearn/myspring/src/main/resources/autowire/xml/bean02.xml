@@ -3,12 +3,12 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-    <!--使用byType的方式进行自动装配-->
-    <bean id="xxx" class="com.ljs.learn.autowire.base.Cat"/>
-    <!--省略被装配bean的id-->
-    <bean class="com.ljs.learn.autowire.base.Dog"/>
+    <bean id="xxx" class="com.ljs.learn.autowire.xml.Cat"/>
+    <!--类型唯一时，可以省略被装配bean的id-->
+    <bean class="com.ljs.learn.autowire.xml.Dog"/>
 
-    <bean id="people" class="com.ljs.learn.autowire.base.People" autowire="byType">
+    <!--使用byType的方式进行自动装配-->
+    <bean id="people" class="com.ljs.learn.autowire.xml.People" autowire="byType">
         <property name="name" value="TestName"/>
     </bean>
 

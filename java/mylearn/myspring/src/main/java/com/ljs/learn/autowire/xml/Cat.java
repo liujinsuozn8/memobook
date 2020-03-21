@@ -1,4 +1,4 @@
-package com.ljs.learn.autowire.base;
+package com.ljs.learn.autowire.xml;
 
 public class Cat {
     public void print(){

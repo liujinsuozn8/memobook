@@ -2,12 +2,13 @@ package com.ljs.learn.autowire.annotation;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Scope;
+import org.springframework.lang.Nullable;
 
 public class People {
-
-    //配置中有多个Dog对象，通过id进行过滤
-    @Autowired
-    @Qualifier(value = "dog01")
+    // 设置该字段可以为null，并且在@Qualifier中设置一个不存在的beanID
+    @Autowired(required = false)
+    @Qualifier(value = "dog03")
     private Dog dog;
 
     //配置中有多个Cat对象，通过id进行过滤

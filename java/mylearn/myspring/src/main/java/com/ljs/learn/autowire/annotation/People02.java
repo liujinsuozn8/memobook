@@ -2,11 +2,11 @@ package com.ljs.learn.autowire.annotation;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Scope;
 
 import javax.annotation.Resource;
 
 public class People02 {
-
     //配置中有多个Dog对象，通过id进行过滤
     @Resource(name = "dog02")
     private Dog dog;

@@ -18,28 +18,30 @@
     - [示例-XML配置来创建对象Hello](#示例-XML配置来创建对象Hello)
     - [对创建Hello对象的分析](#对创建Hello对象的分析)
     - [使用Spring改进引入问题](#使用Spring改进引入问题)
-
 - [Spring配置](#Spring配置)
     - [配置文件的基本内容](#配置文件的基本内容)
     - [通过配置文件获取bean的方法](#通过配置文件获取bean的方法)
     - [import](#import)
     - [Bean的配置方法](#Bean的配置方法)
     - [配置bean的别名](#配置bean的别名)
-
 - [DI依赖注入](#di依赖注入)
     - [依赖注入的几种方式](#依赖注入的几种方式)
     - [构造器注入](#构造器注入)
     - [Set注入方式](#Set注入方式)
     - [扩展注入方式](#扩展注入方式)
     - [bean的作用域](#bean的作用域)
-
 - [bean的自动装配](#bean的自动装配)
-    - [在xml中做自动装配](#在xml中做自动装配)
+    - [自动装配简介](#自动装配简介)
+    - [使用xml实现自动装配](#使用xml实现自动装配)
     - [使用注解实现自动装配](#使用注解实现自动装配)
-- [](#)
-- [](#)
-- [](#)
-- [](#)
+- [使用注解开发](#使用注解开发)
+    - [xml与注解-开发方式的分析](#xml与注解-开发方式的分析)
+    - [开启注解支持](#开启注解支持)
+    - [注解分类](#注解分类)
+- [通过JavaConfig配置Spring](#通过JavaConfig配置Spring)
+    - [JavaConfig的基本使用方法](#JavaConfig的基本使用方法)
+    - [JavaConfig相关的注解分析](#JavaConfig相关的注解分析)
+    - [JavaConfig配置示例](#JavaConfig配置示例)
 - [](#)
 
 # Spring简介
@@ -463,8 +465,10 @@
 - xml配置文件
     - 文件需要保存在`main/resources`目录下，文件名任意，使用时作为参数注入到上下文对象中
 
-- 通过配置文件从Spring中获取类时，通过Spring的上下文对象即bean的id来获取实例化对象
-    `ApplicationContext context = new ClassPathXmlApplicationContext("services.xml", "daos.xml");`
+- 通过配置文件从Spring中获取类时，通过Spring的上下文对象即bean的id来获取实例化对象(**cpx类对象**)
+    ```java
+    ApplicationContext context = new ClassPathXmlApplicationContext("services.xml", "daos.xml");
+    ```
 
 - 获取方式
     - 通过id获取bean：`Student student = (Student) context.getBean("student");`
@@ -1026,16 +1030,338 @@
             ```
 
 # bean的自动装配
+## 自动装配简介
 [top](#catalog)
+- 自动装配是Spring满足bean依赖的一种方式，Spring会在上下文中自动寻找，并自动给bean注入属性
 
+- **自动装配的配置方式**
+    1. 在xml中显示配置
+    2. 在java中显示配置?????
+    3. 隐式的自动装配（**非常重要**）
+    
+- 自动装配的几种方式
+    - byName，会自动在容器上下文中查找，和自己对象set方法后面的值对应的beanid
+        - 需要保证所有bean的id唯一，并且这个bean和类中属性的类型需要一致
+    - byType，会自动在容器上下文中查找，和自己对象属性类型相同的bean
+        - 这种配置方式需要对应类型的bean在上下文中唯一
+        - 使用这种方式进行装配时，可以省略被装配bean的`id`
+    - constructor，?????
+    - default，?????
+    - no，?????
+
+## 使用xml实现自动装配
+[top](#catalog)
+- 使用xml进行自动装配的方法
+    1. 编写相应的类，并在xml文件中配置bean
+    2. 需要自动装配的类，在`<bean>`中通过属性值：`autowire="...."`来指定自动装配的方式
+
+- 示例
+    - 参考类
+        - 参考代码：        
+            - [/java/mylearn/myspring/src/main/java/com/ljs/learn/autowire/xml/People.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/autowire/xml/People.java)
+            - [/java/mylearn/myspring/src/main/java/com/ljs/learn/autowire/xml/Dog.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/autowire/xml/Dog.java)
+            - [/java/mylearn/myspring/src/main/java/com/ljs/learn/autowire/xml/Cat.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/autowire/xml/Cat.java)
+        - 代码内容
+            ```java
+            public class Cat {
+                public void print(){
+                    System.out.println("this is a Cat");
+                }
+            }
+          
+            public class Dog {
+                public void print(){
+                    System.out.println("this is a dog");
+                }
+            }
+          
+            public class People {
+                private Dog dog;
+                private Cat cat;
+                private String name;
+            
+                public Dog getDog() {
+                    return dog;
+                }
+            
+                public void setDog(Dog dog) {
+                    this.dog = dog;
+                }
+            
+                public Cat getCat() {
+                    return cat;
+                }
+            
+                public void setCat(Cat cat) {
+                    this.cat = cat;
+                }
+            
+                public String getName() {
+                    return name;
+                }
+            
+                public void setName(String name) {
+                    this.name = name;
+                }
+            }
+            ```
+          
+    - 配置文件
+        - `byName`配置
+            - 文件路径
+                - [/java/mylearn/myspring/src/main/resources/autowire/xml/bean.xml](/java/mylearn/myspring/src/main/resources/autowire/xml/bean.xml)
+            - 配置内容
+                ```xml
+                <bean id="cat" class="com.ljs.learn.autowire.xml.Cat"/>
+                <bean id="dog" class="com.ljs.learn.autowire.xml.Dog"/>
+            
+                <!--使用byName的方式进行自动装配-->
+                <bean id="people" class="com.ljs.learn.autowire.xml.People" autowire="byName">
+                    <property name="name" value="TestName"/>
+                </bean>
+                ```
+        - `byType`配置
+            - 文件路径
+                - [/java/mylearn/myspring/src/main/resources/autowire/xml/bean02.xml](/java/mylearn/myspring/src/main/resources/autowire/xml/bean02.xml)
+            - 配置内容
+                ```xml
+                <bean id="xxx" class="com.ljs.learn.autowire.xml.Cat"/>
+                <!--类型唯一时，可以省略被装配bean的id-->
+                <bean class="com.ljs.learn.autowire.xml.Dog"/>
+            
+                <!--使用byType的方式进行自动装配-->
+                <bean id="people" class="com.ljs.learn.autowire.xml.People" autowire="byType">
+                    <property name="name" value="TestName"/>
+                </bean>
+                ```
+    - 测试类
+        - 参考代码
+            - [/java/mylearn/myspring/src/test/java/com/ljs/learn/autowire/xml/PeopleTest.java](/java/mylearn/myspring/src/test/java/com/ljs/learn/autowire/xml/PeopleTest.java)
+        - 测试内容
+            ```java
+            @Test
+            public void testByName(){
+                ApplicationContext context = new ClassPathXmlApplicationContext("autowire/xml/bean.xml");
+                People people = context.getBean("people", People.class);
+                people.getCat().print();
+                people.getDog().print();
+            }
+        
+            @Test
+            public void testByType(){
+                ApplicationContext context = new ClassPathXmlApplicationContext("autowire/xml/bean02.xml");
+                People people = context.getBean("people", People.class);
+                people.getCat().print();
+                people.getDog().print();
+            }
+            ```
+      
 ## 使用注解实现自动装配
 [top](#catalog)
-- Spring2.5开始支持注解
-- 参考：`https://docs.spring.io/spring/docs/5.2.0.RELEASE/spring-framework-reference/core.html#beans-annotation-config`
-- 使用方法
-    1. 导入约束:context约束
-        - 需要同时导入aop部分
-    2. 配置注解的支持:`<context:annotation-config/>`
+- 使用注解实现自动装配的方法
+    1. 在xml中为每个类配置基本的bean
+    2. 在类中需要注入依赖的部分，通过注解来进行自动装配
+    
+- 开启注解支持
+    - 开启注解支持必须要有的来那个两个配置
+        1. 在xmp中导入约束：context约束
+            ```xml
+            xmlns:context="http://www.springframework.org/schema/context"
+            ```
+        2. 配置注解的支持：`<context:annotation-config/>`
+    
+    - 基本配置内容
+        - 参考：https://docs.spring.io/spring/docs/5.2.4.RELEASE/spring-framework-reference/core.html#beans-annotation-config
+        ```xml
+        <?xml version="1.0" encoding="UTF-8"?>
+        <beans xmlns="http://www.springframework.org/schema/beans"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xmlns:context="http://www.springframework.org/schema/context"
+            xsi:schemaLocation="http://www.springframework.org/schema/beans
+                https://www.springframework.org/schema/beans/spring-beans.xsd
+                http://www.springframework.org/schema/context
+                https://www.springframework.org/schema/context/spring-context.xsd">
+        
+            <context:annotation-config/>
+        
+        </beans>
+        ```
+
+- 进行自动装配的注解
+    - `@Autowired`
+        - bean搜索的优先级：byType > byName
+        
+        - 使用@Autowired后，可以不写set方法，前提是自动装配的属性在IOC容器中已经存在，并且名字符合`byName`
+        - 辅助注解`@Qualifier(value="bean_id")`
+            - 如果`@Autowired`自动装配的环境比较复杂，自动装配无法唯一确定装配对象时，可以使用该注解，指定一个唯一的bean对象注入    
+        - 可以应用在：构造器、方法、方法参数、字段、注解
+            - 最常用的是应用在：类的字段，和setter犯法
+        - 注解参数:`reuqired = false/true`
+            - 默认参数值为：`true`，表示属性可以是否可以为空
+            - 如果`reuqired = false`，并且`@Qualifier`中配置了一个**不存在的**beanID，则获取该字段时，会**返回null**
+        - 源码
+            ```java
+            @Target({ElementType.CONSTRUCTOR, ElementType.METHOD, ElementType.PARAMETER, ElementType.FIELD, ElementType.ANNOTATION_TYPE})
+            @Retention(RetentionPolicy.RUNTIME)
+            @Documented
+            public @interface Autowired {
+                boolean required() default true;
+            }
+            ```
+    
+    - `@Resource(name="bean_id")`
+        - 该属性需要额外的maven配置
+            ```xml
+            <dependency>
+                <groupId>javax.annotation</groupId>
+                <artifactId>javax.annotation-api</artifactId>
+                <version>1.3.1</version>
+            </dependency>
+            ```
+        - 可以通过bean的name和type来获取bean
+        
+    - `@Nullable`
+        - 标记某个字段，说明这个字段可以为null
+        - 源码
+            ```java
+            @Target({ElementType.METHOD, ElementType.PARAMETER, ElementType.FIELD})
+            @Retention(RetentionPolicy.RUNTIME)
+            @Documented
+            @Nonnull(
+                when = When.MAYBE
+            )
+            @TypeQualifierNickname
+            public @interface Nullable {
+            }
+            ```
+        
+    - `@Autowired`和`@Resource`的的异同
+        - 都是用来做自动装配，都可以放在属性字段上
+        - 执行顺序
+            - `@Autowired`是先byType，后byName，并且这个对象必须存在
+            - `@Resource`是先byName，后byType，如果两种方式都找不到会报错
+
+- 示例
+    - 使用注解进行自动装配的类
+        - 参考代码
+            - [/java/mylearn/myspring/src/main/java/com/ljs/learn/autowire/annotation/People.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/autowire/annotation/People.java)
+            - [/java/mylearn/myspring/src/main/java/com/ljs/learn/autowire/annotation/People02.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/autowire/annotation/People02.java)
+        - 代码内容
+            ```java
+            public class People {
+                // 设置该字段可以为null，并且在@Qualifier中设置一个不存在的beanID
+                @Autowired(required = false)
+                @Qualifier(value = "dog03")
+                private Dog dog;
+            
+                //配置中有多个Cat对象，通过id进行过滤
+                @Autowired
+                @Qualifier(value = "cat02")
+                private Cat cat;
+                private String name;
+                
+                ...
+            }
+          
+            public class People02 {
+                //配置中有多个Dog对象，通过id进行过滤
+                @Resource(name = "dog02")
+                private Dog dog;
+            
+                //配置中有多个Cat对象，通过id进行过滤
+                @Resource(name = "cat01")
+                private Cat cat;
+                private String name;
+                
+                ...
+            }
+            ```
+
+    - 配置文件
+        - 文件路径
+            - [/java/mylearn/myspring/src/main/resources/autowire/annotation/bean.xml](/java/mylearn/myspring/src/main/resources/autowire/annotation/bean.xml)
+        - 配置内容
+            ```xml
+            <?xml version="1.0" encoding="UTF-8"?>
+            <beans xmlns="http://www.springframework.org/schema/beans"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns:context="http://www.springframework.org/schema/context"
+                   xsi:schemaLocation="http://www.springframework.org/schema/beans
+                        https://www.springframework.org/schema/beans/spring-beans.xsd
+                        http://www.springframework.org/schema/context
+                        https://www.springframework.org/schema/context/spring-context.xsd">
+                <!--开启注解支持-->
+                <context:annotation-config/>
+            
+                <!--配置多个cat类-->
+                <bean id="cat01" class="com.ljs.learn.autowire.annotation.Cat">
+                    <property name="name" value="TestCat01"/>
+                </bean>
+            
+                <bean id="cat02" class="com.ljs.learn.autowire.annotation.Cat">
+                    <property name="name" value="TestCat02"/>
+                </bean>
+            
+                <!--配置多个dog类-->
+                <bean id="dog01" class="com.ljs.learn.autowire.annotation.Dog">
+                    <property name="name" value="TestDog01"/>
+                </bean>
+                <bean id="dog02" class="com.ljs.learn.autowire.annotation.Dog">
+                    <property name="name" value="TestDog02"/>
+                </bean>
+            
+                <bean id="people" class="com.ljs.learn.autowire.annotation.People"/>
+                <bean id="people02" class="com.ljs.learn.autowire.annotation.People02"/>
+            </beans>
+            ```
+    - 测试类
+        - 参考代码
+            - [/java/mylearn/myspring/src/test/java/com/ljs/learn/autowire/annotattion/PeopleTest.java](/java/mylearn/myspring/src/test/java/com/ljs/learn/autowire/annotattion/PeopleTest.java)
+        - 测试内容
+            ```java
+            //测试@Autowire装配
+            @Test
+            public void test01(){
+                ApplicationContext context = new ClassPathXmlApplicationContext("autowire/annotation/bean.xml");
+                People people = context.getBean("people", People.class);
+                System.out.println(people.getCat().toString());
+                System.out.println(people.getDog().toString());
+            }
+        
+            //测试@Resource装配
+            @Test
+            public void test02(){
+                ApplicationContext context = new ClassPathXmlApplicationContext("autowire/annotation/bean.xml");
+                People02 people02 = context.getBean("people02", People02.class);
+                System.out.println(people02.getCat().toString());
+                System.out.println(people02.getDog().toString());
+            }
+            ```
+
+
+# 使用注解开发
+## xml与注解-开发方式的分析
+[top](#catalog)
+- xml配置与注解
+    - xml是万能的，适用于任何场合，维护简单方便
+    - 注解，不是自己类使用不了，维护相对复杂
+- xml与注解的常用开发方式
+    - xml用来管理bean
+    - 注解只负责完成属性的注入
+    
+## 开启注解支持
+[top](#catalog)
+- 使用注解是时必须要让注解生效，就需要开启注解支持
+- 在Spring4之后，要使用注解开发，必须保证
+    1. 在xml中导入约束：context约束
+        ```xml
+        xmlns:context="http://www.springframework.org/schema/context"
+        ```
+    2. 配置注解的支持：`<context:annotation-config/>`
+    3. 导入了`spring-aop`包 
+   
+    - 基本配置内容
+        - 参考：https://docs.spring.io/spring/docs/5.2.4.RELEASE/spring-framework-reference/core.html#beans-annotation-config
         ```xml
         <?xml version="1.0" encoding="UTF-8"?>
         <beans xmlns="http://www.springframework.org/schema/beans"
@@ -1043,43 +1369,534 @@
             xmlns:context="http://www.springframework.org/schema/context"
             xmlns:aop="http://www.springframework.org/schema/aop"
             xsi:schemaLocation="http://www.springframework.org/schema/beans
-                    https://www.springframework.org/schema/beans/spring-beans.xsd
-                    http://www.springframework.org/schema/context
-                    https://www.springframework.org/schema/context/spring-context.xsd
-                    http://www.springframework.org/schema/aop
-                    https://www.springframework.org/schema/aop/spring-aop.xsd">
-
+                https://www.springframework.org/schema/beans/spring-beans.xsd
+                http://www.springframework.org/schema/context
+                https://www.springframework.org/schema/context/spring-context.xsd
+                https://www.springframework.org/schema/aop/spring-aop.xsd">
+        
             <context:annotation-config/>
-
+        
         </beans>
         ```
-    3. 添加bean
-    4. 使用注解`@Autowired`
-
-- `@Autowired`
-    - 可以在属性、set方法上使用
-        - 使用注解后，也可以省略`set`方法
-    - 默认通过`byType`的查找，找不到再通过`byName`查找
-    - 参数`required`默认为真
-    - `required=false`时，对象可以为null
-    ```java
-    public @interface Autowired {
-        boolean required() default true;
-    }
+      
+## 设置包内扫描
+[top](#catalog)
+- 使用注解开发时，需要在xml中指定需要扫描的包路径。启动后，Spring会自动扫描包下的有效bean
+- 配置内容
+    ```xml
+    <context:component-scan base-package="包路径"/>
     ```
-- `@Qualifier(value="beanid")`
-    - 当对象名与beanid不同是，通过该注解来指定bean
-    - 如果bean的类型与属性类型不同时，会引发异常
-- java的注解：`@Resource`
-    - 先通过`beanid`查找，再通过类型查找，都找不到就失败
-    - 可以通过`@Resource(name = "beanid")`来指定`bean`
 
-# 使用注解开发
-- bean
-    - 在spring4后，如果要使用注解开发，必须要保证**导入了spring-aop的包**
-    - 使用注解需要增加`context约束`，增加注解支持
-    - 指定要扫描的包，这个拔下的注解就会生效
-- 属性如何注入
+- 在设置包内扫描后，不需要显示的在xml中配置bean，所以需要使用各种注解来完成对应的xml配置功能
+- **包内的类，必须要配合使用`@Component`等注解，才能被Spring扫描到**
+ 
+## 注解分类
+[top](#catalog)
+- 用于自动装配的注解
+    - 参考：[使用注解实现自动装配](#使用注解实现自动装配)
+
+- `@Component`: 标记并将类注册到Spring中 <span id="annotationComponent"></span>
+    - 装饰类之后，说明这个类被Spring管理了
+          - 等价于·`<bean id="user" class=".....User"/>`
+    - 只能修饰类、接口、eum声明，如
+        ```java
+        @Component("myUser")
+        public class User {...}
+        ```
+    - beanID
+        - 默认情况下，即直接使用`@Component`时：`beanId = 方法名小写字母开头`
+        - 如果设置了beanID，即`@Component("xxx")`时，只能通过`xxx`来获取bean
+    - 源码
+        ```java
+        @Target({ElementType.TYPE})
+        @Retention(RetentionPolicy.RUNTIME)
+        @Documented
+        @Indexed
+        public @interface Component {
+            String value() default "";
+        }
+        ```
+      
+- `@Value`: 属性注入
+    - 相当于`<property name="name" value="TestName"/>` 
+        - 在使用注解开发后，无法指定通过`<property>`标签来注入属性，所以使用`@Value`进行替代 
+    - 可以修饰：字段、方法(setter)、方法参数?????、注解?????
+    - 注解源码
+        ```java
+        @Target({ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER, ElementType.ANNOTATION_TYPE})
+        @Retention(RetentionPolicy.RUNTIME)
+        @Documented
+        public @interface Value {
+            String value();
+        }
+        ```
+      
+- `@Scope`：标记bean的作用域
+    - 相当于：`<bean scope="...">`
+        - 在使用注解开发后，无法通过`<bean scope="...">`来指定bean的作用域，所以使用`@Scope`来替代
+    - 可以修饰：类、接口、方法?????
+    - 源码
+        ```java
+        @Target({ElementType.TYPE, ElementType.METHOD})
+        @Retention(RetentionPolicy.RUNTIME)
+        @Documented
+        public @interface Scope {
+            @AliasFor("scopeName")
+            String value() default "";
+        
+            @AliasFor("value")
+            String scopeName() default "";
+        
+            ScopedProxyMode proxyMode() default ScopedProxyMode.DEFAULT;
+        }
+        ```
+
 - 衍生的注解
-- 自动装配
-- 作用域
+    - `@Component`有几个衍生注解。在web开发中，会按照mvc三层架构分层，每一层分别对应一个注解
+        - dao @Repository
+        - service @Service
+        - controller @Controller
+    - 这3个注解功能与`@Component`相同，都是代表将某个类注册到Spring中，装配bean
+
+- 示例
+    - 类
+        - 参考代码
+            - [/java/mylearn/myspring/src/main/java/com/ljs/learn/annotation/User.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/annotation/User.java)
+            - [/java/mylearn/myspring/src/main/java/com/ljs/learn/annotation/User02.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/annotation/User02.java)
+        - 代码内容
+            ```java
+            //等价于<bean id="user" class=".....User"/>
+            @Component
+            // @Scope("singleton") //配置作用域：单例模式
+            @Scope("prototype") //配置作用域：单例模式
+            public class User {
+                //相当于<property name="name" value="TestName"/>
+                @Value("TestName")
+                private String name;
+            
+                private int age;
+            
+                public String getName() {
+                    return name;
+                }
+            
+                public void setName(String name) {
+                    this.name = name;
+                }
+            
+                public int getAge() {
+                    return age;
+                }
+            
+                @Value("18")
+                public void setAge(int age) {
+                    this.age = age;
+                }
+            }
+            ```
+          
+            ```java
+            @Component("myUser02")
+            @Scope("singleton") //配置作用域：单例模式
+            public class User02 {
+                //相当于<property name="name" value="TestName"/>
+                @Value("User02Name")
+                private String name;
+            
+                private int age;
+            
+                public String getName() {
+                    return name;
+                }
+            
+                public void setName(String name) {
+                    this.name = name;
+                }
+            
+                public int getAge() {
+                    return age;
+                }
+            
+                @Value("20")
+                public void setAge(int age) {
+                    this.age = age;
+                }
+            }
+            ```
+
+    - 配置文件
+        - 文件路径
+            - [/java/mylearn/myspring/src/main/resources/annotation/bean.xml](/java/mylearn/myspring/src/main/resources/annotation/bean.xml)
+        - 配置内容
+            ```xml
+            <?xml version="1.0" encoding="UTF-8"?>
+            <beans xmlns="http://www.springframework.org/schema/beans"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns:context="http://www.springframework.org/schema/context"
+                   xsi:schemaLocation="http://www.springframework.org/schema/beans
+                        https://www.springframework.org/schema/beans/spring-beans.xsd
+                        http://www.springframework.org/schema/context
+                        https://www.springframework.org/schema/context/spring-context.xsd">
+            
+                <!--扫描指定的包，该包下的注解会生效-->
+                <context:component-scan base-package="com.ljs.learn.annotation"/>
+                <context:annotation-config/>
+            
+            </beans>
+            ```
+    - 测试类
+        - 参考代码
+            - [/java/mylearn/myspring/src/test/java/com/ljs/learn/autowire](/java/mylearn/myspring/src/test/java/com/ljs/learn/autowire)
+        - 测试内容
+            ```java
+            // @Component测试
+            @Test
+            public void test01(){
+                ApplicationContext context = new ClassPathXmlApplicationContext("annotation/bean.xml");
+                User user = context.getBean("user", User.class);
+                System.out.println(user.getName());
+                System.out.println(user.getAge());
+            }
+            ```
+            ```java
+            // @Component("...")手动设置beanID测试
+            @Test
+            public void test02(){
+                ApplicationContext context = new ClassPathXmlApplicationContext("annotation/bean.xml");
+                // User02 myUesr02 = context.getBean("user02", User02.class);
+                User02 myUesr02 = context.getBean("myUser02", User02.class);
+                System.out.println(myUesr02.getName());
+                System.out.println(myUesr02.getAge());
+            }
+            ```
+            ```java
+            // @Scope测试
+            @Test
+            public void test03(){
+                // User原型模式
+                ApplicationContext context = new ClassPathXmlApplicationContext("annotation/bean.xml");
+                User userA = context.getBean("user", User.class);
+                User userB = context.getBean("user", User.class);
+        
+                // 输出：false
+                System.out.println(userA == userB);
+            }
+            ```
+          
+# 通过JavaConfig配置Spring
+## JavaConfig的基本使用方法
+[top](#catalog)
+- 参考：https://docs.spring.io/spring/docs/5.2.4.RELEASE/spring-framework-reference/core.html#beans-java-basic-concepts
+- JavaConfig是Spring的一个子项目，在Spring4之后，成为了一个核心功能。**通过java类来配置Spring，完全脱离xml文件**
+- 基本用法
+    - java类
+        ```java
+        @Configuration
+        public class AppConfig {
+        
+           @Bean
+           public MyService myService() {
+               return new MyServiceImpl();
+           }
+        } 
+        ```
+    - 与java类含义相同的xml配置内容
+        ```xml
+        <beans>
+            <bean id="myService" class="com.acme.services.MyServiceImpl"/>
+        </beans>
+        ```
+
+- 配置内容分析    
+    - `@Configuration`装饰的java类是一个配置类，和xml文件类似
+    - `@Bean`修饰的方法是在注册bean，相当于一个xml中的`<bean>`标签。方法名相当于`id`属性，方法的返回值类型相当于`class`属性
+        ```java
+        @Bean
+        public MyService myService() {
+            return new MyServiceImpl();
+        }
+        ```
+        ```xml
+        <bean id="myService" class="MyService"/>
+        ```
+      
+- 使用JavaConfig配置Spring后，需要使用`AnnotationConfigApplicationContext`来获取Spring的上下文对（acacontext）
+    ```java
+    ApplicationContext context = new AnnotationConfigApplicationContext(MyConfig.class);
+    ```
+      
+## JavaConfig相关的注解分析
+[top](#catalog)
+- `@Configuration`
+    - 装饰一个java类，将java类转化为一个配置类，和xml文件相同
+    - 类被装饰后，也会注册到Spring中，由Spring接管
+    - 只能修饰类、接口
+    - 源码
+        ```java
+        @Target(ElementType.TYPE)
+        @Retention(RetentionPolicy.RUNTIME)
+        @Documented
+        @Component
+        public @interface Configuration {
+        	@AliasFor(annotation = Component.class)
+        	String value() default "";
+
+        	boolean proxyBeanMethods() default true;        
+        }
+        ```
+    
+- `@Bean`
+    - 用于修饰方法、注解
+    - 修饰方式即注册bean，相当于一个xml中的`<bean>`标签。方法名相当于`id`属性，方法的返回值类型相当于`class`属性，如：
+        ```java
+        @Bean
+        public MyService myService() {
+            return new MyServiceImpl();
+        }
+        ```
+        ```xml
+        <bean id="myService" class="MyService"/>
+        ```
+    - 通过`@Bean`注册的bean，不需要使用`@Component`来装饰
+    - 源码 
+        ```java       
+        @Target({ElementType.METHOD, ElementType.ANNOTATION_TYPE})
+        @Retention(RetentionPolicy.RUNTIME)
+        @Documented
+        public @interface Bean {
+        
+            /**
+             * Alias for {@link #name}.
+             * <p>Intended to be used when no other attributes are needed, for example:
+             * {@code @Bean("customBeanName")}.
+             * @since 4.3.3
+             * @see #name
+             */
+            @AliasFor("name")
+            String[] value() default {};
+        
+            /**
+             * The name of this bean, or if several names, a primary bean name plus aliases.
+             * <p>If left unspecified, the name of the bean is the name of the annotated method.
+             * If specified, the method name is ignored.
+             * <p>The bean name and aliases may also be configured via the {@link #value}
+             * attribute if no other attributes are declared.
+             * @see #value
+             */
+            @AliasFor("value")
+            String[] name() default {};
+        
+            @Deprecated
+            Autowire autowire() default Autowire.NO;
+        
+            boolean autowireCandidate() default true;
+        
+            String initMethod() default "";
+        
+            String destroyMethod() default AbstractBeanDefinition.INFER_METHOD;
+        
+        }
+        ```
+
+- `@Import`
+    - 在一个配置类中引入其他配置类，相当于xml配置文件中的
+        ```xml
+        <import resource="其他配置文件的路径"></import>
+        ```
+    - 可以修饰类接口
+    - `@Import(a.class, b.class,...)`，使用时，写明需要引入的类的`Class`对象，一个注解中可以引入多个
+    - 源码
+        ```java
+        @Target(ElementType.TYPE)
+        @Retention(RetentionPolicy.RUNTIME)
+        @Documented
+        public @interface Import {
+        	Class<?>[] value();
+        
+        }
+        ```
+
+- `@Component`
+    - 将装饰的类注册到Spring中
+    - 详细内容参考：[Component注解分析](#annotationComponent)
+    - **beanID**
+        - 默认情况下，即直接使用`@Component`时：`beanId = 方法名小写字母开头`
+        - 如果设置了beanID，即`@Component("xxx")`时，只能通过`xxx`来获取bean
+
+- `@ComponentScan`
+    - 扫描包下的被`@Component`装饰的类，相当于xml配置文件中的
+        ```xml
+        <context:component-scan base-package="com.ljs.learn.annotation"/>
+        ```
+    - 用于装饰类
+    - `@ComponentScan(包名1, 包名2, ...)，使用时可以指定多个包名，并扫描
+    - 源码
+        ```java
+        @Retention(RetentionPolicy.RUNTIME)
+        @Target(ElementType.TYPE)
+        @Documented
+        @Repeatable(ComponentScans.class)
+        public @interface ComponentScan {
+        	@AliasFor("basePackages")
+        	String[] value() default {};
+        
+        	@AliasFor("value")
+        	String[] basePackages() default {};
+        
+        	Class<?>[] basePackageClasses() default {};
+        
+        	Class<? extends BeanNameGenerator> nameGenerator() default BeanNameGenerator.class;
+        
+        	Class<? extends ScopeMetadataResolver> scopeResolver() default AnnotationScopeMetadataResolver.class;
+        
+        	ScopedProxyMode scopedProxy() default ScopedProxyMode.DEFAULT;
+        
+        	String resourcePattern() default ClassPathScanningCandidateComponentProvider.DEFAULT_RESOURCE_PATTERN;
+        
+        	boolean useDefaultFilters() default true;
+        
+        	Filter[] includeFilters() default {};
+        
+        	Filter[] excludeFilters() default {};
+        
+        	boolean lazyInit() default false;
+        
+        	@Retention(RetentionPolicy.RUNTIME)
+        	@Target({})
+        	@interface Filter {
+        
+        		FilterType type() default FilterType.ANNOTATION;
+        
+        		@AliasFor("classes")
+        		Class<?>[] value() default {};
+        
+        		@AliasFor("value")
+        		Class<?>[] classes() default {};
+        
+        		String[] pattern() default {};        
+        	}
+        }
+        ```
+
+
+- 注解之间的配合
+    - 如果在配置类中使用`@Bean`注册了，则该类可以不使用`@Component`，只用注册信息就可以搜索到类
+    - 如果在类没有用`@Bean`在配置类中注册，需要使用`@Component`和`@ComponentScan(包名)`
+        1. 使用`@Component`装饰bean类
+        2. 使用`@ComponentScan(包名)`装饰配置类，以保证在启动时Spring可以搜索到该类
+        3. 如果没有这两个注解的配合，将无法通过Spring的上下文对象获取bean
+        
+## JavaConfig配置示例
+[top](#catalog)
+- bean类
+    - 参考代码
+        - [/java/mylearn/myspring/src/main/java/com/ljs/learn/javaconfig/bean/Student.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/javaconfig/bean/Student.java)
+        - [/java/mylearn/myspring/src/main/java/com/ljs/learn/javaconfig/bean/User.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/javaconfig/bean/User.java)
+    - 代码内容
+        ```java
+        // 不使用@Bean注解在配置类中注册该类，
+        // 通过@Component和@ComponentScan在包中扫描该类并注册到Spring中
+        @Component
+        public class Student {
+            @Value("StudentName")
+            private String name;
+        
+            public String getName() {
+                return name;
+            }
+        
+            public void setName(String name) {
+                this.name = name;
+            }
+        }
+        ```
+      
+        ```java
+        // @Component 不使用该注解，直接在MyConfig配置类中使用@Bean进行注册
+        public class User {
+            @Value("ConfigUserName")
+            private String name;
+            private int age;
+        
+            public String getName() {
+                return name;
+            }
+        
+            public void setName(String name) {
+                this.name = name;
+            }
+        
+            public int getAge() {
+                return age;
+            }
+        
+            public void setAge(int age) {
+                this.age = age;
+            }
+        }
+        ```
+
+- 配置类
+    - 参考代码
+        - [/java/mylearn/myspring/src/main/java/com/ljs/learn/javaconfig/config/MyConfig.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/javaconfig/config/MyConfig.java)
+        - [/java/mylearn/myspring/src/main/java/com/ljs/learn/javaconfig/config/SubConfig.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/javaconfig/config/SubConfig.java)
+    - 代码内容
+        ```java
+        // 主配置类
+        @Configuration
+        @Import(SubConfig.class) //引入其他配置类
+        public class MyConfig {
+            @Bean
+            public User user(){
+                return new User();
+            }
+        }
+        ```
+        ```java
+        // 子配置类
+        @Configuration
+        @ComponentScan("com.ljs.learn.javaconfig.bean")
+        public class SubConfig {
+            // 不声明任何bean，通过@ComponentScan来扫描指定包下被@Component装饰的类
+        }
+        ```
+- 测试类
+    - 参考代码
+        - [/java/mylearn/myspring/src/test/java/com/ljs/learn/javaconfig/JavaConfigTest.java](/java/mylearn/myspring/src/test/java/com/ljs/learn/javaconfig/JavaConfigTest.java)
+    - 测试内容
+        ```java
+        // 主配置类测试
+        @Test
+        public void test01(){
+            ApplicationContext context = new AnnotationConfigApplicationContext(MyConfig.class);
+            // 测试主配置类中配置的bean
+            User user = context.getBean("user", User.class);
+            System.out.println(user.getName());
+    
+            // 测试子配置类中配置中的bean
+            Student student = context.getBean("student", Student.class);
+            System.out.println(student.getName());
+        }
+        ```
+
+        ```java
+        // 子配置类测试：获取使用@Component装饰的类
+        @Test
+        public void test02(){
+            ApplicationContext context = new AnnotationConfigApplicationContext(SubConfig.class);
+            Student student = context.getBean("student", Student.class);
+            System.out.println(student.getName());
+        }
+        ```
+        ```java
+        // 子配置类测试：获取没有使用@Component装饰的类
+        @Test
+        public void test03(){
+            ApplicationContext context = new AnnotationConfigApplicationContext(SubConfig.class);
+            User user = context.getBean("user", User.class);
+            System.out.println(user.getName());
+            
+            // 异常：org.springframework.beans.factory.NoSuchBeanDefinitionException
+            //      : No bean named 'user' available
+        }
+        ```

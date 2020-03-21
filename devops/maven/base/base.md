@@ -203,7 +203,7 @@
             
 ## 目录结构示例工程---Hello
 [top](#catalog)
-- 示例工程地址：Hello，[java/maven/sample/Hello](java/maven/sample/Hello)
+- 示例工程地址：Hello，[/devops/maven/sample/Hello](/devops/maven/sample/Hello)
 - 示例的目录结构
 
     ```
@@ -754,7 +754,7 @@
 - 作用：解决模块工程之间同`<artifactId>`的jar包`<version>`冲突问题
 - 两个原则
     1. 路径最短优先
-        - 0路径：当前工程配置的依赖优先与从其他依赖中传递过来的依赖
+        - 0路径：当前工程配置的依赖优先于从其他依赖中传递过来的依赖
         - 在依赖中出现了依赖的覆盖与传递时，路径最短优先
     2. 路径长度相同时，先在`<dependency>`中声明的优先
 - 测试依赖原则的示例：[/devops/maven/base/sample/multiple](/devops/maven/base/sample/multiple)
@@ -808,11 +808,13 @@
 - 在需要统一版本的位置，使用`${自定义标签名}`引用声明的版本号
 - 示例：
     ```xml
+    <!-- 定义参数 -->
     <properties>
         <ljs.spring.version>4.1.1.RELEASE</ljs.spring.version>
     </properties>
 
     <dependencies>
+        <!-- 使用参数 -->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-core</artifactId>
@@ -1006,14 +1008,15 @@
         ```
     - 依赖引入的结果
         - one使用的是junit-4.1，其他的模块使用的是junit-4.11，父工程下只负责配置但是不会存在依赖
-        - [inherit_result](./imgs/base/inherit_result.png)
+        - ![inherit_result](./imgs/base/inherit_result.png)
         
 
 # Maven的核心概念---聚合
 [top](#catalog)
-- 聚合的作用，一次性安装配置中的各个模块
+- 聚合的作用：<label style="color:red">一次性安装配置中的各个模块</label>
+- <label style="color:red">聚合与继承之间并不冲突，继承是为了管理依赖，聚合是为了方便安装。一般两者可以配置在一起</label>
 - 配置方式：在一个总的聚合工程中配置各个参与聚合的模块
-    - 配置的时候不用处理各模块的顺序，编译是会自动识别模块间的依赖
+    - 配置的时候不用处理各模块的顺序，编译时会自动识别模块间的依赖
     - 配置的时候需要使用相对路径，并且以当前pom为起点
         - 如果模块是和pom在同一个目录下，直接使用模块名
         - 如果模块和当前工程在同一个目录下，需要使用`../模块名`
@@ -1029,8 +1032,6 @@
 - 执行安装的顺序与配置顺序的关系
     1. 没有依赖的模块之间，按照配置中`<module>`的顺序来执行安装
     2. 存在相互依赖的模块之间，maven会识别依赖关系，并**先安装被依赖的模块**
-  
-- 聚合与继承之间并不冲突，继承是为了管理依赖，聚合是为了方便安装。**一般两者可以配置在一起**
 
 - 示例：
     - 工程目录：[/devops/maven/base/sample/multiple](/devops/maven/base/sample/multiple)
@@ -1229,10 +1230,10 @@
         - 安装时会安装到仓库中的`groupId`目录下
     4. 执行`mvn archetype:crawl`，让maven程序在仓库爬取所有可用的原型，更新`local`级别的原型目录
     5. 移动到一个新目录，并且确保该目录下没有`pom.xml`文件
-    6. 通过`mvn archetype:generate -DarchetypeCatalog=local`指令在本地的目录中查找原型并进行交互式创建，或者：[直接通过指令创建项目骨架](#直接通过指令创建项目骨架)
+    6. 通过`mvn archetype:generate -DarchetypeCatalog=local`指令在本地的目录中查找原型并进行交互式创建，或者：[直接通过指令创建项目](#直接通过指令创建项目)
 
 - 示例：创建一个web工程的原型，
-    1. 示例参考：[java/maven/sample/myweb](java/maven/sample/myweb)
+    1. 示例参考：[/devops/maven/sample/myweb](/devops/maven/sample/myweb)
     2. 创建一个myweb工程，目录如下
         - <img src="./imgs/base/archetype/create_from_project_01.png" width=30% height=30%>
     3. 执行指令：`mvn archetype:create-from-project`

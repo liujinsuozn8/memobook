@@ -2034,7 +2034,9 @@ public class CommandPara {
     |@exception|对方法可能抛出的异常进行说明如果方法没有用throws显式抛出的异常就不能写|只用于标记方法<br>格式要求:@exception 异常类型 异常说明<br>可以并列多个|
 
 - 示例参考
-    - DocAnnotationTest.java : [/java/mylearn/javabase/src/test/java/com/ljs/learn/annotation/DocAnnotationTest.java](/java/mylearn/javabase/src/test/java/com/ljs/learn/annotation/DocAnnotationTest.java)
+    - DocAnnotationTest.java : [/java/mylearn/javabase/src/test/java/com/ljs/learn/annotation/base/DocAnnotationTest.java](/java/mylearn/javabase/src/test/java/com/ljs/learn/annotation/base/DocAnnotationTest.java)
+
+
 
 ### 2.在编译时进行格式检查-JDK内置的三个基本注解
 [top](#catalog)
@@ -2047,10 +2049,13 @@ public class CommandPara {
     |@SuppressWarnings|抑制编译器警告||
     
 - 示例参考
-    - JDKBaseAnnotationTest.java : [/java/mylearn/javabase/src/test/java/com/ljs/learn/annotation/JDKBaseAnnotationTest.java](/java/mylearn/javabase/src/test/java/com/ljs/learn/annotation/JDKBaseAnnotationTest.java)
-    
+    - JDKBaseAnnotationTest.java : [/java/mylearn/javabase/src/test/java/com/ljs/learn/annotation/base/JDKBaseAnnotationTest.java](/java/mylearn/javabase/src/test/java/com/ljs/learn/annotation/base/JDKBaseAnnotationTest.java)
+
+
 ### 3.跟踪代码依赖性，实现替代配置文件功能
 [top](#catalog)
+- ????????
+
 
 ## 自定义注解
 ### JDK注解示例-SuppressWarnings
@@ -2104,7 +2109,7 @@ public @interface SuppressWarnings {
         String value default "hello";
         ```
       
-- <label style="color:red">没有配置参数的注解，成为**标记**，如`Override`；包含配置参数的注解成为**元数据Annotation**</label>
+- <label style="color:red">没有配置参数的注解，称为**标记**，如`Override`；包含配置参数的注解成为**元数据Annotation**</label>
 
 - 自定义注解示例
     ```java
@@ -2178,7 +2183,7 @@ public @interface SuppressWarnings {
         |枚举值|描述|版本|
         |-|-|-|
         |CONSTRUCTOR|描述构造器|JDK5.0|
-        |FIELD|描述域|JDK5.0|
+        |FIELD|描述域：字段、枚举的常量|JDK5.0|
         |LOCAL_VARIABLE|描述局部变量|JDK5.0|
         |METHOD|描述方法|JDK5.0|
         |PACKAGE|描述包|JDK5.0|
@@ -2186,6 +2191,7 @@ public @interface SuppressWarnings {
         |TYPE|描述类、接口(包括注解类型)、enum声明|JDK5.0|
         |TYPE_PARAMETER|**类型注解**，针对泛型<br>表示该注解能写在类型变量的声明语句中<br>注解要写在泛型类型之前|JDK8.0|
         |TYPE_USE|**类型注解**，针对所有的类型<br>表示该注解能写在**使用类型的任何语句中**<br>注解要写在类型之前|JDK8.0|
+        |ANNOTATION_TYPE|描述注解||
 
     - 类型注解`ElementType.TYPE_PARAMETER`
         - 参考
@@ -2257,13 +2263,18 @@ public @interface SuppressWarnings {
         - 一个需要重复的注解，一个配置参数是这种注解数组的注解
         ```java
         public @interface Myannotations {
+            // 配置参数是注解数组的注解
             Myannotation[] value();
         }
-        
+        ```
+        ```java
+        // 需要重复的注解
         public @interface Myannotation {
             String value() default "hello";
         }
-        
+        ```
+        ```java
+        // 在注解中包含多个注解
         @Myannotations({@Myannotation("aa"),@Myannotation("bb")})
         public class TestClass{}
         ```
@@ -2276,14 +2287,17 @@ public @interface SuppressWarnings {
             public @interface Myannotations {
                 Myannotation[] value();
             }
-            
-            @Repeatable(Myannotations.class)
+            ```
+            ```java
+            @Repeatable(Myannotations.class) // 声明辅助注解
             @Retention(RetentionPolicy.RUNTIME)
             @Taget({TYPE,METHOD})
             public @interface Myannotation {
+                // 需要重复的注解
                 String value() default "hello";
             }
-            
+            ```
+            ```java
             @Myannotation("aa")
             @Myannotation("bb")
             public class TestClass{}
