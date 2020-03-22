@@ -21,10 +21,23 @@
 
 
   <dependencies>
+    <!--dao/jdbc依赖-->
     <dependency>
       <groupId>mysql</groupId>
       <artifactId>mysql-connector-java</artifactId>
       <version>8.0.18</version>
+    </dependency>
+    <dependency>
+      <groupId>com.mchange</groupId>
+      <artifactId>c3p0</artifactId>
+      <version>0.9.5.4</version>
+    </dependency>
+
+    <!-- https://mvnrepository.com/artifact/commons-dbutils/commons-dbutils -->
+    <dependency>
+      <groupId>commons-dbutils</groupId>
+      <artifactId>commons-dbutils</artifactId>
+      <version>1.7</version>
     </dependency>
 
     <!--taglibs依赖1-->
@@ -58,12 +71,13 @@
       <version>2.2.1-b03</version>
       <scope>provided</scope>
     </dependency>
-      <dependency>
-          <groupId>com.ljs.learn</groupId>
-          <artifactId>myjdbc</artifactId>
-          <version>1.0-SNAPSHOT</version>
-          <scope>compile</scope>
-      </dependency>
+
+      <!--<dependency>-->
+      <!--    <groupId>com.ljs.learn</groupId>-->
+      <!--    <artifactId>myjdbc</artifactId>-->
+      <!--    <version>1.0-SNAPSHOT</version>-->
+      <!--    <scope>compile</scope>-->
+      <!--</dependency>-->
   </dependencies>
 
   <build>

@@ -1,7 +1,6 @@
 package com.ljs.mvc.dao;
 
 import com.ljs.mvc.bean.CustomerSqlParam;
-import com.ljs.myjdbc.dao.BaseDao;
 import com.ljs.mvc.bean.Customer;
 
 import java.util.List;

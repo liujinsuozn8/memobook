@@ -1,6 +1,5 @@
-package com.ljs.myjdbc.dao;
+package com.ljs.mvc.dao;
 
-import com.ljs.myjdbc.utils.MyJDBCUtils;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.BeanHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;

@@ -147,126 +147,133 @@
     5. 将部分配置信息移动到配置文件中，通过加载配置文件来实现
 
 - 示例: 
-    - 测试代码：`myjdbc/src/main/java/com/ljs/myjdbc/connection/ConnectionTest.java`
-        ```java
-        public class ConnectionTest {
-            // 连接方式1
-            @Test
-            public void method01() throws SQLException {
-                // Driver driver = new com.mysql.jdbc.Driver();
-                Driver driver = new com.mysql.cj.jdbc.Driver();
-                // jdbc 主协议，mysql子协议，test数据库
-                String url = "jdbc:mysql://127.0.0.1:3306/test?serverTimezone=UTC&characterEncoding=utf8&useUnicode=true&useSSL=false";
-                Properties info = new Properties();
-                info.setProperty("user", "root");
-                info.setProperty("password", "1234");
+    - 测试类：
+        - 参考代码
+            - [/java/mylearn/myjdbc/src/test/java/com/ljs/myjdbc/connection/ConnectionTest.java](/java/mylearn/myjdbc/src/test/java/com/ljs/myjdbc/connection/ConnectionTest.java)
+        - 代码内容
+            ```java
+            public class ConnectionTest {
+                // 连接方式1
+                @Test
+                public void method01() throws SQLException {
+                    // Driver driver = new com.mysql.jdbc.Driver();
+                    Driver driver = new com.mysql.cj.jdbc.Driver();
+                    // jdbc 主协议，mysql子协议，test数据库
+                    String url = "jdbc:mysql://127.0.0.1:3306/test?serverTimezone=UTC&characterEncoding=utf8&useUnicode=true&useSSL=false";
+                    Properties info = new Properties();
+                    info.setProperty("user", "root");
+                    info.setProperty("password", "1234");
 
-                // 创建Connection对象
-                Connection connect = driver.connect(url, info);
-                System.out.println(connect);
+                    // 创建Connection对象
+                    Connection connect = driver.connect(url, info);
+                    System.out.println(connect);
+                }
+
+                //连接方式2：通过反射创建驱动器,可移植性更好
+                @Test
+                public void method02() throws Exception {
+                    Class clazz = Class.forName("com.mysql.cj.jdbc.Driver");
+                    Driver driver = (Driver)clazz.newInstance();
+
+                    String url = "jdbc:mysql://127.0.0.1:3306/test?serverTimezone=UTC&characterEncoding=utf8&useUnicode=true&useSSL=false";
+                    Properties info = new Properties();
+                    info.setProperty("user", "root");
+                    info.setProperty("password", "1234");
+
+                    // 创建Connection对象
+                    Connection connect = driver.connect(url, info);
+                    System.out.println(connect);
+
+                }
+
+                //连接方式3：通过DriverManager来创建驱动
+                @Test
+                public void method03() throws Exception {
+                    String url = "jdbc:mysql://127.0.0.1:3306/test?serverTimezone=UTC&characterEncoding=utf8&useUnicode=true&useSSL=false";
+                    String user = "root";
+                    String password = "1234";
+
+                    //获取driver类对象
+                    Class clazz = Class.forName("com.mysql.cj.jdbc.Driver");
+                    Driver driver = (Driver)clazz.newInstance();
+
+                    //注册驱动
+                    DriverManager.registerDriver(driver);
+
+                    //获取连接
+                    Connection connection = DriverManager.getConnection(url, user, password);
+
+                    System.out.println(connection);
+                }
+
+                //连接方式4：对方式3进行优化
+                @Test
+                public void method04() throws Exception {
+                    String url = "jdbc:mysql://127.0.0.1:3306/test?serverTimezone=UTC&characterEncoding=utf8&useUnicode=true&useSSL=false";
+                    String user = "root";
+                    String password = "1234";
+
+                    //加载Driver
+                    //MySql下也可以省略该操作，在jar包/META-INF/services/java.sql.Driver下引入了该类
+                    Class clazz = Class.forName("com.mysql.cj.jdbc.Driver");
+
+                    //省略注册操作，在Mysql的实现类中已经被执行了
+                    // public class Driver extends NonRegisteringDriver implements java.sql.Driver {
+                    //     public Driver() throws SQLException {
+                    //     }
+                    //
+                    //     static {
+                    //         try {
+                    //             DriverManager.registerDriver(new Driver());
+                    //         } catch (SQLException var1) {
+                    //             throw new RuntimeException("Can't register driver!");
+                    //         }
+                    //     }
+                    // }
+
+                    //Driver driver = (Driver)clazz.newInstance();
+                    //注册驱动
+                    //DriverManager.registerDriver(driver);
+
+                    //获取连接
+                    Connection connection = DriverManager.getConnection(url, user, password);
+
+                    System.out.println(connection);
+                }
+
+                //方式5，将部分配置信息移动到配置文件中，通过加载配置文件来实现
+                @Test
+                public void method05() throws Exception {
+                    //读取配置文件
+                    // eclipse
+                    // InputStream is = ConnectionTest.class.getClassLoader().getResourceAsStream("jdbc.properties");
+                    // idea
+                    InputStream is = getClass().getResourceAsStream("/jdbc.properties");
+                    Properties props = new Properties();
+
+                    props.load(is);
+                    String url = props.getProperty("url");
+                    String user = props.getProperty("user");
+                    String password = props.getProperty("password");
+                    String driverClass = props.getProperty("driverClass");
+
+                    Class.forName(driverClass);
+                    Connection connection = DriverManager.getConnection(url, user, password);
+                    System.out.println(connection);
+                }
             }
+            ```
 
-            //连接方式2：通过反射创建驱动器,可移植性更好
-            @Test
-            public void method02() throws Exception {
-                Class clazz = Class.forName("com.mysql.cj.jdbc.Driver");
-                Driver driver = (Driver)clazz.newInstance();
-
-                String url = "jdbc:mysql://127.0.0.1:3306/test?serverTimezone=UTC&characterEncoding=utf8&useUnicode=true&useSSL=false";
-                Properties info = new Properties();
-                info.setProperty("user", "root");
-                info.setProperty("password", "1234");
-
-                // 创建Connection对象
-                Connection connect = driver.connect(url, info);
-                System.out.println(connect);
-
-            }
-
-            //连接方式3：通过DriverManager来创建驱动
-            @Test
-            public void method03() throws Exception {
-                String url = "jdbc:mysql://127.0.0.1:3306/test?serverTimezone=UTC&characterEncoding=utf8&useUnicode=true&useSSL=false";
-                String user = "root";
-                String password = "1234";
-
-                //获取driver类对象
-                Class clazz = Class.forName("com.mysql.cj.jdbc.Driver");
-                Driver driver = (Driver)clazz.newInstance();
-
-                //注册驱动
-                DriverManager.registerDriver(driver);
-
-                //获取连接
-                Connection connection = DriverManager.getConnection(url, user, password);
-
-                System.out.println(connection);
-            }
-
-            //连接方式4：对方式3进行优化
-            @Test
-            public void method04() throws Exception {
-                String url = "jdbc:mysql://127.0.0.1:3306/test?serverTimezone=UTC&characterEncoding=utf8&useUnicode=true&useSSL=false";
-                String user = "root";
-                String password = "1234";
-
-                //加载Driver
-                //MySql下也可以省略该操作，在jar包/META-INF/services/java.sql.Driver下引入了该类
-                Class clazz = Class.forName("com.mysql.cj.jdbc.Driver");
-
-                //省略注册操作，在Mysql的实现类中已经被执行了
-                // public class Driver extends NonRegisteringDriver implements java.sql.Driver {
-                //     public Driver() throws SQLException {
-                //     }
-                //
-                //     static {
-                //         try {
-                //             DriverManager.registerDriver(new Driver());
-                //         } catch (SQLException var1) {
-                //             throw new RuntimeException("Can't register driver!");
-                //         }
-                //     }
-                // }
-
-                //Driver driver = (Driver)clazz.newInstance();
-                //注册驱动
-                //DriverManager.registerDriver(driver);
-
-                //获取连接
-                Connection connection = DriverManager.getConnection(url, user, password);
-
-                System.out.println(connection);
-            }
-
-            //方式5，将部分配置信息移动到配置文件中，通过加载配置文件来实现
-            @Test
-            public void method05() throws Exception {
-                //读取配置文件
-                // eclipse
-                // InputStream is = ConnectionTest.class.getClassLoader().getResourceAsStream("jdbc.properties");
-                // idea
-                FileInputStream is = new FileInputStream("resource/jdbc.properties");
-                Properties props = new Properties();
-
-                props.load(is);
-                String url = props.getProperty("url");
-                String user = props.getProperty("user");
-                String password = props.getProperty("password");
-                String driverClass = props.getProperty("driverClass");
-
-                Class.forName(driverClass);
-                Connection connection = DriverManager.getConnection(url, user, password);
-                System.out.println(connection);
-            }
-        }
-        ```
-    - jdbc连接配置文件：`myjdbc/resource/jdbc.properties`
-        ```xml
-        url=jdbc:mysql://127.0.0.1:3306/test?serverTimezone=Asia/Shanghai&characterEncoding=utf8&useUnicode=true&useSSL=false&rewriteBatchedStatements=true
-        user=root
-        password=1234
-        driverClass=com.mysql.cj.jdbc.Driver
-        ```
+    - jdbc连接配置文件：
+        - 文件路径：
+            - [/java/mylearn/myjdbc/src/resources/jdbc.properties](/java/mylearn/myjdbc/src/resources/jdbc.properties)
+        - 配置内容
+            ```xml
+            url=jdbc:mysql://127.0.0.1:3306/test?serverTimezone=Asia/Shanghai&characterEncoding=utf8&useUnicode=true&useSSL=false&rewriteBatchedStatements=true
+            user=root
+            password=1234
+            driverClass=com.mysql.cj.jdbc.Driver
+            ```
 
 # Statement
 ## Statement接口
@@ -372,199 +379,202 @@
 
 ### 自定义PreparedStatement通用增删改查
 [top](#catalog)
-- `myjdbc/src/main/java/com/ljs/myjdbc/util/JDBCUtils.java`
-```java
-public class JDBCUtils {
-    public static Connection getConnection() throws Exception {
-        FileInputStream is = new FileInputStream("resource/jdbc.properties");
-        Properties props = new Properties();
-        props.load(is);
+- 参考代码
+    - [/java/mylearn/myjdbc/src/main/java/com/ljs/myjdbc/util/JDBCUtils.java](/java/mylearn/myjdbc/src/main/java/com/ljs/myjdbc/util/JDBCUtils.java)
 
-        String url = props.getProperty("url");
-        String user = props.getProperty("user");
-        String password = props.getProperty("password");
-        String driverClass = props.getProperty("driverClass");
+- 代码内容
+    ```java
+    public class JDBCUtils {
+        public static Connection getConnection() throws Exception {
+            FileInputStream is = new FileInputStream("resource/jdbc.properties");
+            Properties props = new Properties();
+            props.load(is);
 
-        Class.forName(driverClass);
+            String url = props.getProperty("url");
+            String user = props.getProperty("user");
+            String password = props.getProperty("password");
+            String driverClass = props.getProperty("driverClass");
 
-        Connection connection = DriverManager.getConnection(url, user, password);
-        return connection;
-    }
+            Class.forName(driverClass);
 
-    public static void closeResources(Connection connection, Statement statement){
-        //关闭资源
-        try {
-            if (statement != null)
-                statement.close();
-        }catch (Exception e){
-            e.printStackTrace();
+            Connection connection = DriverManager.getConnection(url, user, password);
+            return connection;
         }
 
-        try{
-            if (connection != null)
-                connection.close();
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-    }
-
-    public static void closeResources(Connection connection, Statement statement, ResultSet resultSet){
-        //关闭资源
-        try {
-            if (resultSet != null)
-                resultSet.close();
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-
-        try {
-            if (statement != null)
-                statement.close();
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-
-        try{
-            if (connection != null)
-                connection.close();
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-    }
-
-    public static <T> List<T> getRows(Class<T> clazz, String sql, Object ...args){
-        Connection connection = null;
-        PreparedStatement ps = null;
-        ResultSet resultSet = null;
-        try {
-            connection = getConnection();
-
-            ps = connection.prepareStatement(sql);
-
-            int i = 1;
-            for (Object arg : args) {
-                ps.setObject(i, arg);
-                i++;
+        public static void closeResources(Connection connection, Statement statement){
+            //关闭资源
+            try {
+                if (statement != null)
+                    statement.close();
+            }catch (Exception e){
+                e.printStackTrace();
             }
 
-            // 执行并返回结果集
-            resultSet = ps.executeQuery();
-            // 获取结果集的元数据
-            ResultSetMetaData metaData = resultSet.getMetaData();
-            //  获取结果中的列数
-            int columnCount = metaData.getColumnCount();
+            try{
+                if (connection != null)
+                    connection.close();
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        }
 
-            List<T> rows = new ArrayList<>();
-            // 处理结果集
-            while (resultSet.next()) {
-                T obj = clazz.newInstance();
-                // 处理一行数据
-                for (int j = 1; j <= columnCount; j++) {
-                    // 获取第j列的值
-                    Object value = resultSet.getObject(j);
-                    // 获取第j列的别名
-                    String columnName = metaData.getColumnLabel(j);
-                    // 通过反射，给对应列名的属性设值
-                    // 获取属性
-                    Field field = clazz.getDeclaredField(columnName);
-                    // 防止私有属性
-                    field.setAccessible(true);
-                    // 设值
-                    field.set(obj, value);
+        public static void closeResources(Connection connection, Statement statement, ResultSet resultSet){
+            //关闭资源
+            try {
+                if (resultSet != null)
+                    resultSet.close();
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+
+            try {
+                if (statement != null)
+                    statement.close();
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+
+            try{
+                if (connection != null)
+                    connection.close();
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+
+        public static <T> List<T> getRows(Class<T> clazz, String sql, Object ...args){
+            Connection connection = null;
+            PreparedStatement ps = null;
+            ResultSet resultSet = null;
+            try {
+                connection = getConnection();
+
+                ps = connection.prepareStatement(sql);
+
+                int i = 1;
+                for (Object arg : args) {
+                    ps.setObject(i, arg);
+                    i++;
                 }
 
-                rows.add(obj);
-            }
+                // 执行并返回结果集
+                resultSet = ps.executeQuery();
+                // 获取结果集的元数据
+                ResultSetMetaData metaData = resultSet.getMetaData();
+                //  获取结果中的列数
+                int columnCount = metaData.getColumnCount();
 
-            return rows;
-        } catch(Exception e){
-            e.printStackTrace();
-        } finally {
-            closeResources(connection, ps, resultSet);
-        }
+                List<T> rows = new ArrayList<>();
+                // 处理结果集
+                while (resultSet.next()) {
+                    T obj = clazz.newInstance();
+                    // 处理一行数据
+                    for (int j = 1; j <= columnCount; j++) {
+                        // 获取第j列的值
+                        Object value = resultSet.getObject(j);
+                        // 获取第j列的别名
+                        String columnName = metaData.getColumnLabel(j);
+                        // 通过反射，给对应列名的属性设值
+                        // 获取属性
+                        Field field = clazz.getDeclaredField(columnName);
+                        // 防止私有属性
+                        field.setAccessible(true);
+                        // 设值
+                        field.set(obj, value);
+                    }
 
-        return null;
-    }
-
-    public static <T> T getRow(Class<T> clazz, String sql, Object ...args){
-        Connection connection = null;
-        PreparedStatement ps = null;
-        ResultSet resultSet = null;
-        T obj = null;
-        try {
-            connection = getConnection();
-
-            ps = connection.prepareStatement(sql);
-
-            int i = 1;
-            for (Object arg : args) {
-                ps.setObject(i, arg);
-                i++;
-            }
-
-            // 执行并返回结果集
-            resultSet = ps.executeQuery();
-            // 获取结果集的元数据
-            ResultSetMetaData metaData = resultSet.getMetaData();
-            //  获取结果中的列数
-            int columnCount = metaData.getColumnCount();
-
-            // 处理结果集
-            if (resultSet.next()) {
-                obj = clazz.newInstance();
-                // 处理一行数据
-                for (int j = 1; j <= columnCount; j++) {
-                    // 获取第j列的值
-                    Object value = resultSet.getObject(j);
-                    // 获取第j列的列名，不推荐使用
-                    // String columnName = metaData.getColumnName(j);
-                    // 获取第j列的别名
-                    String columnName = metaData.getColumnLabel(j);
-                    // 通过反射，给对应列名的属性设值
-                    // 获取属性
-                    Field field = clazz.getDeclaredField(columnName);
-                    // 防止私有属性
-                    field.setAccessible(true);
-                    // 设值
-                    field.set(obj, value);
+                    rows.add(obj);
                 }
-            }
-        } catch(Exception e){
-            e.printStackTrace();
-        } finally {
-            closeResources(connection, ps, resultSet);
-        }
 
-        return obj;
-    }
-
-    public static int update(String sql, Object ...args){
-        Connection connection = null;
-        PreparedStatement ps = null;
-        try {
-            //获取连接
-            connection = getConnection();
-            ps = connection.prepareStatement(sql);
-
-            //填充占位符
-            int i = 1;
-            for (Object arg : args) {
-                ps.setObject(i, arg);
-                i++;
+                return rows;
+            } catch(Exception e){
+                e.printStackTrace();
+            } finally {
+                closeResources(connection, ps, resultSet);
             }
 
-            //执行
-            return ps.executeUpdate();
-        } catch (Exception e){
-            e.printStackTrace();
-        } finally {
-            closeResources(connection, ps);
+            return null;
         }
 
-        return 0;
+        public static <T> T getRow(Class<T> clazz, String sql, Object ...args){
+            Connection connection = null;
+            PreparedStatement ps = null;
+            ResultSet resultSet = null;
+            T obj = null;
+            try {
+                connection = getConnection();
+
+                ps = connection.prepareStatement(sql);
+
+                int i = 1;
+                for (Object arg : args) {
+                    ps.setObject(i, arg);
+                    i++;
+                }
+
+                // 执行并返回结果集
+                resultSet = ps.executeQuery();
+                // 获取结果集的元数据
+                ResultSetMetaData metaData = resultSet.getMetaData();
+                //  获取结果中的列数
+                int columnCount = metaData.getColumnCount();
+
+                // 处理结果集
+                if (resultSet.next()) {
+                    obj = clazz.newInstance();
+                    // 处理一行数据
+                    for (int j = 1; j <= columnCount; j++) {
+                        // 获取第j列的值
+                        Object value = resultSet.getObject(j);
+                        // 获取第j列的列名，不推荐使用
+                        // String columnName = metaData.getColumnName(j);
+                        // 获取第j列的别名
+                        String columnName = metaData.getColumnLabel(j);
+                        // 通过反射，给对应列名的属性设值
+                        // 获取属性
+                        Field field = clazz.getDeclaredField(columnName);
+                        // 防止私有属性
+                        field.setAccessible(true);
+                        // 设值
+                        field.set(obj, value);
+                    }
+                }
+            } catch(Exception e){
+                e.printStackTrace();
+            } finally {
+                closeResources(connection, ps, resultSet);
+            }
+
+            return obj;
+        }
+
+        public static int update(String sql, Object ...args){
+            Connection connection = null;
+            PreparedStatement ps = null;
+            try {
+                //获取连接
+                connection = getConnection();
+                ps = connection.prepareStatement(sql);
+
+                //填充占位符
+                int i = 1;
+                for (Object arg : args) {
+                    ps.setObject(i, arg);
+                    i++;
+                }
+
+                //执行
+                return ps.executeUpdate();
+            } catch (Exception e){
+                e.printStackTrace();
+            } finally {
+                closeResources(connection, ps);
+            }
+
+            return 0;
+        }
     }
-}
-```
+    ```
 
 ### 操作blob数据
 [top](#catalog)
@@ -572,74 +582,78 @@ public class JDBCUtils {
     - mysql8没有这种问题
 - 插入时，`setBlob()`需要创建一个文件输入流`InputStream`
 - 查询时，`blob.getBinaryStream()`返回一个文件输入流`InputStream`，需要自行转换
-- 示例: `myjdbc/src/main/java/com/ljs/myjdbc/blob/blobTest.java`
-    ```java
-    public class blobTest {
-        // 插入blob字段
-        @Test
-        public void insertBlobTest() throws Exception {
-            Connection connection = JDBCUtils.getConnection();
-            String sql = "insert into customers (name, email, birth, photo) values(?, ?, ?, ?);";
-            PreparedStatement ps = connection.prepareStatement(sql);
-            ps.setObject(1, "blobTest");
-            ps.setObject(2, "test@com");
-            ps.setObject(3, "1999-10-10");
-            // 创建一个文件输入流`InputStream`
-            FileInputStream is = new FileInputStream("resource/blobTest.png");
-            ps.setBlob(4, is);
-            ps.execute();
+- 示例: 
+    - 参考代码
+        - [/java/mylearn/myjdbc/src/test/java/com/ljs/myjdbc/blob/blobTest.java](/java/mylearn/myjdbc/src/test/java/com/ljs/myjdbc/blob/blobTest.java)
 
-            JDBCUtils.closeResources(connection, ps);
-        }
+    - 代码内容        
+        ```java
+        public class blobTest {
+            // 插入blob字段
+            @Test
+            public void insertBlobTest() throws Exception {
+                Connection connection = JDBCUtils.getConnection();
+                String sql = "insert into customers (name, email, birth, photo) values(?, ?, ?, ?);";
+                PreparedStatement ps = connection.prepareStatement(sql);
+                ps.setObject(1, "blobTest");
+                ps.setObject(2, "test@com");
+                ps.setObject(3, "1999-10-10");
+                // 创建一个文件输入流`InputStream`
+                FileInputStream is = new FileInputStream("resource/blobTest.png");
+                ps.setBlob(4, is);
+                ps.execute();
 
-        //查询blob字段
-        @Test
-        public void selectBlobTest() {
-            Connection connection = null;
-            PreparedStatement ps = null;
-            ResultSet resultSet = null;
-            InputStream is = null;
-            FileOutputStream fos = null;
-            try {
-                connection = JDBCUtils.getConnection();
-                String sql = "select photo from customers where name = 'blobTest'";
-                ps = connection.prepareStatement(sql);
-                resultSet = ps.executeQuery();
+                JDBCUtils.closeResources(connection, ps);
+            }
 
-                if (resultSet.next()) {
-                    Blob blob = resultSet.getBlob(1);
-                    // 下载文件并保存到本地
-                    is = blob.getBinaryStream();
-                    fos = new FileOutputStream("resource/blobTestDownload.png");
-                    byte[] bs = new byte[1024];
-                    int len;
-                    while ((len = is.read(bs)) != -1) {
-                        fos.write(bs, 0, len);
-                    }
-                    fos.flush();
-                }
-            }catch (Exception e){
-                e.printStackTrace();
-            } finally {
-                try{
-                    if (is != null)
-                        is.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
+            //查询blob字段
+            @Test
+            public void selectBlobTest() {
+                Connection connection = null;
+                PreparedStatement ps = null;
+                ResultSet resultSet = null;
+                InputStream is = null;
+                FileOutputStream fos = null;
                 try {
-                    if(fos != null)
-                        fos.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                    connection = JDBCUtils.getConnection();
+                    String sql = "select photo from customers where name = 'blobTest'";
+                    ps = connection.prepareStatement(sql);
+                    resultSet = ps.executeQuery();
 
-                JDBCUtils.closeResources(connection, ps, resultSet);
+                    if (resultSet.next()) {
+                        Blob blob = resultSet.getBlob(1);
+                        // 下载文件并保存到本地
+                        is = blob.getBinaryStream();
+                        fos = new FileOutputStream("resource/blobTestDownload.png");
+                        byte[] bs = new byte[1024];
+                        int len;
+                        while ((len = is.read(bs)) != -1) {
+                            fos.write(bs, 0, len);
+                        }
+                        fos.flush();
+                    }
+                }catch (Exception e){
+                    e.printStackTrace();
+                } finally {
+                    try{
+                        if (is != null)
+                            is.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                    try {
+                        if(fos != null)
+                            fos.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                    JDBCUtils.closeResources(connection, ps, resultSet);
+                }
             }
         }
-    }
-    ```
+        ```
 
 ### 批量插入
 [top](#catalog)
@@ -647,44 +661,48 @@ public class JDBCUtils {
 - 批量插入的优化：插入过程中禁止`commit`，全部插入后再`commit`
     - `connection.setAutoCommit(false);`
     - `connection.commit();`
-- 示例: `myjdbc/src/main/java/com/ljs/myjdbc/batch/BatchInsertTest.java`
-    ```java
-    @Test
-    public void batchInsertTest03(){
-        // 优化：所有的sql执行完之后，再进行commit
+- 示例: 
+    - 参考代码
+        - [/java/mylearn/myjdbc/src/test/java/com/ljs/myjdbc/batch/BatchInsertTest.java](/java/mylearn/myjdbc/src/test/java/com/ljs/myjdbc/batch/BatchInsertTest.java)
 
-        Connection connection = null;
-        PreparedStatement ps = null;
+    - 代码内容
+        ```java
+        @Test
+        public void batchInsertTest03(){
+            // 优化：所有的sql执行完之后，再进行commit
 
-        try {
-            long start = System.currentTimeMillis();
-            connection = JDBCUtils.getConnection();
-            // 禁止自动提交数据
-            connection.setAutoCommit(false);
-            String sql = "insert into goods(name) value(?)";
+            Connection connection = null;
+            PreparedStatement ps = null;
 
-            ps = connection.prepareStatement(sql);
-            for (int i = 0; i <= 20000; i++) {
-                ps.setObject(1, "name_" + i);
-                // 暂存sql
-                ps.addBatch();
+            try {
+                long start = System.currentTimeMillis();
+                connection = JDBCUtils.getConnection();
+                // 禁止自动提交数据
+                connection.setAutoCommit(false);
+                String sql = "insert into goods(name) value(?)";
 
-                if (i % 500 == 0){
-                    ps.executeBatch();
-                    ps.clearBatch();
+                ps = connection.prepareStatement(sql);
+                for (int i = 0; i <= 20000; i++) {
+                    ps.setObject(1, "name_" + i);
+                    // 暂存sql
+                    ps.addBatch();
+
+                    if (i % 500 == 0){
+                        ps.executeBatch();
+                        ps.clearBatch();
+                    }
                 }
-            }
 
-            connection.commit(); //提交数据
-            long end = System.currentTimeMillis();
-            System.out.println(end-start);
-        } catch (Exception e){
-            e.printStackTrace();
-        } finally {
-            JDBCUtils.closeResources(connection, ps);
+                connection.commit(); //提交数据
+                long end = System.currentTimeMillis();
+                System.out.println(end-start);
+            } catch (Exception e){
+                e.printStackTrace();
+            } finally {
+                JDBCUtils.closeResources(connection, ps);
+            }
         }
-    }
-    ```
+        ```
 
 ## CallableStatement
 [top](#catalog)
@@ -702,298 +720,312 @@ public class JDBCUtils {
     - `connection.rollback();`出现异常时，回滚任务
     - `connection.setAutoCommit(true);`任务结束时最好恢复自动提交的状态（尤其是在使用数据库连接池时）
 - 示例：多次更新
-    ```java
-    public static int safeUpdate(Connection connection, String sql, Object ...args){
-        PreparedStatement ps = null;
-        try {
-            //获取连接
-            ps = connection.prepareStatement(sql);
-
-            //填充占位符
-            int i = 1;
-            for (Object arg : args) {
-                ps.setObject(i, arg);
-                i++;
-            }
-
-            //执行
-            return ps.executeUpdate();
-        } catch (Exception e){
-            e.printStackTrace();
-        } finally {
-            closeResources(null, ps);
-        }
-
-        return 0;
-    }
-
-    @Test
-    public void safeUpdateTest(){
-        Connection connection = null;
-        try {
-            connection = JDBCUtils.getConnection();
-            connection.setAutoCommit(false);
-            String sql1 = "update user_table set balance = balance - 100 where user = ?;";
-            String sql2 = "update user_table set balance = balance + 100 where user = ?;";
-
-            JDBCUtils.safeUpdate(connection, sql1, "AA");
-
-            System.out.println(1 / 0);//如果出现异常无法保证操作的正确性
-
-            JDBCUtils.safeUpdate(connection, sql2, "BB");
-
-            // 提交操作
-            connection.commit();
-        }catch (Exception e){
-            e.printStackTrace();
-            //回滚
+    - 参考代码
+        - [/java/mylearn/myjdbc/src/test/java/com/ljs/myjdbc/transaction/TransactionTest.java](/java/mylearn/myjdbc/src/test/java/com/ljs/myjdbc/transaction/TransactionTest.java)
+        - [/java/mylearn/myjdbc/src/main/java/com/ljs/myjdbc/util/JDBCUtils.java](/java/mylearn/myjdbc/src/main/java/com/ljs/myjdbc/util/JDBCUtils.java)
+    
+    - 代码内容
+        ```java
+        public static int safeUpdate(Connection connection, String sql, Object ...args){
+            PreparedStatement ps = null;
             try {
-                connection.rollback();
-            } catch (SQLException ex) {
-                ex.printStackTrace();
+                //获取连接
+                ps = connection.prepareStatement(sql);
+
+                //填充占位符
+                int i = 1;
+                for (Object arg : args) {
+                    ps.setObject(i, arg);
+                    i++;
+                }
+
+                //执行
+                return ps.executeUpdate();
+            } catch (Exception e){
+                e.printStackTrace();
+            } finally {
+                closeResources(null, ps);
             }
-        } finally {
-            JDBCUtils.closeResources(connection, null);
+
+            return 0;
         }
-    }
-    ```
+        ```
+
+        ```java
+        @Test
+        public void safeUpdateTest(){
+            Connection connection = null;
+            try {
+                connection = JDBCUtils.getConnection();
+                connection.setAutoCommit(false);
+                String sql1 = "update user_table set balance = balance - 100 where user = ?;";
+                String sql2 = "update user_table set balance = balance + 100 where user = ?;";
+
+                JDBCUtils.safeUpdate(connection, sql1, "AA");
+
+                System.out.println(1 / 0);//如果出现异常无法保证操作的正确性
+
+                JDBCUtils.safeUpdate(connection, sql2, "BB");
+
+                // 提交操作
+                connection.commit();
+            }catch (Exception e){
+                e.printStackTrace();
+                //回滚
+                try {
+                    connection.rollback();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            } finally {
+                JDBCUtils.closeResources(connection, null);
+            }
+        }
+        ```
 
 # DAO
 [top](#catalog)
 - 封装针对于数据库表的通用操作
 - 示例
-    - `abstract class BaseDAO<T>`，提供基本的增删改查功能
-    - `interface CustomersDAO`，表`Customers`的操作接口
-    - `class CustomersDAOImpl extends BaseDAO<Customers> implements CustomerDAO`，接口实现
-```java
-public abstract class BaseDAO<T> {
-    private Class<T> clazz = null;
+    - 开发思路
+        - `abstract class BaseDAO<T>`，提供基本的增删改查功能
+        - `interface CustomersDAO`，表`Customers`的操作接口
+        - `class CustomersDAOImpl extends BaseDAO<Customers> implements CustomerDAO`，接口实现
+    - 参考代码
+        - [/java/mylearn/myjdbc/src/main/java/com/ljs/myjdbc/dao/BaseDAO.java](/java/mylearn/myjdbc/src/main/java/com/ljs/myjdbc/dao/BaseDAO.java)
+        - [/java/mylearn/myjdbc/src/main/java/com/ljs/myjdbc/dao/CustomerDAO.java](/java/mylearn/myjdbc/src/main/java/com/ljs/myjdbc/dao/CustomerDAO.java)
+        - [/java/mylearn/myjdbc/src/main/java/com/ljs/myjdbc/dao/CustomersDAOImpl.java](/java/mylearn/myjdbc/src/main/java/com/ljs/myjdbc/dao/CustomersDAOImpl.java)
 
-    // 获取范型类型
-    {
-        // 获取父类
-        ParameterizedType superClazz = (ParameterizedType)this.getClass().getGenericSuperclass();
-        // 获取父类中的范型
-        Type[] typeArguments = superClazz.getActualTypeArguments();
-        clazz = (Class<T>) typeArguments[0];
-    }
+    - 代码内容
+        ```java
+        public abstract class BaseDAO<T> {
+            private Class<T> clazz = null;
 
-    // 通用的增删改,考虑事务
-    public int update(Connection conn, String sql, Object... args){
-        PreparedStatement ps = null;
-        try {
-            //获取连接
-            ps = conn.prepareStatement(sql);
-
-            //填充占位符
-            for (int i = 0; i < args.length; i++) {
-                ps.setObject(i+1, args[i]);
+            // 获取范型类型
+            {
+                // 获取父类
+                ParameterizedType superClazz = (ParameterizedType)this.getClass().getGenericSuperclass();
+                // 获取父类中的范型
+                Type[] typeArguments = superClazz.getActualTypeArguments();
+                clazz = (Class<T>) typeArguments[0];
             }
 
-            //执行
-            return ps.executeUpdate();
-        } catch (Exception e){
-            e.printStackTrace();
-        } finally {
-            JDBCUtils.closeResources(null, ps);
-        }
+            // 通用的增删改,考虑事务
+            public int update(Connection conn, String sql, Object... args){
+                PreparedStatement ps = null;
+                try {
+                    //获取连接
+                    ps = conn.prepareStatement(sql);
 
-        return 0;
-    }
+                    //填充占位符
+                    for (int i = 0; i < args.length; i++) {
+                        ps.setObject(i+1, args[i]);
+                    }
 
-    public List<T> getRows(Connection connection, String sql, Object ...args){
-        PreparedStatement ps = null;
-        ResultSet resultSet = null;
-        try {
-            ps = connection.prepareStatement(sql);
-
-            for (int i = 0; i < args.length; i++) {
-                ps.setObject(i+1, args[i]);
-            }
-
-            // 执行并返回结果集
-            resultSet = ps.executeQuery();
-            // 获取结果集的元数据
-            ResultSetMetaData metaData = resultSet.getMetaData();
-            //  获取结果中的列数
-            int columnCount = metaData.getColumnCount();
-
-            List<T> rows = new ArrayList<>();
-            // 处理结果集
-            while (resultSet.next()) {
-                T obj = clazz.getDeclaredConstructor().newInstance();
-
-                // 处理一行数据
-                for (int j = 1; j <= columnCount; j++) {
-                    // 获取第j列的值
-                    Object value = resultSet.getObject(j);
-                    // 获取第j列的别名
-                    String columnName = metaData.getColumnLabel(j);
-                    // 通过反射，给对应列名的属性设值
-                    // 获取属性
-                    Field field = clazz.getDeclaredField(columnName);
-                    // 防止私有属性
-                    field.setAccessible(true);
-                    // 设值
-                    field.set(obj, value);
+                    //执行
+                    return ps.executeUpdate();
+                } catch (Exception e){
+                    e.printStackTrace();
+                } finally {
+                    JDBCUtils.closeResources(null, ps);
                 }
 
-                rows.add(obj);
+                return 0;
             }
 
-            return rows;
-        } catch(Exception e){
-            e.printStackTrace();
-        } finally {
-            JDBCUtils.closeResources(null, ps, resultSet);
-        }
+            public List<T> getRows(Connection connection, String sql, Object ...args){
+                PreparedStatement ps = null;
+                ResultSet resultSet = null;
+                try {
+                    ps = connection.prepareStatement(sql);
 
-        return null;
-    }
+                    for (int i = 0; i < args.length; i++) {
+                        ps.setObject(i+1, args[i]);
+                    }
 
-    public T getRow(Connection connection, String sql, Object ...args){
-        PreparedStatement ps = null;
-        ResultSet resultSet = null;
-        try {
-            ps = connection.prepareStatement(sql);
+                    // 执行并返回结果集
+                    resultSet = ps.executeQuery();
+                    // 获取结果集的元数据
+                    ResultSetMetaData metaData = resultSet.getMetaData();
+                    //  获取结果中的列数
+                    int columnCount = metaData.getColumnCount();
 
-            for (int i = 0; i < args.length; i++) {
-                ps.setObject(i+1, args[i]);
-            }
+                    List<T> rows = new ArrayList<>();
+                    // 处理结果集
+                    while (resultSet.next()) {
+                        T obj = clazz.getDeclaredConstructor().newInstance();
 
-            // 执行并返回结果集
-            resultSet = ps.executeQuery();
-            // 获取结果集的元数据
-            ResultSetMetaData metaData = resultSet.getMetaData();
-            //  获取结果中的列数
-            int columnCount = metaData.getColumnCount();
+                        // 处理一行数据
+                        for (int j = 1; j <= columnCount; j++) {
+                            // 获取第j列的值
+                            Object value = resultSet.getObject(j);
+                            // 获取第j列的别名
+                            String columnName = metaData.getColumnLabel(j);
+                            // 通过反射，给对应列名的属性设值
+                            // 获取属性
+                            Field field = clazz.getDeclaredField(columnName);
+                            // 防止私有属性
+                            field.setAccessible(true);
+                            // 设值
+                            field.set(obj, value);
+                        }
 
-            // 处理结果集
-            if (resultSet.next()) {
-                T obj = clazz.getDeclaredConstructor().newInstance();
-                // 处理一行数据
-                for (int j = 1; j <= columnCount; j++) {
-                    // 获取第j列的值
-                    Object value = resultSet.getObject(j);
-                    // 获取第j列的列名，不推荐使用
-                    // String columnName = metaData.getColumnName(j);
-                    // 获取第j列的别名
-                    String columnName = metaData.getColumnLabel(j);
-                    // 通过反射，给对应列名的属性设值
-                    // 获取属性
-                    Field field = clazz.getDeclaredField(columnName);
-                    // 防止私有属性
-                    field.setAccessible(true);
-                    // 设值
-                    field.set(obj, value);
+                        rows.add(obj);
+                    }
+
+                    return rows;
+                } catch(Exception e){
+                    e.printStackTrace();
+                } finally {
+                    JDBCUtils.closeResources(null, ps, resultSet);
                 }
 
-                return obj;
+                return null;
             }
-        } catch(Exception e){
-            e.printStackTrace();
-        } finally {
-            JDBCUtils.closeResources(null, ps, resultSet);
+
+            public T getRow(Connection connection, String sql, Object ...args){
+                PreparedStatement ps = null;
+                ResultSet resultSet = null;
+                try {
+                    ps = connection.prepareStatement(sql);
+
+                    for (int i = 0; i < args.length; i++) {
+                        ps.setObject(i+1, args[i]);
+                    }
+
+                    // 执行并返回结果集
+                    resultSet = ps.executeQuery();
+                    // 获取结果集的元数据
+                    ResultSetMetaData metaData = resultSet.getMetaData();
+                    //  获取结果中的列数
+                    int columnCount = metaData.getColumnCount();
+
+                    // 处理结果集
+                    if (resultSet.next()) {
+                        T obj = clazz.getDeclaredConstructor().newInstance();
+                        // 处理一行数据
+                        for (int j = 1; j <= columnCount; j++) {
+                            // 获取第j列的值
+                            Object value = resultSet.getObject(j);
+                            // 获取第j列的列名，不推荐使用
+                            // String columnName = metaData.getColumnName(j);
+                            // 获取第j列的别名
+                            String columnName = metaData.getColumnLabel(j);
+                            // 通过反射，给对应列名的属性设值
+                            // 获取属性
+                            Field field = clazz.getDeclaredField(columnName);
+                            // 防止私有属性
+                            field.setAccessible(true);
+                            // 设值
+                            field.set(obj, value);
+                        }
+
+                        return obj;
+                    }
+                } catch(Exception e){
+                    e.printStackTrace();
+                } finally {
+                    JDBCUtils.closeResources(null, ps, resultSet);
+                }
+
+                return null;
+            }
+
+            public <E> E getValue(Connection connection, String sql, Object...args)  {
+                PreparedStatement ps = null;
+                ResultSet rs = null;
+
+                try {
+                    ps = connection.prepareStatement(sql);
+                    for (int i = 0; i < args.length; i++) {
+                        ps.setObject(i + 1, args[i]);
+                    }
+
+                    rs = ps.executeQuery();
+                    if (rs.next()) {
+                        return (E) rs.getObject(1);
+                    }
+                } catch (Exception e){
+                    e.printStackTrace();
+                } finally {
+                    JDBCUtils.closeResources(null, ps, rs);
+                }
+
+                return null;
+            }
         }
+        ```
+        ```java
+        public interface CustomerDAO {
+            // 定义针对表Customer的常用操作
 
-        return null;
-    }
+            // 插入数据
+            void insert(Connection conn, Customers obj);
 
-    public <E> E getValue(Connection connection, String sql, Object...args)  {
-        PreparedStatement ps = null;
-        ResultSet rs = null;
+            // 根据id删除数据
+            void deleteById(Connection conn, int id);
 
-        try {
-            ps = connection.prepareStatement(sql);
-            for (int i = 0; i < args.length; i++) {
-                ps.setObject(i + 1, args[i]);
-            }
+            // 根据传入的对象来修改数据
+            void update(Connection conn, Customers obj);
 
-            rs = ps.executeQuery();
-            if (rs.next()) {
-                return (E) rs.getObject(1);
-            }
-        } catch (Exception e){
-            e.printStackTrace();
-        } finally {
-            JDBCUtils.closeResources(null, ps, rs);
+            // 根据指定id查询数据
+            Customers getCustomerById(Connection conn, int id);
+
+            // 查询所有数据
+            List<Customers> getAll(Connection conn);
+
+            // 返回数据量
+            Long getCount(Connection conn);
+
+            // 返回最大的生日
+            Date getMaxBirth(Connection conn);
         }
+        ```
+        ```java
+        public class CustomersDAOImpl extends BaseDAO<Customers> implements CustomerDAO {
+            @Override
+            public void insert(Connection conn, Customers obj) {
+                String sql = "insert into customers(name, email, birth) values(?, ?, ?)";
+                update(conn, sql, obj.getName(), obj.getEmail(), obj.getBirth());
+            }
 
-        return null;
-    }
-}
-```
-```java
-public interface CustomerDAO {
-    // 定义针对表Customer的常用操作
+            @Override
+            public void deleteById(Connection conn, int id) {
+                String sql = "delete from customers where id = ?";
+                update(conn, sql, id);
+            }
 
-    // 插入数据
-    void insert(Connection conn, Customers obj);
+            @Override
+            public void update(Connection conn, Customers obj) {
+                String sql = "update customers set name=?, email=?, birth=? where id=?";
+                update(conn, sql, obj.getName(), obj.getEmail(), obj.getBirth(), obj.getId());
+            }
 
-    // 根据id删除数据
-    void deleteById(Connection conn, int id);
+            @Override
+            public Customers getCustomerById(Connection conn, int id) {
+                String sql = "select id, name, email, birth from customers where id = ?";
+                return getRow(conn, sql, id);
+            }
 
-    // 根据传入的对象来修改数据
-    void update(Connection conn, Customers obj);
+            @Override
+            public List<Customers> getAll(Connection conn) {
+                String sql = "select id, name, email, birth from customers";
+                return getRows(conn, sql);
+            }
 
-    // 根据指定id查询数据
-    Customers getCustomerById(Connection conn, int id);
+            @Override
+            public Long getCount(Connection conn) {
+                String sql = "select count(*) from customers";
+                return getValue(conn, sql);
+            }
 
-    // 查询所有数据
-    List<Customers> getAll(Connection conn);
-
-    // 返回数据量
-    Long getCount(Connection conn);
-
-    // 返回最大的生日
-    Date getMaxBirth(Connection conn);
-}
-```
-```java
-public class CustomersDAOImpl extends BaseDAO<Customers> implements CustomerDAO {
-    @Override
-    public void insert(Connection conn, Customers obj) {
-        String sql = "insert into customers(name, email, birth) values(?, ?, ?)";
-        update(conn, sql, obj.getName(), obj.getEmail(), obj.getBirth());
-    }
-
-    @Override
-    public void deleteById(Connection conn, int id) {
-        String sql = "delete from customers where id = ?";
-        update(conn, sql, id);
-    }
-
-    @Override
-    public void update(Connection conn, Customers obj) {
-        String sql = "update customers set name=?, email=?, birth=? where id=?";
-        update(conn, sql, obj.getName(), obj.getEmail(), obj.getBirth(), obj.getId());
-    }
-
-    @Override
-    public Customers getCustomerById(Connection conn, int id) {
-        String sql = "select id, name, email, birth from customers where id = ?";
-        return getRow(conn, sql, id);
-    }
-
-    @Override
-    public List<Customers> getAll(Connection conn) {
-        String sql = "select id, name, email, birth from customers";
-        return getRows(conn, sql);
-    }
-
-    @Override
-    public Long getCount(Connection conn) {
-        String sql = "select count(*) from customers";
-        return getValue(conn, sql);
-    }
-
-    @Override
-    public Date getMaxBirth(Connection conn) {
-        String sql = "select max(birth) from customers";
-        return getValue(conn, sql);
-    }
-}
-```
+            @Override
+            public Date getMaxBirth(Connection conn) {
+                String sql = "select max(birth) from customers";
+                return getValue(conn, sql);
+            }
+        }
+        ```
 
 # 数据库连接池
 ## 数据库连接池的基本概念
@@ -1030,74 +1062,80 @@ public class CustomersDAOImpl extends BaseDAO<Customers> implements CustomerDAO 
 ## c3p0
 [top](#catalog)
 - 创建数据库连接池
-    ```java
-    public class C3P0Test {
+    - 参考代码
+        - [/java/mylearn/myjdbc/src/test/java/com/ljs/myjdbc/datasource/C3P0Test.java](/java/mylearn/myjdbc/src/test/java/com/ljs/myjdbc/datasource/C3P0Test.java)
+    - 代码内容
+        ```java
+        public class C3P0Test {
 
-        // 手动配置数据库连接池信息
-        @Test
-        public void connectionTest01() throws Exception {
-            //ComboPooledDataSource是DataSource的接口实现类
-            //获取数据库连接处
-            ComboPooledDataSource cpds = new ComboPooledDataSource();
-            cpds.setDriverClass("com.mysql.cj.jdbc.Driver"); //loads the jdbc driver
-            cpds.setJdbcUrl("jdbc:mysql://127.0.0.1:3306/test?serverTimezone=Asia/Shanghai&characterEncoding=utf8&useUnicode=true&useSSL=false&rewriteBatchedStatements=true");
-            cpds.setUser("root");
-            cpds.setPassword("1234");
+            // 手动配置数据库连接池信息
+            @Test
+            public void connectionTest01() throws Exception {
+                //ComboPooledDataSource是DataSource的接口实现类
+                //获取数据库连接处
+                ComboPooledDataSource cpds = new ComboPooledDataSource();
+                cpds.setDriverClass("com.mysql.cj.jdbc.Driver"); //loads the jdbc driver
+                cpds.setJdbcUrl("jdbc:mysql://127.0.0.1:3306/test?serverTimezone=Asia/Shanghai&characterEncoding=utf8&useUnicode=true&useSSL=false&rewriteBatchedStatements=true");
+                cpds.setUser("root");
+                cpds.setPassword("1234");
 
-            //通过设置相关参数，管理数据库连接池
-            cpds.setInitialPoolSize(10);
+                //通过设置相关参数，管理数据库连接池
+                cpds.setInitialPoolSize(10);
 
-            //获取一个连接
-            Connection conn = cpds.getConnection();
-            System.out.println(conn);
+                //获取一个连接
+                Connection conn = cpds.getConnection();
+                System.out.println(conn);
 
-            DataSources.destroy(cpds);
+                DataSources.destroy(cpds);
+            }
+
+            //通过配置来创建数据库连接池
+            @Test
+            public void connectionTest02() throws SQLException {
+                ComboPooledDataSource cpds = new ComboPooledDataSource("testcp");
+                Connection conn = cpds.getConnection();
+                System.out.println(conn);
+                DataSources.destroy(cpds);
+            }
         }
-
-        //通过配置来创建数据库连接池
-        @Test
-        public void connectionTest02() throws SQLException {
-            ComboPooledDataSource cpds = new ComboPooledDataSource("testcp");
-            Connection conn = cpds.getConnection();
-            System.out.println(conn);
-            DataSources.destroy(cpds);
-        }
-    }
-    ```
+        ```
 - 配置文件
-    - idea:`resource/c3p0-config.xml`
-    ```xml
-    <?xml version="1.0" encoding="UTF-8" ?>
-    <!--https://www.mchange.com/projects/c3p0/#configuration_files-->
-    <c3p0-config>
-        <!-- This app is massive! -->
-        <!--testcp 为配置名，可以自定义；读取时也通过该属性读取-->
-        <named-config name="testcp">
+    - 文件路径
+        - [/java/mylearn/myjdbc/src/resources/c3p0-config.xml](/java/mylearn/myjdbc/src/resources/c3p0-config.xml)
+    
+    - 配置内容
+        ```xml
+        <?xml version="1.0" encoding="UTF-8" ?>
+        <!--https://www.mchange.com/projects/c3p0/#configuration_files-->
+        <c3p0-config>
+            <!-- This app is massive! -->
+            <!--testcp 为配置名，可以自定义；读取时也通过该属性读取-->
+            <named-config name="testcp">
 
-            <!--提供获取连接的4个基本信息-->
+                <!--提供获取连接的4个基本信息-->
 
-            <property name="driverClass">com.mysql.cj.jdbc.Driver</property>
-            <property name="jdbcUrl">jdbc:mysql://127.0.0.1:3306/test?serverTimezone=Asia/Shanghai&amp;characterEncoding=utf8&amp;useUnicode=true&amp;useSSL=false&amp;rewriteBatchedStatements=true</property>
-            <property name="user">root</property>
-            <property name="password">1234</property>
+                <property name="driverClass">com.mysql.cj.jdbc.Driver</property>
+                <property name="jdbcUrl">jdbc:mysql://127.0.0.1:3306/test?serverTimezone=Asia/Shanghai&amp;characterEncoding=utf8&amp;useUnicode=true&amp;useSSL=false&amp;rewriteBatchedStatements=true</property>
+                <property name="user">root</property>
+                <property name="password">1234</property>
 
-            <!--进行数据库连接池管理的基本信息-->
-            <!--连接数不足时，向数据库服务器申请的连接数-->
-            <property name="acquireIncrement">5</property>
-            <!--初始化连接数-->
-            <property name="initialPoolSize">10</property>
-            <!--最小连接数-->
-            <property name="minPoolSize">10</property>
-            <!--最大连接数-->
-            <property name="maxPoolSize">100</property>
-            <!--连接池中维护的Statement个数-->
-            <property name="maxStatements">50</property>
-            <!--每个连接可以使用的连接数-->
-            <property name="maxStatementsPerConnection">2</property>
+                <!--进行数据库连接池管理的基本信息-->
+                <!--连接数不足时，向数据库服务器申请的连接数-->
+                <property name="acquireIncrement">5</property>
+                <!--初始化连接数-->
+                <property name="initialPoolSize">10</property>
+                <!--最小连接数-->
+                <property name="minPoolSize">10</property>
+                <!--最大连接数-->
+                <property name="maxPoolSize">100</property>
+                <!--连接池中维护的Statement个数-->
+                <property name="maxStatements">50</property>
+                <!--每个连接可以使用的连接数-->
+                <property name="maxStatementsPerConnection">2</property>
 
-        </named-config>
-    </c3p0-config>
-    ```
+            </named-config>
+        </c3p0-config>
+        ```
 
 ## Druid
 [top](#catalog)
@@ -1130,23 +1168,43 @@ public class CustomersDAOImpl extends BaseDAO<Customers> implements CustomerDAO 
 | proxyFilters                  |          | 类型是List，如果同时配置了filters和proxyFilters，是组合关系，并非替换关系 |
 
 - 示例
-    ```java
-    @Test
-        public void connectionTest() throws Exception {
-            Properties pros = new Properties();
-            FileInputStream is = new FileInputStream("resource/druid.properties");
-            pros.load(is);
-            DataSource ds = DruidDataSourceFactory.createDataSource(pros);
-            Connection conn = ds.getConnection();
-            System.out.println(conn);
-        }
-    ```
+    - 测试类
+        - 参考代码
+            - [/java/mylearn/myjdbc/src/test/java/com/ljs/myjdbc/datasource/DruidTest.java](/java/mylearn/myjdbc/src/test/java/com/ljs/myjdbc/datasource/DruidTest.java)
+        - 测试内容
+            ```java
+            @Test
+            public void connectionTest() throws Exception {
+                Properties pros = new Properties();
+                InputStream is = getClass().getResourceAsStream("/druid.properties");
+                pros.load(is);
+                DataSource ds = DruidDataSourceFactory.createDataSource(pros);
+                Connection conn = ds.getConnection();
+                System.out.println(conn);
+            }
+            ```
+    - 配置文件
+        - 文件路径
+            - [/java/mylearn/myjdbc/src/resources/druid.properties](/java/mylearn/myjdbc/src/resources/druid.properties)
+        - 配置内容
+            ```
+            driverClassName=com.mysql.cj.jdbc.Driver
+            url=jdbc:mysql://127.0.0.1:3306/test?serverTimezone=Asia/Shanghai&characterEncoding=utf8&useUnicode=true&useSSL=false&rewriteBatchedStatements=true&allowPublicKeyRetrieval=true
+            username=root
+            password=1234
+
+            initialSize=10
+            maxActive=15
+            ```
 
 # DBUtils实现CRUD操作
 [top](#catalog)
 - JDBC工具类库，是对JDBC的简单封装
 - 使用DBUtils可以简化jdbc编码的工作量，同时也不会影响程序的性能。
 - 使用方法
+    - 参考代码
+        - [/java/mylearn/myjdbc/src/test/java/com/ljs/myjdbc/dbutils/QueryRunnerTest.java](/java/mylearn/myjdbc/src/test/java/com/ljs/myjdbc/dbutils/QueryRunnerTest.java)
+
     - `runner.update`，执行增删改操作
         ```java
         @Test
