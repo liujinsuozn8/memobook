@@ -1,4 +1,4 @@
-- 内容整理自：
+- 参考：
     - `https://www.bilibili.com/video/av67955358`
 
 <span id="catalog"></span>
@@ -68,7 +68,7 @@
     - 更新
         - 没有其他特殊操作
 6. **关闭`Statement`对象**
-7。 **关闭`Connection`对象**
+7. **关闭`Connection`对象**
 
 ## JDBC的两种编程思想
 [top](#catalog)
