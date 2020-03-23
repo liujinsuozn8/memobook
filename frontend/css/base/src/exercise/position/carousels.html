@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>carousels test</title>
+    <style>
+        /* 去除html的默认样式 */
+        /* 去除ul li的默认样式 */
+        a, ul, li {
+            margin: 0;
+            padding: 0;
+            border: 0;
+            font-size: 100%;
+            font: inherit;
+            vertical-align: baseline;
+        }
+
+        /* 去除所有链接的下划线 */
+        a {
+            text-decoration: none;
+        }
+
+        ul {
+            list-style: none;
+        }
+
+        body{
+            background-color: rgb(200, 200, 200);
+        }
+
+        /* 1. 设置轮播图图像部分的样式 */
+        /* 1.1.  设置轮播图的整体样式、固定位置，并开启相对定位，作为子元素中所有绝对定位元素的`定位位置` */
+        .carousels{
+            width: 100px;
+            height: 100px;
+            margin:100px auto;
+            position: relative;
+        }
+
+        /* 1.2. 轮播图下的li全部开启绝对定位，脱离文档流，并堆叠在一起 */
+        .carousels li{
+            position: absolute;
+        }
+
+        /* 1.3. 设置链接图片的样式 */
+        .colorBox01,.colorBox02,.colorBox03{
+            width:100px;
+            height:100px;
+            
+        }
+
+        .colorBox01{
+            background-color: #bfa;
+        }
+        .colorBox02{
+            background-color: #47e;
+        }
+        .colorBox03{
+            background-color: orange;
+        }
+
+        /* 2. 设置轮播图下部，快速链接的样式 */
+        /* 2.1. 设置快速连接外部的样式，也启动绝对定位，并使用最高的层级，保证能够一直显示在最前面 */
+        /* 定义快速连接外部元素的定位于层级，避免逐个设定每个连接 */
+        .pointer{
+            /* width: 100px;
+            height: 15px;
+            background-color: rgba(97, 96, 96, 0.212); */
+            position: absolute;
+            z-index:9999;
+            bottom: 10px;
+        }
+
+        .pointer a{
+            width:10px;
+            height: 10px;
+            float: left;
+            background-color: rgba(255, 255, 255, 0.513);
+            margin: 0px 5px;
+            border-radius: 50%;
+            
+            /* 当鼠标移入时，会有2px的边框，会使元素下移，与其他元素不在一行显示
+               所以在每个链接外部添加一个2px的空白边框，以此来保持布局 */
+            border: transparent solid 2px;
+
+            /* 设置非透明边框时，默认背景色范围会放大，然后边框颜色会遮盖被放大的部分，
+               所以设置透明边框后，背景色放大的问题会显示出来，通过background-clip属性
+               来切除多余的部分 */
+            background-clip: content-box;
+        }
+
+        /* 设置快速链接鼠标移入时的效果，分别设置边框和背景色 */
+        .pointer a:hover{
+            background-color: rgb(255, 255, 255);
+            border:rgba(255, 255, 255, 0.5) solid 2px;
+        }
+    </style>
+</head>
+<body>
+    <ul class="carousels">
+        <li>
+            <a href="javascript:;">
+                <div class="colorBox01"></div>
+            </a>
+        </li>
+        <li>
+            <a href="javascript:;">
+                <div class="colorBox02"></div>
+            </a>
+        </li>
+        <li>
+            <a href="javascript:;">
+                <div class="colorBox03"></div>
+            </a>
+        </li>
+
+        <div class="pointer">
+            <a href="javascript:;"></a>
+            <a href="javascript:;"></a>
+            <a href="javascript:;"></a>
+        </div>
+    </ul>
+</body>
+</html>
