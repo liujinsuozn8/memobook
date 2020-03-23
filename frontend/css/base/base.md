@@ -68,7 +68,7 @@
     - [固定定位](#固定定位)
     - [粘滞定位](#粘滞定位)
     - [元素的层级](#元素的层级)
-- [](#)
+- [字体font](#字体font)
 - [](#)
 - [](#)
 - [](#)
@@ -1573,6 +1573,7 @@
 - 元素脱离文档流之后的特点
     - 元素不会独占一行
     - 元素的宽、高等于元素内容的宽、高
+    - `height`、`width`对于所有元素都有效
 - 示例
     - 参考代码
         - [/frontend/css/base/src/float/outNormalFlow.html](/frontend/css/base/src/float/outNormalFlow.html)
@@ -4245,6 +4246,9 @@
         - `right` : 定位元素到定位位置右边的距离
     - 偏移量的定位位置会根据`position`的属性值变化
 
+- 浮动与定位都可以进行页面布局，两者的使用规范是：<label style="color:red">大范围使用浮动，小范围微调使用定位</label>
+    - 如果页面中使用的全都是定位，当需要调整页面布局的时候，可能会需要调整每一个元素，非常低效非常麻烦
+
 ## 相对定位
 [top](#catalog)
 - `position:relative`开启相对定位
@@ -4902,6 +4906,20 @@
         - 页面结果
             - ![](?????)
         
+# 字体font
+[top](#catalog)
+- 与字体相关的属性
+    
+    |属性|说明|
+    |-|-|
+    |`color`|一般用于设置字体颜色，严格说`color`用来设置前景色|
+    |`font-size`|<ul><li>用于设置文字大小</li><li>与文字大小相关的单位：`em`，`rem`，参考：[页面的长度单位](#页面的长度单位)</li></ul>|
+    |`font-family`|设置字体格式|
+    |||
+    |||
+
+
+
 
 # 网页布局
 ## 基本的页面布局思路
@@ -5002,6 +5020,8 @@
 - 阴影不会影响页面布局
 - 轮廓不会影响**可见框**的大小，**不会影响布局**
 
+- **行内元素的`width`、`height`是无效的，必须使用`display:block`转化为块元素、或`float`脱离文档流**
+
 - 默认情况下，块元素独占一行是因为要强制遵守水平布局的等式
     - [为什么块元素独占一行](#reasonofblockelementuseline)
 
@@ -5042,11 +5062,17 @@
     }
     ```
 
+- 浮动与定位的使用规范：大范围使用浮动，小范围微调使用定位
+
 # 练习
 [top](#catalog)
-- 图片列表
-    - 01piclist.html
-- 文字导航条
-    - 02navigation.html
-- 网易新闻列表
-    - 03newlist.html
+- 基础元素、属性练习
+    - 图片列表
+        - 01piclist.html
+    - 文字导航条
+        - 02navigation.html
+    - 网易新闻列表
+        - 03newlist.html
+- 定位练习
+    - 轮播图
+        - /frontend/css/base/src/exercise/position/carousels.html
