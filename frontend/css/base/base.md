@@ -42,7 +42,6 @@
     - [盒子的轮廓](#盒子的轮廓)
     - [盒子的阴影](#盒子的阴影)
     - [盒子的圆角](#盒子的圆角)
-    - [文字水平垂直居中](#文字水平垂直居中)
 - [浏览器的默认样式](#浏览器的默认样式)
 - [常用的通用属性](#常用的通用属性)
     - [display](#display)
@@ -69,6 +68,16 @@
     - [粘滞定位](#粘滞定位)
     - [元素的层级](#元素的层级)
 - [字体font](#字体font)
+    - [字体的格式](#字体的格式)
+    - [图标字体](#图标字体)
+        - [图标字体的基本知识](#图标字体的基本知识)
+        - [开源图标字体库FontAwesome](#开源图标字体库FontAwesome)
+    - [行高与字体框](#行高与字体框)
+        - [行高](#行高)
+        - [字体框](#字体框)
+        - [行高与字体框的应用](#行高与字体框的应用)
+    - [文字水平垂直居中](#文字水平垂直居中)
+- [](#)
 - [](#)
 - [](#)
 - [](#)
@@ -3131,19 +3140,6 @@
         - 页面结果
             - ![html_result_08](imgs/boxModel/borderRadius/html_result_08.png)
 
-## 文字水平垂直居中
-[top](#catalog)
-- 文字水平居中
-    - `text-align: center;`
-- 文字垂直居中：需要`height = line-height`
-    ```css
-    height:200px;
-    line-height:200px;
-    ```
-
-- 示例：
-    - ???????
-
 
 # 浏览器的默认样式
 [top](#catalog)
@@ -4907,18 +4903,379 @@
             - ![](?????)
         
 # 字体font
+## 字体的格式
 [top](#catalog)
-- 与字体相关的属性
+- 与字体的格式相关的属性
     
     |属性|说明|
     |-|-|
     |`color`|一般用于设置字体颜色，严格说`color`用来设置前景色|
-    |`font-size`|<ul><li>用于设置文字大小</li><li>与文字大小相关的单位：`em`，`rem`，参考：[页面的长度单位](#页面的长度单位)</li></ul>|
-    |`font-family`|设置字体格式|
+    |`font-size`|<ul>  <li>用于设置文字大小</li>  <li>与文字大小相关的单位：`em`，`rem`，参考：[页面的长度单位](#页面的长度单位)</li>  </ul>|
+    |`font-family`|<ul>   <li>设置字体格式（字体族） <ul><li>可以指定多个字体，字体间用`,`分割 <ul>  <li>如：`Arial, Helvetica, sans-serif;`</li>  <li>指定多个字体时，按照顺序来设置：先使用第一中字体，如果第一中没有则尝试第二种</li>  <li>一般会在最后写一个字体分类，以保证其他字体未找到时，使用浏览器下的某种类型的默认字体</li>   </ul>  </li>  <li>字体名中如果有空格等特殊字符，需要使用`''`来包裹</li>  </ul>   </li>   <li>几种字体分类，使用后浏览器会自动使用该类别下的字体<ul><li>`serif` : 衬线字体</li><li>`sans-serif` : 非衬线字体</li> <li>`monospace` : 等宽字体，字母大小相同，方便对齐</li>  <li>`cursive` : 草书字体，类似于艺术字，很少使用</li>  <li>`fantasy` : 类似于艺术字，很少使用</li> </ul> </li> </ul>|
     |||
     |||
 
+- 设置字体格式时，用户的电脑中必须要有对应的字体文件，否则无法正常显示，所以大多使用微软雅黑
+- `@font-face`，指定从服务器下载字体文件
+    - 用户使用时，如果本地有相应的字体文件，则使用本地的，如果没有则从服务器下载
+    - `@font-face`的设置方法
+        ```css
+        @font-face {
+            /* 指定字体的名字 */
+            font-family: "myfont";
+            /* 服务器中字体文件的路径，可以指定多个，按照顺序使用 */
+            src: url("..."),url("...");
+        }
+        ```
+    - `@font-face`中字体的使用方法：直接通过字体名字来使用
+        ```css
+        font-family: myfont;
+        ```
+    - `@font-face`带来的问题
+        1. 第一次加载时比较慢
+        2. 可能会产生版权问题
 
+- 示例
+    - 参考代码
+        - [/frontend/css/base/src/font/font.html](/frontend/css/base/src/font/font.html)
+    - css
+        ```css
+        p{
+            /* 设置字体颜色 */
+            color:#47e; 
+            /* 设置字体大小 */
+            font-size:15px;
+            /* 设置字体格式 */
+            font-family:Arial, Helvetica, sans-serif;
+        }
+
+        .pstyle01{
+            font-family: serif;
+        }
+        .pstyle02{
+            font-family:sans-serif;
+        }
+        .pstyle03{
+            font-family:monospace;
+        }
+        .pstyle04{
+            font-family:cursive;
+        }
+        .pstyle05{
+            font-family:fantasy;
+        }
+        
+        @font-face {
+            /* 指定字体的名字 */
+            font-family: "myfont";
+            /* 服务器中字体文件的路径 */
+            src: url();
+        }
+        ```
+    - html
+        ```html
+        <p>
+            Lorem ipsum dolor sit, amet consectetur adipisicing elit. Obcaecati rerum adipisci animi culpa nobis ex numquam aperiam delectus incidunt harum eius, eum, commodi repellat ad libero illo, repudiandae quae exercitationem!
+        </p>
+
+        <section>1. font-family: serif;</section>
+        <p class="pstyle01">abcdefghijklmn</p>
+
+        <section>2. font-family:sans-serif;</section>
+        <p class="pstyle02">abcdefghijklmn</p>
+
+        <section>3. font-family:monospace;</section>
+        <p class="pstyle03">abcdefghijklmn</p>
+        <p class="pstyle03">aaaaaaaaaaaaaaaa</p>
+        
+        <section>4. font-family:cursive;</section>
+        <p class="pstyle04">qwrerttyu</p>
+        
+        <section>5. font-family:fantasy;</section>
+        <p class="pstyle05">tgbnhyujm</p>
+        ```
+    - 页面结果
+        - ![](?????)
+
+
+## 图标字体
+### 图标字体的基本知识
+[top](#catalog)
+- 字体相对于图片的优势：
+    1. 放大字体时，不会失真
+    2. 字体可以改变颜色
+- 为什么使用图标字体？
+    - 在网页中需要使用一些图标，这些图标可以使用图片，但是图片本身的容量比较大，并且不灵活
+    - 使用图标时，将图标设置为字体，通过`@font-face`来引入，这样将字体作为图标使用更加灵活
+
+- 一般会使用`<i>`标签来表示图标字体（该标签本身是表示斜体）
+
+- 开源图标字体引入后的三种通用使用方法
+    1. 类
+    2. 字符code + 伪元素
+    3. html实体
+
+### 开源图标字体库FontAwesome
+[top](#catalog)
+- 开源的图标字体库:`Font Awesome`的使用
+    - 引入`Font Awesome`
+        1. 地址：https://fontawesome.com/
+        2. 下载解压
+        3. 将css和webfonts目录拷贝到工作目录（如放到fa目录下，html文件与fa目录同级）
+            - css和webfonts必须在同级目录下
+        4. 引入css目录下的外部css：`all.css`，或`all.min.css`(min是压缩过的文件), 如：
+            ```html
+            <link rel="stylesheet" href="./fa/css/all.css">
+            ```
+        5. 使用图标字体
+    - 3种使用方法
+        1. 类：通过类来使用，如：`<i class="fas fa-bell"></i>`
+            - `fas`是一个字体引入样式，`fa-bell`是实际的图标样式
+            - `fa-bell`的css内容，直接设置伪元素来设置图标
+                ```css
+                .fa-bell:before {
+                    content: "\f0f3"; }
+                ```
+            - `fas`的css内容：通过`@font-face`设置webfonts下字体文件的地址，然后在`fas`中通过`font-family`属性来引用字体
+                ```css
+                @font-face {
+                    font-family: 'Font Awesome 5 Free';
+                    font-style: normal;
+                    font-weight: 900;
+                    font-display: block;
+                    src: url("../webfonts/fa-solid-900.eot");
+                    src: url("../webfonts/fa-solid-900.eot?#iefix") format("embedded-opentype"), url("../webfonts/fa-solid-900.woff2") format("woff2"), url("../webfonts/fa-solid-900.woff") format("woff"), url("../webfonts/fa-solid-900.ttf") format("truetype"), url("../webfonts/fa-solid-900.svg#fontawesome") format("svg"); }
+
+                .fa,
+                .fas {
+                    font-family: 'Font Awesome 5 Free';
+                    font-weight: 900; }
+                ```
+
+        2. 字符code + 伪元素 ： 在css中通过Font Awesome的字符编码code与伪元素来定制图标字体
+            1. 设置目标元素的伪元素：`before`或`after`
+            2. 找到需要使用的图标字体的字符编码
+            3. 通过`font-family`属性引入其对应的字体，使字体生效
+            4. 在类中进行其他内容的定制
+        
+        3. html实体：通过html实体来使用图标字体
+            - 使用方法:
+                - 类中指定字体引入样式，如`fas`
+                - 通过html实体引入图标：`&#x字符编码;`,如
+                    ```html
+                    <i class="fas">&#xf647;</i>
+                    ```
+
+- 示例
+    - 使用前需要手动导入css与webfont目录
+    - 参考代码
+        - [/frontend/css/base/src/font/fontAwesome.html](/frontend/css/base/src/font/fontAwesome.html)
+    - css
+        ```css
+        /* 2. 在css中通过Font Awesome的字符编码code与伪元素来定制图标字体 */
+        li{
+            list-style: none;
+        }
+
+        .iconlist li::before{
+            content: "\f236";
+            font-family: "Font Awesome 5 Free";
+            font-weight: 900;
+            margin-right:10px;
+        }
+        ```
+        
+    - html
+        ```html
+        <section>1. 通过类使用图标字体</section>
+        <i class="fas fa-bell" style="color:#47e; font-size:20px;"></i>
+        <br>
+        <br>
+
+        <section>2. 在css中通过字符Font Awesome的字符编码code与
+            <br>伪元素来定制图标字体：fa-bed</section>
+        <ul class="iconlist">
+            <li>aaa</li>
+            <li>bbb</li>
+            <li>ccc</li>
+        </ul>
+
+        <section>3. 通过html实体来使用图标字体：fa-bible</section>
+        <i class="fas">&#xf647;</i>
+        ```
+    - 页面结果
+        - ![](?????)
+
+## 行高与字体框
+### 行高
+[top](#catalog)  
+- 行高指文字占用的实际高度
+- 可以通过`line-height`属性来指定行高
+    - 属性的可用单位
+        1. `px`
+        2. `em`，[页面的长度单位](#页面的长度单位)
+        3. `rem`，[页面的长度单位](#页面的长度单位)
+        4. 数字，表示当前文字大小的倍数
+    - 默认行高：1.333
+
+- 示例
+    - 参考代码
+        - [/frontend/css/base/src/font/lineHeight.html](/frontend/css/base/src/font/lineHeight.html)
+    - 查看默认行高
+        - css
+            ```css
+            .box01{
+                border:#47e 2px solid;
+            }
+            ```
+        - html
+            ```html
+            <section>
+                <p>1. 查看默认行高</p>
+                <p>div是宽元素，宽高由子元素和内容决定，一次来观察默认行高</p>
+            </section>
+            <div class="box01">1234556</div>
+            ```
+        - 页面结果
+            - ![](?????)
+            
+    - 手动设置行高
+        - css
+            ```css
+            .box02{
+                border:#47e 2px solid;
+                line-height: 100px;
+            }
+            ```
+        - html
+            ```html
+            <section>2. 设置行高 line-height: 100px;</section>
+            <div class="box02">qwertyyuu</div>
+            ```
+        - 页面结果
+            - ![](?????)
+
+    - 使用数字设置行高，即文字大小的倍数
+        - css
+            ```css
+            .box0301{
+                font-size:20px;
+                border: #47e 2px solid;
+                line-height: 1;
+            }
+            .box0302{
+                font-size:20px;
+                border: #47e 2px solid;
+                line-height: 2;
+            }
+            ```
+        - html
+            ```html
+            <section>3. 使用数字设置行高，即文字大小的倍数</section>
+            <section>3.1. 1倍</section>
+            <div class="box0301">sdfgdfgf</div>
+            <section>3.2. 2倍</section>
+            <div class="box0302">sdfgdfgf</div>
+            ```
+        - 页面结果
+            - ![](?????)
+
+### 字体框
+[top](#catalog)
+- 字体框就是字体存在的格子，每一个字都是存在于一个格子中的
+- 给字体设置`font-size`属性时，实际上就是在设置字体框的高度
+    - 如`font-size:50px`可以理解为：将字体放入一个大小为50px的框中
+    - 严格来说，字体的最终大小会**小于**`font-size`
+
+- 行高会在**字体框的上下**平均分配，这样会使文字默认在一行的中间位置
+    - 利用这个特性一般会设置`line-height = hegiht`来使**单行文字**垂直居中
+
+### 行高与字体框的应用
+[top](#catalog)
+1. 单行文字垂直居中：利用**行高会在字体框的上下平均分配**的特性，通过设置`height = line-height`，或者只设置`line-height`，来制作**单行文字垂直居中**的效果
+    - 参考：[文字水平垂直居中](#文字水平垂直居中)
+
+2. 设置行间距：`行间距=line-height - font-size`
+    - 示例
+        - 参考代码
+            - [/frontend/css/base/src/font/fontCenter.html](/frontend/css/base/src/font/fontCenter.html)
+        - 测试行间距
+            - css
+                ```css
+                .box03{
+                    width: 200px;
+                    height: 200px;
+                    background-color: #bfa;
+                    font-size: 20px;
+                    line-height: 40px;
+                }
+                ```
+            - html
+                ```html
+                <section>3. 测试行间距</section>
+                <div class="box03">
+                    <p>asdfdfdfg</p>
+                    <p>asdfdfdfg</p>
+                    <p>asdfdfdfg</p>
+                </div>
+                ```
+            - 页面结果
+                - ![](????? 标记控制台信息)  
+
+## 文字水平垂直居中
+[top](#catalog)
+- 文字水平居中
+    - `text-align: center;`
+- 单行文字垂直居中：需要`height = line-height`，或者只设置`line-height`
+    - 引用字体框的特性，行高会在文字框的上下平均分配，来达到垂直居中的效果
+
+- 示例：
+    - 参考代码
+        - [/frontend/css/base/src/font/fontCenter.html](/frontend/css/base/src/font/fontCenter.html)
+    
+    - 测试文字水平居中
+        - css
+            ```css
+            .box01{
+                width: 200px;
+                height: 200px;
+                background-color: #bfa;
+                text-align: center;
+            }
+            ```
+        - html
+            ```html
+            <section>1. 测试文字水平居中</section>
+            <div class="box01">asdfdfdfg</div>
+            ```
+        - 页面结果
+            - ![](?????)
+    
+    - 测试单行文字垂直居中
+        - css
+            ```css
+            .box02{
+                width: 200px;
+                height: 200px;
+                background-color: #bfa;
+                line-height: 200px;
+            }
+            ```
+        - html
+            ```html
+            <section>2. 测试单行文字垂直居中</section>
+            <div class="box02">asdfdfdfg</div>
+            ```
+        - 页面结果
+            - ![](?????)
+
+## 字体的简写属性
+[top](#catalog)
+- 通过简写属性：`font`可以设置与字体相关的所有属性
+- 语法：
+    - `font: 字体大小 字体族`
+    - 字体大小后可以指定行高：`font: 字体大小/行高 字体族`
+    - 行高可以省略但是会使用默认值。如果前面有设置行高，将会被默认值覆盖
 
 
 # 网页布局
