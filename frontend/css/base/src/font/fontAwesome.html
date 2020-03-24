@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Font Awesome test</title>
+        <link rel="stylesheet" href="./fa/css/all.css">
+        <style>
+            /* 2. 在css中通过Font Awesome的字符编码code与伪元素来定制图标字体 */
+            li{
+                list-style: none;
+            }
+
+            .iconlist li::before{
+                content: "\f236";
+                font-family: "Font Awesome 5 Free";
+                font-weight: 900;
+                margin-right:10px;
+            }
+        </style>
+    </head>
+    <body>
+        <section>1. 通过类使用图标字体</section>
+        <i class="fas fa-bell" style="color:#47e; font-size:20px;"></i>
+        <br>
+        <br>
+
+        <section>2. 在css中通过字符Font Awesome的字符编码code与<br>伪元素来定制图标字体：fa-bed</section>
+        <ul class="iconlist">
+            <li>aaa</li>
+            <li>bbb</li>
+            <li>ccc</li>
+        </ul>
+
+        <section>3. 通过html实体来使用图标字体：fa-bible</section>
+        <i class="fas">&#xf647;</i>
+    </body>
+</html>
