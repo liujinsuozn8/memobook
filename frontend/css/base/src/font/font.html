@@ -1,0 +1,62 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>font test</title>
+        <style>
+            p{
+                /* 设置字体颜色 */
+                color:#47e; 
+                /* 设置字体大小 */
+                font-size:15px;
+                /* 设置字体格式 */
+                font-family:Arial, Helvetica, sans-serif;
+            }
+
+            .pstyle01{
+                font-family: serif;
+            }
+            .pstyle02{
+                font-family:sans-serif;
+            }
+            .pstyle03{
+                font-family:monospace;
+            }
+            .pstyle04{
+                font-family:cursive;
+            }
+            .pstyle05{
+                font-family:fantasy;
+            }
+            
+            @font-face {
+                /* 指定字体的名字 */
+                font-family: "myfont";
+                /* 服务器中字体文件的路径 */
+                src: url();
+            }
+        </style>
+    </head>
+    <body>
+        <p>
+            Lorem ipsum dolor sit, amet consectetur adipisicing elit. Obcaecati rerum adipisci animi culpa nobis ex numquam aperiam delectus incidunt harum eius, eum, commodi repellat ad libero illo, repudiandae quae exercitationem!
+        </p>
+
+        <section>1. font-family: serif;</section>
+        <p class="pstyle01">abcdefghijklmn</p>
+
+        <section>2. font-family:sans-serif;</section>
+        <p class="pstyle02">abcdefghijklmn</p>
+
+        <section>3. font-family:monospace;</section>
+        <p class="pstyle03">abcdefghijklmn</p>
+        <p class="pstyle03">aaaaaaaaaaaaaaaa</p>
+        
+        <section>4. font-family:cursive;</section>
+        <p class="pstyle04">qwrerttyu</p>
+        
+        <section>5. font-family:fantasy;</section>
+        <p class="pstyle05">tgbnhyujm</p>
+
+    </body>
+</html>
