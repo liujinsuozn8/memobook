@@ -1,0 +1,99 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset=utf-8>
+        <title>text test</title>
+        <style>
+            /* 1. 给字体添加文本修饰 */
+            /* 1.1. 不设置文本修饰 */
+            .box0101{
+                text-decoration:none;
+            }
+
+            /* 1.2. 给文本设置下划线 */
+            .box0102{
+                text-decoration:underline;
+            }
+
+            /* 1.3. 给文本设置上划线 */
+            .box0103{
+                text-decoration:overline;
+            }
+
+            /* 1.4. 给文本设置删除线 */
+            .box0104{
+                text-decoration:line-through;
+            }
+            
+            /* 1.5. 给字体添加下划线，并设置下滑线的颜色及样式 */
+            .box0105{
+                text-decoration: underline red solid;
+            }
+
+            /* 2. 处理页面空白 */
+            /* 2.1. 正常显示 */
+            .box0201{
+                white-space:normal;
+            }
+            /* 2.2. 不换行 */
+            .box0202{
+                white-space:nowrap;
+            }
+            
+            /* 2.3. 保留文本的书写格式 */
+            .box0203{
+                border:#47e 2px solid;
+                white-space:pre;
+            }
+
+            /* 3. 文本过长时，截断文本并且在末尾显示`...` */
+            .box03{
+                width:200px;
+                border: #47e 2px solid;
+                /* 使文本不换行,在一行显示 */
+                white-space: nowrap;
+                /* 文本超过父元素的宽度时，隐藏超出的部分 */
+                overflow: hidden;
+                /* 如果文本过长，被隐藏了，则在末尾显示`...` */
+                text-overflow: ellipsis;
+            }
+            
+        </style>
+    </head>
+    <body>
+        <section>1. 给字体添加文本修饰</section>
+        <section>1.1. 给字体添加下划线</section>
+        <p class="box0101">asdfghjkl</p>
+        <section>1.2. 给文本设置下划线</section>
+        <p class="box0102">asdfghjkl</p>
+        <section>1.3. 给文本设置上划线</section>
+        <p class="box0103">asdfghjkl</p>
+        <section>1.4. 给文本设置删除线</section>
+        <p class="box0104">asdfghjkl</p>
+        <section>1.5. 给字体添加下划线，并设置下滑线的颜色及样式</section>
+        <p class="box0105">asdfghjkl</p>
+        <br>
+
+        <section>2. 处理页面空白</section>
+        <section>2.1. 正常显示</section>
+        <p class="box0201">Lorem ipsum dolor sit amet consectetur adipisicing elit. Delectus debitis dignissimos cum corrupti provident voluptate magni, ipsa laboriosam accusamus.</p>
+        <section>2.2. 文本不换行，会产生滚动条</section>
+        <p class="box0202">Lorem ipsum dolor sit amet consectetur adipisicing elit. Delectus debitis dignissimos cum corrupti provident voluptate magni, ipsa laboriosam accusamus.</p>
+        <section>2.3. 保留文本样式，将文本按照html中的书写格式输出</section>
+        <div class="box0203">sdfdsfsffsfsfd
+                xcvvxv
+                    cbvb
+
+
+                        bbvnghj
+        </div>
+        <br>
+        
+        <section>3. 文本过长时，截断文本并且在末尾显示`...`</section>
+        <section>3.1. 正常文本</section>
+        <p class="box03">abcdefg</p>
+        <section>3.2. 文本过长</section>
+        <p class="box03">Lorem ipsum dolor, sit amet consectetur adipisicing elit.</p>
+        
+    </body>
+</html>
