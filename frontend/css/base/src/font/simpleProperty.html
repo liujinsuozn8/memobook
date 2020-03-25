@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>simple property test</title>
+    <style>
+        /* 1. 设置公共的字体属性： */
+        p{
+            font-style: italic;
+            font-weight: bold;
+            line-height: 2;
+            size:20px;
+            border: #47e 2px solid;
+        }
+        
+        /* 2. 测试简写属性的默认值覆盖
+            font-style，font-weight，line-height 使用默认值*/
+        .pstyle02{
+            font: 20px serif;
+        }
+        
+        /* 3. 测试简写属性的默认值覆盖
+            font-style，font-weight，使用默认值*/
+        .pstyle03{
+            font: 20px/3 serif;
+        }
+
+        /* 4. 所有属性值使用简写属性设置 */
+        .pstyle04{
+            font: oblique 900 15px/2.5 monospace;
+        }
+    </style>
+</head>
+<body>
+
+    <section>1. 设置公共的字体属性作为参照</section>
+    <p>Lorem ipsum dolor sit amet consectetur, adipisicing elit. Dignissimos fugit voluptates, esse praesentium repudiandae iure nulla maiores itaque minima magnam blanditiis labore eius libero facere ratione voluptate ipsum veritatis maxime.</p>
+
+    <section>
+        2. 测试简写属性的默认值覆盖
+        <br>
+        font-style，font-weight，line-height 使用默认值
+    </section>
+    <p class="pstyle02">Lorem ipsum dolor sit amet consectetur adipisicing elit. Fugit, quaerat! Blanditiis repellat deserunt aperiam quos, error eum vel reprehenderit laudantium aspernatur nobis, deleniti reiciendis. Vitae tenetur quisquam quia assumenda nemo.</p>
+
+    <section>
+        3. 测试简写属性的默认值覆盖
+        <br>
+        font-style，font-weight，使用默认值
+    </section>
+    <p class="pstyle03">Lorem ipsum dolor sit amet consectetur adipisicing elit. Minus dolorum ad ipsa libero veniam expedita iure alias quia quae, impedit aliquam illo accusamus, aliquid porro, a voluptates accusantium. Cum, architecto.</p>
+
+    <section>4. 所有属性值使用简写属性设置</section>
+    <p class="pstyle04">Lorem ipsum dolor sit amet consectetur adipisicing elit. Exercitationem quidem aperiam eum pariatur nostrum fugit laborum perspiciatis esse, ea error sapiente delectus. Inventore pariatur ex voluptatibus cum, reiciendis expedita saepe!</p>
+</body>
+</html>
