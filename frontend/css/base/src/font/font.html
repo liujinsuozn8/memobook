@@ -4,7 +4,7 @@
         <meta charset="utf-8">
         <title>font test</title>
         <style>
-            p{
+            .pstyle01{
                 /* 设置字体颜色 */
                 color:#47e; 
                 /* 设置字体大小 */
@@ -13,22 +13,32 @@
                 font-family:Arial, Helvetica, sans-serif;
             }
 
-            .pstyle01{
+            .pstyle02{
                 font-family: serif;
             }
-            .pstyle02{
+            .pstyle03{
                 font-family:sans-serif;
             }
-            .pstyle03{
+            .pstyle04{
                 font-family:monospace;
             }
-            .pstyle04{
+            .pstyle05{
                 font-family:cursive;
             }
-            .pstyle05{
+            .pstyle06{
                 font-family:fantasy;
             }
-            
+
+            /* 7. 字体加粗 */
+            .pstyle07{
+                font-weight:bold;
+            }
+
+            /* 8. 字体风格 */
+            .pstyle08{
+                font-style: italic;
+            }
+
             @font-face {
                 /* 指定字体的名字 */
                 font-family: "myfont";
@@ -38,25 +48,32 @@
         </style>
     </head>
     <body>
-        <p>
+
+        <section>1. 设置字体颜色和字体大小</section>
+        <p class="pstyle01">
             Lorem ipsum dolor sit, amet consectetur adipisicing elit. Obcaecati rerum adipisci animi culpa nobis ex numquam aperiam delectus incidunt harum eius, eum, commodi repellat ad libero illo, repudiandae quae exercitationem!
         </p>
 
-        <section>1. font-family: serif;</section>
+        <section>2. font-family: serif;</section>
         <p class="pstyle01">abcdefghijklmn</p>
 
-        <section>2. font-family:sans-serif;</section>
+        <section>3. font-family:sans-serif;</section>
         <p class="pstyle02">abcdefghijklmn</p>
 
-        <section>3. font-family:monospace;</section>
+        <section>4. font-family:monospace;</section>
         <p class="pstyle03">abcdefghijklmn</p>
         <p class="pstyle03">aaaaaaaaaaaaaaaa</p>
         
-        <section>4. font-family:cursive;</section>
+        <section>5. font-family:cursive;</section>
         <p class="pstyle04">qwrerttyu</p>
         
-        <section>5. font-family:fantasy;</section>
+        <section>6. font-family:fantasy;</section>
         <p class="pstyle05">tgbnhyujm</p>
 
+        <section>7. 字体加粗</section>
+        <p class="pstyle06">asdfghj</p>
+
+        <section>8. 字体风格</section>
+        <p class="pstyle08">zxcvbnm</p>
     </body>
 </html>
