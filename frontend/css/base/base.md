@@ -76,9 +76,10 @@
         - [行高](#行高)
         - [字体框](#字体框)
         - [行高与字体框的应用](#行高与字体框的应用)
-    - [文字水平垂直居中](#文字水平垂直居中)
-- [](#)
-- [](#)
+    - [字体的简写属性](#字体的简写属性)
+    - [文本的样式](#文本的样式)
+    - [文本的居中与对齐](#文本的居中与对齐)
+- [背景](#背景)
 - [](#)
 - [](#)
 - [](#)
@@ -1108,6 +1109,10 @@
         - 选择器的累加不会超过其最大的数量级。如有n个类选择器，无论n多大，权重求和的结果也不会超过id选择器，即数量级无法从`10`跨越到`100`
 
     - 对于并集选择器，每个选择器单独计算，各算各的
+
+- 关系选择器
+    - 将关系分解，各部分分别计算再相加
+    - ?????
 
 - 强制最大权重：`!important`
     - 可以在<label style="color:red">样式的后面</label>添加`!important`。该样式将会获得最高的权重，比内联样式还高
@@ -3397,7 +3402,9 @@
         - `none`，默认值元素不会浮动
         - `left`，元素向左浮动
         - `right`，元素向右浮动
-- 使用了`float:left`或`float:right`之后，<label style="color:red">元素将脱离文档流</label>，使得[块元素盒子模型的水平方向布局](#块元素盒子模型的水平方向布局)中的水平布局等式不再强制成立
+
+- 如果同时对多个子元素使用`float:left`，子元素会**逆序排列**
+- 使用`float:left`或`float:right`之后，<label style="color:red">元素将脱离文档流</label>，使得[块元素盒子模型的水平方向布局](#块元素盒子模型的水平方向布局)中的水平布局等式不再强制成立
     - 如：对一个`div`使用了`float`属性之后，在元素检查器中会发现，盒子模型中不会强制产生用于满足水平布局等式的`margin-right`或`margin-left`
         - 参考代码
             - [/frontend/css/base/src/float/floatBase.html](/frontend/css/base/src/float/floatBase.html)
@@ -4911,9 +4918,10 @@
     |-|-|
     |`color`|一般用于设置字体颜色，严格说`color`用来设置前景色|
     |`font-size`|<ul>  <li>用于设置文字大小</li>  <li>与文字大小相关的单位：`em`，`rem`，参考：[页面的长度单位](#页面的长度单位)</li>  </ul>|
+    |`font-weigth`|<ul><li>字重，字体的加粗</li><li>常用属性值可选值<ul><li>`normal`: 默认值不加错</li><li>`bold`：加粗</li><li>100-900：9个加粗级别，能否加粗取决于用户电脑中是否存在对应的加粗字体(一般没什么用)</li></ul></li><ul>|
+    |`font-style`|字体风格|
     |`font-family`|<ul>   <li>设置字体格式（字体族） <ul><li>可以指定多个字体，字体间用`,`分割 <ul>  <li>如：`Arial, Helvetica, sans-serif;`</li>  <li>指定多个字体时，按照顺序来设置：先使用第一中字体，如果第一中没有则尝试第二种</li>  <li>一般会在最后写一个字体分类，以保证其他字体未找到时，使用浏览器下的某种类型的默认字体</li>   </ul>  </li>  <li>字体名中如果有空格等特殊字符，需要使用`''`来包裹</li>  </ul>   </li>   <li>几种字体分类，使用后浏览器会自动使用该类别下的字体<ul><li>`serif` : 衬线字体</li><li>`sans-serif` : 非衬线字体</li> <li>`monospace` : 等宽字体，字母大小相同，方便对齐</li>  <li>`cursive` : 草书字体，类似于艺术字，很少使用</li>  <li>`fantasy` : 类似于艺术字，很少使用</li> </ul> </li> </ul>|
-    |||
-    |||
+
 
 - 设置字体格式时，用户的电脑中必须要有对应的字体文件，否则无法正常显示，所以大多使用微软雅黑
 - `@font-face`，指定从服务器下载字体文件
@@ -4940,7 +4948,7 @@
         - [/frontend/css/base/src/font/font.html](/frontend/css/base/src/font/font.html)
     - css
         ```css
-        p{
+        .pstyle01{
             /* 设置字体颜色 */
             color:#47e; 
             /* 设置字体大小 */
@@ -4949,22 +4957,32 @@
             font-family:Arial, Helvetica, sans-serif;
         }
 
-        .pstyle01{
+        .pstyle02{
             font-family: serif;
         }
-        .pstyle02{
+        .pstyle03{
             font-family:sans-serif;
         }
-        .pstyle03{
+        .pstyle04{
             font-family:monospace;
         }
-        .pstyle04{
+        .pstyle05{
             font-family:cursive;
         }
-        .pstyle05{
+        .pstyle06{
             font-family:fantasy;
         }
-        
+
+        /* 7. 字体加粗 */
+        .pstyle07{
+            font-weight:bold;
+        }
+
+        /* 8. 字体风格 */
+        .pstyle08{
+            font-style: italic;
+        }
+
         @font-face {
             /* 指定字体的名字 */
             font-family: "myfont";
@@ -4974,25 +4992,32 @@
         ```
     - html
         ```html
-        <p>
+        <section>1. 设置字体颜色和字体大小</section>
+        <p class="pstyle01">
             Lorem ipsum dolor sit, amet consectetur adipisicing elit. Obcaecati rerum adipisci animi culpa nobis ex numquam aperiam delectus incidunt harum eius, eum, commodi repellat ad libero illo, repudiandae quae exercitationem!
         </p>
 
-        <section>1. font-family: serif;</section>
+        <section>2. font-family: serif;</section>
         <p class="pstyle01">abcdefghijklmn</p>
 
-        <section>2. font-family:sans-serif;</section>
+        <section>3. font-family:sans-serif;</section>
         <p class="pstyle02">abcdefghijklmn</p>
 
-        <section>3. font-family:monospace;</section>
+        <section>4. font-family:monospace;</section>
         <p class="pstyle03">abcdefghijklmn</p>
         <p class="pstyle03">aaaaaaaaaaaaaaaa</p>
         
-        <section>4. font-family:cursive;</section>
+        <section>5. font-family:cursive;</section>
         <p class="pstyle04">qwrerttyu</p>
         
-        <section>5. font-family:fantasy;</section>
+        <section>6. font-family:fantasy;</section>
         <p class="pstyle05">tgbnhyujm</p>
+
+        <section>7. 字体加粗</section>
+        <p class="pstyle06">asdfghj</p>
+
+        <section>8. 字体风格</section>
+        <p class="pstyle08">zxcvbnm</p>
         ```
     - 页面结果
         - ![](?????)
@@ -5202,7 +5227,7 @@
         - 测试行间距
             - css
                 ```css
-                .box03{
+                .box04{
                     width: 200px;
                     height: 200px;
                     background-color: #bfa;
@@ -5212,8 +5237,8 @@
                 ```
             - html
                 ```html
-                <section>3. 测试行间距</section>
-                <div class="box03">
+                <section>4. 测试行间距</section>
+                <div class="box04">
                     <p>asdfdfdfg</p>
                     <p>asdfdfdfg</p>
                     <p>asdfdfdfg</p>
@@ -5222,10 +5247,251 @@
             - 页面结果
                 - ![](????? 标记控制台信息)  
 
-## 文字水平垂直居中
+## 字体的简写属性
 [top](#catalog)
-- 文字水平居中
-    - `text-align: center;`
+- 通过简写属性：`font`可以设置与字体相关的所有属性
+- 语法： `font: [font-style font-weigth] font-size[/line-height] font-family`
+    - 字体大小后可以指定行高：`font: 字体大小/行高 字体族`
+    - `font-style`、`font-weigth`、`line-height`，这三个属性可以不设置，但是简写属性会使用**默认值**
+        - 如果这三个属性没有设置，并且在简写属性之前这三个属性有单独的设置，则会被默认值覆盖
+        - `font-style`的默认值：`normal`
+        - `font-weight`的默认值：`normal`
+        - `line-height`的默认值：1.333
+
+- 示例
+    - 参考代码
+        - [/frontend/css/base/src/font/simpleProperty.html](/frontend/css/base/src/font/simpleProperty.html)
+    - css
+        ```css
+        /* 1. 设置公共的字体属性： */
+        p{
+            font-style: italic;
+            font-weight: bold;
+            line-height: 2;
+            size:20px;
+            border: #47e 2px solid;
+        }
+        
+        /* 2. 测试简写属性的默认值覆盖
+            font-style，font-weight，line-height 使用默认值*/
+        .pstyle02{
+            font: 20px serif;
+        }
+        
+        /* 3. 测试简写属性的默认值覆盖
+            font-style，font-weight，使用默认值*/
+        .pstyle03{
+            font: 20px/3 serif;
+        }
+
+        /* 4. 所有属性值使用简写属性设置 */
+        .pstyle04{
+            font: oblique 900 15px/2.5 monospace;
+        }
+        ```
+    - html
+        ```html
+        <section>1. 设置公共的字体属性作为参照</section>
+        <p>Lorem ipsum dolor sit amet consectetur, adipisicing elit. Dignissimos fugit voluptates, esse praesentium repudiandae iure nulla maiores itaque minima magnam blanditiis labore eius libero facere ratione voluptate ipsum veritatis maxime.</p>
+
+        <section>
+            2. 测试简写属性的默认值覆盖
+            <br>
+            font-style，font-weight，line-height 使用默认值
+        </section>
+        <p class="pstyle02">Lorem ipsum dolor sit amet consectetur adipisicing elit. Fugit, quaerat! Blanditiis repellat deserunt aperiam quos, error eum vel reprehenderit laudantium aspernatur nobis, deleniti reiciendis. Vitae tenetur quisquam quia assumenda nemo.</p>
+
+        <section>
+            3. 测试简写属性的默认值覆盖
+            <br>
+            font-style，font-weight，使用默认值
+        </section>
+        <p class="pstyle03">Lorem ipsum dolor sit amet consectetur adipisicing elit. Minus dolorum ad ipsa libero veniam expedita iure alias quia quae, impedit aliquam illo accusamus, aliquid porro, a voluptates accusantium. Cum, architecto.</p>
+
+        <section>4. 所有属性值使用简写属性设置</section>
+        <p class="pstyle04">Lorem ipsum dolor sit amet consectetur adipisicing elit. Exercitationem quidem aperiam eum pariatur nostrum fugit laborum perspiciatis esse, ea error sapiente delectus. Inventore pariatur ex voluptatibus cum, reiciendis expedita saepe!</p>
+        ```
+    
+    - 页面结果
+        - ![](?????)
+
+## 文本的样式
+[top](#catalog)
+- `text-decoration:修饰内容`，设置文本修饰
+    - 常用属性值/修饰内容
+
+        |属性值/修饰内容|描述|
+        |-|-|
+        |none|没有修饰，默认值|
+        |underline|下划线|
+        |overline|上划线|
+        |line-through|删除线|
+
+    - 除了属性值，还可以同时设置文本修饰内容的颜色和样式：`text-align:修饰内容 颜色 样式`
+        - **这中设置方法在IE中无效**
+
+- `white-space`，设置网页如何处理空白
+    - 常用属性值
+
+        |属性值/修饰内容|描述|
+        |-|-|
+        |normal|正常显示，默认值|
+        |nowrap|文本不换行，会产生滚动条|
+        |pre|<ul><li>保留文本样式</li><li>将文本按照html中的书写格式输出</li><li>多个空格、多个换行不会被解析成一个，将会全部保留</li><ul>|
+        |||
+
+- `text-overflow`，设置文本溢出时的处理方式
+    - ?????
+
+- 常用的文本属性组合
+    1. 文本过长时，截断文本并且在末尾显示`...`。
+        - `white-space`、`overflow`、`text-overflow`，这三个属性必须同时设置，否则无法生效
+        - css
+            ```css
+            .box{
+                /* 使文本不换行,在一行显示 */
+                white-space: nowrap;
+                /* 文本超过父元素的宽度时，隐藏超出的部分 */
+                overflow: hidden;
+                /* 如果文本过长，被隐藏了，则在末尾显示`...` */
+                text-overflow: ellipsis;
+            }
+            ```
+
+- 示例
+    - 参考代码
+        - [/frontend/css/base/src/font/text.html](/frontend/css/base/src/font/text.html)
+    - 给字体添加文本修饰
+        - css
+            ```css
+            /* 1.1. 不设置文本修饰 */
+            .box0101{
+                text-decoration:none;
+            }
+
+            /* 1.2. 给文本设置下划线 */
+            .box0102{
+                text-decoration:underline;
+            }
+
+            /* 1.3. 给文本设置上划线 */
+            .box0103{
+                text-decoration:overline;
+            }
+
+            /* 1.4. 给文本设置删除线 */
+            .box0104{
+                text-decoration:line-through;
+            }
+            
+            /* 1.5. 给字体添加下划线，并设置下滑线的颜色及样式 */
+            .box0105{
+                text-decoration: underline red solid;
+            }
+            ```
+        - html
+            ```html
+            <section>1. 给字体添加文本修饰</section>
+            <section>1.1. 给字体添加下划线</section>
+            <p class="box0101">asdfghjkl</p>
+            <section>1.2. 给文本设置下划线</section>
+            <p class="box0102">asdfghjkl</p>
+            <section>1.3. 给文本设置上划线</section>
+            <p class="box0103">asdfghjkl</p>
+            <section>1.4. 给文本设置删除线</section>
+            <p class="box0104">asdfghjkl</p>
+            <section>1.5. 给字体添加下划线，并设置下滑线的颜色及样式</section>
+            <p class="box0105">asdfghjkl</p>
+            ```
+        - 页面结果
+            - ![](?????)
+
+    - 处理页面空白
+        - css
+            ```css
+            /* 2.1. 正常显示 */
+            .box0201{
+                white-space:normal;
+            }
+            /* 2.2. 不换行 */
+            .box0202{
+                white-space:nowrap;
+            }
+            
+            /* 2.3. 保留文本的书写格式 */
+            .box0203{
+                border:#47e 2px solid;
+                white-space:pre;
+            }
+            ```
+
+        - html
+            ```html
+            <section>2. 处理页面空白</section>
+            <section>2.1. 正常显示</section>
+            <p class="box0201">Lorem ipsum dolor sit amet consectetur adipisicing elit. Delectus debitis dignissimos cum corrupti provident voluptate magni, ipsa laboriosam accusamus.</p>
+            <section>2.2. 文本不换行，会产生滚动条</section>
+            <p class="box0202">Lorem ipsum dolor sit amet consectetur adipisicing elit. Delectus debitis dignissimos cum corrupti provident voluptate magni, ipsa laboriosam accusamus.</p>
+            <section>2.3. 保留文本样式，将文本按照html中的书写格式输出</section>
+            <div class="box0203">sdfdsfsffsfsfd
+                    xcvvxv
+                        cbvb
+
+
+                            bbvnghj
+            </div>
+            ```
+        - 页面结果
+            - ![](?????)
+
+    - 文本过长时，截断文本并且在末尾显示`...`
+        - css
+            ```css
+            .box03{
+                width:200px;
+                border: #47e 2px solid;
+                /* 使文本不换行,在一行显示 */
+                white-space: nowrap;
+                /* 文本超过父元素的宽度时，隐藏超出的部分 */
+                overflow: hidden;
+                /* 如果文本过长，被隐藏了，则在末尾显示`...` */
+                text-overflow: ellipsis;
+            }
+            ```
+        - html
+            ```html
+            <section>3. 文本过长时，截断文本并且在末尾显示`...`</section>
+            <section>3.1. 正常文本</section>
+            <p class="box03">abcdefg</p>
+            <section>3.2. 文本过长</section>
+            <p class="box03">Lorem ipsum dolor, sit amet consectetur adipisicing elit.</p>    
+            ```
+
+        - 页面结果
+            - ![](?????)
+        
+## 文本的居中与对齐
+[top](#catalog)
+- 文本的水平对齐：`text-align`
+    - 常用属性值/修饰内容
+
+        |属性/修饰内容|说明|
+        |-|-|
+        |left|左对齐|
+        |right|右对齐|
+        |center|居中对齐|
+        |justify|两端对齐|
+
+- 文本的垂直对齐:`vertical-align`
+    - 常用属性值
+
+        |属性|说明|
+        |-|-|
+        |baseline|基线对齐，默认值|
+        |top|顶部对齐|
+        |bottom|底部对齐|
+        |middle|居中对齐。不是真的居中对齐，是以基线+`x`字符的一半高度作为对齐标准|
+
 - 单行文字垂直居中：需要`height = line-height`，或者只设置`line-height`
     - 引用字体框的特性，行高会在文字框的上下平均分配，来达到垂直居中的效果
 
@@ -5233,20 +5499,100 @@
     - 参考代码
         - [/frontend/css/base/src/font/fontCenter.html](/frontend/css/base/src/font/fontCenter.html)
     
-    - 测试文字水平居中
+    - 测试水平对齐
         - css
             ```css
-            .box01{
-                width: 200px;
-                height: 200px;
-                background-color: #bfa;
-                text-align: center;
+            /* 1. 水平对齐*/
+            /* 1.1. 水平对齐：文本的左对齐 */
+            .box0101{
+                width: 500px;
+                border: #47e 2px solid;
+                text-align: left;
+            }
+
+            /* 1.2. 水平对齐：文本的右对齐 */
+            .box0102{
+                width: 500px;
+                border: #47e 2px solid;
+                text-align: right;
+            }
+            
+            /* 1.3. 水平对齐：文本的居中对齐 */
+            .box0103{
+                width: 500px;
+                border: #47e 2px solid;
+                text-align:center;
+            }
+            
+            /* 1.4. 水平对齐：文本的两端对齐 */
+            .box0104{
+                width: 500px;
+                border: #47e 2px solid;
+                text-align:justify;
+            }
+            ```
+        - 页面结果
+            - ![](?????)
+    
+    - 测试垂直对齐
+        - css
+            ```css
+            /* 2. 垂直对齐 */
+            .box02{
+                width: 500px;
+                border: #47e 2px solid;
+                font-size: 20px;
+            }
+            /* 2.1. 垂直对齐：文本的基线对齐 */
+            .spanSmall0201{
+                font-size: 10px;
+                border: red 1px solid;
+                vertical-align:baseline;
+            }
+            
+            /* 2.2. 垂直对齐：文本的顶部对齐 */
+            .spanSmall0202{
+                font-size: 10px;
+                border: red 1px solid;
+                vertical-align:top;
+            }
+            
+            /* 2.3. 垂直对齐：文本的底部对齐 */
+            .spanSmall0203{
+                font-size: 10px;
+                border: red 1px solid;
+                vertical-align:bottom;
+            }
+            
+            /* 2.4. 垂直对齐：文本的居中对齐 */
+            .spanSmall0204{
+                font-size: 10px;
+                border: red 1px solid;
+                vertical-align:middle;
             }
             ```
         - html
             ```html
-            <section>1. 测试文字水平居中</section>
-            <div class="box01">asdfdfdfg</div>
+            <section>2. 垂直对齐</section>
+            <section>2.1. 垂直对齐：文本的基线对齐</section>
+            <div class="box02">
+                lorem<span class="spanSmall0201">asdfg</span>
+            </div>
+
+            <section>2.2. 垂直对齐：文本的顶部对齐</section>
+            <div class="box02">
+                lorem<span class="spanSmall0202">asdfg</span>
+            </div>
+            
+            <section>2.3. 垂直对齐：文本的底部对齐</section>
+            <div class="box02">
+                lorem<span class="spanSmall0203">asdfg</span>
+            </div>
+
+            <section>2.4. 垂直对齐：文本的居中对齐</section>
+            <div class="box02">
+                loremx<span class="spanSmall0204">asdfg</span>
+            </div>
             ```
         - 页面结果
             - ![](?????)
@@ -5254,28 +5600,65 @@
     - 测试单行文字垂直居中
         - css
             ```css
-            .box02{
+            .box03{
                 width: 200px;
-                height: 200px;
+                height: 100px;
                 background-color: #bfa;
-                line-height: 200px;
+                line-height: 100px;
             }
             ```
         - html
             ```html
-            <section>2. 测试单行文字垂直居中</section>
-            <div class="box02">asdfdfdfg</div>
+            <section>3. 测试单行文字垂直居中</section>
+            <div class="box03">asdfdfdfg</div>
             ```
         - 页面结果
             - ![](?????)
-
-## 字体的简写属性
+    
+# 背景
 [top](#catalog)
-- 通过简写属性：`font`可以设置与字体相关的所有属性
-- 语法：
-    - `font: 字体大小 字体族`
-    - 字体大小后可以指定行高：`font: 字体大小/行高 字体族`
-    - 行高可以省略但是会使用默认值。如果前面有设置行高，将会被默认值覆盖
+- 常用属性
+    - `background-color`, 设置元素的背景色
+    - `background-image: url("背景图片路径");`，设置元素的背景图片
+        - 默认状态下，背景图片与元素的大小关系对显示的影响
+            - `背景图片 < 元素`，背景图片会在元素内部平铺
+            - `背景图片 > 元素`，一部分背景图片无法显示
+            - `背景图片 = 元素`，背景图片正常显示
+        - 可以同时设置背景色`background-color`和背景图片`background-image`
+            - 设置后，元素的背景色将变成背景图片的背景色
+
+    - `background-repeat`，设置图片的重复方式
+        - 常用属性值
+
+            |属性值|描述|
+            |-|-|
+            |repeat|在水平和垂直方向上进行重复|
+            |repeat-x|沿x轴/水平方向上重复|
+            |repeat-y|沿y轴/垂直方向上重复|
+            |no-repeat|不重复|
+
+    - `background-position: x轴位置 y轴位置`，设置背景图片的位置
+        - 设置方式
+            1. 通过方位词作为x/y轴的位置
+                - 方位词：left、right、top、bottom、center
+                - 语法1：`background-position: 方位词1 方位词2;`
+                    - 将一个元素划分成一个9宫格，方位词两类组合来设置位置
+                - 语法2：`background-position: 方位词;`
+                    - 只使用一个方位词，相当与该方位词的重复
+                    - 如`background-position: left;`，相当于`background-position: left left;`
+            2. 通过偏移量设置
+                - 写法：`background-position: 10px 30px;`
+                - 如果偏移量是负数，则图片会向反方向移动
+    
+    - `background-clip`，设置背景的范围
+        - 默认状态下，当设置`border`属性时，背景大小也会自动扩大，然后扩大的部分再被`border`覆盖
+        - 在设置`border`属性时，可以通过`background-clip`设置背景的范围，即**如何处理背景扩大的部分**
+        - 常用属性值
+
+            |属性值|描述|
+            |-|-|
+            |||
+
 
 
 # 网页布局
@@ -5406,20 +5789,37 @@
 - 垂直方向上的布局控制可以通过 margin, top/bottom(偏移量)控制，但是一般只会使用其中一种
 - 水平方向上的布局控制可以通过 margin, left/right(偏移量)控制，但是一般只会使用其中一种
 
-- 自定义类选择器解决高度塌陷和父子元素间的外边距折叠
-    ```css
-    .clearfix::before,
-    .clearfix::after{
-        /* 1. 通过clear属性清除浮动元素的影响 */
-        clear:both;
-        /* 2. 设置空content使伪元素生效 */
-        content: "";
-        /* 3. 分割元素，并且不会占用像素位置；同时解决 高度塌陷和父子元素间的外边距折叠 */
-        display:table;
-    }
-    ```
-
 - 浮动与定位的使用规范：大范围使用浮动，小范围微调使用定位
+
+
+- 自定义css
+    - 自定义类选择器解决高度塌陷和父子元素间的外边距折叠
+        ```css
+        .clearfix::before,
+        .clearfix::after{
+            /* 1. 通过clear属性清除浮动元素的影响 */
+            clear:both;
+            /* 2. 设置空content使伪元素生效 */
+            content: "";
+            /* 3. 分割元素，并且不会占用像素位置；同时解决 高度塌陷和父子元素间的外边距折叠 */
+            display:table;
+        }
+        ```
+    - 文本过长，阶段并且在末尾显示`...`，参考：[文本的样式](#文本的样式)
+        ```css
+        .box{
+            /* 使文本不换行,在一行显示 */
+            white-space: nowrap;
+            /* 文本超过父元素的宽度时，隐藏超出的部分 */
+            overflow: hidden;
+            /* 如果文本过长，被隐藏了，则在末尾显示`...` */
+            text-overflow: ellipsis;
+        }
+        ```
+- css的快速开发步骤
+    1. 先写html，进行页面布局。布局时，抽象出层级关系、显示方式到css类中
+    2. 开发css的类
+    3. 进行css微调，微调时需要注意css的权重
 
 # 练习
 [top](#catalog)
@@ -5433,3 +5833,6 @@
 - 定位练习
     - 轮播图
         - /frontend/css/base/src/exercise/position/carousels.html
+
+- 京东导航条
+    - /frontend/css/base/src/exercise/font/jdnav.html
