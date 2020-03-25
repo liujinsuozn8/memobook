@@ -1,0 +1,247 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>jd nav exercise</title>
+        <!-- 引入图标字体 -->
+        <link rel="stylesheet" href="./fa/css/all.css">
+        <style>
+            /* 清除浏览器默认样式 */
+            a, ul, li {
+                margin: 0;
+                padding: 0;
+                border: 0;
+                font-size: 100%;
+                font: inherit;
+                vertical-align: baseline;
+            }
+
+            ul {
+                list-style: none;
+            }
+
+            a{
+                text-decoration: none;
+                color:#555;
+            }
+
+            /* 设置页面高度，来测试导航条的定位效果 */
+            body{
+                height:2000px;
+            }
+
+            /* ------------------------------------------------------------ */
+            /* 1. 导航条最外层 */
+            .navBar{
+                /* 固定导航条的宽度、高度 */
+                width: 100%;
+                height:30px;
+                /* 设置导航条的背景颜色 */
+                background-color: #ddd;
+
+                /* 设置边框 */
+                border:#ddd 1px solid;
+
+                /* 设置字体颜色、大小、格式、居中 */
+                color:#555;
+                font-size: 15px;
+                font-family: serif;
+                line-height: 30px;
+
+                /* 固定在页面顶部 */
+                position: fixed;
+                top:0px;    
+            }
+
+            /* ------------------------------------------------------------ */
+
+            /* 2. 导航条的容器部分 */
+            /* 2.1. 包裹所有可显示的元素 */
+            .navContainer{
+                /* 固定有效部分的宽度和居中 */
+                width: 90%;
+                margin:0px auto;
+            }
+
+            /* 2.2 设置个子元素的鼠标移入效果 */
+            .navContainer a:hover{
+                color:rgb(235, 66, 66);
+            }
+            /* ------------------------------------------------------------ */
+
+            /* 3. 左侧的定位链接 */
+            /* 3.1. 元素水平布局：浮动+居左 */
+            .location{
+                float:left;
+                /* 设置元素整体宽度 */
+                width: 60px;
+                /* 设置文字居中显示 */
+                text-align: center;
+            }
+            
+            .cityList{
+                border: transparent 1px solid;
+                /* 开启定位并设置最大的层级，来盖住弹出框的边框 */
+                position: relative;
+                z-index: 999;
+            }
+
+            /* 3.2. 定位连接的菜单 */
+            .locationMenu{
+                display: none;
+                width:350px;
+                height:500px;
+                background-color: white;
+                border: #ccc 1px solid;
+                position: absolute;
+                top:30px;
+                box-shadow:0px 0px 10px rgba(176,176,176, 0.6);
+                z-index: 998;
+            }
+
+            /* 3.3. 设置鼠标移入效果
+                设置：location被鼠标移入时，子元素citylist的样式
+                这样在鼠标移动到菜单中是，location仍然保持被选中的状态，子元素citylist的
+                样式可以继续维持
+                如果只使用【.cityList:hover】来设置，当鼠标移动到菜单中时，高亮效果会消失
+            */
+            .location:hover .cityList{
+                background-color: white;
+                color:red;
+                border:#ccc 1px solid;
+                border-bottom: none;
+            }
+
+            /* 3.4. 鼠标移入时显示菜单 */
+            .location:hover .locationMenu{
+                display: block;
+            }
+            
+            /* ------------------------------------------------------------ */
+
+            /* 4. 右侧功能连接部分 */
+            /* 4.1. 元素水平布局：浮动+居右 */
+            .shortcut{
+                float: right;
+            }
+
+            /* 4.2. 多个子元素水平布局：浮动+居左 */
+            .shortcut li{
+                float: left;
+                margin: 0px 6px;
+                border:transparent 1px solid;
+            }
+
+            /* 4.3. 设置鼠标移入效果 */
+            .shortcut li:hover{
+                background-color: white;
+                color:rgb(235, 66, 66);
+                border:#aaa 1px solid;
+                border-bottom: none;
+            }
+
+            /* ------------------------------------------------------------ */
+
+            /* 5. 导航条中的竖线 */
+            /* 必须通过【.shortcut .navSplitLine】的方式设定。
+                如果只使用【.navSplitLine】，选择器的权重会小于【.shortcut li】，
+                导致【margin】的设置被覆盖 */
+            .shortcut .navSplitLine{
+                /* 保持高度与字体大小相同 */
+                height: 20px;
+                width: 1px;
+                margin:6px 0px;
+                background-color: #555;
+                border: none;
+            }
+
+            /* ------------------------------------------------------------ */
+
+            /* 6. 导航条中默认显示红色的连接 */
+            .navRedItem{
+                color:rgb(235, 66, 66);
+            }
+
+        </style>
+    </head>
+    <body>
+        <!-- 导航条最外层 -->
+        <div class="navBar">
+            <!-- 导航条的容器部分，包裹所有可显示的元素 -->
+            <div class="navContainer">
+                <!-- 1. 左侧的定位链接部分 -->
+                <div class="location">
+                    <!-- 定位图标 -->
+                    <div class="cityList">
+                        <a href="javascript:;" class="navRedItem">
+                            <i class="fas fa-map-marker"></i>
+                        </a>
+                        <!-- 当前地址 -->
+                        <a href="javascript:;">北京</a>
+                    </div>
+
+                    <!-- 定位菜单 -->
+                    <div class="locationMenu"></div>
+                </div>
+
+                <!-- 2. 右侧功能连接部分 -->
+                <ul class="shortcut">
+                    <li>
+                        <a href="javascript:;">你好，请登录</a>
+                        <a href="javascript:;" class="navRedItem">免费注册</a>
+                    </li>
+
+                    <li class="navSplitLine"></li>
+
+                    <li>
+                        <a href="javascript:;">我的订单</a>
+                    </li>
+                    
+                    <li class="navSplitLine"></li>
+                    
+                    <li>
+                        <a href="javascript:;">
+                            我的京东
+                        </a>
+                        <i class="fas fa-angle-down"></i>
+                    </li>
+                    
+                    <li class="navSplitLine"></li>
+                    
+                    <li>
+                        <a href="javascript:;">京东会员</a>
+                    </li>
+                    
+                    <li class="navSplitLine"></li>
+                    
+                    <li>
+                        <a href="javascript:;" class="navRedItem">
+                            企业采购
+                        </a>
+                        <i class="fas fa-angle-down"></i>
+                    </li>
+                    
+                    <li class="navSplitLine"></li>
+                    
+                    <li>
+                        <span>客户服务</span>
+                        <i class="fas fa-angle-down"></i>
+                    </li>
+                    
+                    <li class="navSplitLine"></li>
+                    
+                    <li>
+                        <span>网站导航</span>
+                        <i class="fas fa-angle-down"></i>
+                    </li>
+                    
+                    <li class="navSplitLine"></li>
+                    
+                    <li>
+                        手机京东
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </body>
+</html>
