@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>usagetest</title>
+    <!-- 2. 使用内部js -->
+    <script>
+        alert("js in script");
+    </script>
+
+    <!-- 3. 使用外部js -->
+    <script type="text/javascript" src="./test.js">
+
+        // 4. 在引入外部js的<script>标签中编写js代码，会被浏览器忽略
+        document.write("other js write");
+    </script>
+</head>
+<body>
+    <!-- 1. 内联js -->
+    <!-- 1.1. js的编写位置1:将js写到标签的事件函数中。触发事件时，js会执行 -->
+    <button onclick="alert('do click')">please click</button>
+    <br>
+
+    <!-- 1.2. JS的编写位置2:将js写在超链接的href属性中。点击超链接时，会执行js -->
+    <a href="javascript:alert('click a tag');">test a</a>
+</body>
+</html>

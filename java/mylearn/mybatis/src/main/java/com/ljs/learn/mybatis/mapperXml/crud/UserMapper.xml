@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--namespace绑定一个Dao/Mapper接口-->
+<mapper namespace="com.ljs.learn.mybatis.mapperXml.crud.UserDao">
+    <select id="getUsers" resultType="com.ljs.learn.mybatis.common.bean.User">
+        select * from test01.user;
+    </select>
+
+    <!-- #{参数名} 在sql中类似与JDBC中的 ?，表示占位符 -->
+    <select id="getUserById" parameterType="int" resultType="com.ljs.learn.mybatis.common.bean.User">
+        select * from user where id = #{id};
+    </select>
+
+    <insert id="insertUser" parameterType="com.ljs.learn.mybatis.common.bean.User">
+        insert into test01.user (id, name, pwd) values (#{id}, #{name}, #{pwd});
+    </insert>
+
+    <update id="updateUser" parameterType="com.ljs.learn.mybatis.common.bean.User">
+        update test01.user set name=#{name} where id = #{id}
+    </update>
+
+    <delete id="deleteUserById" parameterType="int">
+        delete from test01.user where id = #{id}
+    </delete>
+</mapper>

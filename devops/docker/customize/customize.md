@@ -99,7 +99,7 @@
 - 创建容器 
     - `docker run -d -p 3333:3306 --name mysql -v /???/mysql/conf:/etc/mysql/conf.d -v /???/mysql/logs:/logs -v /???/mysql/data:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=1234 mysql:版本号`
 - 执行数据库备份
-    - `docker exec 容器ID sh -C 'mysqldump --all-databases -u root -p1234' >/tmp/all.sql`
+    - `docker exec 容器ID sh -C 'exec mysqldump --all-databases -u root -p1234' >/tmp/all.sql`
 
 ## 安装redis
 [top](#catalog)

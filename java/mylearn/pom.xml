@@ -11,9 +11,11 @@
   <modules>
     <module>myjdbc</module>
     <module>weblearn</module>
-      <module>javabase</module>
-      <module>myrpc</module>
+    <module>javabase</module>
+    <module>myrpc</module>
     <module>myspring</module>
+    <module>mybatis</module>
+
   </modules>
 
   <properties>

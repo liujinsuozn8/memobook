@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--namespace绑定一个Dao/Mapper接口-->
+<mapper namespace="com.ljs.learn.mybatis.mapperXml.map.UserDao">
+    <insert id="insertUser" parameterType="map" >
+        insert into user(id, name, pwd) values(#{userid}, #{username}, #{userpwd})
+    </insert>
+</mapper>

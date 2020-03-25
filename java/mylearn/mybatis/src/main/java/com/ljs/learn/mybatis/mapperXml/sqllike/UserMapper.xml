@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ljs.learn.mybatis.mapperXml.sqllike.UserDao">
+    <!--模糊查询, 在sql中使用通配符-->
+    <select id="getUser01" parameterType="String" resultType="com.ljs.learn.mybatis.common.bean.User">
+        select * from user where name like "%"#{name}"%"
+    </select>
+
+    <!--模糊查询, 需要将通配符添加到参数中-->
+    <select id="getUser02" parameterType="String" resultType="com.ljs.learn.mybatis.common.bean.User">
+        select * from user where name like #{name}
+    </select>
+</mapper>
