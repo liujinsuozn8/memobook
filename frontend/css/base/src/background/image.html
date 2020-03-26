@@ -1,0 +1,287 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>background image test</title>
+        <style>
+            /* 1. 背景图片的重复 */
+            /* 1.1. 不重复背景图片 */
+            .box0101{
+                width: 200px;
+                height: 200px;
+                border: #47e 2px solid;
+                /* 设置背景图片的路径 */
+                background-image: url("./testimg.png");
+                /* 设置背景图片的重复方式 */
+                background-repeat:no-repeat;
+            }
+
+            /* 2. 背景图片的位置设定 */
+            /* 2.1. 通过方位词设置背景图片的位置 */
+            .box0201{
+                width: 200px;
+                height: 200px;
+                border: #47e 2px solid;
+                /* 设置背景图片的路径 */
+                background-image: url("./testimg.png");
+                /* 设置背景图片的重复方式 */
+                background-repeat:no-repeat;
+                /* 设置背景图片的位置 */
+                background-position:left;
+            }
+            
+            /* 2.2. 通过偏移量设置背景图片的位置 */
+            .box0202{
+                width: 200px;
+                height: 200px;
+                border: #47e 2px solid;
+                /* 设置背景图片的路径 */
+                background-image: url("./testimg.png");
+                /* 设置背景图片的重复方式 */
+                background-repeat:no-repeat;
+                /* 设置背景图片的位置 */
+                background-position: 20px 30px;
+            }
+
+            /* 3. 设置偏移量的计算原点  */
+            /* 3.1. 设置偏移量的计算原点：padding-box */
+            .box0301{
+                width: 200px;
+                height: 200px;
+                /* 开启内边距 */
+                padding:10px;
+                /* 显示边框及背景色，来标识背景区域 */
+                border:orange 20px double;
+                background-color: #bfa;
+                /* 设置背景图片,并关闭重复 */
+                background-image: url("./testimg.png");
+                background-repeat: no-repeat;
+                /* 设置图片的原点 */
+                background-origin: padding-box;
+            }
+            
+            /* 3.2. 设置偏移量的计算原点：content-box */
+            .box0302{
+                width: 200px;
+                height: 200px;
+                /* 开启内边距 */
+                padding:10px;
+                /* 显示边框及背景色，来标识背景区域 */
+                border:orange 20px double;
+                background-color: #bfa;
+                /* 设置背景图片,并关闭重复 */
+                background-image: url("./testimg.png");
+                background-repeat: no-repeat;
+                /* 设置图片的原点 */
+                background-origin:content-box;
+            }
+            
+            /* 3.3. 设置偏移量的计算原点：border-box */
+            .box0303{
+                width: 200px;
+                height: 200px;
+                /* 开启内边距 */
+                padding:10px;
+                /* 显示边框及背景色，来标识背景区域 */
+                border:orange 20px double;
+                background-color: #bfa;
+                /* 设置背景图片,并关闭重复 */
+                background-image: url("./testimg.png");
+                background-repeat: no-repeat;
+                /* 设置图片的原点 */
+                background-origin:border-box;
+            }
+
+            /* 4. 设置背景图片的大小 */
+            /* 4.1 图片的宽度和高度都使用auto，即使用图片大小 */
+            .box0401{
+                width: 200px;
+                height: 200px;
+                background-color: #bfa;
+                background-repeat: no-repeat;
+                background-image: url("./testimg.png");
+                background-size: auto auto;
+            }
+
+            /* 4.2 分别设置高度和宽度 */
+            .box0402{
+                width: 150px;
+                height: 150px;
+                background-color: #bfa;
+                background-repeat: no-repeat;
+                background-image: url("./testimg.png");
+                background-size: 50px 100px;
+            }
+            
+            /* 4.3 设置宽度为auto */
+            .box0403{
+                width: 150px;
+                height: 150px;
+                background-color: #bfa;
+                background-repeat: no-repeat;
+                background-image: url("./testimg.png");
+                background-size: auto 100px;
+            }
+
+            /* 4.4 设置高度为auto */
+            .box0404{
+                width: 150px;
+                height: 150px;
+                background-color: #bfa;
+                background-repeat: no-repeat;
+                background-image: url("./testimg.png");
+                background-size: 50px auto;
+            }
+
+            /* 4.5 只设置一个值 */
+            .box0405{
+                width: 150px;
+                height: 150px;
+                background-color: #bfa;
+                background-repeat: no-repeat;
+                background-image: url("./testimg.png");
+                background-size: 50px;
+            }
+            
+            /* 4.6 使用百分比来设置图片大小：同时设置两个值 */
+            .box0406{
+                width: 150px;
+                height: 150px;
+                background-color: #bfa;
+                background-repeat: no-repeat;
+                background-image: url("./testimg.png");
+                background-size: 100% 100%;
+            }
+            
+            /* 4.7 使用百分比来设置图片大小：只设置一个值 */
+            .box0407{
+                width: 150px;
+                height: 150px;
+                background-color: #bfa;
+                background-repeat: no-repeat;
+                background-image: url("./testimg.png");
+                background-size: 100% ;
+            }
+            
+            /* 4.8 图片比例不变，铺满元素：background-size: cover; */
+            .box0408{
+                width: 150px;
+                height: 150px;
+                background-color: #bfa;
+                background-repeat: no-repeat;
+                background-image: url("./testimg.png");
+                background-size: cover;
+            }
+            
+            /* 4.9 图片比例不变，将图片在元素中完整显示，保证宽或高中有一个是100%：background-size: contain; */
+            .box0409{
+                width: 200px;
+                height: 200px;
+                background-color: #bfa;
+                background-repeat: no-repeat;
+                background-image: url("./testimg.png");
+                background-size: contain;
+            }
+            
+            /* 5. 背景图片跟随滚动条移动 */
+            /* 5.1. 默认值，图片会跟随元素移动 */
+            .inner0501{
+                width: 200px;
+                height: 1000px;
+                background-color: #bfa;
+                background-repeat: no-repeat;
+                background-image: url("./testimg.png");
+                background-attachment: scroll;
+                
+            }
+            .outter0501{
+                width: 200px;
+                height:200px;
+                overflow: auto;
+            }
+            
+            /* 5.2. 图片会固定在元素中，不会随元素移动 */
+            .inner0502{
+                width: 200px;
+                height: 1000px;
+                background-color: #bfa;
+                background-repeat: no-repeat;
+                background-image: url("./testimg.png");
+                background-attachment: fixed;
+                
+            }
+            .outter0502{
+                width: 200px;
+                height:200px;
+                overflow: auto;
+            }
+            </style>
+    </head>
+    <body>
+        <section>1. 背景图片的重复</section>
+        <section>1.1. 不重复背景图片</section>
+        <div class="box0101"></div>
+        <br>
+
+        <section>2. 背景图片的位置设定</section>
+        <section>2.1. 通过方位词设置背景图片的位置</section>
+        <div class="box0201"></div>
+
+        <section>2.2. 通过偏移量设置背景图片的位置</section>
+        <div class="box0202"></div>
+        <br>
+
+        <section>3. 设置偏移量的计算原点</section>
+        <section>3.1. 设置偏移量的计算原点：padding-box</section>
+        <div class="box0301"></div>
+        
+        <section>3.2. 设置偏移量的计算原点：content-box</section>
+        <div class="box0302"></div>
+        
+        <section>3.3. 设置偏移量的计算原点：border-box</section>
+        <div class="box0303"></div>
+        <br>
+        
+        <section>4. 设置背景图片的大小</section>
+        <section>4.1. background-size: auto auto;</section>
+        <div class="box0401"></div>
+
+        <section>4.2. background-size: 50px 100px;</section>
+        <div class="box0402"></div>
+
+        <section>4.3. background-size: auto 100px;</section>
+        <div class="box0403"></div>
+
+        <section>4.4. background-size: 50px auto;</section>
+        <div class="box0404"></div>
+
+        <section>4.5. background-size: 50px;</section>
+        <div class="box0405"></div>
+
+        <section>4.6. background-size: 100% 100%;</section>
+        <div class="box0406"></div>
+        
+        <section>4.7. background-size: 100% ;</section>
+        <div class="box0407"></div>
+        
+        <section>4.8 background-size: cover;</section>
+        <div class="box0408"></div>
+        
+        <section>4.9 background-size: cover;</section>
+        <div class="box0409"></div>
+
+        <section>5. 背景图片跟随滚动条移动</section>
+        <section>5.1. 默认值，图片会跟随元素移动</section>
+        <div class="outter0501">
+            <div class="inner0501"></div>
+        </div>
+        <br>
+        
+        <section>5.2. 图片会固定在元素中，不会随元素移动</section>
+        <div class="outter0502">
+            <div class="inner0502">Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolore illo corporis asperiores iure nobis nostrum a culpa voluptatibus! Laboriosam, quaerat saepe! Ullam ipsa libero, optio beatae sapiente iusto quibusdam nulla?</div>
+        </div>
+        <br>
+        
+    </body>
+</html>
