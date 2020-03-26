@@ -1,0 +1,56 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>background test</title>
+        <style>
+
+            /* 1. 通过double型的边框显示背景范围 */
+            .box01{
+                width: 100px;
+                height: 100px;
+                padding:20px;
+                background-color:#bfa;
+                border:20px orange double;
+            }
+            
+            /* 2. 设置背景的范围:padding-box */
+            .box02{
+                width: 100px;
+                height: 100px;
+                background-color:#bfa;
+                padding: 20px;
+                border:20px orange double;
+                /* 设置背景范围 */
+                background-clip: padding-box;
+            }
+
+            /* 3. 设置背景的范围:content-box */
+            .box03{
+                width: 100px;
+                height: 100px;
+                background-color:#bfa;
+                padding: 20px;
+                border:20px orange double;
+                /* 设置背景范围 */
+                background-clip: content-box;
+            }
+        </style>
+    </head>
+    <body>
+        <section>1. 通过double型的边框显示背景范围</section>
+        <br>
+        <div class="box01"></div>
+        <br>
+
+        <section>2. 设置背景的范围:padding-box</section>
+        <br>
+        <div class="box02"></div>
+        <br>
+
+        <section>3. 设置背景的范围:content-box</section>
+        <br>
+        <div class="box03"></div>
+        <br>
+    </body>
+</html>
