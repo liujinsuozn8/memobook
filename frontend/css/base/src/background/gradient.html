@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>test</title>
+        <style>
+            /* 1.线性渐变 */
+            /* 1.1 指定渐变的方向 */
+            .box0101{
+                width: 200px;
+                height:200px;
+                background-image: linear-gradient(to left, #47e, #bfa);
+            }
+            
+            /* 1.2. 通过角度指定渐变方向 */
+            .box0102{
+                width: 200px;
+                height:200px;
+                background-image: linear-gradient(45deg, #47e, #bfa);
+            }
+            
+            /* 1.3. 通过圈数指定渐变方向 */
+            .box0103{
+                width: 200px;
+                height: 200px;
+                background-image: linear-gradient(.5turn #47e, #bfa);
+            }
+
+            /* 2. 多个颜色的分布 */
+            /* 2.1. 默认多个颜色均匀分布 */
+            .box0201{
+                width: 200px;
+                height: 200px;
+                background-image: linear-gradient(#47e, #bfa, orange);
+            }
+
+            /* 2.2. 指定各个颜色的起始位置 */
+            .box0202{
+                width: 200px;
+                height: 200px;
+                background-image:linear-gradient(#47e 35px, #bfa 100px);
+            }
+
+            /* 2.3. 自动重复的线性渐变 */
+            .box0203{
+                width: 200px;
+                height: 200px;
+                background-image: repeating-linear-gradient(#47e 35px, #bfa 100px);
+            }
+        </style>
+    </head>
+    <body>
+        <section>1.线性渐变</section>
+        <section>1.1 指定渐变的方向</section>
+        <div class="box0101"></div>
+        <br>
+
+        <section>1.2 通过角度指定渐变方向</section>
+        <div class="box0102"></div> 
+        <br>
+
+        <section>1.3. 通过圈数指定渐变方向</section>
+        <div class="box0103"></div>
+        <br>
+
+        <section>2. 多个颜色的分布</section>
+        <section>2.1. 默认多个颜色均匀分布</section>
+        <div class="box0201"></div>
+
+        <section>2.2 指定各个颜色的起始位置</section>
+        <div class="box0202"></div>
+
+        <section>2.3 .自动重复的线性渐变 </section>
+        <div class="box0203"></div>
+    </body>
+</html>
