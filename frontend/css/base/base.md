@@ -80,6 +80,13 @@
     - [文本的样式](#文本的样式)
     - [文本的居中与对齐](#文本的居中与对齐)
 - [背景](#背景)
+    - [背景色](#背景色)
+    - [背景图片](#背景图片)
+    - [背景的简写属性](#背景的简写属性)
+    - [背景图片的渐变](#背景图片的渐变)
+    - [背景应用-雪碧图](#背景应用-雪碧图)
+        - [雪碧图的引入-链接的点击效果](#雪碧图的引入-链接的点击效果) 
+        - [雪碧图的应用](#雪碧图的应用) 
 - [](#)
 - [](#)
 - [](#)
@@ -642,6 +649,22 @@
     |`:last-of-type`|同类元素中的最后一个子元素|仅对同类元素进行排序,如果多个元素中间有不符合规则的元素，则忽略这些元素|
     |`:nth-of-type(index)`|同类元素中的第n个子元素|仅对同类元素进行排序,如果多个元素中间有不符合规则的元素，则忽略这些元素<br>index从0开始<br>`index=n`时，选中所有子元素，表示从1到正无穷<br>`index=2n`、`index=even`时，表示选择偶数位置的子元素<br>`index=2n+1`、`index=odd`时，表示选择奇数数位置的子元素|
     |`:not(选择器|伪类)`|否定伪类，将符合条件的元素从选择器中删除|如果使用`属性选择器`，只写`[属性名=属性值]`部分即可|
+
+- 与鼠标操作相关的伪类
+
+    |伪类|描述|
+    |-|-|
+    |`:hover`|鼠标悬停|
+    |`:focus`|元素被选中(元素获得光标焦点)|
+    |`:active`|元素被鼠标点击(点击并且鼠标没有松开)|
+
+- 与链接`<a>`相关的伪类  ?????示例?????
+
+    |伪类|描述|
+    |-|-|
+    |`:link`|表示尚未访问过的链接|
+    |`:visited`|表示已经访问过的链接|
+
 
 - 示例
     - 参考代码
@@ -3445,6 +3468,7 @@
     - 浮动元素紧挨：默认情况下，浮动元素不会覆盖/超过其前面的兄弟浮动元素，会接在前一个浮动元素的后面
     - 如果浮动元素前面不是浮动元素，则无法移动
     - 如果浮动元素后面是仍然是文档流中的元素，则该元素会接在浮动元素的后边
+    - 浮动元素的子元素不会脱离，仍然会保持布局 ?????
     - 文字环绕：浮动元素不会覆盖文字，**文字会自动环绕**在浮动元素周围
     
 - **通过浮动元素可以进行水平布局**
@@ -5616,50 +5640,257 @@
             - ![](?????)
     
 # 背景
+## 背景色
 [top](#catalog)
-- 常用属性
-    - `background-color`, 设置元素的背景色
-    - `background-image: url("背景图片路径");`，设置元素的背景图片
-        - 默认状态下，背景图片与元素的大小关系对显示的影响
-            - `背景图片 < 元素`，背景图片会在元素内部平铺
-            - `背景图片 > 元素`，一部分背景图片无法显示
-            - `背景图片 = 元素`，背景图片正常显示
-        - 可以同时设置背景色`background-color`和背景图片`background-image`
-            - 设置后，元素的背景色将变成背景图片的背景色
+- 与背景色相关的属性
 
-    - `background-repeat`，设置图片的重复方式
-        - 常用属性值
+    |属性|描述|
+    |-|-|
+    |`background-color`|设置元素的背景色|
+    |`background-clip`|设置背景的范围|
 
-            |属性值|描述|
-            |-|-|
-            |repeat|在水平和垂直方向上进行重复|
-            |repeat-x|沿x轴/水平方向上重复|
-            |repeat-y|沿y轴/垂直方向上重复|
-            |no-repeat|不重复|
+- `background-clip`，设置背景的范围
+    - 默认状态下，当设置`border`属性时，背景大小也会自动扩大，然后扩大的部分再被`border`覆盖
+    - 在设置`border`属性时，可以通过`background-clip`设置背景的范围，即**如何处理背景扩大的部分**
+    - 常用属性值
 
-    - `background-position: x轴位置 y轴位置`，设置背景图片的位置
-        - 设置方式
-            1. 通过方位词作为x/y轴的位置
-                - 方位词：left、right、top、bottom、center
-                - 语法1：`background-position: 方位词1 方位词2;`
-                    - 将一个元素划分成一个9宫格，方位词两类组合来设置位置
-                - 语法2：`background-position: 方位词;`
-                    - 只使用一个方位词，相当与该方位词的重复
-                    - 如`background-position: left;`，相当于`background-position: left left;`
-            2. 通过偏移量设置
-                - 写法：`background-position: 10px 30px;`
-                - 如果偏移量是负数，则图片会向反方向移动
+        |属性值|描述|
+        |-|-|
+        |`border-box`|默认值，背景默认会出现在边框下，即背景色的大小=content+padding+border|
+        |`padding-box`|背景会出现在内边距中，即背景色的大小=content+padding|
+        |`content-box`|背景只会出现在内容区中，即背景色的大小=content|
+
+- 示例
+    - 参考代码
+        - [/frontend/css/base/src/background/color.html](/frontend/css/base/src/background/color.html)
+    - 设置背景色的范围
+        - css
+            ```css
+            /* 1. 通过double型的边框显示背景范围 */
+            .box01{
+                width: 100px;
+                height: 100px;
+                padding:20px;
+                background-color:#bfa;
+                border:20px orange double;
+            }
+            
+            /* 2. 设置背景的范围:padding-box */
+            .box02{
+                width: 100px;
+                height: 100px;
+                background-color:#bfa;
+                padding: 20px;
+                border:20px orange double;
+                /* 设置背景范围 */
+                background-clip: padding-box;
+            }
+
+            /* 3. 设置背景的范围:content-box */
+            .box03{
+                width: 100px;
+                height: 100px;
+                background-color:#bfa;
+                padding: 20px;
+                border:20px orange double;
+                /* 设置背景范围 */
+                background-clip: content-box;
+            }
+            ```
+        - html
+            ```html
+            <section>1. 通过double型的边框显示背景范围</section>
+            <br>
+            <div class="box01"></div>
+            <br>
+
+            <section>2. 设置背景的范围:padding-box</section>
+            <br>
+            <div class="box02"></div>
+            <br>
+
+            <section>3. 设置背景的范围:content-box</section>
+            <br>
+            <div class="box03"></div>
+            <br>
+            ```
+        - 页面结果
+            - ![](?????)
+
+## 背景图片
+[top](#catalog)
+- 与背景图片相关的属性
+
+    |属性|描述|
+    |-|-|
+    |`background-image: url("背景图片路径");`|设置元素的背景图片|
+    |`background-repeat`|设置图片的重复方式|
+    |`background-origin: 原点位置`|设置偏移量的计算原点|
+    |`background-position: x轴位置 y轴位置`|设置背景图片相对与`background-origin`的位置|
+    |`background-size: 宽度 高度`|设置图片的大小|
+    |`background-attachment`|设置在元素出现滚动条时，背景图片是否跟随滚动条移动|
+
+- `background-image: url("背景图片路径");`，设置元素的背景图片
+    - 默认状态下，背景图片与元素的大小关系对显示的影响
+        - `背景图片 < 元素`，背景图片会在元素内部平铺
+        - `背景图片 > 元素`，一部分背景图片无法显示
+        - `背景图片 = 元素`，背景图片正常显示
+    - 可以同时设置背景色`background-color`和背景图片`background-image`
+        - 设置后，元素的背景色将变成背景图片的背景色
+
+- `background-repeat`，设置图片的重复方式
+    - 常用属性值
+
+        |属性值|描述|
+        |-|-|
+        |repeat|在水平和垂直方向上进行重复|
+        |repeat-x|沿x轴/水平方向上重复|
+        |repeat-y|沿y轴/垂直方向上重复|
+        |no-repeat|不重复|
+
+- `background-position: x轴位置 y轴位置`，设置背景图片的位置
+    - 设置方式
+        1. 通过方位词作为x/y轴的位置
+            - 方位词：left、right、top、bottom、center
+            - 语法1：`background-position: 方位词1 方位词2;`
+                - 将一个元素划分成一个9宫格，方位词两类组合来设置位置
+            - 语法2：`background-position: 方位词;`
+                - 只使用一个方位词，相当与该方位词的重复
+                - 如`background-position: left;`，相当于`background-position: left left;`
+        2. 通过偏移量设置
+            - 写法：`background-position: 10px 30px;`
+            - **如果偏移量是负数，则图片会向反方向移动**
     
-    - `background-clip`，设置背景的范围
-        - 默认状态下，当设置`border`属性时，背景大小也会自动扩大，然后扩大的部分再被`border`覆盖
-        - 在设置`border`属性时，可以通过`background-clip`设置背景的范围，即**如何处理背景扩大的部分**
-        - 常用属性值
+- `background-origin: 原点位置`，设置偏移量的计算原点
+    - 常用属性值
 
-            |属性值|描述|
+        |属性值|描述|
+        |-|-|
+        |`padding-box`|默认值，以内边距的左上角为原点|
+        |`border-box`|以边框的左上角为原点|
+        |`content-box`|以内容区的左上角为原点|
+
+- `background-size: 宽度 高度`，设置图片的大小
+    - 高度和宽度可以使用像素或者百分比
+    - 一些设置方式
+
+        |设置方式|描述|
+        |-|-|
+        |`background-size: X Y`|设置图片的大小|
+        |`background-size: auto auto`|大小是图片的大小|
+        |<ul><li>`background-size: auto X`</li><li>`background-size: X auto`</li></ul>|`auto`的长度会自动调整（维持宽高比例）|
+        |`background-size: X`|<ul><li>只设置一个值的时候，代表只设置宽度，高度默认为:`auto`</li><li>与使用：`background-size: X auto`的效果相同</li><ul>|
+        |`background-size: cover`|图片比例不变，铺满元素|
+        |`background-size: contain`|图片比例不变，将图片在元素中完整显示，保证宽或高中有一个是100%|
+
+- `background-attachment`，设置在元素出现滚动条时，背景图片是否跟随滚动条移动
+    - 常用属性值
+
+        |属性值|描述|
+        |-|-|
+        |scroll|默认值，图片会跟随元素移动|
+        |fixed|图片会固定在元素中，不会随元素移动 ???????不显示?????|
+
+- 示例
+    - 参考代码
+        - [/frontend/css/base/src/background/image.html](/frontend/css/base/src/background/image.html)
+
+
+## 背景的简写属性
+[top](#catalog)
+- 与背景色和背景图片相关的所有属性都可以通过简写属性来设置
+- 除了下面两组属性，其他属性的在设置时没有固定的顺序
+    1. 如果要使用：`background-size`, 必须通过`background-position/background-size`的方式来使用，前面必须要有`/`
+    2. `background-origin`、`background-clip`的属性值是相同的，所以使用的时候必须按照`background-origin background-clip`的顺序来使用
+
+- 示例
+    - 参考代码
+        - [/frontend/css/base/src/background/simpleAttribute.html](/frontend/css/base/src/background/simpleAttribute.html)
+    - css
+        ```css
+        .box01{
+            width: 200px;
+            height: 200px;
+            border: orange 20px double;
+            padding: 10px;
+            /* color image position size origin clip */
+            background:  #bfa url("./testimg.png")  no-repeat center center/100px 100px content-box content-box;
+        }
+        ```
+    - html
+        ```html
+        <div class="box01"></div>
+        ```
+    - 页面结果
+        - ![](????? 图片原点检查)
+
+## 背景图片的渐变
+[top](#catalog)
+- 通过渐变可以设置一些复杂的背景颜色，实现多个颜色间的过渡
+- 渐变是应用与背景图片的，需要通过`background-image`来设置
+- 线性渐变
+    - 颜色沿着一条直线发生变化
+    - 语法1-基本线性渐变：`background-image: linear-gradient([渐变方向], 颜色1 [起始位置], 颜色2 [起始位置],.....);`
+        - 渐变可以同时指定多种颜色，默认情况下颜色会平均分布
+        - 可使用的渐变方向
+
+            |属性值|渐变方式|
             |-|-|
-            |||
+            |to left|从右向左变化|
+            |to right|从左向右变化|
+            |to top|从下向上变化|
+            |to bottom|从上向下变化，默认值|
+            |数值deg|表示旋转的角度|
+            |数值turn|表示旋转的圈数|
+        - 每个颜色后边可以指定该颜色的起始位置（最纯的颜色的起始位置）
+        - 手动指定颜色起始位置之后，如果元素中有剩余的部分，这部分将会使用最后一个颜色的纯色来填充
+    - 语法1-自动重复的线性渐变：`background-image: repeating-linear-gradient([渐变方向], 颜色1 [起始位置], 颜色2 [起始位置],.....);`
+        - 基本使用方法与语法1相同
+        - 当元素中出现空白部分时，颜色的渐变将会自动重复
+        - 发生重复时，`background-repeat:no-repeat`无法关闭重复效果
+
+- 示例
+    - 参考代码
+        - [/frontend/css/base/src/background/gradient.html](/frontend/css/base/src/background/gradient.html)
 
 
+
+## 背景应用-雪碧图
+### 雪碧图的引入-链接的点击效果
+[top](#catalog)
+- 实现方式1：通过伪类设置三种状态图片
+    - 实现思路
+        - 链接未访问、鼠标移入链接、点击链接分别使用三种图片表示
+        - 通过伪类：`link`、`hover`、`active`来分别设置链接的背景图片
+
+    - 该实现方式的问题
+        - 一个链接使用了3张图片，需要发三次请求才能获取到全部图片
+        - 图片只会在第一次进入页面、第一次鼠标移入、第一次鼠标点击时下载，会出现白色背景一闪而过的现象
+    - 实现
+        - ?????
+
+- 实现方式2：雪碧图
+    - 实现思路
+        - 将实现方式1的三张图片组合成**一张**水平排列的图片
+        - 通过伪类：`link`、`hover`、`active`来分别设置背景图片的`bockground-position`，使图片移动来完成背景切换的效果
+    
+    - 该实现方法的优点
+        - 只有一张图片，有效避免闪烁问题
+        - 减少了请求的次数
+    - 实现
+        - ????? p92
+
+### 雪碧图的应用
+[top](#catalog)
+- 雪碧图的应用思路
+    - 将所有页面中的小背景图片整合到一张大的图片中
+    - 使用时，通过`background-image`设置雪碧图的路径，通过`background-position`控制图片的位置来显示图片集合中的某个集合
+
+- 雪碧图的优点
+    - 获取图片时只发送一次请求就可以获得一张所有背景图片的集合，减少了发送请求的次数，使用体验比较好
+    - 所有小图片变成了一个大图片，图片的容量会减小
+
+- ????? p92
 
 # 网页布局
 ## 基本的页面布局思路
