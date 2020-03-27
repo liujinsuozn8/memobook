@@ -4,7 +4,7 @@
         <meta charset="utf-8">
         <title>test</title>
         <style>
-            /* 1.线性渐变 */
+            /* 1.线性渐变的方向 */
             /* 1.1 指定渐变的方向 */
             .box0101{
                 width: 200px;
@@ -23,10 +23,10 @@
             .box0103{
                 width: 200px;
                 height: 200px;
-                background-image: linear-gradient(.5turn #47e, #bfa);
+                background-image: linear-gradient(.5turn, #47e, #bfa);
             }
 
-            /* 2. 多个颜色的分布 */
+            /* 2. 线性渐变的多个颜色分布 */
             /* 2.1. 默认多个颜色均匀分布 */
             .box0201{
                 width: 200px;
@@ -47,10 +47,81 @@
                 height: 200px;
                 background-image: repeating-linear-gradient(#47e 35px, #bfa 100px);
             }
+
+            /* 3. 径向渐变的形状 */
+            /* 3.1. 默认状态下的径向渐变 */
+            .box0301{
+                width: 50px;
+                height: 100px;
+                background-image:radial-gradient(#bfa, #47e);
+            }
+
+            /* 3.2. 通过x轴和y轴的长度来设置径向渐变的形状 */
+            .box0302{
+                width: 100px;
+                height: 100px;
+                background-image:radial-gradient(50px 30px, #bfa, #47e);
+            }
+
+            /* 3.3. 指定径向渐变的形状：cycle */
+            .box0303{
+                width: 100px;
+                height: 150px;
+                background-image: radial-gradient(circle, #bfa, #47e);
+            }
+
+            /* 3.4. 指定径向渐变的形状：ellipse */
+            .box0304{
+                width:100px;
+                height:100px;
+                background-image:radial-gradient(ellipse, #bfa, #47e);
+            }
+
+            /* 3.5. 指定径向渐变的形状：closest-side */
+            .box0305{
+                width: 100px;
+                height: 150px;
+                background-image: radial-gradient(closest-side at 30px 50px, #bfa, #47e);
+            }
+
+            /* 3.6. 指定径向渐变的形状：closest-corner */
+            .box0306{
+                width: 100px;
+                height: 150px;
+                background-image: radial-gradient(closest-corner at 30px 50px, #bfa, #47e);
+            }
+
+            /* 3.7. 指定径向渐变的形状：farthest-side */
+            .box0307{
+                width: 100px;
+                height: 150px;
+                background-image: radial-gradient(farthest-side at 30px 50px, #bfa, #47e);
+            }
+            /* 3.8. 指定径向渐变的形状：farthest-corner */
+            .box0308{
+                width: 100px;
+                height: 150px;
+                background-image: radial-gradient(farthest-corner at 30px 50px, #bfa, #47e);
+            }
+            
+            /* 4. 径向渐变的圆心位置 */
+            /* 4.1. 指定径向渐变的圆心 */
+            .box0401{
+                width: 150px;
+                height:150px;
+                background-image: radial-gradient(100px 50px at 30px 40px, #bfa, #47e);
+            }
+
+            /* 4.2. 通过两个方位词指定圆心位置 */
+            .box0402{
+                width: 150px;
+                height: 150px;
+                background-image: radial-gradient(100px 50px at left center, #bfa, #47e);
+            }
         </style>
     </head>
     <body>
-        <section>1.线性渐变</section>
+        <section>1. 线性渐变的方向</section>
         <section>1.1 指定渐变的方向</section>
         <div class="box0101"></div>
         <br>
@@ -63,7 +134,7 @@
         <div class="box0103"></div>
         <br>
 
-        <section>2. 多个颜色的分布</section>
+        <section>2. 线性渐变的多个颜色分布</section>
         <section>2.1. 默认多个颜色均匀分布</section>
         <div class="box0201"></div>
 
@@ -72,5 +143,37 @@
 
         <section>2.3 .自动重复的线性渐变 </section>
         <div class="box0203"></div>
+
+        <section>3. 径向渐变</section>
+        <section>3.1. 默认状态下的径向渐变</section>
+        <div class="box0301"></div>
+
+        <section>3.2. 通过x轴和y轴的长度来设置径向渐变的形状</section>
+        <div class="box0302"></div>
+
+        <section>3.3. 指定径向渐变的形状：cycle</section>
+        <div class="box0303"></div>
+
+        <section>3.4. 指定径向渐变的形状：ellipse</section>
+        <div class="box0304"></div>
+
+        <section>3.5. 指定径向渐变的形状：closest-side</section>
+        <div class="box0305"></div>
+
+        <section>3.6. 指定径向渐变的形状：closest-corner</section>
+        <div class="box0306"></div>
+
+        <section>3.7. 指定径向渐变的形状：farthest-side</section>
+        <div class="box0307"></div>
+
+        <section>3.8. 指定径向渐变的形状：farthest-corner</section>
+        <div class="box0308"></div>
+
+        <section>4. 径向渐变的圆心位置</section>
+        <section>4.1. 指定径向渐变的圆心</section>
+        <div class="box0309"></div>
+
+        <section>4.2. 通过两个方位词指定圆心位置</section>
+        <div class="box0310"></div>
     </body>
 </html>
