@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+    <title>table cell test</title>
+    <style>
+        /* 1. 通过table-cell使子元素垂直平居中 */
+        .outter01{
+            width: 100px;
+            height: 100px;
+            background-color: #bfa;
+            display: table-cell;
+            vertical-align: middle;
+        }
+
+        .inner01{
+            width:50px;
+            height: 50px;
+            background-color: #47e;
+            margin: 0 auto;
+        }
+        
+/*         
+        .outter02{
+            width: 100px;
+            height: 100px;
+            background-color: #bfa;
+            line-height: 100px;
+        }
+
+        .inner02{
+            width:50px;
+            height: 50px;
+            background-color: #47e;
+            margin: auto auto;
+        }
+     */
+
+    </style>
+</head>
+<body>
+    <section>1. 通过table-cell使子元素垂直平居中</section>
+    <div class="outter01">
+        <div class="inner01"></div>
+    </div>
+    <br>
+
+    <div class="outter02">
+        <div class="inner02"></div>
+    </div>
+</body>
+</html>
