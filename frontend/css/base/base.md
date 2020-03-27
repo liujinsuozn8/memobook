@@ -87,6 +87,11 @@
     - [背景应用-雪碧图](#背景应用-雪碧图)
         - [雪碧图的引入-链接的点击效果](#雪碧图的引入-链接的点击效果) 
         - [雪碧图的应用](#雪碧图的应用) 
+- [表格样式](#表格样式)
+    - [表格样式的基本用法](#表格样式的基本用法)
+    - [通过单元格化来控制元素水平垂直居中](#通过单元格化来控制元素水平垂直居中)
+- [](#)
+- [](#)
 - [](#)
 - [](#)
 - [](#)
@@ -3282,7 +3287,8 @@
     |inline|将元素设置为行内元素||
     |block|将元素设置为块元素||
     |inline-block|行内块元素|<ul><li>优缺点<ul><li>同时兼具行内元素和块元素的优点：既可以设置`width`和`height`(块元素)，又**不会独占一行**（行内元素）</li><li>同时兼具行内元素和块元素的缺点：换行符会被解析为空白距离。即如果行内块元素间有换行，页面上的两个元素之间会产生一个空白的距离</li></ul></li><li>一般开发时尽量不要使用</li></ul>|
-    |table|将元素设置为表格元素||
+    |table|将元素设置为表格||
+    |table-cell|将元素设置为单元格||
     |none|元素不再页面中显示。|可以用来隐藏元素，在需要的时候，通过页面控制再显示出来|
 
 - 示例
@@ -5351,7 +5357,7 @@
         |overline|上划线|
         |line-through|删除线|
 
-    - 除了属性值，还可以同时设置文本修饰内容的颜色和样式：`text-align:修饰内容 颜色 样式`
+    - 除了属性值，还可以同时设置文本修饰内容的颜色和样式：`text-decoration:修饰内容 颜色 样式`
         - **这中设置方法在IE中无效**
 
 - `white-space`，设置网页如何处理空白
@@ -5844,15 +5850,166 @@
             |数值turn|表示旋转的圈数|
         - 每个颜色后边可以指定该颜色的起始位置（最纯的颜色的起始位置）
         - 手动指定颜色起始位置之后，如果元素中有剩余的部分，这部分将会使用最后一个颜色的纯色来填充
-    - 语法1-自动重复的线性渐变：`background-image: repeating-linear-gradient([渐变方向], 颜色1 [起始位置], 颜色2 [起始位置],.....);`
+    - 语法2-自动重复的线性渐变(平铺渐变)：`background-image: repeating-linear-gradient([渐变方向], 颜色1 [起始位置], 颜色2 [起始位置],.....);`
         - 基本使用方法与语法1相同
         - 当元素中出现空白部分时，颜色的渐变将会自动重复
         - 发生重复时，`background-repeat:no-repeat`无法关闭重复效果
 
+- 径向渐变
+    - 颜色从一个中心点向四周延伸
+    - 默认状态下，径向渐变的形状会根据元素的形状来调整
+        - 元素：正方形，径向渐变：圆形
+        - 元素：长方形，径向渐变：椭圆形
+    - 语法1:`background-image:radial-gradient([形状/大小][at 圆心位置], 颜色1 [起始位置], 颜色2 [起始位置], .....)`
+        - 形状
+            - 形状可以使用x轴和y轴的长度来表示：`background-image:radial-gradient(x轴 y轴, 颜色1, 颜色2)`
+            - 常用形状值
+
+                |形状值|描述|备注|
+                |circle|圆形||
+                |ellipse|椭圆|<ul><li>默认值</li><li>如果元素本身是正方形，则显示的仍然是圆形</li></ul>|
+                |closest-side|近边|范围是圆心到最近的边的长度|
+                |closest-corner|近角|范围是圆心到最近的角的长度|
+                |farthest-side|远边|范围是圆心到最远的边的长度|
+                |farthest-corner|远角|范围是圆心到最远的角的长度|
+        - 圆心位置
+            - 通过指定x轴和y轴偏移量指定圆心位置，如：`background-image: radial-gradient(100px 50px at 30px 40px, #bfa, #47e);`
+            - 通过**两个方位词**指定圆心位置，如：`background-image: radial-gradient(100px 50px at left center, #bfa, #47e);`
 - 示例
     - 参考代码
         - [/frontend/css/base/src/background/gradient.html](/frontend/css/base/src/background/gradient.html)
+    - 线性渐变的方向
+        - css
+            ```css
+            /* 1.1 指定渐变的方向 */
+            .box0101{
+                width: 200px;
+                height:200px;
+                background-image: linear-gradient(to left, #47e, #bfa);
+            }
+            
+            /* 1.2. 通过角度指定渐变方向 */
+            .box0102{
+                width: 200px;
+                height:200px;
+                background-image: linear-gradient(45deg, #47e, #bfa);
+            }
+            
+            /* 1.3. 通过圈数指定渐变方向 */
+            .box0103{
+                width: 200px;
+                height: 200px;
+                background-image: linear-gradient(.5turn, #47e, #bfa);
+            }
+            ```
+        - 页面结果
+            - ![](?????)
+    - 线性渐变的多个颜色分布
+        - css
+            ```css
+            /* 2.1. 默认多个颜色均匀分布 */
+            .box0201{
+                width: 200px;
+                height: 200px;
+                background-image: linear-gradient(#47e, #bfa, orange);
+            }
 
+            /* 2.2. 指定各个颜色的起始位置 */
+            .box0202{
+                width: 200px;
+                height: 200px;
+                background-image:linear-gradient(#47e 35px, #bfa 100px);
+            }
+
+            /* 2.3. 自动重复的线性渐变 */
+            .box0203{
+                width: 200px;
+                height: 200px;
+                background-image: repeating-linear-gradient(#47e 35px, #bfa 100px);
+            }
+            ```
+        - 页面结果
+            - ![](?????)
+    
+    - 径向渐变的形状
+        - css
+            ```css
+            /* 3.1. 默认状态下的径向渐变 */
+            .box0301{
+                width: 50px;
+                height: 100px;
+                background-image:radial-gradient(#bfa, #47e);
+            }
+
+            /* 3.2. 通过x轴和y轴的长度来设置径向渐变的形状 */
+            .box0302{
+                width: 100px;
+                height: 100px;
+                background-image:radial-gradient(50px 30px, #bfa, #47e);
+            }
+
+            /* 3.3. 指定径向渐变的形状：cycle */
+            .box0303{
+                width: 100px;
+                height: 150px;
+                background-image: radial-gradient(circle, #bfa, #47e);
+            }
+
+            /* 3.4. 指定径向渐变的形状：ellipse */
+            .box0304{
+                width:100px;
+                height:100px;
+                background-image:radial-gradient(ellipse, #bfa, #47e);
+            }
+
+            /* 3.5. 指定径向渐变的形状：closest-side */
+            .box0305{
+                width: 100px;
+                height: 150px;
+                background-image: radial-gradient(closest-side at 30px 50px, #bfa, #47e);
+            }
+
+            /* 3.6. 指定径向渐变的形状：closest-corner */
+            .box0306{
+                width: 100px;
+                height: 150px;
+                background-image: radial-gradient(closest-corner at 30px 50px, #bfa, #47e);
+            }
+
+            /* 3.7. 指定径向渐变的形状：farthest-side */
+            .box0307{
+                width: 100px;
+                height: 150px;
+                background-image: radial-gradient(farthest-side at 30px 50px, #bfa, #47e);
+            }
+            /* 3.8. 指定径向渐变的形状：farthest-corner */
+            .box0308{
+                width: 100px;
+                height: 150px;
+                background-image: radial-gradient(farthest-corner at 30px 50px, #bfa, #47e);
+            }
+            ```
+        - 页面结果
+            - ![](?????)
+    - 径向渐变的圆心位置
+        - css
+            ```css
+            /* 4.1. 指定径向渐变的圆心 */
+            .box0401{
+                width: 150px;
+                height:150px;
+                background-image: radial-gradient(100px 50px at 30px 40px, #bfa, #47e);
+            }
+
+            /* 4.2. 通过两个方位词指定圆心位置 */
+            .box0402{
+                width: 150px;
+                height: 150px;
+                background-image: radial-gradient(100px 50px at left center, #bfa, #47e);
+            }
+            ```
+        - 页面结果
+            - ![](?????)
 
 
 ## 背景应用-雪碧图
@@ -5891,6 +6048,87 @@
     - 所有小图片变成了一个大图片，图片的容量会减小
 
 - ????? p92
+
+# 表格样式
+## 表格样式的基本用法
+[top](#catalog)
+- `border-spacing`，设置表格中`<td>`之间的间距
+    - 如果设为0，则单元格之间没有间距，但是页面显示中的边框大小会变成**边框的2倍**
+- `border-collapse:collapse，`，设置表格的边框合并，使多重边框合并为一个边框
+- `tr:nth-child(2n)`，设置奇偶行的颜色变化
+    - 使用父子关系选择器:`table>tr:nth-child(2n)`，则无法设置颜色
+        - `<tr>`不属于`<table>`，而是属于`<tbody>`(手动设置的、或自动生成的)
+- `<td>`中的文字样式设置
+    - `<td>`中的内容，默认情况下是垂直居中、居左显示的
+    - `vertical-align`，设置文字的垂直位置，并且`vertical-align:middle`与文本不同，是真正的垂直居中
+    - `text-align:center`，设置文字水平居中
+
+- 示例
+    - 参考代码
+        - [/frontend/css/base/src/table/base.html](/frontend/css/base/src/table/base.html)
+    - css
+        ```css
+        .tbox01{
+            width: 50%;
+            border:black 2px solid;
+            /* border-spacing: 0px; */
+
+            /* 设置边框的合并 */
+            border-collapse: collapse;
+        }
+        .tbox01 td{
+            border: black 1px solid;
+            height:30px;
+            vertical-align:middle;
+            text-align:center;
+        }
+        .tbox01 tr:nth-child(2n){
+            background-color: #bfa;
+        }
+        ```
+    - 页面结果
+        - ![](?????)
+
+
+## 通过单元格化来控制元素水平垂直居中
+[top](#catalog)
+- 实现思路
+    - 将**父元素**通过：`display:table-cell`将元素转化为单元格
+    - 控制垂直居中：在父元素设置`vertical-align:middle;`，**使子元素垂直居中**
+    - 控制水平居中：在**子元素置**中设置`margin: 0 auto;`，来设置水平居中
+
+- **这种实现一般开发中使用的比较少，并且尽量不使用该方法，只作为一种手段了解**
+
+- 示例
+    - 参考代码
+        - [/frontend/css/base/src/table/table_cell.html](/frontend/css/base/src/table/table_cell.html)
+    - css
+        ```css
+        .outter01{
+            width: 100px;
+            height: 100px;
+            background-color: #bfa;
+            display: table-cell;
+            vertical-align: middle;
+        }
+
+        .inner01{
+            width:50px;
+            height: 50px;
+            background-color: #47e;
+            margin: 0 auto;
+        }
+        ```
+    - html
+        ```html
+        <div class="outter01">
+            <div class="inner01"></div>
+        </div>
+        ```
+    - 页面结果
+        - ![](?????)
+
+
 
 # 网页布局
 ## 基本的页面布局思路
@@ -6022,6 +6260,7 @@
 
 - 浮动与定位的使用规范：大范围使用浮动，小范围微调使用定位
 
+- 图片`<img>`的对齐与文字的对齐相似，都是基线对齐，使用时需要注意
 
 - 自定义css
     - 自定义类选择器解决高度塌陷和父子元素间的外边距折叠
@@ -6051,6 +6290,34 @@
     1. 先写html，进行页面布局。布局时，抽象出层级关系、显示方式到css类中
     2. 开发css的类
     3. 进行css微调，微调时需要注意css的权重
+
+- 水平居中
+    - 元素水平居中：`margin:0xp auto;`
+        - 块元素遵守水平等式，所以会自动居中
+    - 文字水平居中：`text_align:center`
+
+- 自动水平垂直居中：开启绝对定位，4个方向的偏移量全部为0，marign全部auto，为了遵循水平、垂直等式，元素将会自动水平垂直居中， 参考：[启动绝对定位后必须满足的水平垂直等式](#启动绝对定位后必须满足的水平垂直等式)
+    - css
+        ```css
+        .outter04{
+            width:100px;
+            height: 100px;
+            background-color: #bfa;
+            position:relative;
+        }
+        
+        .inner04{
+            width: 50px;
+            height:50px;
+            background-color:#47e;
+            position: absolute;
+            margin:auto;
+            top:0px;
+            bottom:0px;
+            left:0px;
+            right:0px;
+        }
+        ```
 
 # 练习
 [top](#catalog)
