@@ -1,0 +1,53 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>table test</title>
+
+    </head>
+    <body>
+        <table border="1">
+            <!-- 标题行 -->
+            <tr>
+                <th>1</th>
+                <th>2</th>
+                <th>3</th>
+                <th>4</th>
+            </tr>
+            <!-- 显示一行4个单元格 -->
+            <tr>
+                <td>a1</td>
+                <td>a2</td>
+                <td>a3</td>
+                <td>a4</td>
+            </tr>
+            <!-- 创建第二个表头行 -->
+            <tr>
+                <th>1</th>
+                <th>2</th>
+                <th>3</th>
+                <th>4</th>
+            </tr>
+            <tr>
+                <!-- 纵向合并单元格，会占用c1的位置 -->
+                <td rowspan="2">b1</td>
+                <td>b2</td>
+                <td>b3</td>
+                <td>b4</td>
+            </tr>
+            <tr>
+                <!-- <td>c1</td> -->
+                <td>c2</td>
+                <td>c3</td>
+                <td>c4</td>
+            </tr>
+            <tr>
+                <td>d1</td>
+                <td>d2</td>
+                <!-- 横向合并单元格，会占用d4的位置 -->
+                <td colspan="2">d3</td>
+                <!-- <td>d4</td> -->
+            </tr>
+        </table>
+    </body>
+</html>
