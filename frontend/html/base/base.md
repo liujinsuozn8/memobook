@@ -28,11 +28,16 @@
     - [内联框架iframe](#内联框架iframe)
     - [音频播放audio](#音频播放audio)
     - [视频播放video](#视频播放video)
+- [表格](#表格)
+    - [表格的基本内容](#表格的基本内容)
+    - [表格的细分](#表格的细分)
+- [表单](#表单)
+    - [form概述](#form概述)
+    - [表单项](#表单项)
+- [](#)
+- [](#)
+- [](#)
 - [浏览器对不规范内容的自动调整](#浏览器对不规范内容的自动调整)
-- [](#)
-- [](#)
-- [](#)
-- [](#)
 
 # 网页开发的简介
 [top](#catalog)
@@ -42,7 +47,7 @@
         - 通过点击拖动等来使用软件
         - 包括:windows、macos、Andriod、ios中的大部分应用
         - 属于C/S架构
-    - <label style="color:red">>网页</label>
+    - <label style="color:red">网页</label>
         - 通过访问网页来使用软件，所有的网站都属于这个范畴
         - 属于B/S架构
 - 网页的优点
@@ -120,8 +125,8 @@
         - <labe style="color:red">属性值必须用引号括起来</labe>
         - 可以用双引号或单引号
 
-    - 只以属性名存在
-        - 这种类型的属性没有属性值
+    - 无属性值的属性
+        - 这种类型的属性无属性值，只有属性名
         - 标签通过有没有声明该属性来判断是否开启对应的功能
 - 标签的id
     - **每一个标签都可以添加一个id属性**
@@ -256,6 +261,7 @@
 |`<ol>...</ol>`|有序列表|[列表-有序列表](#html-list-ol)|
 |`<dl>...</dl>`|定义列表|[列表-定义列表](#html-list-dl)|
 |`<li>...</li>`|列表项|[列表](#列表)|
+|`<table></table>`|表格|[表格](#表格)|
 
     
 ## 行内元素
@@ -268,6 +274,7 @@
 |`<strong>...</strong>`|文字加粗|[/frontend/html/base/src/structure.html](/frontend/html/base/src/structure.html)|
 |`<q>...</q>`|短引用<br>在文字两侧会使用：`"`、`「」`字符将文字括起来|[/frontend/html/base/src/structure.html](/frontend/html/base/src/structure.html)|
 |`<a>...</a>`|超链接|[超链接a](#超链接a)|
+|`<input type="..." name="...">`|表单项|[表单](#表单)|
 
 ## 替换元素
 [top](#catalog)
@@ -652,6 +659,229 @@
         </video>
         ```
 
+# 表格
+## 表格的基本内容
+[top](#catalog)
+- 表格是**块元素**
+- 表格的基本元素
+    - `<table>`，表示表格，与表格相关的元素都要写在该元素中
+    - `<tr>`，表格中的一行
+        - <label style="color:red">`<tr>`不属于`<table>`，而是属于`<tbody>`(手动设置的、或自动生成的)</label>
+        - 如果表格中没有使用`<tbody>`，而是直接使用`<tr>`时，浏览器将会自动创建一个`<tbody>`，并将`<tr>`放入`<tbody>`中
+
+    - `<th>`，表示表头单元格
+    - `<td>`，表示一行中的一个数据单元格
+- 默认情况下，`<table>`是由表格中的内容撑开的，但是当`<table>`设置宽度后，内部的元素会进行自动调整
+- 表格的基本结构
+    ```html
+    <table>
+        <!-- 一个表头行 -->
+        <tr>
+            <th>1</th>
+            <th>2</th>
+        </tr>
+        <tr>
+            <!-- 一行中的一个单元格 -->
+            <td>1</td>
+            <td>2</td>
+        </tr>
+    </table>
+    ```
+
+- `<table>`的相关属性，实际开发中最好使用css来控制表格的样式，不要使用`<table>`的属性来设置样式
+
+    |属性|描述|
+    |-|-|
+    |`border`|表格的边框|
+    |`width`|表格的宽度|
+    |`align`|表格的位置|
+    |||
+
+- `<td>`的相关属性
+    - `colspan`设置横向合并单元格的个数
+    - `rolspan`设置纵向合并单元格的个数
+
+- 表头行在`<table>`中可以有多个
+
+- 示例
+    - 参考代码
+        - [/frontend/html/base/src/table/base.html](/frontend/html/base/src/table/base.html)
+    - html
+        ```html
+        <table border="1">
+            <!-- 标题行 -->
+            <tr>
+                <th>1</th>
+                <th>2</th>
+                <th>3</th>
+                <th>4</th>
+            </tr>
+            <!-- 显示一行4个单元格 -->
+            <tr>
+                <td>a1</td>
+                <td>a2</td>
+                <td>a3</td>
+                <td>a4</td>
+            </tr>
+            <!-- 创建第二个表头行 -->
+            <tr>
+                <th>1</th>
+                <th>2</th>
+                <th>3</th>
+                <th>4</th>
+            </tr>
+            <tr>
+                <!-- 纵向合并单元格，会占用c1的位置 -->
+                <td rowspan="2">b1</td>
+                <td>b2</td>
+                <td>b3</td>
+                <td>b4</td>
+            </tr>
+            <tr>
+                <!-- <td>c1</td> -->
+                <td>c2</td>
+                <td>c3</td>
+                <td>c4</td>
+            </tr>
+            <tr>
+                <td>d1</td>
+                <td>d2</td>
+                <!-- 横向合并单元格，会占用d4的位置 -->
+                <td colspan="2">d3</td>
+                <!-- <td>d4</td> -->
+            </tr>
+        </table>
+        ```
+    - 页面结果
+        - ![](?????)
+
+## 表格的细分
+[top](#catalog)
+- 当表格内容比较长的时候，可以对表格进行细分
+- 表格可以细分为3个部分
+    - `<thead>`，表头
+    - `<tbody>`，表格的内容
+    - `<tfoot>`，表尾部
+- 在表格的每个部分中，通过`<tr>`、`<td>`来设置每行、每个单元格
+- 进行表格细分后，**这三部分在html中可以不按照顺序排列，但是显示时会按照：thead、tbody、tfoot的顺序显示**
+- 基本的细分结构
+    ```html
+    <table>
+        <thead>
+            <tr>
+                <td>1</td>
+                <td>2</td>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>a1</td>
+                <td>a2</td>
+            </tr>
+        </tbody>
+        <tfoot>
+            <tr>
+                <td>A</td>
+                <td>B</td>
+            </tr>
+        </tfoot>
+    </table>
+    ```
+
+- 示例
+    - 参考代码
+        - [/frontend/html/base/src/table/split.html](/frontend/html/base/src/table/split.html)
+    - html
+        ```html
+        <table border="1">
+            <thead>
+                <tr>
+                    <td>1</td>
+                    <td>2</td>
+                    <td>3</td>
+                    <td>4</td>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>a1</td>
+                    <td>a2</td>
+                    <td>a3</td>
+                    <td>a4</td>
+                </tr>
+                <tr>
+                    <td>b1</td>
+                    <td>b2</td>
+                    <td>b3</td>
+                    <td>b4</td>
+                </tr>
+                <tr>
+                    <td>c1</td>
+                    <td>c2</td>
+                    <td>c3</td>
+                    <td>c4</td>
+                </tr>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td>A</td>
+                    <td>B</td>
+                    <td>C</td>
+                    <td>D</td>
+                </tr>
+            </tfoot>
+        </table>
+        ```
+    - 页面结果
+        - ![](?????)
+
+# 表单
+## form概述
+[top](#catalog)
+- `<form>`表单用于将本地的数据提交给服务器
+- `<form>`的属性
+    - `action`，form中必须要有的属性，<label style="color:red">指定表单要提交的服务器的地址</label>
+    
+## 表单项
+[top](#catalog)
+- 表单项的基本知识
+    - 表单项是**行内元素**
+    - `<form>`表单只是负责声明，作用类似于`<table>`，实际上产生作用的还是内部的表单项
+    - **表单项必须设置`name`属性，才能将内部的数据发送到服务器**
+    - 语法：
+        
+
+- 表单项：`<input type="..." name="...">`
+    - 通过`type`来指定使用哪种表单项
+    - 常用`type`
+
+        |表单项类型|type|描述|特性|
+        |-|-|-|-|
+        |输入框|text|文本框||
+        |输入框|password|密码框||
+        |输入框|submit|提交按钮|`<input type="submit" value="...">`<br>通过`value`来修改按钮中显示的文字|
+        |选择框|radio|单选框|<ul><li>多个选择框作为一组使用时，`name`属性必须相同</li><li>为了能向服务器发送一个有效值，必须设置`value`属性</li><li>可以通过添加`checked`来设置默认选中项</li><li>**checked是一个无属性值属性**</li></ul>|
+        |选择框|checkbox|多选框|<ul><li>特性基本与**单选框**相同</li><li>选中多个框时，会发送一个数组</li><li>在url中会变成被`&`链接的多个同name不同value的字符串 <br> `checkbox01=a&checkbox01=b&checkbox01=c`</li></ul>|
+        |按钮|button|按钮|只是一个普通的按钮，没有多余的功能，可以配合js来使用|
+
+    
+- 表单项：下拉列表
+    - 下拉列表是由：列表`<select>`和列表项`<option>`组成的，如：
+        ```html
+        <select name="xxx" id="">
+            <option value="v1">k1</option>
+            <option value="v2">k2</option>
+            <option value="v3" selected>k3</option>
+        </select>
+        ```
+    - `<select>`
+        - 需要设置`name`，才能把数据发送给服务器
+    - `<option>`
+        - `value`是发送给服务器的具体值
+        - 标签内容是页面中的显示内容
+        - `selected`属性设置默认选中项，这个属性是一个**无属性值的属性**
+    
+
 # 浏览器对不规范内容的自动调整
 [top](#catalog)
 - 浏览器解析html时，会自动对网页中不符合规范的内容进行修正（不修改源文件，只修改内存中的内容），包括
@@ -749,3 +979,4 @@
                 </body>
             </html>
             ```
+
