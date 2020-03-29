@@ -2,24 +2,23 @@
 <!DOCTYPE configuration
         PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<!--初始配置-->
 <!--核心配置内容-->
 <configuration>
-    <properties resource="db.properties">
-        <property name="password" value="12345"/>
-    </properties>
-
     <!--配置多套环境-->
     <environments default="development">
         <environment id="development">
             <!--事务管理，使用JDBC-->
             <transactionManager type="JDBC"/>
             <dataSource type="POOLED">
-                <property name="driver" value="${driver}"/>
+                <property name="driver" value="com.mysql.cj.jdbc.Driver"/>
                 <!--配置数据库连接-->
+                <!--连接中没有指定数据库名，mapper中的sql需要指定数据库名-->
+                <!--<property name="url" value="jdbc:mysql://127.0.0.1:3307?serverTimezone=UTC&amp;characterEncoding=utf8&amp;useUnicode=true&amp;useSSL=false"/>-->
                 <!--连接中已经指定数据库名，mapper中的sql可以不写数据库名-->
-                <property name="url" value="${url}"/>
-                <property name="username" value="${username}"/>
-                <property name="password" value="${password}"/>
+                <property name="url" value="jdbc:mysql://127.0.0.1:3307/test01?serverTimezone=UTC&amp;characterEncoding=utf8&amp;useUnicode=true&amp;useSSL=false"/>
+                <property name="username" value="root"/>
+                <property name="password" value="1234"/>
             </dataSource>
         </environment>
     </environments>
