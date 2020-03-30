@@ -5,7 +5,9 @@
 - [HTTP的会话方式](#http的会话方式)
 - [HTTP消息结构](#http消息结构)
     - [HTTP请求信息格式](#http请求信息格式)
+    - [常用请求信息字段](#常用请求信息字段)
     - [HTTP响应信息格式](#http响应信息格式)
+    - [常用响应信息字段](#常用响应信息字段)
 - [get和post请求](#get和post请求)
     - [get请求](#get请求)
     - [post请求](#post请求)
@@ -109,6 +111,9 @@
     ....(请求主体信息)
     ```
 
+## 常用请求信息字段
+[top](#catalog)
+
 ## HTTP响应信息格式
 [top](#catalog)
 - 基本构成
@@ -157,6 +162,15 @@
     ....(响应主体)
     ```
 
+## 常用响应信息字段
+[top](#catalog)
+- 禁止浏览器缓存当前页面
+    - 可以使用的三种字段
+        1. Expires=-1
+        2. Cache-Control=no-cache
+        3. Pragma=no-cache
+    - 不是所有的浏览器都支持这三种字段
+    
 # get和post请求
 ## get请求
 [top](#catalog)

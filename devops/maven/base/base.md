@@ -73,6 +73,17 @@
     - `export MAVEN_HOME=maven路径/apache-maven-3.6.2`
     - `export PATH=$PATH:$MAVEN_HOME/bin`
 4. 运行`mvn -v`查看Maven的版本
+5. 配置镜像加速：`$HOME/.m2/mysettings.xml`
+    ```xml
+    <mirrors>
+        <mirror> 
+            <id>alimaven</id> 
+            <name>aliyun maven</name> 
+            <url>http://maven.aliyun.com/nexus/content/groups/public/</url> 
+            <mirrorOf>central</mirrorOf>         
+        </mirror> 
+    </mirrors>
+    ```
 
 # Maven简介
 [top](#catalog)
