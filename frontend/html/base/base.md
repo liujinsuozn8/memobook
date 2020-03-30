@@ -839,33 +839,49 @@
 ## form概述
 [top](#catalog)
 - `<form>`表单用于将本地的数据提交给服务器
-- `<form>`的属性
-    - `action`，form中必须要有的属性，<label style="color:red">指定表单要提交的服务器的地址</label>
+- `<form>`的常用属性
+
+    |属性|功能|
+    |-|-|
+    |`action`|form中必须要有的属性，<label style="color:red">指定表单要提交的服务器的地址</label>|
+    |`autocomplete`|<ul><li>控制**所有文本框**输入时的补全提示</li><li>开启 `autocomplete="on"`</li><li>关闭 `autocomplete="off"`</li></ul>|
     
 ## 表单项
 [top](#catalog)
 - 表单项的基本知识
     - 表单项是**行内元素**
     - `<form>`表单只是负责声明，作用类似于`<table>`，实际上产生作用的还是内部的表单项
-    - **表单项必须设置`name`属性，才能将内部的数据发送到服务器**
-    - 语法：
-        
+    - **表单项必须设置`name`属性，才能将内部的数据发送到服务器**        
 
 - 表单项：`<input type="..." name="...">`
-    - 通过`type`来指定使用哪种表单项
+    - `<input>` 是一个自结束标签
+    - `<input>`中的常用属性
+
+        |属性|功能|
+        |-|-|
+        |`type`|指定使用哪种表单项|
+        |`value`|<ul><li>输入框类型的表单项，设置默认值</li><li>按钮类型的表单项，设置按钮文字</li></ul>|
+        |`autocomplete`|<ul><li>用于文本框输入时的补全提示</li><li>开启 `autocomplete="on"`</li><li>关闭 `autocomplete="off"`</li></ul>|
+        |`readonly`|<ul><li>**无属性值属性**</li><li>设置表单项为只读状态</li><li>数据可以提交</li></ul>|
+        |`disabled`|<ul><li>设置表单项为禁用状态，设置后元素默认会变成灰色</li><li>**数据无法提交**</li></ul>|
+        |`autofocus`|<ul><li>无属性值属性</li><li>表单项自动获取焦点</li></ul>|
+
     - 常用`type`
 
         |表单项类型|type|描述|特性|
         |-|-|-|-|
         |输入框|text|文本框||
         |输入框|password|密码框||
-        |输入框|submit|提交按钮|`<input type="submit" value="...">`<br>通过`value`来修改按钮中显示的文字|
         |选择框|radio|单选框|<ul><li>多个选择框作为一组使用时，`name`属性必须相同</li><li>为了能向服务器发送一个有效值，必须设置`value`属性</li><li>可以通过添加`checked`来设置默认选中项</li><li>**checked是一个无属性值属性**</li></ul>|
         |选择框|checkbox|多选框|<ul><li>特性基本与**单选框**相同</li><li>选中多个框时，会发送一个数组</li><li>在url中会变成被`&`链接的多个同name不同value的字符串 <br> `checkbox01=a&checkbox01=b&checkbox01=c`</li></ul>|
+        |按钮|submit|提交按钮|点击后将数据发送到服务器|
         |按钮|button|按钮|只是一个普通的按钮，没有多余的功能，可以配合js来使用|
-
+        |按钮|reset|重置按钮|点击后，有默认值的表单项还原为默认值；没有默认值的表单项被清空|
+        |其他|color|颜色选择器|很少使用，兼容性不好|
+        |其他|email|邮箱输入框|很少使用，外观与普通输入框类似，在提交时，会对邮箱的格式进行检查|
     
-- 表单项：下拉列表
+    
+- 表单项：下拉列表 `<select>...</select>`
     - 下拉列表是由：列表`<select>`和列表项`<option>`组成的，如：
         ```html
         <select name="xxx" id="">
@@ -881,6 +897,101 @@
         - 标签内容是页面中的显示内容
         - `selected`属性设置默认选中项，这个属性是一个**无属性值的属性**
     
+- 表单项：`<button type="按钮类型">按钮文字</button>`
+    - 可以用`type`
+
+        |type|描述|
+        |-|-|
+        |button|普通按钮|
+        |reset|重置按钮|
+        |submit|提交按钮|
+    - 每种类型按钮的功能都与`<input>`下的按钮功能相同
+    - `<button></button>`是成对标签，相比自结束标签`<input>`，可以提供更加复杂的结构
+
+- 示例
+    - 参考代码
+        - 表单页面：[/frontendhtml/base/src/form/base.html](/frontendhtml/base/src/form/base.html)
+        - 提交响应页面 [/frontend/html/base/src/form/dummyServer.html](/frontend/html/base/src/form/dummyServer.html)
+    - html
+        ```html
+                <form action="dummyServer.html">
+            <!-- 文本框 -->
+            文本框 autocomplete="on"：
+            <input type="text" name="name01" value='abcdef' autocomplete="on">
+            <br>
+            文本框 autocomplete="off"：
+            <input type="text" name="name02" autocomplete="off">
+            <br>
+            文本框 readonly：
+            <input type="text" name="name03" value="12345" readonly>
+            <br>
+            文本框 disabled：
+            <input type="text" name="name04" value="zxcvb" disabled>
+            <br>
+            文本框 disabled：
+            <input type="text" name="name05" value="cbcvbvb" autofocus>
+            <br>
+
+            <!-- 密码框 -->
+            密码框：
+            <input type="password" name="pwd">
+            <br>
+
+            <!-- 单选框 -->
+            单选框：
+            <input type="radio" name="radio01" value="1">
+            <input type="radio" name="radio01" value="2" checked>
+            <input type="radio" name="radio01" value="3">
+            <br>
+
+            <!-- 多选框 -->
+            多选框：
+            <input type="checkbox" name="checkbox01" value="a">
+            <input type="checkbox" name="checkbox01" value="b">
+            <input type="checkbox" name="checkbox01" value="c" checked>
+            <input type="checkbox" name="checkbox01" value="d">
+            <br>
+
+            <!-- 下拉列表 -->
+            下拉列表：
+            <select name="select01" id="">
+                <option value="x">xx</option>
+                <option value="y" selected>yy</option>
+                <option value="z">zz</option>
+            </select>
+            <br>
+            
+            <input type="color" name='color'>
+
+            <br>
+            ----------------&lt;input&gt; button：----------------
+            <br>
+            
+            <input type="button" value="BTN">
+            <br>
+            
+            <input type="reset" value="reset">
+            <br>
+            
+            <!-- 提交按钮，通过value设置按钮的文字 -->
+            <input type="submit" value="submit">
+            <br>
+
+            <br>
+            ----------------&lt;button&gt; button：----------------
+            <br>
+            <button type="button">button</button>
+            <br>
+            <button type="reset">reset</button>
+            <br>
+            <button type="submit">submit</button>
+            <br>
+        </form>
+        ```
+    - 页面结果
+        - ![](?????)
+
+
 
 # 浏览器对不规范内容的自动调整
 [top](#catalog)
