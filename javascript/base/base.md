@@ -4,9 +4,12 @@
 - [JavaSctipt简介](#JavaSctipt简介)
 - [JS的编写位置](#JS的编写位置)
 - [JS的基本语法规范](#JS的基本语法规范)
+- [数据类型](#数据类型)
+    - [数据类型分类](#数据类型分类)
+    - [基本数据类型](#基本数据类型)
 - [](#)
 - [](#)
-- [](#)
+- [反射](#反射)
 - [](#)
 
 
@@ -84,6 +87,10 @@
 - js的每一条语句以`;`结尾
     - 如果不写`;`，**浏览器会自动添加**，但是**会消耗一些系统资源**
     - 浏览器自动添加`;`时，也可能会加错位置，所以开发时一定要写`;`
+- 变量声明
+    ```js
+    var k = 'v';
+    ```
 - js会忽略多个空格和换行
 - js注释
     - 多行注释：`/* */`
@@ -125,5 +132,128 @@
 - 变量
     - 变量可以用来保存字面量
     - 变量的值可以任意改变
+
+# 数据类型
+## 数据类型分类
+[top](#catalog)
+- 数据类型指的是字面量的类型
+- JS的6种数据类型
+    |分类|数据类型|描述|
+    |-|-|-|
+    |基本数据类型|String|字符串|
+    |基本数据类型|Number|数值|
+    |基本数据类型|Boolean||
+    |基本数据类型|Null|空值|
+    |基本数据类型|Undefined|未定义|
+    |引用数据类型|Object|对象|
+
+## 基本数据类型
+[top](#catalog)
+- String
+    - 需要使用引号 `"` 或 `'` 括起来
+        ```js
+        var a="abc";
+        var b='abc';
+        ```
+    - 同类型的引号不能嵌套
+
+- Number
+    - 在js中所有的数值都是Number类型，包括整数、浮点数
+    - 特殊数字
+        - `Number.MAX_VALUE`，JS中的最大值：`1.7976931348623157e+308`
+        - `Number.MIN_VALUE`，JS中的最小的**正小数**：`5e-324`
+        - `Infinity`，表示正无穷
+            - 在运算过程中如果数值超过了最大值，会返回，`Infinity`
+        - `NaN`，表示: Not A Number
+            - 如非法的数值运算
+                ```js
+                var a = "aaa" * "bbb";
+                ```
+            - `typeof NaN`的返回值是：Number
+    - 数值运算的精确度
+        - 整数运算可以保证绝对精确
+        - 浮动数运算可能会得到一个**不精确的结果**，所以尽量不要使用js进行精确度要求比较高的运算
+            ```js
+            var a = 0.1 +0.2;
+            console.log(a);
+            // 输出：0.30000000000000004
+            ```
+- Boolean
+    - true/false
+
+- Null
+    - Null类型的值只有一个：`null`
+    - `null`表示**空对象**
+    - <label style="color:red">`typeof null`返回的是：object</label>
+
+- Undefined
+    - Undefined类型只有一个值：`undefined`
+    - `undefined`表示**未定义**
+    - **只声明变量，但是没有给变量赋值时**，变量的值是`undefined`。如：
+        ```js
+        var c;
+        console.log("c = ", c);
+        console.log(typeof c);
+        ```
+
+- 示例
+    - 参考代码
+        - [/javascript/base/src/datatype/basetype.html](/javascript/base/src/datatype/basetype.html)
+    - 代码内容
+        ```js
+        // JS中的最大值
+        console.log("Number.MAX_VALUE = ", Number.MAX_VALUE);
+        // Number.MAX_VALUE =  1.7976931348623157e+308
+
+        // JS中的最小的正小数
+        console.log("Number.MIN_VALUE = ", Number.MIN_VALUE);
+        // Number.MIN_VALUE =  5e-324
+
+        // 溢出运算
+        console.log("Number.MAX_VALUE * Number.MAX_VALUE = ", Number.MAX_VALUE * Number.MAX_VALUE);
+        // Number.MAX_VALUE * Number.MAX_VALUE =  Infinity
+
+        // 非法运算
+        var a = "aaa" * "bbb";
+        console.log("aaa * bbb = ", a);
+        // aaa * bbb =  NaN
+
+        // NaN类型测试
+        console.log(typeof NaN);
+        // number
+
+        // 小数运算的精确度
+        var b = 0.1 +0.2;
+        console.log(b);
+        // 0.30000000000000004
+
+        // 测试null的类型
+        console.log(typeof null);
+        // object
+
+        // 未定义测试
+        var c;
+        console.log("c = ", c);
+        // c =  undefined
+
+        // 输出未定义类型
+        console.log(typeof c);
+        // undefined
+        ```
+
+## 类型转换
+[top](#catalog)
+- 强制类型转换
+    - 指将一个数据类型强制转换为其他的数据类型
+    - 类型转换主要指，将其他的数据类型转换为：String、Number、Boolean
+        - 转换为：Null、Undefined没有实际的意义
+- 其他类型转换为String
+    - 
+
+
+# 反射
+[top](#catalog)
+- `typeof a`：获取变量a的类型
+
 
 [top](#catalog)
