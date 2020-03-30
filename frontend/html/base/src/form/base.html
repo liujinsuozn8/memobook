@@ -1,0 +1,82 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>form test</title>
+    </head>
+    <body>
+        <form action="dummyServer.html">
+            <!-- 文本框 -->
+            文本框 autocomplete="on"：
+            <input type="text" name="name01" value='abcdef' autocomplete="on">
+            <br>
+            文本框 autocomplete="off"：
+            <input type="text" name="name02" autocomplete="off">
+            <br>
+            文本框 readonly：
+            <input type="text" name="name03" value="12345" readonly>
+            <br>
+            文本框 disabled：
+            <input type="text" name="name04" value="zxcvb" disabled>
+            <br>
+            文本框 disabled：
+            <input type="text" name="name05" value="cbcvbvb" autofocus>
+            <br>
+
+            <!-- 密码框 -->
+            密码框：
+            <input type="password" name="pwd">
+            <br>
+
+            <!-- 单选框 -->
+            单选框：
+            <input type="radio" name="radio01" value="1">
+            <input type="radio" name="radio01" value="2" checked>
+            <input type="radio" name="radio01" value="3">
+            <br>
+
+            <!-- 多选框 -->
+            多选框：
+            <input type="checkbox" name="checkbox01" value="a">
+            <input type="checkbox" name="checkbox01" value="b">
+            <input type="checkbox" name="checkbox01" value="c" checked>
+            <input type="checkbox" name="checkbox01" value="d">
+            <br>
+
+            <!-- 下拉列表 -->
+            下拉列表：
+            <select name="select01" id="">
+                <option value="x">xx</option>
+                <option value="y" selected>yy</option>
+                <option value="z">zz</option>
+            </select>
+            <br>
+            
+            <input type="color" name='color'>
+
+            <br>
+            ----------------&lt;input&gt; button：----------------
+            <br>
+            
+            <input type="button" value="BTN">
+            <br>
+            
+            <input type="reset" value="reset">
+            <br>
+            
+            <!-- 提交按钮，通过value设置按钮的文字 -->
+            <input type="submit" value="submit">
+            <br>
+
+            <br>
+            ----------------&lt;button&gt; button：----------------
+            <br>
+            <button type="button">button</button>
+            <br>
+            <button type="reset">reset</button>
+            <br>
+            <button type="submit">submit</button>
+            <br>
+        </form>
+    </body>
+</html>
