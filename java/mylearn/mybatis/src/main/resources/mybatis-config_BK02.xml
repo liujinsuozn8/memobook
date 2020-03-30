@@ -8,9 +8,9 @@
         <property name="password" value="12345"/>
     </properties>
 
-    <!--扫描包来添加别名-->
+    <!--为实体类添加别名-->
     <typeAliases>
-        <package name="com.ljs.learn.mybatis.common.bean"/>
+        <typeAlias type="com.ljs.learn.mybatis.common.bean.User" alias="MyUser"/>
     </typeAliases>
 
     <!--配置多套环境-->
@@ -34,8 +34,5 @@
         <mapper resource="com/ljs/learn/mybatis/mapperXml/map/UserMapper.xml"/>
         <mapper resource="com/ljs/learn/mybatis/mapperXml/sqllike/UserMapper.xml"/>
         <mapper resource="com/ljs/learn/mybatis/configXml/typeAlias/UserMapper.xml"/>
-
-        <!--通过类名来配置mapper-->
-        <mapper class="com.ljs.learn.mybatis.configXml.mappers.UserMapper"/>
     </mappers>
 </configuration>

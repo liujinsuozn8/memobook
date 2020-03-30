@@ -18,6 +18,18 @@
     - [CRUD操作](#CRUD操作)
     - [Map对象作为接口参数](#Map对象作为接口参数)
     - [模糊查询的使用方法](#模糊查询的使用方法)
+- [mybatis-config配置分析](#mybatis-config配置分析)
+    - [environments-环境配置](#environments-环境配置)
+    - [properties-属性](#properties-属性)
+    - [typeAliases-类型别名](#typeAliases-类型别名)
+        - [类型别名的配置方法](#类型别名的配置方法)
+        - [java常见类型内建的类型别名](#java常见类型内建的类型别名)
+    - [settings-设置](#settings-设置)
+    - [生命周期和作用域](#生命周期和作用域)
+- [](#)
+- [](#)
+- [](#)
+- [](#)
 
 # MyBatis概述
 [top](#catalog)
@@ -110,7 +122,7 @@
     3. 创建xml配置文件
         - 配置文件名：`mybatis-config.xml`
         - 基本配置内容
-            ```sql
+            ```xml
             <?xml version="1.0" encoding="UTF-8" ?>
             <!DOCTYPE configuration
               PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
@@ -161,11 +173,11 @@
         ```
        
     6. 创建`SlqSession`工厂：从xml中构建`SqlSessionFactory`
-            ```java
-            String resource = "org/mybatis/example/mybatis-config.xml";
-            InputStream inputStream = Resources.getResourceAsStream(resource);
-            SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);
-            ```
+        ```java
+        String resource = "org/mybatis/example/mybatis-config.xml";
+        InputStream inputStream = Resources.getResourceAsStream(resource);
+        SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);
+        ```
     7. 获取`SqlSession`对象：从`SqlSessionFactory`中获取`SqlSession`，并通过`SqlSession`来执行sql
         ```java
         SqlSession session = sqlSessionFactory.openSession()
@@ -176,8 +188,8 @@
         Blog blog = mapper.selectBlog(101);
         ```        
     9. 执行增删改操作之后，执行事务commit
-        ```xml
-
+        ```java
+        session.commit();
         ```
     10. 关闭：操作结束后，关闭`SqlSession`对象，**或者使用带资源的try**
         ```java
@@ -209,7 +221,7 @@
         ### Error opening session.  
         Cause: java.lang.NullPointerException
         ```
-    - 
+    
 - dao/mapper接口的`mapper.xml`没有在`mybatis-config.xml`中配置
     ```
     org.apache.ibatis.binding.BindingException: 
@@ -339,7 +351,7 @@
         ```
 - 测试类
     - 参考代码
-        - [/java/mylearn/mybatis/src/test/java/com/ljs/learn/mybatis/firstSample/dao/UserDaoTest.java][]
+        - [/java/mylearn/mybatis/src/test/java/com/ljs/learn/mybatis/firstSample/dao/UserDaoTest.java](/java/mylearn/mybatis/src/test/java/com/ljs/learn/mybatis/firstSample/dao/UserDaoTest.java)
 
     - 测试内容
         ```java
@@ -397,7 +409,7 @@
             - [/java/mylearn/mybatis/src/main/java/com/ljs/learn/mybatis/mapperXml/crud/UserDao.java](/java/mylearn/mybatis/src/main/java/com/ljs/learn/mybatis/mapperXml/crud/UserDao.java)
             - [/java/mylearn/mybatis/src/main/java/com/ljs/learn/mybatis/mapperXml/crud/UserMapper.xml](/java/mylearn/mybatis/src/main/java/com/ljs/learn/mybatis/mapperXml/crud/UserMapper.xml)
         - Dao接口
-            ```xml
+            ```java
             public interface UserDao {
                 // 获取所有用户信息
                 List<User> getUsers();
@@ -648,3 +660,313 @@
                 sqlSession.close();
             }
             ```
+
+# mybatis-config配置分析
+## 配置内容的顺序
+[top](#catalog)
+- `mybatis-config.xml`文件的配置内容必须严格遵守下面的顺序，否则会产生异常
+    1. properties（属性）
+    2. settings（设置）
+    3. typeAliases（类型别名）
+    4. typeHandlers（类型处理器）
+    5. objectFactory（对象工厂）
+    6. objectWapperFactory
+    7. reflectorFactory
+    8. plugins（插件）
+    9. environments（环境配置）
+    10. databaseIdProvider（数据库厂商标识）
+    11. mappers（映射器）
+## environments-环境配置
+[top](#catalog)
+- 配置示例
+    ```xml
+    <environments default="development">
+      <environment id="development">
+        <transactionManager type="JDBC">
+          <property name="..." value="..."/>
+        </transactionManager>
+        <dataSource type="POOLED">
+          <property name="driver" value="${driver}"/>
+          <property name="url" value="${url}"/>
+          <property name="username" value="${username}"/>
+          <property name="password" value="${password}"/>
+        </dataSource>
+      </environment>
+    </environments>
+    ```
+- `<environments>`：多套测试环境
+    - mybatis可以配置多种环境，以适应开发、测试的不同需求。但是**每个`SqlSessionFactory`实现只能使用一种环境**
+    - 存在多套环境时，通过`<environments default="环境ID">`
+- `<transactionManager>`：事务管理器
+    - mybatis有两种事务管理器：JDBC、MANAGED
+        - JDBC：这个配置直接使用了 JDBC 的提交和回滚设施，它依赖从数据源获得的连接来管理事务作用域。
+        - MANAGED：这个配置几乎没做什么。它从不提交或回滚一个连接，而是让容器来管理事务的整个生命周期（比如 JEE 应用服务器的上下文）
+            - 默认情况下它会关闭连接
+            - 如果不希望连接被关闭，因此需要将 closeConnection 属性设置为 false 来阻止默认的关闭行为
+                ```xml
+                <property name="closeConnection" value="false"/>
+                ```
+    - 默认值:JDBC
+    - 如果使用的是：Spring+MyBatis，没有必要配置事务管理器，Spring模块会使用自带的管理器来覆盖该配置
+- `<dataSource>`：数据源
+    - 3中内建数据源
+        1. UNPOOLED：不是用连接池，每次请求都会重新打开关闭连接
+        2. POOLED：使用连接池
+        3. JNDI：为了能在如 EJB 或应用服务器这类容器中使用，容器可以集中或在外部配置数据源，然后放置一个 JNDI 上下文的数据源引用
+    - 默认值：POOLED
+    
+## properties-属性
+[top](#catalog)
+- 配置示例
+    ```xml
+    <!--统一管理通用属性值-->
+    <!--引入外部java属性文件-->
+    <properties resource="org/mybatis/example/config.properties">
+      <!--替换文件中的某些属性-->
+      <property name="username" value="dev_user"/>
+      <property name="password" value="F2Fa3!33TYyg"/>
+    </properties>
+    ```
+- `<properties>`统一管理`mybatis-config.xml`中使用的通用属性值
+- 在`resource`中指定文件路径来引入外部的Java属性文件
+    - 可以通过`<property>`来添加一些**额外的属性**
+    - 如果外部文件和`<property>`中的属性发生冲突，**优先使用外部文件中的属性**
+    - 常用的文件，如：`db.properties`
+- 在后面的配置中通过`${property_name}`的方式来使用配置，如：
+    ```xml
+    <dataSource type="POOLED">
+      <property name="driver" value="${driver}"/>
+      <property name="url" value="${url}"/>
+      <property name="username" value="${username}"/>
+      <property name="password" value="${password}"/>
+    </dataSource>
+    ```
+  
+## typeAliases-类型别名
+### 类型别名的配置方法
+[top](#catalog)
+- 类型别名是为`java类型`设置一个别名
+- 通过类型别名，使配置更加清晰，减少全类名造成的冗余
+- 在`mybatis-config.xml`中配置别名后，可以在`mapper.xml`中直接使用别名
+- 两种设置别名的方式
+    1. 单独为每一个类设置一个别名
+    2. 扫描包
+        - 适用于实体非常多的情况
+    
+- 设置方式1：单独为每一个类设置一个别名
+    1. `mybatis-config.xml`，添加配置
+        ```xml
+        <typeAliases>
+            <typeAlias type="全类名" alias="别名"/>
+        </typeAliases>
+        ```
+    2. 在`mapper.xml`中使用别名
+        ```xml
+        <mapper namespace="...">
+            <select id="..." parameterType="..." resultType="别名">
+                ...
+            </select>
+        </mapper>
+        ```
+- 设置方式2：扫描包
+    1. `mybatis-config.xml`，添加配置
+        ```xml
+        <typeAliases>
+          <package name="包名"/>
+        </typeAliases>
+        ```
+    2. 设置别名
+        - 使用注解设置别名
+            ```java
+            @Alias("author")
+            public class Author {
+                ...
+            }
+            ```
+        - 如果没有使用注解，则默认使用类名，第一个字母小写
+    3.在`mapper.xml`中使用别名
+        ```xml
+        <mapper namespace="...">
+          <select id="..." parameterType="..." resultType="注解中的别名/类名">
+              ...
+          </select>
+        </mapper>
+        ```
+
+- 示例
+    - `mybatis-config.xml`的配置
+        1. 单独为每一个类设置一个别名
+            - 参考配置
+                - [/java/mylearn/mybatis/src/main/resources/mybatis-config_BK02.xml](/java/mylearn/mybatis/src/main/resources/mybatis-config_BK02.xml)
+            - 配置内容
+                ```xml
+                <!--为实体类添加别名-->
+                <typeAliases>
+                    <typeAlias type="com.ljs.learn.mybatis.common.bean.User" alias="MyUser"/>
+                </typeAliases>
+                ```
+        2. 扫描包
+            - 参考配置
+                - [/java/mylearn/mybatis/src/main/resources/mybatis-config.xml](/java/mylearn/mybatis/src/main/resources/mybatis-config.xml)
+            - 配置内容
+                ```xml
+                <!--扫描包来添加别名-->
+                <typeAliases>
+                    <package name="com.ljs.learn.mybatis.common.bean"/>
+                </typeAliases>
+                ```
+    - 在`mapper.xml`中使用别名
+        - 参考配置
+            - [/java/mylearn/mybatis/src/main/java/com/ljs/learn/mybatis/configXml/typeAlias/UserMapper.xml](/java/mylearn/mybatis/src/main/java/com/ljs/learn/mybatis/configXml/typeAlias/UserMapper.xml)
+        - 配置内容
+            ```xml
+            <?xml version="1.0" encoding="UTF-8" ?>
+            <!DOCTYPE mapper
+                    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+                    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+            
+            <mapper namespace="com.ljs.learn.mybatis.configXml.typeAlias.UserDao">
+                <select id="getUserById" parameterType="int" resultType="MyUser">
+                    select * from user where id = #{id}
+                </select>
+            </mapper>
+            ```
+    - 实体类的配置
+        - 参考代码
+            - [/java/mylearn/mybatis/src/main/java/com/ljs/learn/mybatis/common/bean/User.java](/java/mylearn/mybatis/src/main/java/com/ljs/learn/mybatis/common/bean/User.java)
+        - 代码内容
+            ```java
+            // 通过注解配置扫描包时的别名
+            @Alias("MyUser")
+            public class User {
+                private int id;
+                private String name;
+                private String pwd;
+                ...
+            }
+            ```
+    - 测试类
+        - 参考代码
+            - [/java/mylearn/mybatis/src/test/java/com/ljs/learn/mybatis/configXml/typeAlias/AliasTest.java](/java/mylearn/mybatis/src/test/java/com/ljs/learn/mybatis/configXml/typeAlias/AliasTest.java)
+        - 测试内容
+            ```java
+            @Test
+            public void testMyUser(){
+                SqlSession sqlSession = MybatisUtils.getSqlSession();
+                UserDao mapper = sqlSession.getMapper(UserDao.class);
+                User user = mapper.getUserById(2);
+                System.out.println(user);
+            }
+            ```
+
+### java常见类型内建的类型别名
+[top](#catalog)
+- 基本规则
+    - 基本类型的别名 = `_`基本类型名
+    - 包装类型别名 = 基本类型名
+    - 其他
+
+- 内建别名
+
+    |别名|映射的类型|
+    |-|-|
+    |_byte|byte|
+    |_long|long|
+    |_short|short|
+    |_int|int|
+    |_integer|int|
+    |_double|double|
+    |_float|float|
+    |_boolean|boolean|
+    |string|String|
+    |byte|Byte|
+    |long|Long|
+    |short|Short|
+    |int|Integer|
+    |integer|Integer|
+    |double|Double|
+    |float|Float|
+    |boolean|Boolean|
+    |date|Date|
+    |decimal|BigDecimal|
+    |bigdecimal|BigDecimal|
+    |object|Object|
+    |map|Map|
+    |hashmap|HashMap|
+    |list|List|
+    |arraylist|ArrayList|
+    |collection|Collection|
+    |iterator|Iterator|
+    
+## settings-设置
+[top](#catalog)
+- `settings` 是MyBatis中极为重要的调整设置，它们会改变 MyBatis 的运行时行为
+
+## mappers-映射器
+[top](#catalog)
+- 用于注册 mapper.xml 配置文件
+- 配置方式1：使用相对于类路径的资源引用
+    - mapper.xml与对应的mapper接口，可以分别放在不同的目录下，通过`resource`来绑定，但不建议这样做
+    - 示例
+        ```xml
+        <mappers>
+          <mapper resource="org/mybatis/builder/AuthorMapper.xml"/>
+          <mapper resource="org/mybatis/builder/BlogMapper.xml"/>
+        </mappers>
+        ```
+- 配置方式2：使用mapper接口的全类名
+    - 需要注意
+        1. mapper.xml与对应的mapper接口，两者的名字必须相同
+        2. mapper.xml与对应的mapper接口，两者必须在同一个包下
+    - 示例
+        ```xml
+        <mappers>
+          <mapper class="org.mybatis.builder.AuthorMapper"/>
+          <mapper class="org.mybatis.builder.BlogMapper"/>
+        </mappers>
+        ```
+
+- 配置方式3：扫描包
+    - 需要注意
+        1. mapper.xml与对应的mapper接口，两者的名字必须相同
+        2. mapper.xml与对应的mapper接口，两者必须在同一个包下
+    ```xml
+    <mappers>
+      <package name="包名"/>
+    </mappers>
+    ```
+  
+- 示例
+    - mybatis-config.xml
+        - 参考配置
+            - [/java/mylearn/mybatis/src/main/resources/mybatis-config.xml](/java/mylearn/mybatis/src/main/resources/mybatis-config.xml)
+        - 配置内容
+            ```xml
+            <mappers>
+                <!--通过类名来配置mapper-->
+                <mapper class="com.ljs.learn.mybatis.configXml.mappers.UserMapper"/>
+            </mappers>
+            ```
+    - mapper.xml与mapper接口
+        - [/java/mylearn/mybatis/src/main/java/com/ljs/learn/mybatis/configXml/mappers/UserMapper.java](/java/mylearn/mybatis/src/main/java/com/ljs/learn/mybatis/configXml/mappers/UserMapper.java)
+        - [/java/mylearn/mybatis/src/main/java/com/ljs/learn/mybatis/configXml/mappers/UserMapper.xml](/java/mylearn/mybatis/src/main/java/com/ljs/learn/mybatis/configXml/mappers/UserMapper.xml)
+    - 测试类
+        - [/java/mylearn/mybatis/src/test/java/com/ljs/learn/mybatis/configXml/mappers/MappersTest.java](/java/mylearn/mybatis/src/test/java/com/ljs/learn/mybatis/configXml/mappers/MappersTest.java)
+
+## 生命周期和作用域
+[top](#catalog)
+- 生命周期和作用域非常重要，如果使用错误会导致非常严重的<label style="color:red">并发问题</label>
+- SqlSessionFactoryBuilder
+    - 只是用于创建 SqlSessionFactory，创建之后就不再需要了
+    - 作用域：局部变量
+- SqlSessionFactory
+    - 相当于：数据库连接池
+    - SqlSessionFactory被创建后，在运行期间，应该一直存在。不应该丢弃该对象，或重新创建另一个实例
+    - 应该使用单例模式
+    - 作用域：整个应用的作用域
+- SqlSession
+    - 相当于：从连接池获取了一个连接对象
+    - SqlSession 不是线程安全的，所以不能被共享
+    - 使用之后应该立刻关闭，防止资源占用
+    - 作用域：方法内部
+    

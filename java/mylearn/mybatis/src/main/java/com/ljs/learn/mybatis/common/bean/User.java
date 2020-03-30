@@ -1,5 +1,9 @@
 package com.ljs.learn.mybatis.common.bean;
 
+import org.apache.ibatis.type.Alias;
+
+// 通过注解配置扫描包时的别名
+@Alias("MyUser")
 public class User {
     private int id;
     private String name;
