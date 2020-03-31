@@ -12,5 +12,7 @@ public class AliasTest {
         UserDao mapper = sqlSession.getMapper(UserDao.class);
         User user = mapper.getUserById(2);
         System.out.println(user);
+
+        sqlSession.close();
     }
 }

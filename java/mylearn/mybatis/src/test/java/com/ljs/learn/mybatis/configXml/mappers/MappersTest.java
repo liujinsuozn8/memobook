@@ -13,5 +13,7 @@ public class MappersTest {
         UserDao mapper = sqlSession.getMapper(UserDao.class);
         User user = mapper.getUserById(2);
         System.out.println(user);
+
+        sqlSession.close();
     }
 }

@@ -18,7 +18,10 @@
     - [CRUD操作](#CRUD操作)
     - [Map对象作为接口参数](#Map对象作为接口参数)
     - [模糊查询的使用方法](#模糊查询的使用方法)
+    - [解决属性名和字段不一致的问题](#解决属性名和字段不一致的问题)
+    - [resultMap-结果映射](#resultMap-结果映射)
 - [mybatis-config配置分析](#mybatis-config配置分析)
+    - [配置内容的顺序](#配置内容的顺序)
     - [environments-环境配置](#environments-环境配置)
     - [properties-属性](#properties-属性)
     - [typeAliases-类型别名](#typeAliases-类型别名)
@@ -26,7 +29,7 @@
         - [java常见类型内建的类型别名](#java常见类型内建的类型别名)
     - [settings-设置](#settings-设置)
     - [生命周期和作用域](#生命周期和作用域)
-- [](#)
+    - [日志工厂](#日志工厂)
 - [](#)
 - [](#)
 - [](#)
@@ -661,6 +664,150 @@
             }
             ```
 
+## 解决属性名和字段不一致的问题
+[top](#catalog)
+- 开发时会可能出现的问题：实体类的属性名和sql中的字段名不一致，导致实体类对象中的某些属性无法被赋值
+    - 示例
+        - 实体类:[/java/mylearn/mybatis/src/main/java/com/ljs/learn/mybatis/common/bean/User02.java](/java/mylearn/mybatis/src/main/java/com/ljs/learn/mybatis/common/bean/User02.java)
+            ```java
+            public class User {
+                private int id;
+                private String name;
+                private String password;
+                ...
+            }
+            ```
+        - sql:[/java/mylearn/mybatis/src/main/java/com/ljs/learn/mybatis/mapperXml/resultmap/problem/UserMapper10.xml](/java/mylearn/mybatis/src/main/java/com/ljs/learn/mybatis/mapperXml/resultmap/problem/UserMapper10.xml)
+            - 返回：id、 name、 pwd，与实体类的属性不一致
+            ```sql
+            select * from user where id = #{id} 
+            ``` 
+        - 测试类：[/java/mylearn/mybatis/src/test/java/com/ljs/learn/mybatis/mapperXml/resultmap/problem/ProblemTest.java](/java/mylearn/mybatis/src/test/java/com/ljs/learn/mybatis/mapperXml/resultmap/problem/ProblemTest.java)
+            ```java
+            @Test
+            public void problemTest(){
+                SqlSession sqlSession = MybatisUtils.getSqlSession();
+                UserMapper mapper = sqlSession.getMapper(UserMapper.class);
+                User02 user = mapper.getUserById(1);
+                System.out.println(user);
+
+                sqlSession.close();
+            }
+            ```
+        - 测试结果
+            - sql中没有password字段，所以该字段是`null`
+            ```
+            User02{id=1, name='aaa', password='null'}
+            ```
+          
+- 解决方法1：在sql中，给字段起别名
+    - 示例
+        - sql ：[/java/mylearn/mybatis/src/main/java/com/ljs/learn/mybatis/mapperXml/resultmap/newSql/UserMapper11.xml](/java/mylearn/mybatis/src/main/java/com/ljs/learn/mybatis/mapperXml/resultmap/newSql/UserMapper11.xml)
+            - 通过在sql中设置别名，来使属性名与字段一直
+            ```sql
+            select id, name, pwd as password from user where id = #{id}
+            ```
+        - 测试类：[/java/mylearn/mybatis/src/test/java/com/ljs/learn/mybatis/mapperXml/resultmap/newSql/NewSqlTest.java](/java/mylearn/mybatis/src/test/java/com/ljs/learn/mybatis/mapperXml/resultmap/newSql/NewSqlTest.java)
+            ```java
+            @Test
+            public void testNewSql(){
+                SqlSession sqlSession = MybatisUtils.getSqlSession();
+                UserMapper11 mapper = sqlSession.getMapper(UserMapper11.class);
+                User02 user = mapper.getUserById(1);
+                System.out.println(user);
+
+                sqlSession.close();
+            }
+            ```
+        - 测试结果
+            - 实体类对象的`password`字段可以被正常赋值
+            ```
+            User02{id=1, name='aaa', password='aaapwd'}
+            ```
+
+- 解决方式2：使用resultMap
+    - [resultMap-结果映射](#resultMap-结果映射)
+    
+## resultMap-结果映射
+[top](#catalog)
+- ResultMap的设计思想
+    - 简单的sql语句不需要配置显示的结果映射
+    - 复杂的sql语句需要描述语句之间的关系
+- resultMap 在 mapper.xml 中的配置方式
+    - 可以为每一对属性与字段名进行配置
+    - <label style="color: red">如果实体类与sql中的字段只是有部分不一样，可以只配置这些不同的部分，相同的部分可以省略</label>
+    ```xml
+    <resultMap id="映射id" type="实体类的全类名 / 别名">
+        <result column="sql中的列名" property="实体类中的属性名"/>
+    </resultMap>
+    ```
+- resultMap 在 mapper.xml 中的使用方法
+    - 不需要结果映射的时候使用 `resultType`。需要使用结果映射的时候，使用 `resultMap` 替换 `resultMap`
+        
+        ```xml
+        <select id="方法名" parameterType="方法参数" resultMap="映射id">
+            ...
+        </select>
+        ```
+      
+- 示例
+    1. 简单的sql
+        - 实体类
+            - 参考代码
+                - [/java/mylearn/mybatis/src/main/java/com/ljs/learn/mybatis/common/bean/User02.java](/java/mylearn/mybatis/src/main/java/com/ljs/learn/mybatis/common/bean/User02.java)
+            - 参考内容
+                ```java
+                public class User02 {
+                    private int id;
+                    private String name;
+                    private String password;
+                    // getter、setter
+                }
+                ```
+        - mapper.xml
+            - 参考配置
+                - [/java/mylearn/mybatis/src/main/java/com/ljs/learn/mybatis/mapperXml/resultmap/simpleMap/UserMapper12.xml](/java/mylearn/mybatis/src/main/java/com/ljs/learn/mybatis/mapperXml/resultmap/simpleMap/UserMapper12.xml)
+            - 配置内容
+                ```xml
+                <?xml version="1.0" encoding="UTF-8" ?>
+                <!DOCTYPE mapper
+                        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+                        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+                
+                <mapper namespace="com.ljs.learn.mybatis.mapperXml.resultmap.simpleMap.UserMapper12">
+                    <!--结果集映射-->
+                    <resultMap id="MyUser02Map" type="com.ljs.learn.mybatis.common.bean.User02">
+                        <!--省略实体类和sql中相同的部分-->
+                        <!--<result column="id" property="id"/>-->
+                        <!--<result column="name" property="name"/>-->
+                        <result column="pwd" property="password"/>
+                    </resultMap>
+                    
+                    <select id="getUserById" parameterType="int" resultMap="MyUser02Map">
+                        select * from user where id = #{id}
+                    </select>
+                </mapper>
+                ```
+        - 测试类
+            - 参考代码
+                - [/java/mylearn/mybatis/src/test/java/com/ljs/learn/mybatis/mapperXml/resultmap/simpleMap/SimpleMapTest.java](/java/mylearn/mybatis/src/test/java/com/ljs/learn/mybatis/mapperXml/resultmap/simpleMap/SimpleMapTest.java)
+            - 测试内容
+                ```java
+                @Test
+                public void testResultMap(){
+                    SqlSession sqlSession = MybatisUtils.getSqlSession();
+                    UserMapper12 mapper = sqlSession.getMapper(UserMapper12.class);
+                    User02 user = mapper.getUserById(1);
+                    System.out.println(user);
+
+                    sqlSession.close();
+                }
+                ```
+            - 测试结果
+                ```
+                User02{id=1, name='aaa', password='aaapwd'}
+                ```
+
 # mybatis-config配置分析
 ## 配置内容的顺序
 [top](#catalog)
@@ -856,6 +1003,8 @@
                 UserDao mapper = sqlSession.getMapper(UserDao.class);
                 User user = mapper.getUserById(2);
                 System.out.println(user);
+
+                sqlSession.close();
             }
             ```
 
@@ -970,3 +1119,32 @@
     - 使用之后应该立刻关闭，防止资源占用
     - 作用域：方法内部
     
+## 日志工厂
+[top](#catalog)
+- 如果数据库操作出现了异常，需要检查执行的sql来判断问题具体的问题，这种情况就需要使用日志在执行过程中间相关的执行信息输出到日志中
+- 添加日志配置
+    ```xml
+    <settings>
+        <setting name="logImpl" value="日志实现"/>
+    </settings>
+    ```
+- 可用的日志实现
+    - SLF4J
+    - <label style="color:red">LOG4J</label>
+    - LOG4J2
+    - JDK_LOGGING
+        - JDK自带的日志实现
+    - COMMONS_LOGGING 
+    - <label style="color:red">STDOUT_LOGGING</label>
+        - 控制台输出
+    - NO_LOGGING
+    
+- 使用 `STDOUT_LOGGING` 日志实现
+    - 直接添加配置
+        ```xml
+        <settings>
+            <setting name="logImpl" value="STDOUT_LOGGING"/>
+        </settings>
+        ```
+- 使用 `LOG4J` 日志实现
+    - 

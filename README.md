@@ -33,6 +33,8 @@
             - [基本原理](/java/rpc/base.md)
         - jdk源码分析
             - [集合框架](java/jdkAnalyze/collection.md)
+    - javascript
+        - [基本知识](javascript/base/base.md)
     - go
         - [基本知识](go/base.md)
         - [并发](go/multithreading/multithreading.md)

@@ -2,24 +2,29 @@
 <!DOCTYPE configuration
         PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-config.dtd">
-<!-- BK：使用properties标签配置公共属性之前 备份-->
-<!--初始配置-->
+<!-- BK:添加日志前 备份-->
 <!--核心配置内容-->
 <configuration>
+    <properties resource="db.properties">
+        <property name="password" value="12345"/>
+    </properties>
+
+    <!--扫描包来添加别名-->
+    <typeAliases>
+        <package name="com.ljs.learn.mybatis.common.bean"/>
+    </typeAliases>
+
     <!--配置多套环境-->
     <environments default="development">
         <environment id="development">
             <!--事务管理，使用JDBC-->
             <transactionManager type="JDBC"/>
             <dataSource type="POOLED">
-                <property name="driver" value="com.mysql.cj.jdbc.Driver"/>
+                <property name="driver" value="${driver}"/>
                 <!--配置数据库连接-->
-                <!--连接中没有指定数据库名，mapper中的sql需要指定数据库名-->
-                <!--<property name="url" value="jdbc:mysql://127.0.0.1:3307?serverTimezone=UTC&amp;characterEncoding=utf8&amp;useUnicode=true&amp;useSSL=false"/>-->
-                <!--连接中已经指定数据库名，mapper中的sql可以不写数据库名-->
-                <property name="url" value="jdbc:mysql://127.0.0.1:3307/test01?serverTimezone=UTC&amp;characterEncoding=utf8&amp;useUnicode=true&amp;useSSL=false"/>
-                <property name="username" value="root"/>
-                <property name="password" value="1234"/>
+                <property name="url" value="${url}"/>
+                <property name="username" value="${username}"/>
+                <property name="password" value="${password}"/>
             </dataSource>
         </environment>
     </environments>
@@ -29,5 +34,12 @@
         <mapper resource="com/ljs/learn/mybatis/mapperXml/crud/UserMapper.xml"/>
         <mapper resource="com/ljs/learn/mybatis/mapperXml/map/UserMapper.xml"/>
         <mapper resource="com/ljs/learn/mybatis/mapperXml/sqllike/UserMapper.xml"/>
+        <mapper resource="com/ljs/learn/mybatis/configXml/typeAlias/UserMapper.xml"/>
+
+        <!--通过类名来配置mapper-->
+        <mapper class="com.ljs.learn.mybatis.configXml.mappers.UserMapper"/>
+        <mapper class="com.ljs.learn.mybatis.mapperXml.resultmap.problem.UserMapper10"/>
+        <mapper class="com.ljs.learn.mybatis.mapperXml.resultmap.newSql.UserMapper11"/>
+        <mapper class="com.ljs.learn.mybatis.mapperXml.resultmap.simpleMap.UserMapper12"/>
     </mappers>
 </configuration>

@@ -8,6 +8,11 @@
         <property name="password" value="12345"/>
     </properties>
 
+    <!--添加日志-->
+    <settings>
+        <setting name="logImpl" value="STDOUT_LOGGING"/>
+    </settings>
+
     <!--扫描包来添加别名-->
     <typeAliases>
         <package name="com.ljs.learn.mybatis.common.bean"/>
@@ -37,5 +42,8 @@
 
         <!--通过类名来配置mapper-->
         <mapper class="com.ljs.learn.mybatis.configXml.mappers.UserMapper"/>
+        <mapper class="com.ljs.learn.mybatis.mapperXml.resultmap.problem.UserMapper10"/>
+        <mapper class="com.ljs.learn.mybatis.mapperXml.resultmap.newSql.UserMapper11"/>
+        <mapper class="com.ljs.learn.mybatis.mapperXml.resultmap.simpleMap.UserMapper12"/>
     </mappers>
 </configuration>

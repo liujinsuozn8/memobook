@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ljs.learn.mybatis.mapperXml.resultmap.simpleMap.UserMapper12">
+    <!--结果集映射-->
+    <resultMap id="MyUser02Map" type="com.ljs.learn.mybatis.common.bean.User02">
+        <!--省略实体类和sql中相同的部分-->
+        <!--<result column="id" property="id"/>-->
+        <!--<result column="name" property="name"/>-->
+        <result column="pwd" property="password"/>
+    </resultMap>
+    
+    <select id="getUserById" parameterType="int" resultMap="MyUser02Map">
+        select * from user where id = #{id}
+    </select>
+</mapper>
