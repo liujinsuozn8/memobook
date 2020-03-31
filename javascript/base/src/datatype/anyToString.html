@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>any to string test</title>
+    <script type="text/javascript">
+        // 其他类型转换为String
+
+        // 1 方式1 toString(): 
+        // 1.1 方式1 toString(): Number -->> String
+        var a1 = 123;
+        console.log("a1 = ", a1, ", typeof a1 = ", typeof a1);
+        // 输出：a1 =  123 , typeof a1 =  number
+
+        var a2 = a1.toString();
+        console.log("a2 = ", a2, ", typeof a2 = ", typeof a2);
+        // 输出：a2 =  123 , typeof a2 =  string
+
+        // 1.2 方式1 toString(): Boolean -->> String
+        var b1 = true;
+        console.log("b1 = ", b1, ", typeof b1 = ", typeof b1);
+        // 输出：b1 =  true , typeof b1 =  boolean
+
+        var b2 = b1.toString();
+        console.log("b2 = ", b2, ", typeof b2 = ", typeof b2);
+        // 输出：b2 =  true , typeof b2 =  string
+
+        // 1.3 方式1 toString(): 无法转换null
+        var c1 = null;
+        console.log("c1 = ", c1, ", typeof c1 = ", typeof c1);
+        // 输出：c1 =  null , typeof c1 =  object
+
+        // 无法转换，会引发异常：
+        // Uncaught TypeError: Cannot read property 'toString' of null
+        // var c2 = c1.toString();
+        // console.log("c2 = ", c2, "typeof c2 = ", typeof c2);
+
+        // 1.4 方式1 toString(): 无法转换undefined
+        var d1 = undefined;
+        console.log("d1 = ", d1, ", typeof d1 = ", typeof d1);
+        // 输出：d1 =  undefined , typeof d1 =  undefined
+
+        // 无法转换，会引发异常：
+        // Uncaught TypeError: Cannot read property 'toString' of undefined
+        // var d2 = d1.toString();
+        // console.log("d2 = ", d2, "typeof d2 = ", typeof d2);
+
+        // --------------------------------------------------------------------
+        // 2 方式2 调用 String() 函数
+        // 2.1 方式2 调用 String(): Number -->> String
+        var e1 = 123;
+        console.log("e1 = ", e1, ", typeof e1 = ", typeof e1);
+        // 输出：e1 =  123 , typeof e1 =  number
+
+        var e2 = String(e1);
+        console.log("e2 = ", e2, ", typeof e2 = ", typeof e2);
+        // 输出：e2 =  123 , typeof e2 =  string
+
+        // 2.2 方式2 调用 String(): Boolean -->> String
+        var f1 = true;
+        console.log("f1 = ", f1, ", typeof f1 = ", typeof f1);
+        // 输出：f1 =  true , typeof f1 =  boolean
+
+        var f2 = String(f1);
+        console.log("f2 = ", f2, ", typeof f2 = ", typeof f2);
+        // 输出：f2 =  true , typeof f2 =  string
+
+        // 2.3 方式2 调用 String(): Null --> "null"
+        var g1 = null;
+        console.log("g1 = ", g1, ", typeof g1 = ", typeof g1);
+        // 输出：g1 =  null , typeof g1 =  object
+
+        var g2 = String(g1);
+        console.log("g2 = ", g2, ", typeof g2 = ", typeof g2);
+        // 输出：g2 =  null , typeof g2 =  string
+
+        // 2.4 方式2 调用 String(): Undefined --> "undefined"
+        var h1 = undefined;
+        console.log("h1 = ", h1, ", typeof h1 = ", typeof h1);
+        // 输出：h1 =  undefined , typeof h1 =  undefined
+
+        var h2 = String(h1);
+        console.log("h2 = ", h2, ", typeof h2 = ", typeof h2);
+        // 输出：h2 =  undefined , typeof h2 =  string
+    </script>
+</head>
+<body>
+    
+</body>
+</html>
