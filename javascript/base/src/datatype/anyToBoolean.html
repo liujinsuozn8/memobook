@@ -1,0 +1,76 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>any to boolean test</title>
+        <script type="text/javascript">
+            // 其他类型转换为Boolean
+            // 1. Number 转 Boolean
+            // 1.1 非空数字、 Infinity
+            var a1 = Boolean(123);
+            console.log("a1 = ", a1);
+            // 输出：a1 =  true
+
+            var a2 = Boolean(-1);
+            console.log("a2 = ", a2);
+            // 输出：a4 =  true
+
+            var a3 = Boolean(0.1);
+            console.log("a3 = ", a3);
+            // 输出：a3 =  true
+
+            var a4 = Boolean(Infinity);
+            console.log("a4 = ", a4);
+            // 输出：a2 =  true
+
+            // 1.2 NaN、0
+            var a5 = Boolean(NaN);
+            console.log("a5 = ", a5);
+            // 输出：a5 =  false
+
+            var a6 = Boolean(0);
+            console.log("a6 = ", a6);
+            // 输出：a6 =  false
+
+            // 2. String转Boolean
+            // 2.1 空字符串
+            var b1 = Boolean("");
+            console.log("b1 = ", b1);
+            // 输出：b1 =  false
+
+            // 2.2 非空字符串
+            var b2 = Boolean("   ");
+            console.log("b2 = ", b2);
+            // 输出：b2 =  true
+
+            var b3 = Boolean("   ");
+            console.log("b3 = ", b3);
+            // 输出：b3 =  true
+
+            var b4 = Boolean("true");
+            console.log("b4 = ", b4);
+            // 输出：b4 =  true
+
+            var b5 = Boolean("false");
+            console.log("b5 = ", b5);
+            // 输出：b5 =  true
+
+            var b6 = Boolean("dfggrtyr");
+            console.log("b6 = ", b6);
+            // 输出：b6 =  true
+
+            // 3. Null 转 Boolean
+            var c1 = Boolean(null);
+            console.log("c1 = ", c1);
+            // 输出：c1 =  false
+
+            // 4. Undefined
+            var d1 = Boolean(undefined);
+            console.log("d1 = ", d1);
+            // 输出：d1 =  false
+        </script>
+    </head>
+    <body>
+        
+    </body>
+</html>
