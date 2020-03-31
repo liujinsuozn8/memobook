@@ -16,6 +16,15 @@
         console.log("a2 = ", a2, ", typeof a2 = ", typeof a2);
         // 输出：a2 =  123 , typeof a2 =  string
 
+        var a3 = NaN.toString();
+        console.log("a3 = ", a3, ", typeof a3 = ", typeof a3);
+        // 输出：a3 =  NaN , typeof a3 =  string
+
+        var a4 = Infinity.toString();
+        console.log("a4 = ", a4, ", typeof a4 = ", typeof a4);
+        // 输出：a4 =  Infinity , typeof a4 =  string
+
+
         // 1.2 方式1 toString(): Boolean -->> String
         var b1 = true;
         console.log("b1 = ", b1, ", typeof b1 = ", typeof b1);
@@ -55,6 +64,14 @@
         var e2 = String(e1);
         console.log("e2 = ", e2, ", typeof e2 = ", typeof e2);
         // 输出：e2 =  123 , typeof e2 =  string
+
+        var e3 = String(NaN);
+        console.log("e3 = ", e3, ", typeof e3 = ", typeof e3);
+        // 输出：e3 =  NaN , typeof e3 =  string
+
+        var e4 = String(Infinity);
+        console.log("e4 = ", e4, ", typeof e4 = ", typeof e4);
+        // 输出：e4 =  Infinity , typeof e4 =  string
 
         // 2.2 方式2 调用 String(): Boolean -->> String
         var f1 = true;
