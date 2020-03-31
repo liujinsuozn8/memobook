@@ -82,6 +82,7 @@
 ## HTML整体结构
 [top](#catalog)
 - `<!doctype html>`，共浏览器识别（表示当前文本是一个html文件）,<label style="color:red">一定要在签名添加`!`</label>
+    - ``<!doctype` 部分，<labe style="color:red">各字符中间不能有空格</label>
 - `<html>`，作为整个html的的根标签
     - `<head lang="当前文本的使用语言(en/zh/...)">`，html的头部信息，里面的内容不会显示到页面上，是浏览器和搜索引擎识别、分析使用的
         - `<meta charset="字符编码">`，设定网页的字符编码，避免乱码，虽然很多的浏览器已经可以自动识别，但是**建议添加该标签**
@@ -905,6 +906,7 @@
         |button|普通按钮|
         |reset|重置按钮|
         |submit|提交按钮|
+        
     - 每种类型按钮的功能都与`<input>`下的按钮功能相同
     - `<button></button>`是成对标签，相比自结束标签`<input>`，可以提供更加复杂的结构
 
@@ -914,7 +916,7 @@
         - 提交响应页面 [/frontend/html/base/src/form/dummyServer.html](/frontend/html/base/src/form/dummyServer.html)
     - html
         ```html
-                <form action="dummyServer.html">
+        <form action="dummyServer.html">
             <!-- 文本框 -->
             文本框 autocomplete="on"：
             <input type="text" name="name01" value='abcdef' autocomplete="on">
