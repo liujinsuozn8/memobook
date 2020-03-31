@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>num system test</title>
+        <script type="text/javascript">
+            // 16进制数字
+            var a = 0x12;
+            console.log(a);
+            // 输出:18
+
+            // 8进制数字
+            var b = 012;
+            console.log(b);
+            // 输出:10
+
+            // 2进制数字
+            var c = 0b1110;
+            console.log(c);
+            // 输出:14
+
+            // 8 进制数字字符串
+            var d1 = "070";
+            console.log("d1 = ", d1, ", typeof d1 = ", typeof d1);
+            // 输出:d1 =  070 , typeof d1 =  string
+
+            var d2 = parseInt(d1);
+            console.log("d2 = ", d2, ", typeof d2 = ", typeof d2);
+            // chrome输出: d2 =  70 , typeof d2 =  number
+        </script>
+    </head>
+    <body>
+        
+    </body>
+</html>
