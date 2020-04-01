@@ -13,7 +13,11 @@
         - [其他类型转换为Number](#其他类型转换为Number)
         - [其他类型转换为Boolean](#其他类型转换为Boolean)
     - [不同进制的数字](#不同进制的数字)
-    - [算数运算符](#算数运算符)
+- [算数运算符](#算数运算符)
+    - [二元运算符](#二元运算符)
+    - [一元运算符](#一元运算符)
+    - [自增自减](#自增自减)
+- [](#)
 - [](#)
 - [反射](#反射)
 - [](#)
@@ -290,12 +294,17 @@
             - 对于 Null ，会转换为：`"null"`
             - 对于 Undefined ，会转换为：`"undefined"`
 
+    - 方式3：**比较常用的方式**, 与空字符串 `""` 进行 `+` 运算
+        - 这是一种**隐式类型转换**，由浏览器自动完成
+        - 底层也是对非字符串类型调用了 `String()`
+        - 参考：[算数运算符](#算数运算符)
+
 - 示例
     - 参考代码
         - [/javascript/base/src/datatype/anyToString.html](/javascript/base/src/datatype/anyToString.html)
     - js内容
         ```js
-        /        // 其他类型转换为String
+        // 其他类型转换为String
 
         // 1 方式1 toString(): 
         // 1.1 方式1 toString(): Number -->> String
@@ -409,13 +418,21 @@
             |Null|null|0|
             |Undefined|undefined|`NaN`|
     
-    - 方式2，字符串转换专用函数：`parseInt(字符串 [, 进制])`、`parseFloat(字符串 [, 进制])`
+    - 方式2：字符串转换专用函数：`parseInt(字符串 [, 进制])`、`parseFloat(字符串 [, 进制])`
         - `Number()`的问题
             - 函数需要字符串是数字字符串，有其他字符就无法正常转换
             - 实际开发中经常会从html中取值，如像素大小：`"100px"`，就无法直接使用`Number()`
         - `parseInt(字符串)` 从左到右读取数字，直到读取到一个数字之外的字符，并将数字转换为**整数**
         - `parseFloat(字符串)` 从左到右读取数字，直到读取到一个数字之外的字符，并将数字转换为**浮点数**
         - 如果对非String类型数据使用这两个方法，会先转换为String，然后再操作
+    
+    - 方式3：对一个非 Number型 变量执行 ：`变量 - 0`、`变量 * 1`、`变量 / 1`，来将类型转换为 Number
+        - 底层使用`Number()` 函数执行类型转换
+        - 参考：[算数运算符](#算数运算符)
+    
+    - 方式4：对一个非 Number型 变量 使用**一元运算符**：`+`
+        - 底层使用`Number()` 函数执行类型转换
+        - 参考：[算数运算符](#算数运算符)
 
 - 示例
     - 参考代码
@@ -527,6 +544,36 @@
         var k2 = parseFloat(true);
         console.log("k2 = ", k2, ", typeof k2 = ", typeof k2);
         // 输出：k2 =  NaN , typeof k2 =  number
+
+        // --------------------------------------------------------------------
+        // 方式3：与空字符串 `""` 进行 `+` 运算
+        var i1 = 1234 + "";
+        console.log("i1 = ", i1, ", typeof i1 = ", typeof i1);
+        // 输出：i1 =  1234 , typeof i1 =  string
+
+        var i2 = false + "";
+        console.log("i2 = ", i2, ", typeof i2 = ", typeof i2);
+        // 输出：i2 =  false , typeof i2 =  string
+
+        var i3 = true + "";
+        console.log("i3 = ", i3, ", typeof i3 = ", typeof i3);
+        // 输出：i3 =  true , typeof i3 =  string
+
+        var i4 = NaN + "";
+        console.log("i4 = ", i4, ", typeof i4 = ", typeof i4);
+        // 输出：i4 =  NaN , typeof i4 =  string
+
+        var i5 = Infinity + "";
+        console.log("i5 = ", i5, ", typeof i5 = ", typeof i5);
+        // 输出：i5 =  Infinity , typeof i5 =  string
+
+        var i6 = null + "";
+        console.log("i6 = ", i6, ", typeof i6 = ", typeof i6);
+        // 输出：i6 =  null , typeof i6 =  string
+
+        var i7 = undefined + "";
+        console.log("i7 = ", i7, ", typeof i7 = ", typeof i7);
+        // 输出：i7 =  undefined , typeof i7 =  string
         ```
         
 ### 其他类型转换为Boolean
@@ -615,8 +662,6 @@
         // 输出：d1 =  false
         ```
 
-
-
 ## 不同进制的数字
 [top](#catalog)
 - 16进制数字
@@ -666,16 +711,212 @@
         // chrome输出: d2 =  70 , typeof d2 =  number
         ```
 
-## 算数运算符
+# 算数运算符
+## 二元运算符
 [top](#catalog)
 - 与Number型数据的运算符
     - 正常的Number型数据之间执行正常运算
-    - **任何数和 NaN 进行运算，结果都是 NaN**
     - 对非Number类型数据进行运算时，先数据转换为对应的Number类型，然后再进行运算
         - 如：`true + false`会转换成：`1 + 0`
+    - **任何数字、Null、Undefined和 NaN 进行运算，结果都是 NaN**
 
-- 字符串间的 `+` 运算默认为字符串连接
-- 任何类型和String进行`+`运算，都会先转换为String型，在进行字符串连接
+- `+` 运算符
+    - 对于多个Number型的数据，执行加法运算
+    - 对于多个String型的数据，执行字符串连接
+    - 任何类型和String型的`+`运算，都会先将非String型转换为String型，然后再执行字符串连接
+        - 扩展：任意类型与空字符串 `""` 进行 `+` 运算都将类型转换为字符串
+            - 这是一种**隐式类型转换**，由浏览器自动完成
+            - 底层也是对非字符串类型调用了 `String()`
+            - 如:
+                ```js
+                var a = 1
+                a = a + "";
+                // 相当于
+                // a = String(a) + "";
+                ```
+        - <label stlye="color:red">多个其他类型与String类型执行 `+` 运算时，从左至右，依次进行每一个部分的运算</label>
+            - `var a = 1 + 2 + "3";`
+                1. 先计算： `1 + 2`，得到 `3`
+                2. 再执行：`3 + "3"`，得到：`"33"`
+            - `var a = "3" + 1 + 2;`
+                1. 先执行： `"3" + 1`，数字 `1` 会隐式转换为字符串 `"1"`，然后执行字符串连接，得到 `"31"`
+                2. 再执行：`"31" + 2`，数字 `2` 会隐式转换为字符串 `"2"`，然后执行字符串连接，得到 `"312"`
+
+- `-`、`/`、`*`
+    - 任何非Number型数据都会先转换为Number型，再进行运算
+        - 底层使用 `Number()`函数进行类型转换
+    - 扩展： 可以对一个非 Number型 变量执行 ：`变量 - 0`、`变量 * 1`、`变量 / 1`，来将类型转换为 Number
+        - 这是一种**隐式类型转换**，由浏览器自动完成
+- `%`：取余数
+
+- 示例
+    - 参考代码
+        - [/javascript/base/src/operator/unaryOperator.html](/javascript/base/src/operator/unaryOperator.html)
+
+    - js内容
+        ```js
+        // 算数运算符
+        // 1. boolean值参与运算
+        var a1 = true + 1;
+        console.log("a1 = ", a1, ", typeof a1 = ", typeof a1);
+        // 输出：a1 =  2 , typeof a1 =  number
+
+        var a2 = true + false;
+        console.log("a2 = ", a2, ", typeof a2 = ", typeof a2);
+        // 输出：a2 =  1 , typeof a2 =  number
+
+        // --------------------------------------------------
+        // 2. Null 与 Number的运算
+        var b1 = 2 + null;
+        console.log("b1 = ", b1, ", typeof b1 = ", typeof b1);
+        // 输出：b1 =  2 , typeof b1 =  number
+
+        // --------------------------------------------------
+        // 3. 非字符串 与 NaN的运算
+        var c1 = 3 + NaN;
+        console.log("c1 = ", c1, ", typeof c1 = ", typeof c1);
+        // 输出：c1 =  NaN , typeof c1 =  number
+
+        var c2 = undefined + NaN;
+        console.log("c2 = ", c2, ", typeof c2 = ", typeof c2);
+        // 输出：c2 =  NaN , typeof c2 =  number
+
+        var c3 = null + NaN;
+        console.log("c3 = ", c3, ", typeof c3 = ", typeof c3);
+        // 输出：c3 =  NaN , typeof c3 =  number
+
+        var c4 = NaN - 1;
+        console.log("c4 = ", c4, ", typeof c4 = ", typeof c4);
+        // 输出：c4 =  NaN , typeof c4 =  number
+
+        // --------------------------------------------------
+        // 4. 字符串参与运算
+        var d1 = "1234" + 2345;
+        console.log("d1 = ", d1, ", typeof d1 = ", typeof d1);
+        // 输出：d1 =  12342345 , typeof d1 =  string
+
+        var d2 = 2345 + "1234";
+        console.log("d2 = ", d2, ", typeof d2 = ", typeof d2);
+        // 输出：d2 =  23451234 , typeof d2 =  string
+
+        var d3 = NaN + "1234";
+        console.log("d3 = ", d3, ", typeof d3 = ", typeof d3);
+        // 输出：d3 =  NaN1234 , typeof d3 =  string
+
+        // --------------------------------------------------
+        // 5.多个其他类型与String类型执行 + 运算
+        var e1 = 1 + 2 + "3";
+        console.log("e1 = ", e1, ", typeof e1 = ", typeof e1);
+        // 输出：e1 =  33 , typeof e1 =  string
+
+        var e2 = "3" + 1 + 2;
+        console.log("e2 = ", e2, ", typeof e2 = ", typeof e2);
+        // 输出：e2 =  312 , typeof e2 =  string
+
+        var e3 = 1 + "3" + 2;
+        console.log("e3 = ", e3, ", typeof e3 = ", typeof e3);
+        // 输出：e3 =  132 , typeof e3 =  string
+
+        // --------------------------------------------------
+        // 6. -、/、* 运算
+        var f1 = 1234 - "234";
+        console.log("f1 = ", f1, ", typeof f1 = ", typeof f1);
+
+        var f2 = "1234" - "234";
+        console.log("f2 = ", f2, ", typeof f2 = ", typeof f2);
+        // 输出：f2 =  1000 , typeof f2 =  number
+
+        var f3 = "1234" - true;
+        console.log("f3 = ", f3, ", typeof f3 = ", typeof f3);
+        // 输出：f3 =  1233 , typeof f3 =  number
+        ```
+
+## 一元运算符
+[top](#catalog)
+- `+` 正号、`-` 符号
+- 对于Number型数据，会改变数值的符号
+- 对于非Number型数据，会先转换为Number型，再使用一元运算符
+    - 底层使用`Number()`进行里诶下那个转换
+- 扩展：对于非Number类型，使用 `+` 会将数据转换为Number型
+    - 这是一个**隐式类型转换**，由浏览器自动完成
+    - 如：
+        ```js
+        var g5 = false;
+        g5 = -g5;
+        ```
+
+- 示例
+    - 参考代码
+        - [/javascript/base/src/operator/binaryOperator.html](/javascript/base/src/operator/binaryOperator.html)
+    - js内容
+        ```js
+        // 1 对于Number型数据，会改变数据的符号
+        var a1 = 1234;
+        a1 = -a1;
+        console.log("a1 = ", a1, ", typeof a1 = ", typeof a1);
+        // 输出：a1 =  -1234 , typeof a1 =  number
+
+        // 2 对于非Number型数据，会先转换为Number型，再使用一元运算符
+        var a2 = "sdfd";
+        a2 = -a2;
+        console.log("a2 = ", a2, ", typeof a2 = ", typeof a2);
+        // 输出：a2 =  NaN , typeof a2 =  number
+
+        var a3 = "123";
+        a3 = -a3;
+        console.log("a3 = ", a3, ", typeof a3 = ", typeof a3);
+        // 输出：a3 =  -123 , typeof a3 =  number
+
+        var a4 = true;
+        a4 = -a4;
+        console.log("a4 = ", a4, ", typeof a4 = ", typeof a4);
+        // 输出：a4 =  -1 , typeof a4 =  number
+
+        var a5 = false;
+        a5 = -a5;
+        console.log("a5 = ", a5, ", typeof a5 = ", typeof a5);
+        // 输出：a5 =  -0 , typeof a5 =  number
+
+        // 3 对于非Number类型，使用 `+` 会将数据转换为Number型
+        var a6 = "5678";
+        a6 = +a6;
+        console.log("a6 = ", a6, ", typeof a6 = ", typeof a6);
+        // 输出：a6 =  5678 , typeof a6 =  number
+
+        var a7 = true;
+        a7 = +a7;
+        console.log("a7 = ", a7, ", typeof a7 = ", typeof a7);
+        // 输出：a7 =  1 , typeof a7 =  number
+
+        var a8 = false;
+        a8 = +a8;
+        console.log("a8 = ", a8, ", typeof a8 = ", typeof a8);
+        // 输出：a8 =  0 , typeof a8 =  number
+
+        var a9 = null;
+        a9 = +a9;
+        console.log("a9 = ", a9, ", typeof a9 = ", typeof a9);
+        // 输出：a9 =  0 , typeof a9 =  number
+
+        var a10;
+        a10 = +a10;
+        console.log("a10 = ", a10, ", typeof a10 = ", typeof a10);
+        // 输出：a10 =  NaN , typeof a10 =  number
+
+        var a11 = "abcdef";
+        a11 = +a11;
+        console.log("a11 = ", a11, ", typeof a11 = ", typeof a11);
+        // 输出：a11 =  NaN , typeof a11 =  number
+        ```
+
+## 自增自减
+[top](#catalog)
+- `++` 自增，`--`自减
+- 自增自减分为两种
+    - 后增/后减：`a++;`
+    - 前增/前减：`a++;`
+- 前增/减、后增/减都会**立刻使变量+1**
+
 
 # 反射
 [top](#catalog)
