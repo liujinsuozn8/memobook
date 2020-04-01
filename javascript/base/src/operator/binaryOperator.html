@@ -1,0 +1,72 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>binary operator test</title>
+        <script type="text/javascript">
+            // --------------------------------------------------
+            //  一元运算符
+            // 1 对于Number型数据，会改变数据的符号
+            var a1 = 1234;
+            a1 = -a1;
+            console.log("a1 = ", a1, ", typeof a1 = ", typeof a1);
+            // 输出：a1 =  -1234 , typeof a1 =  number
+
+            // 2 对于非Number型数据，会先转换为Number型，再使用一元运算符
+            var a2 = "sdfd";
+            a2 = -a2;
+            console.log("a2 = ", a2, ", typeof a2 = ", typeof a2);
+            // 输出：a2 =  NaN , typeof a2 =  number
+
+            var a3 = "123";
+            a3 = -a3;
+            console.log("a3 = ", a3, ", typeof a3 = ", typeof a3);
+            // 输出：a3 =  -123 , typeof a3 =  number
+
+            var a4 = true;
+            a4 = -a4;
+            console.log("a4 = ", a4, ", typeof a4 = ", typeof a4);
+            // 输出：a4 =  -1 , typeof a4 =  number
+
+            var a5 = false;
+            a5 = -a5;
+            console.log("a5 = ", a5, ", typeof a5 = ", typeof a5);
+            // 输出：a5 =  -0 , typeof a5 =  number
+
+            // 3 对于非Number类型，使用 `+` 会将数据转换为Number型
+            var a6 = "5678";
+            a6 = +a6;
+            console.log("a6 = ", a6, ", typeof a6 = ", typeof a6);
+            // 输出：a6 =  5678 , typeof a6 =  number
+
+            var a7 = true;
+            a7 = +a7;
+            console.log("a7 = ", a7, ", typeof a7 = ", typeof a7);
+            // 输出：a7 =  1 , typeof a7 =  number
+
+            var a8 = false;
+            a8 = +a8;
+            console.log("a8 = ", a8, ", typeof a8 = ", typeof a8);
+            // 输出：a8 =  0 , typeof a8 =  number
+
+            var a9 = null;
+            a9 = +a9;
+            console.log("a9 = ", a9, ", typeof a9 = ", typeof a9);
+            // 输出：a9 =  0 , typeof a9 =  number
+
+            var a10;
+            a10 = +a10;
+            console.log("a10 = ", a10, ", typeof a10 = ", typeof a10);
+            // 输出：a10 =  NaN , typeof a10 =  number
+
+            var a11 = "abcdef";
+            a11 = +a11;
+            console.log("a11 = ", a11, ", typeof a11 = ", typeof a11);
+            // 输出：a11 =  NaN , typeof a11 =  number
+
+        </script>
+    </head>
+    <body>
+        
+    </body>
+</html>
