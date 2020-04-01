@@ -1,0 +1,86 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>unary operator test</title>
+        <script type="text/javascript">
+            // 算数运算符
+            // 1. boolean值参与运算
+            var a1 = true + 1;
+            console.log("a1 = ", a1, ", typeof a1 = ", typeof a1);
+            // 输出：a1 =  2 , typeof a1 =  number
+
+            var a2 = true + false;
+            console.log("a2 = ", a2, ", typeof a2 = ", typeof a2);
+            // 输出：a2 =  1 , typeof a2 =  number
+
+            // --------------------------------------------------
+            // 2. Null 与 Number的运算
+            var b1 = 2 + null;
+            console.log("b1 = ", b1, ", typeof b1 = ", typeof b1);
+            // 输出：b1 =  2 , typeof b1 =  number
+
+            // --------------------------------------------------
+            // 3. 非字符串 与 NaN的运算
+            var c1 = 3 + NaN;
+            console.log("c1 = ", c1, ", typeof c1 = ", typeof c1);
+            // 输出：c1 =  NaN , typeof c1 =  number
+
+            var c2 = undefined + NaN;
+            console.log("c2 = ", c2, ", typeof c2 = ", typeof c2);
+            // 输出：c2 =  NaN , typeof c2 =  number
+
+            var c3 = null + NaN;
+            console.log("c3 = ", c3, ", typeof c3 = ", typeof c3);
+            // 输出：c3 =  NaN , typeof c3 =  number
+
+            var c4 = NaN - 1;
+            console.log("c4 = ", c4, ", typeof c4 = ", typeof c4);
+            // 输出：c4 =  NaN , typeof c4 =  number
+
+            // --------------------------------------------------
+            // 4. 字符串参与运算
+            var d1 = "1234" + 2345;
+            console.log("d1 = ", d1, ", typeof d1 = ", typeof d1);
+            // 输出：d1 =  12342345 , typeof d1 =  string
+
+            var d2 = 2345 + "1234";
+            console.log("d2 = ", d2, ", typeof d2 = ", typeof d2);
+            // 输出：d2 =  23451234 , typeof d2 =  string
+
+            var d3 = NaN + "1234";
+            console.log("d3 = ", d3, ", typeof d3 = ", typeof d3);
+            // 输出：d3 =  NaN1234 , typeof d3 =  string
+
+            // --------------------------------------------------
+            // 5.多个其他类型与String类型执行 + 运算
+            var e1 = 1 + 2 + "3";
+            console.log("e1 = ", e1, ", typeof e1 = ", typeof e1);
+            // 输出：e1 =  33 , typeof e1 =  string
+
+            var e2 = "3" + 1 + 2;
+            console.log("e2 = ", e2, ", typeof e2 = ", typeof e2);
+            // 输出：e2 =  312 , typeof e2 =  string
+
+            var e3 = 1 + "3" + 2;
+            console.log("e3 = ", e3, ", typeof e3 = ", typeof e3);
+            // 输出：e3 =  132 , typeof e3 =  string
+
+            // --------------------------------------------------
+            // 6. -、/、* 运算
+            var f1 = 1234 - "234";
+            console.log("f1 = ", f1, ", typeof f1 = ", typeof f1);
+
+            var f2 = "1234" - "234";
+            console.log("f2 = ", f2, ", typeof f2 = ", typeof f2);
+            // 输出：f2 =  1000 , typeof f2 =  number
+
+            var f3 = "1234" - true;
+            console.log("f3 = ", f3, ", typeof f3 = ", typeof f3);
+            // 输出：f3 =  1233 , typeof f3 =  number
+        </script>
+    </head>
+    <body>
+        
+    </body>
+</html>
