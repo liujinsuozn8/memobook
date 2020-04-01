@@ -99,6 +99,36 @@
         var h2 = String(h1);
         console.log("h2 = ", h2, ", typeof h2 = ", typeof h2);
         // 输出：h2 =  undefined , typeof h2 =  string
+
+        // --------------------------------------------------------------------
+        // 方式3：与空字符串 `""` 进行 `+` 运算
+        var i1 = 1234 + "";
+        console.log("i1 = ", i1, ", typeof i1 = ", typeof i1);
+        // 输出：i1 =  1234 , typeof i1 =  string
+
+        var i2 = false + "";
+        console.log("i2 = ", i2, ", typeof i2 = ", typeof i2);
+        // 输出：i2 =  false , typeof i2 =  string
+
+        var i3 = true + "";
+        console.log("i3 = ", i3, ", typeof i3 = ", typeof i3);
+        // 输出：i3 =  true , typeof i3 =  string
+
+        var i4 = NaN + "";
+        console.log("i4 = ", i4, ", typeof i4 = ", typeof i4);
+        // 输出：i4 =  NaN , typeof i4 =  string
+
+        var i5 = Infinity + "";
+        console.log("i5 = ", i5, ", typeof i5 = ", typeof i5);
+        // 输出：i5 =  Infinity , typeof i5 =  string
+
+        var i6 = null + "";
+        console.log("i6 = ", i6, ", typeof i6 = ", typeof i6);
+        // 输出：i6 =  null , typeof i6 =  string
+
+        var i7 = undefined + "";
+        console.log("i7 = ", i7, ", typeof i7 = ", typeof i7);
+        // 输出：i7 =  undefined , typeof i7 =  string
     </script>
 </head>
 <body>
