@@ -1,5 +1,0 @@
-2020-03-31 23:29:39, 296 DEBUG (com.ljs.learn.mylog4j.UserService:main) - UserService test log
-2020-03-31 23:31:48, 003 DEBUG (com.ljs.learn.mylog4j.UserService:main) - UserService test debug
-2020-03-31 23:31:48, 005  INFO (com.ljs.learn.mylog4j.UserService:main) - UserService test info
-2020-03-31 23:31:48, 006 ERROR (com.ljs.learn.mylog4j.UserService:main) - UserService test error
-2020-03-31 23:31:48, 006  WARN (com.ljs.learn.mylog4j.UserService:main) - UserService test warn

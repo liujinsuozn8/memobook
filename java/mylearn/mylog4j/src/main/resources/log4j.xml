@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+    <!--创建目的地-->
+    <appender name="log.file" class="org.apache.log4j.DailyRollingFileAppender">
+        <param name="File" value="mylog4j/logs/ljs_xmllog_file.log"/>
+        <!--已追加的方式写文件，默认为true。若使用false，则每次启动都后删除并新建日志文件-->
+        <param name="Append" value="true"/>
+        <param name="DatePattern" value=".yyy-MM-dd"/>
+        <!--设置日志格式-->
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss, SSS} %5p (%C:%M) - %m%n"/>
+        </layout>
+    </appender>
+    <appender name="log.console" class="org.apache.log4j.ConsoleAppender">
+        <!--设置日志格式-->
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss, SSS} %5p (%C:%M) - %m%n"/>
+        </layout>
+        <!--设置日志过滤 只输出 debug～warn的日志-->
+        <filter class="org.apache.log4j.varia.LevelRangeFilter">
+            <!--日志级别的最小值-->
+            <param name="levelMin" value="debug"/>
+            <!--日志级别的最大值-->
+            <param name="levelMax" value="warn"/>
+            <param name="AcceptOnMatch" value="true"/>
+        </filter>
+    </appender>
+
+    <!--配置日志控制器，并引用目的地-->
+    <logger name="com.ljs.learn.mylog4j" additivity="true">
+        <level value="debug"/>
+        <appender-ref ref="log.file"/>
+        <appender-ref ref="log.console"/>
+    </logger>
+    <root>
+        <level value="error"/>
+        <appender-ref ref="log.file"/>
+        <appender-ref ref="log.console"/>
+    </root>
+
+</log4j:configuration>

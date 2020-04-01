@@ -10,5 +10,6 @@ public class UserService {
         logger.info("UserService test info");
         logger.error("UserService test error");
         logger.warn("UserService test warn");
+        logger.debug("中文测试");
     }
 }
