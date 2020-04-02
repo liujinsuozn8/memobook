@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>equal operator test</title>
+    <script type="text/javascript">
+        // 1. 不同数据类型 的相等判断
+        // 1.1 String --> Number
+        var a1 = "1" == 1;
+        console.log("a1 = ", a1);
+        // 输出：a1 =  true
+
+        // 1.2 符行两边的数据同时转换为Number
+        var b1 = true == "1";
+        console.log("b1 = ", b1);
+        // 输出：b1 =  true
+
+        var b2 = true == "asfd";
+        console.log("b2 = ", b2);
+        // 输出：b2 =  false
+
+        // ------------------------------------------------
+        // 2. 全等判断
+        var d1 = "1234" === 1234;
+        console.log("d1 = ", d1);
+        // 输出：d1 =  false
+
+        var d2 = 1234 === 1234;
+        console.log("d2 = ", d2);
+        // 输出：d2 =  true
+
+        // ------------------------------------------------
+        // 3. 特殊的判断
+        // 3.1 Undefined与Null的
+        // 3.1.1 Undefined与Null的 相等比较
+        var e1 = undefined == null;
+        console.log("e1 = ", e1);
+        // 输出：e1 =  true
+
+        // 3.1.2 Undefined与Null的 全相等比较
+        var e2 = undefined == null;
+        console.log("e2 = ", e2);
+        // 输出：e2 =  false
+
+        // 3.2 Null不会转换成Number
+        var c1 = null == 0;
+        console.log("c1 = ", c1);
+        // 输出：c1 =  false
+
+        var c2 = null == null;
+        console.log("c2 = ", c2);
+        // 输出：c2 =  true
+
+        var c3 = null === null;
+        console.log("c3 = ", c3);
+        // 输出：c3 =  true
+
+        // 3.3 NaN 不和任何值相等，包括其自身
+        var f1 = NaN == "234";
+        console.log("f1 = ", f1);
+        // 输出：f1 =  false
+
+        var f2 = NaN === NaN;
+        console.log("f2 = ", f2);
+        // 输出：f2 =  false
+
+        var f3 = NaN != "234";
+        console.log("f3 = ", f3);
+        // 输出：f3 =  true
+
+        var f4 = NaN != NaN;
+        console.log("f4 = ", f4);
+        // 输出：f4 =  true
+
+        // ------------------------------------------------
+        // 4 通过 isNaN 来判断一个值是否为NaN
+        var g1 = NaN
+        var g2 = isNaN(g1);
+        console.log("g2 = ", g2);
+        // 输出：g2 =  true
+
+        var g3 = 1234;
+        var g4 = isNaN(g4);
+        console.log("g4 = ", g4);
+        // 输出：g4 =  false
+    </script>
+</head>
+<body>
+    
+</body>
+</html>

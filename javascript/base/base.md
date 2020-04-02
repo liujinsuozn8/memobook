@@ -3,8 +3,8 @@
 ### 目录
 - [JavaSctipt简介](#JavaSctipt简介)
 - [JS的编写位置](#JS的编写位置)
-- [JS的基本语法规范](#JS的基本语法规范)
 - [数据类型](#数据类型)
+    - [字面量与变量](#字面量与变量)
     - [数据类型分类](#数据类型分类)
     - [基本数据类型](#基本数据类型)
     - [类型转换](#类型转换)
@@ -13,10 +13,19 @@
         - [其他类型转换为Number](#其他类型转换为Number)
         - [其他类型转换为Boolean](#其他类型转换为Boolean)
     - [不同进制的数字](#不同进制的数字)
-- [算数运算符](#算数运算符)
-    - [二元运算符](#二元运算符)
-    - [一元运算符](#一元运算符)
+- [运算符](#运算符)
+    - [二元算数运算符](#二元算数运算符)
+    - [一元算数运算符](#一元算数运算符)
     - [自增自减](#自增自减)
+    - [逻辑运算符](#逻辑运算符)
+    - [赋值运算符](#赋值运算符)
+    - [相等运算符](#相等运算符)
+    - [运算符的优先级](#运算符的优先级)
+- [JS语法](#JS语法)
+    - [基本语法规范](#基本语法规范)
+    - [变量声明](#变量声明)
+    - [代码块](#代码块)
+- [弹出框](#弹出框)
 - [](#)
 - [](#)
 - [反射](#反射)
@@ -91,48 +100,8 @@
             document.write("text from test.js");
             ```
 
-# JS的基本语法规范
-[top](#catalog)
-- js中严格区分大小写
-- js的每一条语句以`;`结尾
-    - 如果不写`;`，**浏览器会自动添加**，但是**会消耗一些系统资源**
-    - 浏览器自动添加`;`时，也可能会加错位置，所以开发时一定要写`;`
-- 变量声明
-    ```js
-    var k = 'v';
-    ```
-- js会忽略多个空格和换行
-- js注释
-    - 多行注释：`/* */`
-        ```js
-        /*
-            多行js注释
-        */
-        ```
-    - 单行注释：`//`
-        ```js
-        /单行js注释
-        ```
 
-- 标识符：在js中所有可以自主命名的都可以称为标识符
-    - 如：变量名、函数名、属性名
-    - 标识符的规则
-        1. 可以包含：字母、数字、`_`、`$`
-        2. 标识符不能以数字开头
-        3. 标识符不能是ES中的关键字或保留字
-        4. 标识符一般都采用驼峰命名法
-    - js底层采用Unicode编码来保存变量，所以理论上，素有utf-8中含有的内容都可以作为标识符
-
-- 三种常用的输出语句，可以用于测试
-    ```js
-    // 弹出提示框
-    alert("asdfg");
-    // 向html中写入指定内容
-    document.write("zxcvb");
-    // 将日志输出到控制台
-    console.log("qwert");
-    ```
-
+# 数据类型
 # 字面量与变量
 [top](#catalog)
 - 字面量
@@ -143,7 +112,6 @@
     - 变量可以用来保存字面量
     - 变量的值可以任意改变
 
-# 数据类型
 ## 数据类型分类
 [top](#catalog)
 - 数据类型指的是字面量的类型
@@ -182,6 +150,8 @@
             console.log(x);
             // 输出：aaaaaaa
             ```
+    - <label style="color:red">使用Unicode的方法</label>
+        - 语法：`"\u16进制Unicode编码"`
 - Number
     - 在js中所有的数值都是Number类型，包括整数、浮点数
     - 特殊数字
@@ -275,7 +245,7 @@
 
 ### 其他类型转换为String
 [top](#catalog)
-- 两种转换方式
+- 几种转换方式
     - 方式1：调用变量的 `toString()` 方法
         - 该方法会返回一个新的变量，不会影响原始变量，如：
             ```js
@@ -297,7 +267,7 @@
     - 方式3：**比较常用的方式**, 与空字符串 `""` 进行 `+` 运算
         - 这是一种**隐式类型转换**，由浏览器自动完成
         - 底层也是对非字符串类型调用了 `String()`
-        - 参考：[算数运算符](#算数运算符)
+        - 参考：[二元算数运算符](#二元算数运算符)
 
 - 示例
     - 参考代码
@@ -403,7 +373,7 @@
 
 ### 其他类型转换为Number
 [top](#catalog)
-- 两种转换方式
+- 几种转换方式
     - 方式1：调用 `Number()` 函数
         - 各类型数据的转换结果
 
@@ -428,11 +398,11 @@
     
     - 方式3：对一个非 Number型 变量执行 ：`变量 - 0`、`变量 * 1`、`变量 / 1`，来将类型转换为 Number
         - 底层使用`Number()` 函数执行类型转换
-        - 参考：[算数运算符](#算数运算符)
+        - 参考：[二元算数运算符](#二元算数运算符)
     
-    - 方式4：对一个非 Number型 变量 使用**一元运算符**：`+`
+    - 方式4：对一个非 Number型 变量 使用**一元算数运算符**：`+`
         - 底层使用`Number()` 函数执行类型转换
-        - 参考：[算数运算符](#算数运算符)
+        - 参考：[一元算数运算符](#一元算数运算符)
 
 - 示例
     - 参考代码
@@ -578,19 +548,24 @@
         
 ### 其他类型转换为Boolean
 [top](#catalog)
+- 几种转换方式
+    - 方式1：通过函数：`Boolean()`进行转换
+        - 各类型数据的转换结果
 
-- 通过函数：`Boolean()`进行转换
-- 各类型数据的转换结果
+            |原始数据类型|数据内容|转换结果|
+            |-|-|-|
+            |Number|0、NaN|false|
+            |Number|非0数字、Infinity|ture|
+            |String|空字符串：`""`|false| 
+            |String|非空字符串|true|
+            |Null|null|false|
+            |Undefined|undefined|false|
+            |Object||true|
 
-    |原始数据类型|数据内容|转换结果|
-    |-|-|-|
-    |Number|0、NaN|false|
-    |Number|非0数字、Infinity|ture|
-    |String|空字符串：`""`|false| 
-    |String|非空字符串|true|
-    |Null|null|false|
-    |Undefined|undefined|false|
-    |Object||true|
+    - 方式2：对一个非Boolean型数据使用两次非运算符
+        - 如：`a = !!a;`
+        - 这是一种**隐式转换**
+        - 参考：[逻辑运算符](#逻辑运算符)
 
 - 示例
     - 参考代码
@@ -711,8 +686,8 @@
         // chrome输出: d2 =  70 , typeof d2 =  number
         ```
 
-# 算数运算符
-## 二元运算符
+# 运算符
+## 二元算数运算符
 [top](#catalog)
 - 与Number型数据的运算符
     - 正常的Number型数据之间执行正常运算
@@ -831,7 +806,7 @@
         // 输出：f3 =  1233 , typeof f3 =  number
         ```
 
-## 一元运算符
+## 一元算数运算符
 [top](#catalog)
 - `+` 正号、`-` 符号
 - 对于Number型数据，会改变数值的符号
@@ -842,7 +817,8 @@
     - 如：
         ```js
         var g5 = false;
-        g5 = -g5;
+        g5 = +g5;
+        console.log(g5); // g5 = 0
         ```
 
 - 示例
@@ -856,6 +832,7 @@
         console.log("a1 = ", a1, ", typeof a1 = ", typeof a1);
         // 输出：a1 =  -1234 , typeof a1 =  number
 
+        // ----------------------------------------------------------
         // 2 对于非Number型数据，会先转换为Number型，再使用一元运算符
         var a2 = "sdfd";
         a2 = -a2;
@@ -877,6 +854,7 @@
         console.log("a5 = ", a5, ", typeof a5 = ", typeof a5);
         // 输出：a5 =  -0 , typeof a5 =  number
 
+        // ----------------------------------------------------------
         // 3 对于非Number类型，使用 `+` 会将数据转换为Number型
         var a6 = "5678";
         a6 = +a6;
@@ -915,12 +893,560 @@
 - 自增自减分为两种
     - 后增/后减：`a++;`
     - 前增/前减：`a++;`
-- 前增/减、后增/减都会**立刻使变量+1**
+
+- 自家自减运算，本质是一个**表达式**，所有会有返回值
+
+- 运算符在前、后的区别
+    - `a++` 表达式的值是： `a`(自增/减前的值)，运算后 a 的值是：`a = a + 1`
+    - `++a` 表达式的值是：`a + 1`(自增/减后的值)，运算后 a 的值是：：`a = a + 1`
+    - **结果的使用 与 运算 是一个连贯的动作，无法被其他运算符分离**
+
+- **复杂自增/减运算的分析**
+    - 示例1:
+        - 计算式
+            ```js
+            var a = 20;
+            var result = a++ + ++a + a;
+            console.log(result); // result=64
+            ```
+        - 分析
+            1. `a++`，表达式的值是：`20`，运算后a的值是：`a = 20 + 1 = 21`, 计算式: `var result = 20`
+            2. `++a`，表达式的值是：`20 + 1 = 21`，运算后a的值是：`a = 21 + 1 = 22`，计算式：`var result = 20 + 22`
+            3. `a`，直接参与运算：`var result = 20 + 22 + 22`
+            4. 得到：`result = 64`
+    - 示例2：
+        - 计算式
+            ```js
+            var b = 10;
+            var result = ++b + b++ +b;
+            console.log(result); // result = 34
+            ```
+        - 分析
+            1. `++b`，表达式的值是：`10 + 1 = 11`，运算后b的值是：`b = 10 + 1 = 11`，计算式：`var result = 11`
+            2. `b++`，表达式的值是：`11`，运算后b的值是：`b = 12`，计算式：`var result = 11 + 11`
+            3. `b`，直接参与运算：`var result = 11 + 11 + 12`
+            4. 得到：`result = 34`
+    - 示例3：
+        - 计算式
+            ```js
+            var c = 5;
+            c = c++;
+            console.log(c); // c = 5;
+            ```
+        - 分析
+            1. `c++`，表达式的值是：`5`，运算后b的值是：`b = 5 + 1 =6`，计算式：`c = 5`
+            2. 得到`c = 5`
+
+- 示例：
+    - 参考代码
+        - [/javascript/base/src/operator/increDecre.html](/javascript/base/src/operator/increDecre.html)
+    - js内容
+        ```js
+        // 1. 基本的自增/减表达式分析
+        var n1 = 10, n2 = 20;
+        var n = n1++; //n = 10, n1 = 11
+        console.log("n = ", n);// 输出：n = 10
+        console.log("n1 = ", n1);// 输出：n1 = 11
+
+        n = ++n1; // n=12, n1= 12
+        console.log("n = ", n);// 输出：n = 12
+        console.log("n1 = ", n1);// 输出：n1 = 12
+
+        n = n2--; // n = 20, n2 = 19
+        console.log("n = ", n);// 输出：n = 20
+        console.log("n2 = ", n2);// 输出：n2 = 19
+
+        n = --n2; // n = 18, n2 = 18
+        console.log("n = ", n);// 输出：n = 18
+        console.log("n2 = ", n2);// 输出：n2 = 18
+
+        // -------------------------------------------------
+        // 2. 复杂自增/减运算的分析
+        var a = 20;
+        var result01 = a++ + ++a + a;
+        console.log("result01 = ", result01);// 输出：result01 =  64
+
+        var b = 10;
+        var result02 = ++b + b++ +b;
+        console.log("result02 = ", result02);// 输出：result02 =  34
+
+        var c = 5;
+        c = c++;
+        console.log("c = ", c); // 输出：c =  5
+        ```
+
+## 逻辑运算符
+[top](#catalog)
+- 非：`!`
+    - 对于非Boolean型数据使用 `!` 时，会先将非Boolean转换为 Boolean型 数据，然后再进行运算
+        - 本质是一种**隐式类型转换**
+    - **扩展**：可以对一个非Boolean型数据使用两次非运算符，将数据转换成Boolean型数据，如
+        ```js
+        var a = 1;
+        a = !!a;
+        console.log(a);// a= true
+        ```
+
+- 与：`&&`，或：`||`
+    - js中的与：`&&`、或：`||`是**短路的**。如果前面的表达式结果满足了(`&&`前面是false、`||`前面是true)，将不会计算后面的表达式
+    - 非Boolean型数据的运算规则：
+        - 先转换 Boolean型数据，再进行运算
+        - 因为与、或操作是短路的，所以返回值是运算过程中**最后一个计算**的表达式的值
+        - `a && b`的运算结果
+            
+            |运算式|运算结果|
+            |-|-|
+            |`a && b = true && true`|b|
+            |`a && b = false && true`|a|
+            |`a && b = true && false`|b|
+            |`a && b = false && false`|a|
+
+        - `a || b`的运算结果
+                    
+            |运算式|运算结果|
+            |-|-|
+            |`a || b = true || true`|a|
+            |`a || b = false || true`|b|
+            |`a || b = true || false`|a|
+            |`a || b = false || false`|b|
+
+- 示例
+    - 参考代码
+        - [/javascript/base/src/operator/ogicOperator.html](/javascript/base/src/operator/ogicOperator.html)
+    - js内容
+        ```js
+        // 1. 对非Boolean型数据使用 非运算符 !
+        var a1 = 2;
+        a1 = !a1;
+        console.log("a1 = ", a1, ", typeof a1 = ", typeof a1);
+        // 输出：a =  false , typeof a =  boolean
+
+        var a2 = 0;
+        a2 = !a2;
+        console.log("a2 = ", a2, ", typeof a2 = ", typeof a2);
+        // 输出：a2 =  true , typeof a2 =  boolean
+
+        // -----------------------------------------------------------------
+        // 2. 扩展：对非Boolean型数据使用 `!!`，将数据转换为 Boolean型数据
+        var b1 = 1;
+        b1 = !!b1;
+        console.log("b1 = ", b1, ", typeof b1 = ", typeof b1);
+        // 输出：b1 =  true , typeof b1 =  boolean
+
+        var b2 = "qwer";
+        b2 = !!b2;
+        console.log("b2 = ", b2, ", typeof b2 = ", typeof b2);
+        // 输出：b2 =  true , typeof b2 =  boolean
+
+        // -----------------------------------------------------------------
+        // 3. 非Boolean型数据的运算规则，返回值是运算过程中最后一个计算的表达式的值
+        // 3.1 a && b
+        // 3.1.1 a && b = true && true  --->b
+        var c1 = 1 && 2;
+        console.log("c1 = ", c1, ", typeof c1 = ", typeof c1);
+        // 输出：c1 =  2 , typeof c1 =  number
+
+        // 3.1.2 a && b = false && true --->a
+        var c2 = NaN && 2;
+        console.log("c2 = ", c2, ", typeof c2 = ", typeof c2);
+        // 输出：c2 =  NaN , typeof c2 =  number
+
+        // 3.1.3 a && b = true && false --->b
+        var c3 = 2 && NaN;
+        console.log("c3 = ", c3, ", typeof c3 = ", typeof c3);
+        // 输出：c3 =  NaN , typeof c3 =  number
+
+        // 3.1.4 a && b = false && false--->a
+        var c4 = 0 && NaN;
+        console.log("c4 = ", c4, ", typeof c4 = ", typeof c4);
+        // 输出：c4 =  0 , typeof c4 =  number
+
+        // 3.2 a || b
+        // 3.2.1 a || b = true || true  --->a
+        var d1 = 1 || 2;
+        console.log("d1 = ", d1, ", typeof d1 = ", typeof d1);
+        // 输出：d1 =  1 , typeof d1 =  number
+
+        // 3.2.2 a || b = false || true --->b
+        var d2 = NaN || 2;
+        console.log("d2 = ", d2, ", typeof d2 = ", typeof d2);
+        // 输出：d2 =  2 , typeof d2 =  number
+
+        // 3.2.3 a || b = true || false --->a
+        var d3 = 2 || NaN;
+        console.log("d3 = ", d3, ", typeof d3 = ", typeof d3);
+        // 输出：d3 =  2 , typeof d3 =  number
+
+        // 3.2.4 a || b = false || false--->b
+        var d4 = 0 || NaN;
+        console.log("d4 = ", d4, ", typeof d4 = ", typeof d4);
+        // 输出：d4 =  NaN , typeof d4 =  number
+        ```
+
+## 赋值运算符
+[top](#catalog)
+
+|运算符|计算式|含义|
+|-|-|-|
+|=|`a = 1234;`|将1234赋给 a|
+|+=|`a += 1;`|`a = a + 1`|
+|-=|`a -= 1;`|`a = a - 1`|
+|*=|`a *= 1;`|`a = a * 1`|
+|/=|`a /= 1;`|`a = a / 1`|
+|%=|`a %= 1;`|`a = a % 1`|
+
+## 关系运算符
+[top](#catalog)
+- 可用关系运算符：`>`、`>=`、`<`、`<=`、
+- 无论关系运算符两侧是什么类型的数据，返回值都是：true / false
+
+- Number类型与其他类型之间的关系运算
+    - 两个Number类型比较时，直接按数值关系进行比较
+    - **任何值和NaN进行比较的结果都是 false**
+    - Number类型与非Number类型比较时，先将非Number型转换为Number型，然后再进行关系比较
+        - Number类型和非数字字符串进行比较时，由于非数字字符串会**隐式转换为 NaN**，所以比较结果永远都是 NaN
+
+- String类型之间的关系运算
+    - 两个String类型数据比较时，会逐个字符的比较Unicode编码的大小
+        - 即使两个字符串都是数字字符串，也不会转换为Number型
+
+- 示例
+    - 参考代码
+        - [/javascript/base/src/operator/relationOperator.html](/javascript/base/src/operator/relationOperator.html)
+    - js内容
+        ```js
+        // 1. Number类型与其他类型之间的关系运算
+        // 1.1 两个Number类型，直接按数值关系进行比较
+        var a1 = 3 > 2;
+        console.log("a1 = ", a1);
+        // 输出：a1 =  true
+
+        // 1.2 任何值和NaN进行比较的结果都是 false
+        var b1 = 3 > NaN;
+        console.log("b1 = ", b1);
+        // 输出：b1 =  false
+
+        var b2 = 3 < NaN;
+        console.log("b2 = ", b2);
+        // 输出：b2 =  false
+
+        // 1.3 Number类型与非Number类型比较时，
+        //     先将非Number型转换为Number型，然后再进行关系比较
+        // 1.3.1 Number 与 Boolean 进行比较
+        var c1 = 1 > true;
+        console.log("c1 = ", c1);
+        // 输出：c1 =  false
+
+        var c2 = 1 >= true;
+        console.log("c2 = ", c2);
+        // 输出：c2 =  true
+
+        // 1.3.2 Number 与 数字字符串 进行比较
+        var d1 = 2 > "1234";
+        console.log("d1 = ", d1);
+        // 输出：d1 =  false
+
+        var d2 = 2345 > "1234";
+        console.log("d2 = ", d2);
+        // 输出：d2 =  true
+
+        // 1.3.3 Number 与 非数字字符串 进行比较
+        // 非数字字符串 会隐式转换为 NaN，所以比较结果永远都是NaN
+        var e1 = 2345 < "xxxxx";
+        console.log("e1 = ", e1);
+        // 输出：e1 =  false
+
+        var e2 = 546 > "xxxxx";
+        console.log("e2 = ", e2);
+        // 输出：e2 =  false
+
+        // 1.3.4 Number 与 Null的比较
+        var f1 = 1 > null;
+        console.log("f1 = ", f1);
+        // 输出：f1 =  true
+
+        var f2 = 0 > null;
+        console.log("f2 = ", f2);
+        // 输出：f2 =  false
+
+        // 1.3.5 Number 与 Undefined的比较
+        var g1 = 1 > undefined;
+        console.log("g1 = ", g1);
+        // 输出：g1 =  false
+
+        var g2 = 0 > undefined;
+        console.log("g2 = ", g2);
+        // 输出：g2 =  false
+
+        // --------------------------------------------------------------
+        // 2. String类型之间的关系运算
+        // 2.1 两个String类型数据比较时，会逐个字符的比较Unicode编码的大小
+        var h1 = "abcd" > "bcde";
+        console.log("h1 = ", h1);
+        // 输出：h1 =  false
+
+        var h2 = "abcd" < "bcde";
+        console.log("h2 = ", h2);
+        // 输出：h2 =  true
+
+        // 2.2 即使两个字符串都是数字字符串，也不会转换为Number型
+        var i1 = "1234" < "5";
+        console.log("i1 = ", i1);
+        // 输出：i1 =  true
+        ```
+
+## 相等运算符
+[top](#catalog)
+- `==`，判断相等；`!=`，判断不相等
+    - 数据类型的自动转换
+        - 如果数据类型不同，会自动进行类型转换，转换成相同类型，然后再比较
+        - 数据转换的目标类型不确定，但一般会转换为 Number型
+
+- `===`，全等判断；`!==`，不全等判断
+    - 和相等/不相等类似，如果两个数据的类型不同，则直接返回 false；如果数据类型相同，再进行比较
+
+- 特殊的判断
+    - <label style="color:red">Undefined衍生自Null</label>，两者的相等与全等判断如下：
+        - `Undefined == Null`，返回true
+        - `Undefined === Null`，返回false
+    - Null自身不会转换成Number，除了Null和Undefined，与其他的类型进行判断都返回 false
+    - NaN 不和任何值相等，**包括其自身**
+
+- 由于 NaN 判断的特殊性，js提供了函数：`isNaN()`来判断一个值是否为NaN
+
+- 示例
+    - 参考代码
+        - [/javascript/base/src/operator/equalOperator.html](/javascript/base/src/operator/equalOperator.html)
+    - js内容
+        ```js
+        // 1. 不同数据类型 的相等判断
+        // 1.1 String --> Number
+        var a1 = "1" == 1;
+        console.log("a1 = ", a1);
+        // 输出：a1 =  true
+
+        // 1.2 符行两边的数据同时转换为Number
+        var b1 = true == "1";
+        console.log("b1 = ", b1);
+        // 输出：b1 =  true
+
+        var b2 = true == "asfd";
+        console.log("b2 = ", b2);
+        // 输出：b2 =  false
+
+        // ------------------------------------------------
+        // 2. 全等判断
+        var d1 = "1234" === 1234;
+        console.log("d1 = ", d1);
+        // 输出：d1 =  false
+
+        var d2 = 1234 === 1234;
+        console.log("d2 = ", d2);
+        // 输出：d2 =  true
+
+        // ------------------------------------------------
+        // 3. 特殊的判断
+        // 3.1 Undefined与Null的
+        // 3.1.1 Undefined与Null的 相等比较
+        var e1 = undefined == null;
+        console.log("e1 = ", e1);
+        // 输出：e1 =  true
+
+        // 3.1.2 Undefined与Null的 全相等比较
+        var e2 = undefined == null;
+        console.log("e2 = ", e2);
+        // 输出：e2 =  false
+
+        // 3.2 Null不会转换成Number
+        var c1 = null == 0;
+        console.log("c1 = ", c1);
+        // 输出：c1 =  false
+
+        var c2 = null == null;
+        console.log("c2 = ", c2);
+        // 输出：c2 =  true
+
+        var c3 = null === null;
+        console.log("c3 = ", c3);
+        // 输出：c3 =  true
+
+        // 3.3 NaN 不和任何值相等，包括其自身
+        var f1 = NaN == "234";
+        console.log("f1 = ", f1);
+        // 输出：f1 =  false
+
+        var f2 = NaN === NaN;
+        console.log("f2 = ", f2);
+        // 输出：f2 =  false
+
+        var f3 = NaN != "234";
+        console.log("f3 = ", f3);
+        // 输出：f3 =  true
+
+        var f4 = NaN != NaN;
+        console.log("f4 = ", f4);
+        // 输出：f4 =  true
+
+        // ------------------------------------------------
+        // 4 通过 isNaN 来判断一个值是否为NaN
+        var g1 = NaN
+        var g2 = isNaN(g1);
+        console.log("g2 = ", g2);
+        // 输出：g2 =  true
+
+        var g3 = 1234;
+        var g4 = isNaN(g4);
+        console.log("g4 = ", g4);
+        // 输出：g4 =  false
+        ```
+
+## 运算符的优先级
+[top](#catalog)
+- 运算规则：
+    - 优先级越高，越优先计算
+    - 优先级相同，从左至右执行
+
+- ?????优先级表
 
 
+# JS语法
+## 基本语法规范
+[top](#catalog)
+- js中严格区分大小写
+- js的每一条语句以`;`结尾
+    - 如果不写`;`，**浏览器会自动添加**，但是**会消耗一些系统资源**
+    - 浏览器自动添加`;`时，也可能会加错位置，所以开发时一定要写`;`
+- js会忽略多个空格和换行
+- js注释
+    - 多行注释：`/* */`
+        ```js
+        /*
+            多行js注释
+        */
+        ```
+    - 单行注释：`//`
+        ```js
+        /单行js注释
+        ```
+
+- 标识符：在js中所有可以自主命名的都可以称为标识符
+    - 如：变量名、函数名、属性名
+    - 标识符的规则
+        1. 可以包含：字母、数字、`_`、`$`
+        2. 标识符不能以数字开头
+        3. 标识符不能是ES中的关键字或保留字
+        4. 标识符一般都采用驼峰命名法
+    - js底层采用Unicode编码来保存变量，所以理论上，素有utf-8中含有的内容都可以作为标识符
+
+
+
+## 变量声明
+[top](#catalog)
+- 声明一个变量，并赋值
+    ```js
+    var k = 'v';
+    ```
+- 同时声明多个变量，并赋值
+    ```js
+    var a = 1, b = 2, c = 3;
+    ```
+
+## 代码块
+[top](#catalog)
+- `{...}` 中的内容是一个代码块
+- js中的代码块只负责进行代码的分组。每次执行时，代码块中的代码全部执行
+- 代码块内部的变量，在外部是可见的
+    ```js
+    {
+        var a = 13;
+        console.log(a); // 输出：13
+        a++; // 自增
+    }
+
+    console.log(a);// 输出：14
+    ```
+
+## 流程控制语句
+[top](#catalog)
+- if else
+    ```js
+    if (表达式){
+        ...
+    }
+    
+    if (表达式){
+        ...
+    } else {
+        ...
+    }
+
+    if (表达式){
+        ...
+    } else if (表达式){
+        ...
+    } else if (表达式){
+        ...
+    } else {
+        ...
+    }
+    ```
+- switch
+    ```js
+    switch (条件表达式) {
+        case 表达式:
+            语句
+            break;
+        case 表达式:
+            语句
+            break;
+        case 表达式:
+            语句
+            break;
+        default:
+            语句   
+    }
+    ```
+
+- while
+    - `条件表达式 = true` 时，执行循环体
+    ```js
+    while (条件表达式) {
+        循环体
+        break;
+    }
+    ```
+
+- do while
+    ```js
+    do {
+        循环体
+        break;
+    } while (条件表达式)
+    ```
+
+- for
+    ```js
+    for (初始化表达式; 条件表达式; 更新表达式){
+        循环体
+    }
+    ```
+
+# 弹出框
+[top](#catalog)
+- 提示框：`alert("asdfg");`
+- 可输入提示框：`var 接受输入值的参数 = prompt("提示信息");`
+    
 # 反射
 [top](#catalog)
 - `typeof 变量`：获取变量的类型，返回一个字符串
 
 
 [top](#catalog)
+
+- 三种常用的输出语句，可以用于测试
+    ```js
+    // 向html中写入指定内容
+    document.write("zxcvb");
+    // 将日志输出到控制台
+    console.log("qwert");
+    ```
