@@ -10,7 +10,8 @@
 
     <!--添加日志-->
     <settings>
-        <setting name="logImpl" value="STDOUT_LOGGING"/>
+        <!--<setting name="logImpl" value="STDOUT_LOGGING"/>-->
+        <setting name="logImpl" value="LOG4J"/>
     </settings>
 
     <!--扫描包来添加别名-->
@@ -45,5 +46,9 @@
         <mapper class="com.ljs.learn.mybatis.mapperXml.resultmap.problem.UserMapper10"/>
         <mapper class="com.ljs.learn.mybatis.mapperXml.resultmap.newSql.UserMapper11"/>
         <mapper class="com.ljs.learn.mybatis.mapperXml.resultmap.simpleMap.UserMapper12"/>
+        <mapper class="com.ljs.learn.mybatis.mapperXml.paging.UserMapper13"/>
+
+        <!--配置使用注解开发的mapper-->
+        <mapper class="com.ljs.learn.mybatis.annotation.UserMapper14"/>
     </mappers>
 </configuration>

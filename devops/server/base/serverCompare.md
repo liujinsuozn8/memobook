@@ -12,9 +12,9 @@
 
     |服务器类别|功能|备注|
     |-|-|-|
-    |web服务器|<ul><li>提供web化服务，如：<ul><li>网站页面服务</li><li>邮件服务</li><li>网络下载服务</li></ul></li></ul>|web服务器的本质就是**响应用户需求，并提供服务**，所以很多服务器都可以称为web服务器|
-    |http服务器<br><label style="color:red">静态服务器</label>|<ul><li>把服务器上的资源通过http协议形式传输给客户端</li><li>侧重于**对静态资源传输的支持**</li></ul>|web服务器应用层通讯协议主要是：http协议，所以基本可以认为: http服务器 = web服务器 |
-    |应用服务器<br><label style="color:red">动态服务器</label>|<ul><li>可以理解为:**某个特定应用的承载容器**</li><li>可以用作：<ul><li>动态容器</li><li>应用容器</li><li>web容器</li></ul></li><li>支持动态响应<ul><li>能够根据不同的用户请求，动态的生成资源并返回，在客户端程序不同的内容</li></ul></li><li>在流量不大的时候，也可以作为http服务器，但是实际开发中很少这样使用</li></ul>|<ul><li>一般情况下，需要有运行时环境的支持，如:<ul><li>Tomcat，需要java的运行时环境</li></ul></li></ul>|
+    |web服务器|<ul><li>提供web化服务，如：<ul><li>网站页面服务</li><li>邮件服务</li><li>网络下载服务</li></ul></li></ul>|web服务器的本质就是**响应用户需求，并提供服务**，<br>所以很多服务器都可以称为web服务器|
+    |http服务器<br><label style="color:red">静态服务器</label>|<ul><li>把服务器上的资源通过http协议形式传输给客户端</li><li>侧重于**对静态资源传输的支持**</li></ul>|web服务器应用层通讯协议主要是：http协议，<br>所以基本可以认为: http服务器 = web服务器 |
+    |应用服务器<br><label style="color:red">动态服务器</label>|<ul><li>可以理解为:**某个特定应用的承载容器**</li><li>可以用作：<ul><li>动态容器</li><li>应用容器</li><li>web容器</li></ul></li><li>支持动态响应<ul><li>根据不同的请求，动态的生成资源并返回</li><li>不同的返回在客户端程序程序不同的内容</li></ul></li><li>在流量不大时，也可以作为http服务器（一般很少这样做）</li></ul>|<ul><li>一般情况下，需要有运行时环境的支持，如:<ul><li>Tomcat，需要java的运行时环境</li></ul></li></ul>|
 
 
 

@@ -1,4 +1,5 @@
 - DevOps
+    - [服务器软件的概念与比较](devops/server/base/serverCompare.md)
     - maven
         - [基本知识](devops/maven/base/base.md)
     - docker
@@ -23,6 +24,7 @@
     - java
         - [基本知识](java/base/memo.md)
         - [JDBC](java/jdbc/jdbc.md)
+        - [log4j](java/log4j/base/base.md)
         - [java8实战](java/base/inAction.md)
         - javaweb
             - [idea创建web工程](java/javaweb/createProject.md)

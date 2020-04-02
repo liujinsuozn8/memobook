@@ -30,9 +30,15 @@
     - [settings-设置](#settings-设置)
     - [生命周期和作用域](#生命周期和作用域)
     - [日志工厂](#日志工厂)
+- [分页](#分页)
+    - [通过sql做分页](#通过sql做分页)
+    - [RowBounds分页](#RowBounds分页)
+- [使用注解开发mapper](#使用注解开发mapper)
+- [Mybatis执行流程分析](#Mybatis执行流程分析)
 - [](#)
 - [](#)
 - [](#)
+
 
 # MyBatis概述
 [top](#catalog)
@@ -116,7 +122,11 @@
 # Mybatis的基本使用方式-xml方式
 ## 基本使用步骤
 [top](#catalog)
-- 参考：https://mybatis.org/mybatis-3/zh/getting-started.html
+- 参考：https://mybatis.org/mybatis-3/zh/getting-started.
+- 三要素
+    1. 接口
+    2. mapper
+    3. mybatis-config.xml
 - 使用步骤
     1. 创建maven工程
     2. 导入maven依赖
@@ -930,8 +940,8 @@
                 ...
             }
             ```
-        - 如果没有使用注解，则默认使用类名，第一个字母小写
-    3.在`mapper.xml`中使用别名
+        - **如果没有使用注解，则默认使用类名，第一个字母小写**
+    3. 在`mapper.xml`中使用别名
         ```xml
         <mapper namespace="...">
           <select id="..." parameterType="..." resultType="注解中的别名/类名">
@@ -1147,4 +1157,170 @@
         </settings>
         ```
 - 使用 `LOG4J` 日志实现
-    - 
+    1. 添加 mybatis 配置
+        ```xml
+        <settings>
+            <setting name="logImpl" value="LOG4J"/>
+        </settings>
+        ```
+    2. 导入maven依赖
+        ```xml
+        <dependency>
+        <groupId>log4j</groupId>
+        <artifactId>log4j</artifactId>
+        <version>.....</version>
+        </dependency>
+        ```
+    3. 在 resources 目录下添加 log4j的配置文件
+    4. 直接执行程序，不需要获取`logger`对象来输出日志，mybatis底层会自动处理
+
+# 分页
+## 通过sql做分页
+[top](#catalog)
+- mysql的分页sql：`select * from tabel limit offset, limit`
+- 将 offset、limit 作为查询参数，来完成分页的控制
+- 示例
+    - 接口
+        - 参考代码
+            - [/java/mylearn/mybatis/src/main/java/com/ljs/learn/mybatis/mapperXml/paging/UserMapper13.java](/java/mylearn/mybatis/src/main/java/com/ljs/learn/mybatis/mapperXml/paging/UserMapper13.java)
+        - 代码内容
+            ```java
+            public interface UserDao {
+                // 通过sql完成分页
+                List<User02> getUserByLimit(Map<String, Object> map);
+                ...
+            }
+            ```
+    - mapper配置
+        - 参考代码
+            - [/java/mylearn/mybatis/src/main/java/com/ljs/learn/mybatis/mapperXml/paging/UserMapper13.xml](/java/mylearn/mybatis/src/main/java/com/ljs/learn/mybatis/mapperXml/paging/UserMapper13.xml)
+        - 配置内容
+            ```xml
+            <select id="getUserByLimit" parameterType="map" resultMap="user02Map">
+                select * from user limit #{offset}, #{size};
+            </select>
+            ```
+    - 测试类
+        - 参考代码
+            - [/java/mylearn/mybatis/src/test/java/com/ljs/learn/mybatis/mapperXml/paging/PagingTest.java](/java/mylearn/mybatis/src/test/java/com/ljs/learn/mybatis/mapperXml/paging/PagingTest.java)
+        - 代码内容
+            ```java
+            @Test
+            public void testSqlLimit(){
+                SqlSession sqlSession = MybatisUtils.getSqlSession();
+                UserMapper13 mapper = sqlSession.getMapper(UserMapper13.class);
+                Map<String, Object> param= new HashMap<>();
+                param.put("offset", 2);
+                param.put("size", 3);
+                List<User02> users = mapper.getUserByLimit(param);
+                for (User02 user : users) {
+                    System.out.println(user);
+                }
+            }
+            ```
+          
+## RowBounds分页
+[top](#catalog)
+- 这是一种mybatis早期的功能，**现在不推荐使用**
+- 使用方法
+    1. 按照普通的检索sql来开发接口和mapper
+    2. 使用时通过分页起始位置和分页大小来创建 `RowBounds` 对象
+    3. 调用方法：`sqlSession.selectList("全类名.方法名", 参数, RowBounds对象)` 来进行分页查询
+
+- 示例
+    - 接口
+        - 参考代码
+            - [/java/mylearn/mybatis/src/main/java/com/ljs/learn/mybatis/mapperXml/paging/UserMapper13.java](/java/mylearn/mybatis/src/main/java/com/ljs/learn/mybatis/mapperXml/paging/UserMapper13.java)
+        - 代码内容
+            ```java
+            public interface UserMapper13 {
+                // 使用RowsBounds来做分页
+                List<User02> getUserByRowBounds();
+            }
+            ```
+    - mapper配置
+        - 参考代码
+            - [/java/mylearn/mybatis/src/main/java/com/ljs/learn/mybatis/mapperXml/paging/UserMapper13.xml](/java/mylearn/mybatis/src/main/java/com/ljs/learn/mybatis/mapperXml/paging/UserMapper13.xml)
+        - 配置内容
+            ```xml
+            <select id="getUserByRowBounds" resultMap="user02Map">
+                select * from user;
+            </select>
+            ```
+    - 测试类
+        - 参考代码
+            - [/java/mylearn/mybatis/src/test/java/com/ljs/learn/mybatis/mapperXml/paging/PagingTest.java](/java/mylearn/mybatis/src/test/java/com/ljs/learn/mybatis/mapperXml/paging/PagingTest.java)
+        - 测试内容
+            ```java
+            @Test
+            public void testRowBounds(){
+                SqlSession sqlSession = MybatisUtils.getSqlSession();
+                RowBounds rowBounds = new RowBounds(2, 3);
+                List<User02> users = sqlSession.selectList("com.ljs.learn.mybatis.mapperXml.paging.UserMapper13.getUserByRowBounds", null, rowBounds);
+                for (User02 user : users) {
+                    System.out.println(user);
+                }
+            }
+            ```
+
+# 使用注解开发mapper
+[top](#catalog)
+- 使用注解只能开发简单的mapper，对于**复杂的mapper还是需要使用配置文件**
+- 开发步骤
+    1. 开发接口
+    2. 在接口方法上添加注解，并在注解中添加sql
+- 注解
+    - CRUD
+        - `@Select`、`@Insert`、`@Update`、`@Delete`
+    - `@Param("属性名")`
+        - 方法存在多个参数时，所有的参数前面必须加上
+        - 引用对象不需要添加该注解
+        - 在SQL中引用的是 `@Param("属性名")` 中的属性名
+        
+- 示例
+    - 接口
+        - 参考代码
+            - [/java/mylearn/mybatis/src/main/java/com/ljs/learn/mybatis/annotation/UserMapper14.java](/java/mylearn/mybatis/src/main/java/com/ljs/learn/mybatis/annotation/UserMapper14.java)
+        - 代码内容
+            ```java
+            public interface UserMapper14 {
+                // 获取所有用户
+                @Select("select * from user")
+                List<User> getUsers();
+            
+                // 通过Id检索用户
+                @Select("select * from user where id = #{id}")
+                User getUserByID(@Param("id") int id);
+            
+                // 插入用户
+                @Insert("insert into test01.user (id, name, pwd) values (#{id}, #{name}, #{pwd});")
+                int insertUser(User user);
+            
+                // 更新用户
+                @Update("update test01.user set name=#{name} where id = #{id}")
+                int updateUser(User user);
+            
+                // 删除用户
+                @Delete("delete from test01.user where id = #{id}")
+                int deleteUserById(int id);
+            }
+            ```
+    - 测试类
+        - 参考代码
+            - [/java/mylearn/mybatis/src/test/java/com/ljs/learn/mybatis/annotation/AnnotationTest.java](/java/mylearn/mybatis/src/test/java/com/ljs/learn/mybatis/annotation/AnnotationTest.java)
+
+
+
+# Mybatis执行流程分析
+[top](#catalog)
+- Resources 获取加载全局配置文件
+- 实例化 SqlSessionFactoryBuilder 构造器
+- 解析配置文件流 XMLConfigBuilder
+- 转化为 Configuration 对象，内部有所有的配置信息
+- 实例化 SqlSessionFactory 对象
+- 创建事务管理器
+- 创建 exector 执行器
+- 创建 SqlSession
+- 实现 CRUD
+- 执行成功，提交事务；执行失败，回滚事务
+- 关闭

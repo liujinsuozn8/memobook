@@ -178,9 +178,8 @@
     # 1. 配置目的地：输出到文件--日滚动日志文件
     log4j.appender.ljs.File=org.apache.log4j.DailyRollingFileAppender
     # 设置日志文件名的路径+文件名
-    # 相对路径是当前工程，如果有父工程则相对路径是父工程
     # 如果路径不存在，会自动创建
-    log4j.appender.ljs.File.file=mylog4j/logs/ljs_log_file.log
+    log4j.appender.ljs.File.file=./logs/ljs_log_file.log
     # 设置日志文件名的时间戳
     log4j.appender.ljs.File.DatePattern=.yyy-MM-dd
     # 开启自定义日志格式
