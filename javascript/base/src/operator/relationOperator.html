@@ -1,0 +1,89 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>relation operation tests</title>
+        <script type="text/javascript">
+            // 1. Number类型与其他类型之间的关系运算
+            // 1.1 两个Number类型，直接按数值关系进行比较
+            var a1 = 3 > 2;
+            console.log("a1 = ", a1);
+            // 输出：a1 =  true
+
+            // 1.2 任何值和NaN进行比较的结果都是 false
+            var b1 = 3 > NaN;
+            console.log("b1 = ", b1);
+            // 输出：b1 =  false
+
+            var b2 = 3 < NaN;
+            console.log("b2 = ", b2);
+            // 输出：b2 =  false
+
+            // 1.3 Number类型与非Number类型比较时，
+            //     先将非Number型转换为Number型，然后再进行关系比较
+            // 1.3.1 Number 与 Boolean 进行比较
+            var c1 = 1 > true;
+            console.log("c1 = ", c1);
+            // 输出：c1 =  false
+
+            var c2 = 1 >= true;
+            console.log("c2 = ", c2);
+            // 输出：c2 =  true
+
+            // 1.3.2 Number 与 数字字符串 进行比较
+            var d1 = 2 > "1234";
+            console.log("d1 = ", d1);
+            // 输出：d1 =  false
+
+            var d2 = 2345 > "1234";
+            console.log("d2 = ", d2);
+            // 输出：d2 =  true
+
+            // 1.3.3 Number 与 非数字字符串 进行比较
+            // 非数字字符串 会隐式转换为 NaN，所以比较结果永远都是NaN
+            var e1 = 2345 < "xxxxx";
+            console.log("e1 = ", e1);
+            // 输出：e1 =  false
+
+            var e2 = 546 > "xxxxx";
+            console.log("e2 = ", e2);
+            // 输出：e2 =  false
+
+            // 1.3.4 Number 与 Null的比较
+            var f1 = 1 > null;
+            console.log("f1 = ", f1);
+            // 输出：f1 =  true
+
+            var f2 = 0 > null;
+            console.log("f2 = ", f2);
+            // 输出：f2 =  false
+
+            // 1.3.5 Number 与 Undefined的比较
+            var g1 = 1 > undefined;
+            console.log("g1 = ", g1);
+            // 输出：g1 =  false
+
+            var g2 = 0 > undefined;
+            console.log("g2 = ", g2);
+            // 输出：g2 =  false
+
+            // 2. String类型之间的关系运算
+            // 2.1 两个String类型数据比较时，会逐个字符的比较Unicode编码的大小
+            var h1 = "abcd" > "bcde";
+            console.log("h1 = ", h1);
+            // 输出：h1 =  false
+
+            var h2 = "abcd" < "bcde";
+            console.log("h2 = ", h2);
+            // 输出：h2 =  true
+
+            // 2.2 即使两个字符串都是数字字符串，也不会转换为Number型
+            var i1 = "1234" < "5";
+            console.log("i1 = ", i1);
+            // 输出：i1 =  true
+        </script>
+    </head>
+    <body>
+        
+    </body>
+</html>
