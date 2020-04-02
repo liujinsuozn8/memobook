@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>incer & decre test</title>
+        <script type="text/javascript">
+            // 1. 基本的自增/减表达式分析
+            var n1 = 10, n2 = 20;
+            var n = n1++; //n = 10, n1 = 11
+            console.log("n = ", n);// 输出：n = 10
+            console.log("n1 = ", n1);// 输出：n1 = 11
+
+            n = ++n1; // n=12, n1= 12
+            console.log("n = ", n);// 输出：n = 12
+            console.log("n1 = ", n1);// 输出：n1 = 12
+
+            n = n2--; // n = 20, n2 = 19
+            console.log("n = ", n);// 输出：n = 20
+            console.log("n2 = ", n2);// 输出：n2 = 19
+
+            n = --n2; // n = 18, n2 = 18
+            console.log("n = ", n);// 输出：n = 18
+            console.log("n2 = ", n2);// 输出：n2 = 18
+
+            // 2. 复杂自增/减运算的分析
+            var a = 20;
+            var result01 = a++ + ++a + a;
+            console.log("result01 = ", result01);// 输出：result01 =  64
+
+            var b = 10;
+            var result02 = ++b + b++ +b;
+            console.log("result02 = ", result02);// 输出：result02 =  34
+
+            var c = 5;
+            c = c++;
+            console.log("c = ", c); // 输出：c =  5
+        </script>
+    </head>
+    <body>
+        
+    </body>
+</html>
