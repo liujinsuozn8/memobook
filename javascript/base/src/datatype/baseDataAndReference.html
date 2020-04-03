@@ -1,0 +1,60 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>base data and reference data</title>
+        <script type="text/javascript">
+            // 1. 基本数据类型的存储
+            var a = 12;
+            var b = a;
+            b++;
+            console.log("a = ", a); //输出：a =  12
+            console.log("b = ", b); //输出：b =  13
+
+            // --------------------------------------------------------------
+            // 2. 引用数据类型的存储
+            // 2.1 修改数据会影响其他变量
+            var obj01 = new Object();
+            obj01.name = "name01";
+            var obj02 = obj01;
+            obj01.name = "name02";
+            console.log("obj01 = ", obj01); //输出：obj01 =  {name: "name02"}
+            console.log("obj02 = ", obj02); //输出：obj02 =  {name: "name02"}
+
+            // 2.2 通过 null 清除变量对数据的引用
+            var obj03 = new Object();
+            obj03.name = "name03";
+            var obj04 = obj03;
+            console.log("obj03 = ", obj03); //输出：obj03 =  {name: "name03"}
+            console.log("obj04 = ", obj04); //输出：obj04 =  {name: "name03"}
+
+            //  清除引用
+            obj03 = null;
+            console.log("obj03 = ", obj03); //输出：obj03 =  null
+            console.log("obj04 = ", obj04); //输出：obj04 =  {name: "name03"}
+
+            // --------------------------------------------------------------
+            // 3. 数据的比较
+            var x = 12;
+            var y = 12;
+            console.log("x == y：", x == y);
+            // x == y： true
+
+            // 创建两个相同引用的变量
+            var obj05 = new Object();
+            obj05.name = "testname";
+            var obj06 = obj05;
+            console.log("obj05 == obj06：", obj05 == obj06);
+            //输出：obj05 == obj06： true
+
+            // 创建一个数据内容和obj05相同的变量
+            var obj07 = new Object();
+            obj07.name = "testname";
+            console.log("obj05 == obj07：", obj05 == obj07);
+            //输出：obj05 == obj07： false
+        </script>
+    </head>
+    <body>
+        
+    </body>
+</html>
