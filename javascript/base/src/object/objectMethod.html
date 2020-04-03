@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>object method test</title>
+        <script type="text/javascript">
+            var a = new Object();
+
+            // 1. 将匿名函数赋值给对象属性
+            a.func01 = function(){
+                console.log("this is func01");
+            }
+
+            a.func01();
+            // 输出：this is func01
+
+            // ----------------------------------------------------
+            // 2. 将函数名赋值给对象属性
+            function funcOutter(param){
+                console.log("param = ", param);
+            }
+
+            a.func02 = funcOutter;
+            a.func02("this si func02");
+            // 输出：param =  this si func02
+
+            // ----------------------------------------------------
+            // 3. 通过对象字母量来设置方法
+            var b = {
+                func01:function(){
+                    console.log("this is func01 from obj_bb");
+                },
+
+                func02:funcOutter
+            };
+
+            b.func01();
+            // 输出：this is func01 from obj_bb
+            b.func02("this is func02 from obj_b");
+            // 输出：param =  this is func02 from obj_b
+        </script>
+    </head>
+    <body>
+    </body>
+</html>
