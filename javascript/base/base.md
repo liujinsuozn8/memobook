@@ -3,16 +3,29 @@
 ### 目录
 - [JavaSctipt简介](#JavaSctipt简介)
 - [JS的编写位置](#JS的编写位置)
+- [JS语法](#JS语法)
+    - [基本语法规范](#基本语法规范)
+    - [变量声明](#变量声明)
+    - [代码块](#代码块)
+    - [流程控制语句](#流程控制语句)
 - [数据类型](#数据类型)
     - [字面量与变量](#字面量与变量)
     - [数据类型分类](#数据类型分类)
     - [基本数据类型](#基本数据类型)
+    - [基本数据类型与引用数据类型的特性](#基本数据类型与引用数据类型的特性)
     - [类型转换](#类型转换)
         - [js中的类型转换](#js中的类型转换)
         - [其他类型转换为String](#其他类型转换为String)
         - [其他类型转换为Number](#其他类型转换为Number)
         - [其他类型转换为Boolean](#其他类型转换为Boolean)
     - [不同进制的数字](#不同进制的数字)
+- [对象](#对象)
+    - [对象的基本概念](#对象的基本概念)
+    - [对象的基本操作](#对象的基本操作)
+    - [对象字面量](#对象字面量)
+    - [对象的方法](#对象的方法)
+    - [遍历对象属性](#遍历对象属性)
+    - [构造函数](#构造函数)
 - [运算符](#运算符)
     - [二元算数运算符](#二元算数运算符)
     - [一元算数运算符](#一元算数运算符)
@@ -21,23 +34,29 @@
     - [赋值运算符](#赋值运算符)
     - [相等运算符](#相等运算符)
     - [运算符的优先级](#运算符的优先级)
-- [JS语法](#JS语法)
-    - [基本语法规范](#基本语法规范)
-    - [变量声明](#变量声明)
-    - [代码块](#代码块)
+- [函数](#函数)
+    - [函数的基本概念](#函数的基本概念)
+    - [创建与使用函数的方式](#创建与使用函数的方式)
+    - [函数的返回值](#函数的返回值)
+    - [函数的参数](#函数的参数)
+    - [匿名函数与立即执行函数iife](#匿名函数与立即执行函数iife)
+- [作用域](#作用域)
+    - [js作用域的基本概念](#js作用域的基本概念)
+    - [全局作用域](#全局作用域)
+    - [函数作用域](#函数作用域)
+- [提升](#提升)
+- [this](#this)
+- [](#)
 - [弹出框](#弹出框)
-- [](#)
-- [](#)
 - [反射](#反射)
 - [](#)
-
 
 # JavaSctipt简介
 [top](#catalog)
 - `ECMAScript`是`JavaSctipt`的标准，各个厂商提供实现，一般情况下这两个词的含义是相同的，但是JavaScript的含义更广泛
 
 - <label style="color:red">一个完整的JavaScript实现应该有三部分组成</label>
-    - <label style="color:red">ECMAScript：实现标准</label>
+    - <label style="color:red">ECMAScript：实现标准 (简称ES)</label>
     - <label style="color:red">DOM：文档对象模型</label>
     - <label style="color:red">BOM：浏览器对象模型</label>
 
@@ -100,6 +119,139 @@
             document.write("text from test.js");
             ```
 
+# JS语法
+## 基本语法规范
+[top](#catalog)
+- js中严格区分大小写
+- js的每一条语句以`;`结尾
+    - 如果不写`;`，**浏览器会自动添加**，但是**会消耗一些系统资源**
+    - 浏览器自动添加`;`时，也可能会加错位置，所以开发时一定要写`;`
+- js会忽略多个空格和换行
+- js注释
+    - 多行注释：`/* */`
+        ```js
+        /*
+            多行js注释
+        */
+        ```
+    - 单行注释：`//`
+        ```js
+        /单行js注释
+        ```
+
+- 标识符：在js中所有可以自主命名的都可以称为标识符
+    - 如：变量名、函数名、属性名
+    - 标识符的规则
+        1. 可以包含：字母、数字、`_`、`$`
+        2. 标识符不能以数字开头
+        3. 标识符不能是ES中的关键字或保留字
+        4. 标识符一般都采用驼峰命名法
+    - js底层采用Unicode编码来保存变量，所以理论上，素有utf-8中含有的内容都可以作为标识符
+
+
+
+## 变量声明
+[top](#catalog)
+- 声明一个变量，并赋值
+    ```js
+    var k = 'v';
+    ```
+- 同时声明多个变量，并赋值
+    ```js
+    var a = 1, b = 2, c = 3;
+    ```
+
+
+## 代码块
+[top](#catalog)
+- `{...}` 中的内容是一个代码块
+- js中的代码块只负责进行代码的分组。每次执行时，代码块中的代码全部执行
+- 代码块内部的变量，在外部是可见的
+    ```js
+    {
+        var a = 13;
+        console.log(a); // 输出：13
+        a++; // 自增
+    }
+
+    console.log(a);// 输出：14
+    ```
+
+## 流程控制语句
+[top](#catalog)
+- if else
+    ```js
+    if (表达式){
+        ...
+    }
+    
+    if (表达式){
+        ...
+    } else {
+        ...
+    }
+
+    if (表达式){
+        ...
+    } else if (表达式){
+        ...
+    } else if (表达式){
+        ...
+    } else {
+        ...
+    }
+    ```
+- switch
+    ```js
+    switch (条件表达式) {
+        case 表达式:
+            语句
+            break;
+        case 表达式:
+            语句
+            break;
+        case 表达式:
+            语句
+            break;
+        default:
+            语句   
+    }
+    ```
+
+- while
+    - `条件表达式 = true` 时，执行循环体
+    ```js
+    while (条件表达式) {
+        循环体
+        break;
+    }
+    ```
+
+- do while
+    ```js
+    do {
+        循环体
+        break;
+    } while (条件表达式)
+    ```
+
+- for
+    ```js
+    for (初始化表达式; 条件表达式; 更新表达式){
+        循环体
+    }
+
+    for (var i=0; i<10; i++){
+        ...
+    }
+    ```
+
+- for...in
+    ```js
+    for (var 变量 in 对象){
+        循环体;
+    }
+    ```
 
 # 数据类型
 # 字面量与变量
@@ -123,7 +275,81 @@
     |基本数据类型|Boolean||
     |基本数据类型|Null|空值|
     |基本数据类型|Undefined|未定义|
-    |引用数据类型|Object|对象|
+    |**引用数据类型**|Object|对象|
+
+## 基本数据类型与引用数据类型的特性
+[top](#catalog)
+- 特性
+    - 基本数据类型
+        - 数据存储在**栈**
+        - 赋值给其他变量时，会直接拷贝一份新的数据
+        - 变量间的修改是独立的，不会影响其他被赋值的变量
+
+    - 引用数据类型
+        - 数据存储在**堆**，引用（数据存储的地址）保存在**栈**
+        - 赋值给其他变量时，只会拷贝数据的地址
+        - 修改属性时，会影响其他的变量
+        - 通过`变量 = null;`，来清除变量对数据的引用
+            - 只会清除当前变量，不会影响其他变量
+- 数据的比较
+    - 基本数据类型：比较栈中保存的数据
+    - 引用数据类型：只比较栈中保存的地址
+
+- 示例
+    - 参考代码
+        - [/javascript/base/src/datatype/baseDataAndReference.html](/javascript/base/src/datatype/baseDataAndReference.html)
+    - js内容
+        ```js
+        // 1. 基本数据类型的存储
+        var a = 12;
+        var b = a;
+        b++;
+        console.log("a = ", a); //输出：a =  12
+        console.log("b = ", b); //输出：b =  13
+
+        // --------------------------------------------------------------
+        // 2. 引用数据类型的存储
+        // 2.1 修改数据会影响其他变量
+        var obj01 = new Object();
+        obj01.name = "name01";
+        var obj02 = obj01;
+        obj01.name = "name02";
+        console.log("obj01 = ", obj01); //输出：obj01 =  {name: "name02"}
+        console.log("obj02 = ", obj02); //输出：obj02 =  {name: "name02"}
+
+        // 2.2 通过 null 清除变量对数据的引用
+        var obj03 = new Object();
+        obj03.name = "name03";
+        var obj04 = obj03;
+        console.log("obj03 = ", obj03); //输出：obj03 =  {name: "name03"}
+        console.log("obj04 = ", obj04); //输出：obj04 =  {name: "name03"}
+
+        //  清除引用
+        obj03 = null;
+        console.log("obj03 = ", obj03); //输出：obj03 =  null
+        console.log("obj04 = ", obj04); //输出：obj04 =  {name: "name03"}
+
+        // --------------------------------------------------------------
+        // 3. 数据的比较
+        var x = 12;
+        var y = 12;
+        console.log("x == y：", x == y);
+        // x == y： true
+
+        // 创建两个相同引用的变量
+        var obj05 = new Object();
+        obj05.name = "testname";
+        var obj06 = obj05;
+        console.log("obj05 == obj06：", obj05 == obj06);
+        //输出：obj05 == obj06： true
+
+        // 创建一个数据内容和obj05相同的变量
+        var obj07 = new Object();
+        obj07.name = "testname";
+        console.log("obj05 == obj07：", obj05 == obj07);
+        //输出：obj05 == obj07： false
+        ```
+
 
 ## 基本数据类型
 [top](#catalog)
@@ -179,7 +405,7 @@
 - Null
     - Null类型的值只有一个：`null`
     - `null`表示**空对象**
-    - <label style="color:red">`typeof null`返回的是：object</label>
+    - <label style="color:red">`typeof null` 返回的是：object，并且这是一个bug</label>
 
 - Undefined
     - Undefined类型只有一个值：`undefined`
@@ -685,6 +911,248 @@
         console.log("d2 = ", d2, ", typeof d2 = ", typeof d2);
         // chrome输出: d2 =  70 , typeof d2 =  number
         ```
+
+# 对象
+## 对象的基本概念
+[top](#catalog)
+- 对象是引用类型
+- 对象是一种符合的数据类型，在对象中可以保存多个不同数据类型的属性
+- <label style="color:red">所有对象都是Object的后代</label>
+- 对象的分类
+
+    |类别|提供者|例子|
+    |-|-|-|
+    |内建对象|ES标准中定义的对象，在任何的ES实现中都可以使用|如：Math、String、Number、Boolean、Function、Object 等等|
+    |宿主对象|由js运行时环境提供的对象，主要指有浏览器提供的对象|如：BOM、DOM|
+    |自定义对象|开发者自己定义的对象||
+
+## 对象的基本操作
+[top](#catalog)
+- 创建对象
+    - 创建对象的语法: 创建一个**空的对象**
+        ```js
+        var obj = new Object();
+        ```
+    - 使用 `new` 关键字调用的函数，是构造函数 constructor
+    - 构造函数是专门用来创建对象的函数
+    - 使用 `typeof` 检查一个对象时，返回的结果是 `object`
+
+- 对象属性的操作
+    - 操作属性的两种方式
+        - `.` 操作符，如：`对象名.属性名`
+        - `[]` 操作符，如：`对象名["属性名"]`，`对象名[String型变量]`
+            - `[]` 操作符比 `.` 操作符 **更加灵活**
+            - 可以通过：`对象名[String型变量]`的方式，动态的操作不同的属性
+    - 属性的增删改查操作（以 `.` 操作符说明）
+        - 添加属性：`对象名.属性名 = 属性值`
+        - 修改属性：`对象名.属性名 = 属性值`
+        - 读取属性：`对象名.属性名`
+            - 读取属性时，如果属性不存在，会返回 `undefined`
+        - 删除属性：`delete 对象名.属性名`
+
+    - 对象属性的属性名**不强制遵守基本语法中的标识符规范**
+        - 对于一般的属性名，使用：`对象名.属性名` 的方式即可
+        - 对于特殊的属性名，如：数字、js保留字等，需要使用：`对象名["属性名"]` 的方式
+
+- 属性值可以是任意类型的对象
+
+- `in` 运算符
+    - 检查对象中是否存在某个属性。存在返回 `true`，不存在返回 `false`
+
+    - 示例：
+        ```js
+        var obj = new Object();
+        obj.name = "testName";
+        // 检查属性是否存在
+        console.log("name" in obj);
+        console.log("xxx" in obj);
+        ```
+
+- 示例
+    - 参考代码
+        - [/javascript/base/src/object/baseOperator.html](/javascript/base/src/object/baseOperator.html)
+    - js内容
+        ```js
+        // 1. 创建对象
+        var obj = new Object();
+
+        // 2. 添加对象属性
+        obj.name = "testName";
+        obj.age = 12;
+
+        // 3. 读取对象属性
+        console.log(obj);      //{name: "testName", age: 12}
+        console.log(obj.name); //testName
+        console.log(obj.xxxx); //undefined
+
+        // 4. 更新对象属性
+        obj.name = "newName";
+        console.log(obj);     //{name: "newName", age: 12}
+
+        // 5. 删除对象属性
+        delete obj.name;
+        console.log(obj);      //{age: 12}
+        console.log(obj.name); //undefined
+
+        // 6. 不遵守标识符规范的属性
+        // 添加
+        obj["1234"] = "asdf";
+        console.log(obj);      //{1234: "asdf", age: 12}
+        // 读取
+        console.log(obj["1234"]); //asdf
+
+        // 7. 通过String型变量来操作属性
+        var param = "age";
+        console.log(obj[param]); //12
+
+        // 8. in 运算符
+        console.log("age" in obj); //true
+        console.log("name" in obj); //false
+        ```
+
+## 对象字面量
+[top](#catalog)
+- 通过 `new Object()` 创建对象比较麻烦，一般都会使用对象字面量来创建对象
+- 语法
+    - 创建空对象
+        ```js
+        var 变量名 = {};
+        ```
+    - 创建对象并设置属性
+        - 属性值可以直接设置，也可以用 `""` 包裹
+            - **一般不用 `""`，但是一些特殊的名字必须加 `""`**
+        
+        ```js
+        var 变量名 = {
+            "属性名1":属性值1,
+            "属性名2":属性值2,
+            属性名3:属性值3,
+            属性名4:属性值4,
+            ...
+            "属性名n":属性值n
+        }
+        ```
+
+## 对象的方法
+[top](#catalog)
+- 可以将函数赋值给一个对象的属性，作为对象的方法
+- js中的对象方法和函数没有本质的区别，因为所有函数默认都是全局对象`window`的方法，所以都可以理解为函数，也都可以理解为方法
+    - 参考：?????
+- 赋值方式
+    - 匿名函数
+    - 函数名
+- 可以给对象的属性单独赋值函数，也可以在创建对象字面量时赋值
+
+- 示例
+    - 参考代码
+        - [/javascript/base/src/object/objectMethod.html](/javascript/base/src/object/objectMethod.html)
+
+    - js内容
+        ```js
+                    var a = new Object();
+
+            // 1. 将匿名函数赋值给对象属性
+            a.func01 = function(){
+                console.log("this is func01");
+            }
+
+            a.func01();
+            // 输出：this is func01
+
+            // 2. 将函数名赋值给对象属性
+            function funcOutter(param){
+                console.log("param = ", param);
+            }
+
+            a.func02 = funcOutter;
+            a.func02("this si func02");
+            // 输出：param =  this si func02
+
+            // 3. 通过对象字母量来设置方法
+            var b = {
+                func01:function(){
+                    console.log("this is func01 from obj_bb");
+                },
+
+                func02:funcOutter
+            };
+
+            b.func01();
+            // 输出：this is func01 from obj_bb
+            b.func02("this is func02 from obj_b");
+            // 输出：param =  this is func02 from obj_b
+        ```
+
+## 遍历对象属性
+[top](#catalog)
+- 通过`for...in`来遍历对象的每个属性
+    ```js
+    for(var 变量 in 对象){
+        循环体;
+    }
+    ```
+- 每一次循环时，会将对象中的一个属性名赋值给变量
+- 通过`对象[变量]`的方式来获取属性值
+
+- 示例
+    ```js
+    var obj = {
+        a:"aaa",
+        b:"bbbb",
+        c:"cccc",
+        d:1234,
+        e:5678
+    }
+
+    // 遍历对象的属性
+    for(var key in obj){
+        console.log("key =", key, ",value =", obj[key]);
+    }
+
+    // 输出：
+    // key = a ,value = aaa
+    // key = b ,value = bbbb
+    // key = c ,value = cccc
+    // key = d ,value = 1234
+    // key = e ,value = 5678
+    ```
+
+## 构造函数
+[top](#catalog)
+- 通过 `new Object()` 和 对象字面量创建的对象的缺点
+    - 型都是 Object，无法很好的区分每个对象是什么
+
+- 什么是构造函数
+    - 构造就是一个普通的函数，创建方式和普通函数没有区别
+    - 构造函数习惯上**首字母大写**
+    - 调用构造函数时使用`new`关键字来调用：`new 构造函数();`
+    - 如果直接调用构造函数：`构造函数()`，与调用普通函数相同
+
+- 使用同一个构造函数创建的对象，称为一类对象，也将**构造函数称为类**， 通过构造函数创建的对象称为该类的**实例**
+
+- 构造函数的执行流程
+    1. 调用构造函数时，立刻创建一个新的对象
+    2. 将新建的对象设置为函数中的this
+        - 可以通过 `this` 来设置对象的属性及方法
+    3. 执行函数体
+    4. 将对象返回
+
+- 可以通过 `变量 instanceof 类`，检查变量是不是某个类的实例
+    - 因为所有对象都是Object的后代，所以任何对象执行：`对象 instanceof Object`，返回值都是true
+
+- 构造函数会出现的问题：函数表达式不能共享对象
+    - 问题构造函数分析
+        - 有如下的构造函数
+            ```js
+            function Xxx(){
+                this.printToConsole = function(){...};
+            }
+            ```
+        - 构造函数中通过函数表达式来创建方法，但是每次执行构造函数时，都会创建一个新的函数对象，多次调用构造函数时，会创建多个不同的函数对象
+        - 实际使用时没有必要每次都创建不同的函数对象，使用通用的函数对象即可
+        - 多个函数对象会浪费内存
+    - 解决方法
+        - 在全局作用域中声明函数，然后在构造函数中引用
 
 # 运算符
 ## 二元算数运算符
@@ -1308,138 +1776,425 @@
 
 - ?????优先级表
 
-
-# JS语法
-## 基本语法规范
+# 函数
+## 函数的基本概念
 [top](#catalog)
-- js中严格区分大小写
-- js的每一条语句以`;`结尾
-    - 如果不写`;`，**浏览器会自动添加**，但是**会消耗一些系统资源**
-    - 浏览器自动添加`;`时，也可能会加错位置，所以开发时一定要写`;`
-- js会忽略多个空格和换行
-- js注释
-    - 多行注释：`/* */`
+- <label style="color:red">js的函数本身也是一个对象</label>
+- 通过函数封装一些功能，来进行代码复用
+- 对函数使用 `typeof` 关键字会返回 `function`
+
+## 创建与使用函数的方式
+[top](#catalog)
+1. 函数对象--通过构造函数
+    - 创建 与 使用 
         ```js
-        /*
-            多行js注释
-        */
+        // 创建一个空的函数对象
+        var 变量名 = new Function();
+        // 创建函数对象是，封装代码
+        var 变量名 = new Function("代码字符串");
+
+        // 执行函数
+        变量名();
         ```
-    - 单行注释：`//`
+    - 可以将需要封装的代码以**字符串**的形式传递给构造函数
+    - 这种方式在实际开发时，基本不会使用
+
+2. 函数声明
+    - 创建 与 使用
         ```js
-        /单行js注释
+        // 创建函数
+        function 函数名([参数列表]) {
+            函数体;
+        }
+
+        // 执行函数
+        var 结果变量 = 函数名([参数值类表]);
         ```
 
-- 标识符：在js中所有可以自主命名的都可以称为标识符
-    - 如：变量名、函数名、属性名
-    - 标识符的规则
-        1. 可以包含：字母、数字、`_`、`$`
-        2. 标识符不能以数字开头
-        3. 标识符不能是ES中的关键字或保留字
-        4. 标识符一般都采用驼峰命名法
-    - js底层采用Unicode编码来保存变量，所以理论上，素有utf-8中含有的内容都可以作为标识符
+3. 函数表达式
+    - 创建 与 使用
+        ```js
+        // 创建函数
+        var 函数名 = function([参数列表]){
+            函数体;
+        };
+
+        // 执行函数
+        var 结果变量 = 函数名([参数值类表]);
+        ```
+    - 函数表达式的本质是：**创建一个匿名函数，然后赋值给一个变量**
+    - 函数表达式是一个**赋值语句**，不要遗漏最后的 `;`
+
+4. 在函数内部再创建函数
+    - 因为函数本质是对象，所以在函数内部创建函数，相当于创建了一个对象
+        ```js
+        function 函数名([参数列表]){
+            // 在内部创建新的函数
+            function 函数名2([参数列表]){
+                函数体;
+            }
+
+            //可以执行内部函数
+            函数名2([参数列表]);
+
+            //或者将内部函数作为返回值返回
+            return 函数名2;
+        }
+        ```
+    - 对于多层嵌套的函数，在外部可以通过连续的`()`操作符来调用多层函数，如：
+        ```js
+        function layer01(){
+            // 第一层
+            function layer02(){
+                // 第二层
+                function layer03(param){
+                    console.log(param);
+                }
+
+                return layer03
+            }
+
+            return layer02;
+        }
+
+        // 通过连续的 () 操作符来调用多层函数
+        layer01()()("test msg"); // 输出： test msg
+        ```
 
 
-
-## 变量声明
+## 函数的返回值
 [top](#catalog)
-- 声明一个变量，并赋值
-    ```js
-    var k = 'v';
-    ```
-- 同时声明多个变量，并赋值
-    ```js
-    var a = 1, b = 2, c = 3;
-    ```
+- 函数的返回值可以是**任意类型的值，包括函数**
+- 使用 `return` 关键字来设置函数的返回值
+    - `return 返回值;`，指定函数的具体返回值
+    - `return ;`，返回 `undefined`
+    - <label style="color:red">如果不指定返回值，默认也会返回 `undefined`</label>
+- `return` 之后的语句都不会执行
+- 通过`var 结果变量 = 函数名([参数值类表]);` 的方式，来接收函数的返回值
 
-## 代码块
+- 示例
+    - 参考代码
+        - [/javascript/base/src/function/return.html](/javascript/base/src/function/return.html)
+    - js内容
+        ```js
+        // 1. 函数没有返回值
+        function test01(){
+            console.log("this is function");
+        }
+
+        var result01 = test01();
+        console.log("result01 = ", result01, ", typeof result01 = ", typeof result01);
+        // 输出：result01 =  undefined , typeof result01 =  undefined
+
+        // 2. 返回undefined
+        function test02(){
+            return ;
+        }
+
+        var result02 = test02();
+        console.log("result02 = ", result02, ", typeof result02 = ", typeof result02);
+        // 输出：result02 =  undefined , typeof result02 =  undefined
+
+        // 3. 设置返回值
+        function test03(){
+            return 10;
+        }
+
+        var result03 = test03();
+        console.log("result03 = ", result03, ", typeof result03 = ", typeof result03);
+        // 输出：result03 =  10 , typeof result03 =  number
+        ```
+
+## 函数的参数
 [top](#catalog)
-- `{...}` 中的内容是一个代码块
-- js中的代码块只负责进行代码的分组。每次执行时，代码块中的代码全部执行
-- 代码块内部的变量，在外部是可见的
-    ```js
-    {
-        var a = 13;
-        console.log(a); // 输出：13
-        a++; // 自增
-    }
+- 函数的参数可以是**任意类型的值，包括函数**
+- **定义函数参数相当于在函数作用域中声明了变量**
+- 有一些情况需要在使用参数之前，对参数的类型进行检查，以防止异常
+- 可以传递函数作为参数，并且可以在内部进行调用
 
-    console.log(a);// 输出：14
-    ```
-
-## 流程控制语句
+## 匿名函数与立即执行函数iife
 [top](#catalog)
-- if else
-    ```js
-    if (表达式){
-        ...
-    }
+- js的匿名函数不能单独存在。如果匿名函数单独存在，执行时会引发异常
+- 两种解决匿名函数异常的方式
+    1. 函数表达式：即创建匿名函数（本质上就是一个匿名对象），然后赋值给一个变量，通过变量进行函数调用，如
+        ```js
+        var func = function(){...};
+        func();
+        ```
+    2. 通过：`(匿名函数)` 的方式，表示这匿名函数的代码是一个整体
+        - 由于运行时环境中只有一个匿名的对象，没有函数名，所以这种函数的调用只能依靠**立即执行函数**
+
+- 立即执行函数 iife
+    - 使用场景： 函数只会使用一次
+    - 立即执行函数，在（匿名）函数定义完之后，立即被调用
     
-    if (表达式){
-        ...
-    } else {
-        ...
+- 示例
+    - 参考代码
+        - [/javascript/base/src/function/iief.html](/javascript/base/src/function/iief.html)
+    - js内容
+        ```js
+        // 无参的立即执行函数
+        (function(){
+            console.log("test msg");
+        })();
+
+        // 含参的立即执行函数
+        (function(a, b){
+            console.log("a = ", a);
+            console.log("b = ", b);
+        })("aaa", "bbb");
+        ```
+
+# 作用域
+## js作用域的基本概念
+[top](#catalog)
+- 作用域是指：一个变量的作用范围
+- js中的两种作用域
+    1. 全局作用域
+    2. 函数作用域
+
+## 全局作用域
+[top](#catalog)
+- 编写在 `<script>` 标签中的js代码，全都在全局作用域
+- 生命周期
+    - 页面打开时创建
+    - 页面关闭时销毁
+- 全局作用域中的变量，都是全局变量，<label style="color:red">在页面任何部分都可以访问</label>
+- 全局作用域中有一个全局对象 `window`，可以直接使用
+    - `window` 代表的是一个浏览器的窗口，**由浏览器创建**，可以直接使用
+- <label style="color:red">在全局作用域中创建的变量，都会作为 window 对象的属性</label>
+    - 声明变量时，如果不使用 `var 变量` 的方式来创建变量，相当于：`window.变量`，但是这样变量无法被 [提升](#提升)
+        ```js
+        a = 10;
+        // 相当于
+        window.a = 10;    
+        ```
+
+- <label style="color:red">在全局作用域中创建的函数，都会作为 window 对象的方法</label>
+
+- 示例
+    - 参考代码
+        - [/javascript/base/src/scope/global.html](/javascript/base/src/scope/global.html)
+
+    - js内容
+        ```js
+        var a = 111;
+        var b = 123;
+
+        function test01(){
+            console.log("this is test01");
+        }
+
+        console.log(window.a); //输出：111
+        console.log(window.b); //输出：123
+        console.log("a" in window); //输出：true
+        console.log("b" in window); //输出：true
+        console.log(window.test01()); //输出：this is test01
+        ```
+
+## 函数作用域
+[top](#catalog)
+- 生命周期
+    - 调用函数时创建
+    - 函数执行完后销毁
+    - 每次调用函数，都会创建一个新的作用域。新、旧作用域是相互独立的
+        ```js
+        function test(){...}
+        test(); // 创建作用域1
+        test(); // 创建作用域2
+        test(); // 创建作用域3
+        // 3个作用域之间相互独立
+        ```
+- 在函数作用域可以访问全局作用域的变量
+- 在函数作用域中使用变量时的搜索过程
+    1. 先在当前函数作用域中查找，如果有就直接使用
+    2. 如果当前作用域没有，到上一级作用域中查找，直到全局作用域
+    3. 如果全局作用域中也没有找到，则引发异常：`Uncaught ReferenceError: xxxx is not defined`
+- 在函数内部，如果需要直接访问全局作用域的变量，可以通过：`window.变量名` 的方式使用
+
+
+# 提升
+[top](#catalog)
+- 变量的提升
+    - 使用`var 变量` 声明变量
+        - 这种方式创建的变量会被提升到当前作用域的起始位置，执行**声明**，然后在赋值代码处执行赋值
+        - 在变量声明之前使用变量
+            - 因为变量的提升，只有声明，没有具体的值，所以只能输出undefined
+                ```js
+                console.log(param);
+                // 输出：undefined
+                var param = 1234;
+                ```
+    - 不使用 `var` 关键字声明变量
+        - 如果声明变量时，没有使用`var` 关键字，则变量不会提升
+        - <label style="color:red">所有没有使用 `var` 声明的变量，无论代码写在什么位置，都会变为全局变量，相当于做了：`window.变量 = 变量值` </label>
+        - 在变量声明之前使用变量，会引发异常
+            - 因为变量没有被提升，所以在变量声明之前使用时，会引发变量未定义的异常
+                ```js
+                // Uncaught ReferenceError: param is not defined
+                console.log(param);
+                param = 1234;
+                ```
+
+- 函数的提升
+    - 使用**函数声明** `function 函数名([参数列表]){...}`创建的函数
+        - 函数声明<label style="color:red">会提升</label>，在当前作用域的起始位置被**声明并创建**
+        - 因为存在函数提升，所以可以在函数声明之前使用函数
+        - 在声明之前使用函数
+            - 在执行前，整个函数对象被提升并创建，所以可以正常执行
+                ```js
+                func();
+                // 输出：this is func
+
+                function func (){
+                    console.log("this is func");
+                }
+                ```
+
+    - 使用**函数表达式** `var 变量名 = function([参数列表]){...}`创建的函数
+        - 函数表达式<label style="color:red">不会提升</label>，所以不要函数表达式声明之前使用函数
+        - 两个阶段
+            1. 这样创建的函数，在执行前，只有变量部分：`var 变量名` 会被提升
+            2. 执行函数表达式时，才会将函数赋值给变量
+        - 在声明之前执行函数，会引发异常
+            - func不是一个函数，因为只有变量名被提升了，函数对象还没有创建，所以执行时无法识别
+                ```js
+                // Uncaught TypeError: func is not a function
+                func();
+
+                var func = function(){
+                    console.log("this is func");
+                }
+                ```
+
+- 示例分析
+    - 全局作用域与函数作用域的变量重名
+        1. 函数作用域中不使用`var` 关键字声明变量
+            ```js
+            var a = 10;
+            function test(){
+                // 1. 因为内部的变量a没有使用 var声明，所以函数内部没有提升后的变量a
+
+                // 2. 此处使用的是全局作用域中的a，所以输出10
+                console.log("inner =", a);//输出：inner = 10
+
+                // 3. 此处使用的是全局作用域中的a，a被该成了20
+                a = 20;
+            }
+
+            test();
+
+            // 4. a在test()内部被修改了，所以输出20
+            console.log("outter = ", a); //输出：outter =  20
+            ```
+        2. 函数作用域中使用`var` 关键字声明变量
+            ```js
+            var a = 10;
+            function test(){
+                // 1. 因为内部的变量a 使用 var声明，所以此处会有提升
+                // var a;       // 被提升的 变量a
+                
+                // 2. 输出时，在当前函数作用域找到了变量a，但是变量a只有声明还没有赋值
+                // 所以输出：undefined
+                console.log("inner =", a);//输出：inner = undefined
+
+                // 3. 此处使用的是当前函数作用域内部的 变量a，所以不会影响全局作用域中的变量
+                var a = 20;
+            }
+
+            test();
+
+            // 4. 全局变量a 没有被函数修改，所以输出的仍然是a
+            console.log("outter = ", a); //输出：outter =  10
+            ```
+        3. 函数参数与全局变量重名
+            ```js
+            var a = 10;
+
+            function test(a){
+                // 2. 函数参数 相当于在函数作用域中声明的变量，所以当前作用域中有 变量a
+                // var a;           // 函数参数的效果
+
+                // 3. 调用函数时，没有传递参数，所以 a=undefined
+                console.log("inner =", a);//输出：inner = undefined
+
+                // 4. 此处修改函数作用域内部的变量a
+                a = 20;
+            }
+
+            // 1. 函数参数与全局变量重名，并且不输入任何参数
+            test();
+
+            // 5. 函数内部没有修改变量a，所以输出的仍然是 10
+            console.log("outter = ", a); //输出：outter =  10
+            ```
+
+    - 在函数内部不使用 `var` 声明变量
+        ```js
+        var a = 10;
+        function test(){
+            // 1. 函数内部没有 变量a 的声明，所以使用全局变量
+
+            // 2. 输出全局变量 a
+            console.log("inner =", a);//输出：inner = 10
+
+            // 3. 没有使用 var 声明变量，相当于 window.b = 20;
+            // 创建了全局变量 b
+            b = 20;
+        }
+
+        test();
+        
+        // 4. 在函数中创建了全局变量 b，此处输出 20
+        console.log("outter = ", b); //输出：outter =  20
+        ```
+    
+# this
+[top](#catalog)
+- 解析器在调用函数时，每次都会向函数内部传递一个隐含的参数 `this`
+- `this` 对象也被称为**函数上下文对象**
+
+- `this` 对象一般指向调用方法的那个对象
+
+    |函数/方法的调用位置|this的指向|
+    |-|-|
+    |全局作用域中调用函数|window 对象|
+    |调用对象的方法|对象本身|
+    |调用构造函数|新创建的对象（类的实例）|
+
+
+- 示例
+    ```js
+    var name = "name01";
+
+    function test(){
+        console.log(this.name);
     }
 
-    if (表达式){
-        ...
-    } else if (表达式){
-        ...
-    } else if (表达式){
-        ...
-    } else {
-        ...
+    var obj = {
+        func : test,
+        name : "name02"
     }
-    ```
-- switch
-    ```js
-    switch (条件表达式) {
-        case 表达式:
-            语句
-            break;
-        case 表达式:
-            语句
-            break;
-        case 表达式:
-            语句
-            break;
-        default:
-            语句   
-    }
-    ```
 
-- while
-    - `条件表达式 = true` 时，执行循环体
-    ```js
-    while (条件表达式) {
-        循环体
-        break;
-    }
+    test();     // 输出：name01
+    obj.func(); // 输出：name02
     ```
-
-- do while
-    ```js
-    do {
-        循环体
-        break;
-    } while (条件表达式)
-    ```
-
-- for
-    ```js
-    for (初始化表达式; 条件表达式; 更新表达式){
-        循环体
-    }
-    ```
+        
+# 
 
 # 弹出框
 [top](#catalog)
 - 提示框：`alert("asdfg");`
+    - `alert` 函数没有返回值
 - 可输入提示框：`var 接受输入值的参数 = prompt("提示信息");`
     
 # 反射
 [top](#catalog)
 - `typeof 变量`：获取变量的类型，返回一个字符串
+- `in` 运算符
+    - 检查对象中是否存在某个属性。存在返回 `true`，不存在返回 `false`
 
+- `变量 instanceof 类`，检查变量是不是类的实例
 
 [top](#catalog)
 
@@ -1450,3 +2205,13 @@
     // 将日志输出到控制台
     console.log("qwert");
     ```
+
+# 总结
+[top](#catalog)
+- 函数如果不指定返回值，默认也会返回 `undefined`
+- 在全局作用域中创建的变量都会作为：window 对象的属性
+- Undefined衍生自Null，两者的相等与全等判断如下：
+    - `Undefined == Null`，返回true
+    - `Undefined === Null`，返回false
+- 在全局作用域中创建的函数，都会作为：window对象的方法
+- 所有对象都是Object的后代，所有对象执行：`对象 instanceof Object`，返回值都是true
