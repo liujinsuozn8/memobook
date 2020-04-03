@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>global test</title>
+    <script type="text/javascript">
+        var a = 111;
+        var b = 123;
+
+        function test01(){
+            console.log("this is test01");
+        }
+
+        console.log(window.a); //输出：111
+        console.log(window.b); //输出：123
+        console.log("a" in window); //输出：true
+        console.log("b" in window); //输出：true
+        console.log(window.test01()); //输出：this is test01
+    </script>
+</head>
+<body>
+    
+</body>
+</html>
