@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>prototype test</title>
+    <script type="text/javascript">
+        function Student(){
+        }
+
+        Student.prototype.age = 16;
+        Student.prototype.printAge = function(){
+            console.log("printAge = ", this.age);
+        }
+
+        // 1. 使用原型中的属性和方法
+        var s1 = new Student();
+        s1.printAge();          //输出：printAge =  16
+        console.log(s1.age);    //输出：16
+
+        // 2. 覆盖原型中的属性
+        var s2 = new Student();
+        s2.age = 18;
+        s2.printAge();          //输出：printAge =  18
+        console.log(s2.age);    //输出：18
+
+        // 3. 使用 in 操作符检查属性是否存在
+        console.log("age" in s1);   //输出：true
+
+
+        // 4. hasOwnProperty只检查当前对象中属性是否存在，不检查原型
+        s1.name = "s1_name";
+        console.log(s1.hasOwnProperty("age")); //输出：false
+        console.log(s1.hasOwnProperty("name")); //输出：true
+
+
+        // 5. 检查 hasOwnProperty的所在位置：在原型的原型中
+        console.log(s1.__proto__.hasOwnProperty("hasOwnProperty")); //输出：false
+        console.log(s1.__proto__.__proto__.hasOwnProperty("hasOwnProperty")); //输出：true
+    </script>
+</head>
+<body>
+    
+</body>
+</html>

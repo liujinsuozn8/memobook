@@ -12,33 +12,41 @@
             obj.age = 12;
 
             // 3. 读取对象属性
-            console.log(obj);      //{name: "testName", age: 12}
-            console.log(obj.name); //testName
-            console.log(obj.xxxx); //undefined
+            console.log(obj);       //输出：{name: "testName", age: 12}
+            console.log(obj.name);  //输出：testName
+            console.log(obj.xxxx);  //输出：undefined
 
             // 4. 更新对象属性
             obj.name = "newName";
-            console.log(obj);     //{name: "newName", age: 12}
+            console.log(obj);       //输出：{name: "newName", age: 12}
 
             // 5. 删除对象属性
             delete obj.name;
-            console.log(obj);      //{age: 12}
-            console.log(obj.name); //undefined
+            console.log(obj);       //输出：{age: 12}
+            console.log(obj.name);  //输出：undefined
 
             // 6. 不遵守标识符规范的属性
             // 添加
             obj["1234"] = "asdf";
-            console.log(obj);      //{1234: "asdf", age: 12}
+            console.log(obj);       //输出：{1234: "asdf", age: 12}
             // 读取
-            console.log(obj["1234"]); //asdf
+            console.log(obj["1234"]);   //输出：asdf
 
             // 7. 通过String型变量来操作属性
             var param = "age";
-            console.log(obj[param]); //12
+            console.log(obj[param]);    //输出：12
 
             // 8. in 运算符
-            console.log("age" in obj); //true
-            console.log("name" in obj); //false
+            console.log("age" in obj);  //输出：true
+            console.log("name" in obj); //输出：false
+
+            // 9. hasOwnProperty只检查当前对象中属性是否存在，不检查原型
+            function Person(){}
+            Person.prototype.age = 16;
+            var p = new Person();
+            p.name = "test";
+            console.log(p.hasOwnProperty("age")); //输出：false
+            console.log(p.hasOwnProperty("name")); //输出：true
         </script>
     </head>
     <body> 

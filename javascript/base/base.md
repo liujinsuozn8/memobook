@@ -19,13 +19,6 @@
         - [其他类型转换为Number](#其他类型转换为Number)
         - [其他类型转换为Boolean](#其他类型转换为Boolean)
     - [不同进制的数字](#不同进制的数字)
-- [对象](#对象)
-    - [对象的基本概念](#对象的基本概念)
-    - [对象的基本操作](#对象的基本操作)
-    - [对象字面量](#对象字面量)
-    - [对象的方法](#对象的方法)
-    - [遍历对象属性](#遍历对象属性)
-    - [构造函数](#构造函数)
 - [运算符](#运算符)
     - [二元算数运算符](#二元算数运算符)
     - [一元算数运算符](#一元算数运算符)
@@ -34,6 +27,13 @@
     - [赋值运算符](#赋值运算符)
     - [相等运算符](#相等运算符)
     - [运算符的优先级](#运算符的优先级)
+- [对象](#对象)
+    - [对象的基本概念](#对象的基本概念)
+    - [对象的基本操作](#对象的基本操作)
+    - [对象字面量](#对象字面量)
+    - [对象的方法](#对象的方法)
+    - [遍历对象属性](#遍历对象属性)
+    - [构造函数](#构造函数)
 - [函数](#函数)
     - [函数的基本概念](#函数的基本概念)
     - [创建与使用函数的方式](#创建与使用函数的方式)
@@ -912,248 +912,6 @@
         // chrome输出: d2 =  70 , typeof d2 =  number
         ```
 
-# 对象
-## 对象的基本概念
-[top](#catalog)
-- 对象是引用类型
-- 对象是一种符合的数据类型，在对象中可以保存多个不同数据类型的属性
-- <label style="color:red">所有对象都是Object的后代</label>
-- 对象的分类
-
-    |类别|提供者|例子|
-    |-|-|-|
-    |内建对象|ES标准中定义的对象，在任何的ES实现中都可以使用|如：Math、String、Number、Boolean、Function、Object 等等|
-    |宿主对象|由js运行时环境提供的对象，主要指有浏览器提供的对象|如：BOM、DOM|
-    |自定义对象|开发者自己定义的对象||
-
-## 对象的基本操作
-[top](#catalog)
-- 创建对象
-    - 创建对象的语法: 创建一个**空的对象**
-        ```js
-        var obj = new Object();
-        ```
-    - 使用 `new` 关键字调用的函数，是构造函数 constructor
-    - 构造函数是专门用来创建对象的函数
-    - 使用 `typeof` 检查一个对象时，返回的结果是 `object`
-
-- 对象属性的操作
-    - 操作属性的两种方式
-        - `.` 操作符，如：`对象名.属性名`
-        - `[]` 操作符，如：`对象名["属性名"]`，`对象名[String型变量]`
-            - `[]` 操作符比 `.` 操作符 **更加灵活**
-            - 可以通过：`对象名[String型变量]`的方式，动态的操作不同的属性
-    - 属性的增删改查操作（以 `.` 操作符说明）
-        - 添加属性：`对象名.属性名 = 属性值`
-        - 修改属性：`对象名.属性名 = 属性值`
-        - 读取属性：`对象名.属性名`
-            - 读取属性时，如果属性不存在，会返回 `undefined`
-        - 删除属性：`delete 对象名.属性名`
-
-    - 对象属性的属性名**不强制遵守基本语法中的标识符规范**
-        - 对于一般的属性名，使用：`对象名.属性名` 的方式即可
-        - 对于特殊的属性名，如：数字、js保留字等，需要使用：`对象名["属性名"]` 的方式
-
-- 属性值可以是任意类型的对象
-
-- `in` 运算符
-    - 检查对象中是否存在某个属性。存在返回 `true`，不存在返回 `false`
-
-    - 示例：
-        ```js
-        var obj = new Object();
-        obj.name = "testName";
-        // 检查属性是否存在
-        console.log("name" in obj);
-        console.log("xxx" in obj);
-        ```
-
-- 示例
-    - 参考代码
-        - [/javascript/base/src/object/baseOperator.html](/javascript/base/src/object/baseOperator.html)
-    - js内容
-        ```js
-        // 1. 创建对象
-        var obj = new Object();
-
-        // 2. 添加对象属性
-        obj.name = "testName";
-        obj.age = 12;
-
-        // 3. 读取对象属性
-        console.log(obj);      //{name: "testName", age: 12}
-        console.log(obj.name); //testName
-        console.log(obj.xxxx); //undefined
-
-        // 4. 更新对象属性
-        obj.name = "newName";
-        console.log(obj);     //{name: "newName", age: 12}
-
-        // 5. 删除对象属性
-        delete obj.name;
-        console.log(obj);      //{age: 12}
-        console.log(obj.name); //undefined
-
-        // 6. 不遵守标识符规范的属性
-        // 添加
-        obj["1234"] = "asdf";
-        console.log(obj);      //{1234: "asdf", age: 12}
-        // 读取
-        console.log(obj["1234"]); //asdf
-
-        // 7. 通过String型变量来操作属性
-        var param = "age";
-        console.log(obj[param]); //12
-
-        // 8. in 运算符
-        console.log("age" in obj); //true
-        console.log("name" in obj); //false
-        ```
-
-## 对象字面量
-[top](#catalog)
-- 通过 `new Object()` 创建对象比较麻烦，一般都会使用对象字面量来创建对象
-- 语法
-    - 创建空对象
-        ```js
-        var 变量名 = {};
-        ```
-    - 创建对象并设置属性
-        - 属性值可以直接设置，也可以用 `""` 包裹
-            - **一般不用 `""`，但是一些特殊的名字必须加 `""`**
-        
-        ```js
-        var 变量名 = {
-            "属性名1":属性值1,
-            "属性名2":属性值2,
-            属性名3:属性值3,
-            属性名4:属性值4,
-            ...
-            "属性名n":属性值n
-        }
-        ```
-
-## 对象的方法
-[top](#catalog)
-- 可以将函数赋值给一个对象的属性，作为对象的方法
-- js中的对象方法和函数没有本质的区别，因为所有函数默认都是全局对象`window`的方法，所以都可以理解为函数，也都可以理解为方法
-    - 参考：?????
-- 赋值方式
-    - 匿名函数
-    - 函数名
-- 可以给对象的属性单独赋值函数，也可以在创建对象字面量时赋值
-
-- 示例
-    - 参考代码
-        - [/javascript/base/src/object/objectMethod.html](/javascript/base/src/object/objectMethod.html)
-
-    - js内容
-        ```js
-                    var a = new Object();
-
-            // 1. 将匿名函数赋值给对象属性
-            a.func01 = function(){
-                console.log("this is func01");
-            }
-
-            a.func01();
-            // 输出：this is func01
-
-            // 2. 将函数名赋值给对象属性
-            function funcOutter(param){
-                console.log("param = ", param);
-            }
-
-            a.func02 = funcOutter;
-            a.func02("this si func02");
-            // 输出：param =  this si func02
-
-            // 3. 通过对象字母量来设置方法
-            var b = {
-                func01:function(){
-                    console.log("this is func01 from obj_bb");
-                },
-
-                func02:funcOutter
-            };
-
-            b.func01();
-            // 输出：this is func01 from obj_bb
-            b.func02("this is func02 from obj_b");
-            // 输出：param =  this is func02 from obj_b
-        ```
-
-## 遍历对象属性
-[top](#catalog)
-- 通过`for...in`来遍历对象的每个属性
-    ```js
-    for(var 变量 in 对象){
-        循环体;
-    }
-    ```
-- 每一次循环时，会将对象中的一个属性名赋值给变量
-- 通过`对象[变量]`的方式来获取属性值
-
-- 示例
-    ```js
-    var obj = {
-        a:"aaa",
-        b:"bbbb",
-        c:"cccc",
-        d:1234,
-        e:5678
-    }
-
-    // 遍历对象的属性
-    for(var key in obj){
-        console.log("key =", key, ",value =", obj[key]);
-    }
-
-    // 输出：
-    // key = a ,value = aaa
-    // key = b ,value = bbbb
-    // key = c ,value = cccc
-    // key = d ,value = 1234
-    // key = e ,value = 5678
-    ```
-
-## 构造函数
-[top](#catalog)
-- 通过 `new Object()` 和 对象字面量创建的对象的缺点
-    - 型都是 Object，无法很好的区分每个对象是什么
-
-- 什么是构造函数
-    - 构造就是一个普通的函数，创建方式和普通函数没有区别
-    - 构造函数习惯上**首字母大写**
-    - 调用构造函数时使用`new`关键字来调用：`new 构造函数();`
-    - 如果直接调用构造函数：`构造函数()`，与调用普通函数相同
-
-- 使用同一个构造函数创建的对象，称为一类对象，也将**构造函数称为类**， 通过构造函数创建的对象称为该类的**实例**
-
-- 构造函数的执行流程
-    1. 调用构造函数时，立刻创建一个新的对象
-    2. 将新建的对象设置为函数中的this
-        - 可以通过 `this` 来设置对象的属性及方法
-    3. 执行函数体
-    4. 将对象返回
-
-- 可以通过 `变量 instanceof 类`，检查变量是不是某个类的实例
-    - 因为所有对象都是Object的后代，所以任何对象执行：`对象 instanceof Object`，返回值都是true
-
-- 构造函数会出现的问题：函数表达式不能共享对象
-    - 问题构造函数分析
-        - 有如下的构造函数
-            ```js
-            function Xxx(){
-                this.printToConsole = function(){...};
-            }
-            ```
-        - 构造函数中通过函数表达式来创建方法，但是每次执行构造函数时，都会创建一个新的函数对象，多次调用构造函数时，会创建多个不同的函数对象
-        - 实际使用时没有必要每次都创建不同的函数对象，使用通用的函数对象即可
-        - 多个函数对象会浪费内存
-    - 解决方法
-        - 在全局作用域中声明函数，然后在构造函数中引用
-
 # 运算符
 ## 二元算数运算符
 [top](#catalog)
@@ -1776,6 +1534,353 @@
 
 - ?????优先级表
 
+
+# 对象
+## 对象的基本概念
+[top](#catalog)
+- 对象是引用类型
+- 对象是一种符合的数据类型，在对象中可以保存多个不同数据类型的属性
+- <label style="color:red">所有对象都是Object的后代</label>
+- 对象的分类
+
+    |类别|提供者|例子|
+    |-|-|-|
+    |内建对象|ES标准中定义的对象，在任何的ES实现中都可以使用|如：Math、String、Number、Boolean、Function、Object 等等|
+    |宿主对象|由js运行时环境提供的对象，主要指有浏览器提供的对象|如：BOM、DOM|
+    |自定义对象|开发者自己定义的对象||
+
+## 对象的基本操作
+[top](#catalog)
+- 创建对象
+    - 创建对象的语法: 创建一个**空的对象**
+        ```js
+        var obj = new Object();
+        ```
+    - 使用 `new` 关键字调用的函数，是构造函数 constructor
+    - 构造函数是专门用来创建对象的函数
+    - 使用 `typeof` 检查一个对象时，返回的结果是 `object`
+
+- 对象属性的操作
+    - 操作属性的两种方式
+        - `.` 操作符，如：`对象名.属性名`
+        - `[]` 操作符，如：`对象名["属性名"]`，`对象名[String型变量]`
+            - `[]` 操作符比 `.` 操作符 **更加灵活**
+            - 可以通过：`对象名[String型变量]`的方式，动态的操作不同的属性
+    - 属性的增删改查操作（以 `.` 操作符说明）
+        - 添加属性：`对象名.属性名 = 属性值`
+        - 修改属性：`对象名.属性名 = 属性值`
+        - 读取属性：`对象名.属性名`
+            - 读取属性时，如果属性不存在，会返回 `undefined`
+        - 删除属性：`delete 对象名.属性名`
+
+    - 对象属性的属性名**不强制遵守基本语法中的标识符规范**
+        - 对于一般的属性名，使用：`对象名.属性名` 的方式即可
+        - 对于特殊的属性名，如：数字、js保留字等，需要使用：`对象名["属性名"]` 的方式
+
+- 属性值可以是任意类型的对象
+
+- `in` 运算符
+    - 检查对象中是否存在某个属性，包括[原型对象](#原型对象)。存在返回 `true`，不存在返回 `false`
+
+    - 示例：
+        ```js
+        var obj = new Object();
+        obj.name = "testName";
+        // 检查属性是否存在
+        console.log("name" in obj);
+        console.log("xxx" in obj);
+        ```
+
+- `对象.hasOwnProperty("属性名")`
+    - 只检查对象自身是否包含某个属性
+    - 参考：[原型对象](#原型对象)
+
+- 示例
+    - 参考代码
+        - [/javascript/base/src/object/baseOperator.html](/javascript/base/src/object/baseOperator.html)
+    - js内容
+        ```js
+        // 1. 创建对象
+        var obj = new Object();
+
+        // 2. 添加对象属性
+        obj.name = "testName";
+        obj.age = 12;
+
+        // 3. 读取对象属性
+        console.log(obj);       //输出：{name: "testName", age: 12}
+        console.log(obj.name);  //输出：testName
+        console.log(obj.xxxx);  //输出：undefined
+
+        // 4. 更新对象属性
+        obj.name = "newName";
+        console.log(obj);       //输出：{name: "newName", age: 12}
+
+        // 5. 删除对象属性
+        delete obj.name;
+        console.log(obj);       //输出：{age: 12}
+        console.log(obj.name);  //输出：undefined
+
+        // 6. 不遵守标识符规范的属性
+        // 添加
+        obj["1234"] = "asdf";
+        console.log(obj);       //输出：{1234: "asdf", age: 12}
+        // 读取
+        console.log(obj["1234"]);   //输出：asdf
+
+        // 7. 通过String型变量来操作属性
+        var param = "age";
+        console.log(obj[param]);    //输出：12
+
+        // 8. in 运算符
+        console.log("age" in obj);  //输出：true
+        console.log("name" in obj); //输出：false
+
+        // 9. hasOwnProperty只检查当前对象中属性是否存在，不检查原型
+        function Person(){}
+        Person.prototype.age = 16;
+        var p = new Person();
+        p.name = "test";
+        console.log(p.hasOwnProperty("age")); //输出：false
+        console.log(p.hasOwnProperty("name")); //输出：true
+        ```
+
+## 对象字面量
+[top](#catalog)
+- 通过 `new Object()` 创建对象比较麻烦，一般都会使用对象字面量来创建对象
+- 语法
+    - 创建空对象
+        ```js
+        var 变量名 = {};
+        ```
+    - 创建对象并设置属性
+        - 属性值可以直接设置，也可以用 `""` 包裹
+            - **一般不用 `""`，但是一些特殊的名字必须加 `""`**
+        
+        ```js
+        var 变量名 = {
+            "属性名1":属性值1,
+            "属性名2":属性值2,
+            属性名3:属性值3,
+            属性名4:属性值4,
+            ...
+            "属性名n":属性值n
+        }
+        ```
+
+## 对象的方法
+[top](#catalog)
+- 可以将函数赋值给一个对象的属性，作为对象的方法
+- js中的对象方法和函数没有本质的区别，因为所有函数默认都是全局对象`window`的方法，所以都可以理解为函数，也都可以理解为方法
+    - 参考：?????
+- 赋值方式
+    - 匿名函数
+    - 函数名
+- 可以给对象的属性单独赋值函数，也可以在创建对象字面量时赋值
+
+- 示例
+    - 参考代码
+        - [/javascript/base/src/object/objectMethod.html](/javascript/base/src/object/objectMethod.html)
+
+    - js内容
+        ```js
+                    var a = new Object();
+
+            // 1. 将匿名函数赋值给对象属性
+            a.func01 = function(){
+                console.log("this is func01");
+            }
+
+            a.func01();
+            // 输出：this is func01
+
+            // 2. 将函数名赋值给对象属性
+            function funcOutter(param){
+                console.log("param = ", param);
+            }
+
+            a.func02 = funcOutter;
+            a.func02("this si func02");
+            // 输出：param =  this si func02
+
+            // 3. 通过对象字母量来设置方法
+            var b = {
+                func01:function(){
+                    console.log("this is func01 from obj_bb");
+                },
+
+                func02:funcOutter
+            };
+
+            b.func01();
+            // 输出：this is func01 from obj_bb
+            b.func02("this is func02 from obj_b");
+            // 输出：param =  this is func02 from obj_b
+        ```
+
+## 遍历对象属性
+[top](#catalog)
+- 通过`for...in`来遍历对象的每个属性
+    ```js
+    for(var 变量 in 对象){
+        循环体;
+    }
+    ```
+- 每一次循环时，会将对象中的一个属性名赋值给变量
+- 通过`对象[变量]`的方式来获取属性值
+
+- 示例
+    ```js
+    var obj = {
+        a:"aaa",
+        b:"bbbb",
+        c:"cccc",
+        d:1234,
+        e:5678
+    }
+
+    // 遍历对象的属性
+    for(var key in obj){
+        console.log("key =", key, ",value =", obj[key]);
+    }
+
+    // 输出：
+    // key = a ,value = aaa
+    // key = b ,value = bbbb
+    // key = c ,value = cccc
+    // key = d ,value = 1234
+    // key = e ,value = 5678
+    ```
+
+## 构造函数
+[top](#catalog)
+- 通过 `new Object()` 和 对象字面量创建的对象的缺点
+    - 型都是 Object，无法很好的区分每个对象是什么
+
+- 什么是构造函数
+    - 构造就是一个普通的函数，创建方式和普通函数没有区别
+    - 构造函数习惯上**首字母大写**
+    - 调用构造函数时使用`new`关键字来调用：`new 构造函数();`
+    - 如果直接调用构造函数：`构造函数()`，与调用普通函数相同
+
+- 使用同一个构造函数创建的对象，称为一类对象，也将**构造函数称为类**， 通过构造函数创建的对象称为该类的**实例**
+
+- 构造函数的执行流程
+    1. 调用构造函数时，立刻创建一个新的对象
+    2. 将新建的对象设置为函数中的this
+        - 可以通过 `this` 来设置对象的属性及方法
+    3. 执行函数体
+    4. 将对象返回
+
+- 可以通过 `变量 instanceof 类`，检查变量是不是某个类的实例
+    - 因为所有对象都是Object的后代，所以任何对象执行：`对象 instanceof Object`，返回值都是true
+
+- 构造函数会出现的问题：函数表达式不能共享对象
+    - 问题构造函数分析
+        - 有如下的构造函数
+            ```js
+            function Xxx(){
+                this.printToConsole = function(){...};
+            }
+            ```
+        - 构造函数中通过函数表达式来创建方法，但是每次执行构造函数时，都会创建一个新的函数对象，多次调用构造函数时，会创建多个不同的函数对象
+        - 实际使用时没有必要每次都创建不同的函数对象，使用通用的函数对象即可
+        - 多个函数对象会浪费内存
+    - 解决方法
+        1. 一个不推荐的方法：在全局作用域中声明函数，然后在构造函数中引用
+            - 这种方法会影响全局作用域的命名空间，很不安全
+            - 多人开发时，可能会被同名函数覆盖
+        2. 
+
+## 原型对象
+[top](#catalog)
+- 原型对象：`prototype`
+- 什么是原型对象
+    - 原型对象相当于一个公共的区域，同一个类的所有实例都可以访问到这个原型对象
+    - 可以将对象中公有的内容，统一设置到原型对象中
+
+- 原型对象的存储位置
+    1. `prototype`
+        - 每个函数对象中都会有一个属性：`prototype`，来指向一个原型对象
+            - 每一个`prototype`都是独立的
+        - 类的实例中有一个隐含属性：`__proto__`，和构造函数指向相同的原型对象
+        - `prototype`只对**构造函数(类)**，及**类的实例** 有效。对于普通函数，虽然有该对象，但是没有任何用
+    2. `prototype.__proto__`
+        - 原型对象`prototype`也是对象，它的原型对象保存在内部的隐藏属性：`__proto__`中
+
+- 原型对象的存储关系
+    ```
+                            Object.原型对象
+                                      ^
+                                      │
+                                      │
+                                     ...
+                                     ...
+                                     ...
+                                 原型对象的原型
+                                      ^
+                                      │
+                                      │
+                          原型对象.__proto__
+                             ^
+                             │
+            ┌────────────────┴──────┬───────────────┐
+            │                       │               │
+    构造函数对象.prototype   对象2.__proto__   对象3.__proto__
+    ```
+┌ └ ┐ ┘ ─ │ ├ ┤ ┬ ┴ ┼
+- 原型对象的应用
+    - 将对象公有的属性和方法，统一添加到构造函数的原型对象中。这样不用为每一个对象分别添加，也不会影响到全局作用域，并且方法对象是共享的不会浪费内存
+
+- 使用对象的属性或方法时，目标的查找方法
+    1. 在当前对象自身查找，如果有则直接使用，否则执行2
+    2. 在原型对象中查找，如果有则直接使用，否则执行3
+    3. 在原型的原型中查找，直到查到Object对象的原型为止，如果有就使用，没有返回 `undefined`
+
+
+- 注意事项
+    - 使用 `in` 检查对象中是否包含某个属性时，如果对象中没有，而原型中有，也会返回true
+    - 只检查当前对象中是否包含某个属性，需要使用：`对象.hasOwnProperty("属性名")`
+
+- 示例
+    - 参考代码
+        - [/javascript/base/src/object/prototype.html](/javascript/base/src/object/prototype.html)
+
+    - js内容
+        ```js
+        function Student(){
+        }
+
+        Student.prototype.age = 16;
+        Student.prototype.printAge = function(){
+            console.log("printAge = ", this.age);
+        }
+
+        // 1. 使用原型中的属性和方法
+        var s1 = new Student();
+        s1.printAge();          //输出：printAge =  16
+        console.log(s1.age);    //输出：16
+
+        // 2. 覆盖原型中的属性
+        var s2 = new Student();
+        s2.age = 18;
+        s2.printAge();          //输出：printAge =  18
+        console.log(s2.age);    //输出：18
+
+        // 3. 使用 in 操作符检查属性是否存在
+        console.log("age" in s1);   //输出：true
+
+
+        // 4. hasOwnProperty只检查当前对象中属性是否存在，不检查原型
+        s1.name = "s1_name";
+        console.log(s1.hasOwnProperty("age")); //输出：false
+        console.log(s1.hasOwnProperty("name")); //输出：true
+
+
+        // 5. 检查 hasOwnProperty的所在位置：在原型的原型中
+        console.log(s1.__proto__.hasOwnProperty("hasOwnProperty")); //输出：false
+        console.log(s1.__proto__.__proto__.hasOwnProperty("hasOwnProperty")); //输出：true
+        ```
 # 函数
 ## 函数的基本概念
 [top](#catalog)
@@ -2195,6 +2300,9 @@
     - 检查对象中是否存在某个属性。存在返回 `true`，不存在返回 `false`
 
 - `变量 instanceof 类`，检查变量是不是类的实例
+- `对象.hasOwnProperty("属性名")`
+    - 只检查对象自身是否包含某个属性
+    - 参考：[原型对象](#原型对象)
 
 [top](#catalog)
 
