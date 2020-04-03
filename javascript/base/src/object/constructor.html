@@ -1,0 +1,46 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>obj constructor test</title>
+        <script type="text/javascript">
+            // 0. 创建对象的方法，防止构造函数重复创建函数对象
+            function printToConsole(){
+                console.log("name =",this.name);
+                console.log("age =",this.age);
+                console.log("address =",this.address);
+            }
+            // 1. 创建构造函数
+            function Person(name, age, address){
+                this.name = name;
+                this.age = age;
+                this.address = address;
+                this.printToConsole = printToConsole;
+            }
+
+            function Dog(){}
+
+            // 2. 创建类的实例
+            var d = new Dog();
+            var p = new Person("aaa", 12, "xxxxxx");
+
+            // 3. 调用对象的方法
+            p.printToConsole();
+
+            // 4. 输出对象的信息
+            console.log(p); 
+            // 输出：
+            //Person {name: "aaa", age: 12, address: "xxxxxx", printToConsole: ƒ}
+
+            console.log(typeof p);// 输出：object
+
+            // 5. 检查对象的类型
+            console.log(p instanceof Person); // 输出：true
+            console.log(d instanceof Person); // 输出：false
+
+            // 6. 检查对象是不是Object类型
+            console.log(p instanceof Object); // 输出：true
+            console.log(d instanceof Object); // 输出：true
+        </script>
+    </head>
+</html>
