@@ -28,8 +28,11 @@
     - [容器内部和宿主机之间的文件拷贝](#容器内部和宿主机之间的文件拷贝)
 - [Docker镜像原理](#docker镜像原理)
 - [Docker容器数据卷Volume](#docker容器数据卷volume)
-    - [数据卷的基本概念](#数据卷的基本概念)
-    - [数据卷的使用](#数据卷的使用)
+    - [数据卷的基本知识](#数据卷的基本知识)
+    - [数据卷的使用方法](#数据卷的使用方法)
+        - [数据卷的默认模式](#数据卷的默认模式)
+        - [BindMounting模式](#BindMounting模式)
+        - [在DockerFile添加容器卷](#在DockerFile添加容器卷)
     - [数据卷容器](#数据卷容器)
 - [DockerFile](#dockerfile)
     - [DockerFile简介](#dockerfile简介)
@@ -49,6 +52,8 @@
     - [none网络](#none网络)
     - [host网络](#host网络)
 - [总结](#总结)
+- [](#)
+- [](#)
 - [](#)
 
 # 为什么需要Docker
@@ -532,68 +537,93 @@
 
 
 # Docker容器数据卷Volume
-## 数据卷的基本概念
+## 数据卷的基本知识
 [top](#catalog)
 - 数据卷是什么
     - 卷就是目录或文件，存在于一个或多个容器中，由docker挂载到容器，但**不属于UnionFs**，所以可以绕过UnionFs提供一些用于持续存储或共享数据的特性
     - 卷的设计目的是数据持久化，完全独立于容器的生存周期，因此Docker不会在删除容器时删除其挂载的数据卷
 - 特点
     - 数据卷可以在容器之间共享或重用数据，也可以在容器和宿主机直接共享数据(可以互相拷贝)
+        - 在容器中的挂载目录下进行操作，操作结果将会同步到宿主机中
+        - 容器关闭后，如果在宿主机中修改数据卷目录，容器重新启动后，也能够同步数据卷的修改内容
     - 卷中的更改可以直接生效
     - 数据卷中的更改不会包含在镜像的更新中
     - **数据卷的生命周期一直持续到没有容器使用它为止**
 - 能做什么
     - 容器的持久化
     - 容器间继承，共享数据
-## 数据卷的使用
+
+## 数据卷的使用方法
+### 数据卷的默认模式
 [top](#catalog)
-- 容器内添加数据卷
-    - 使用命令添加
-        - 添加：`docker run -it -v /宿主机绝对路径:/容器内目录 镜像名`
-            - 如果路径不存在，docker会自动新建
-        - 查看数据卷是否挂载成功:`docker inspect 容器ID`
-            1. `Volumes`中会显示挂在结果
-                - `"容器中的挂载位置":"宿主机的目录"`
-            2. `HostConfig`查看数据是否绑定
-                - `/宿主机路径 /容器中的路径`
-            3. `VolumesRM`显示`true`,当前容器对数据卷是可读可写的
-        - 如果出现:cannot open directory .:Permission denied，可以在指令后添加参数`--privileged=true`
-    - 使用带有读写权限的命令添加
-        - 添加只读数据卷：`docker run -it -v /宿主机绝对路径:/容器内目录:ro 镜像名`
-        - 查看数据卷是否挂载成功:`docker inspect 容器ID`
-            1. `Volumes`中会显示挂在结果
-                - `"容器中的挂载位置":"宿主机的目录"`
-            2. `HostConfig`查看数据是否绑定
-                - `/宿主机路径 /容器中的路径:ro`
-            3. `VolumesRM`显示`false`,当前容器对数据卷是可读的
+- 如果在dockerFile中通过`VOLUME`指定的容器卷目录，启动容器后，将会自动创建容器卷，可以通过：`docker volume ls`来查看
+- 启动容器时指定自动生成的容器卷的名字：`docker run -v 容器卷名:容器内的容器卷路径`
+    - 默认情况下，`docker volume ls`的显示结果都是hash码，无法直接识别容器卷与某个容器之间的关系
+    - 通过`-v 容器卷名:容器内的容器卷路径`指定容器名之后，就可以通过`docker volume ls`来查看
+    - 有了容器卷名之后，即使当前容器被删除，该容器卷也可以继续被其他容器利用，只要在启动容器时指定`-v 容器卷名:容器内的容器卷路径`
 
-    - DockerFile添加
-        - 根目录下新建mydocker文件夹进入
-        - 可以在DockerFile中使用VOLUME指令给镜像添加一个或多个数据卷
-            - 出于可移植性和分析的考虑，`-v /宿主机绝对路径:/容器内目录 镜像名`的方式不能直接在DockerFile中使用
-            - 因为宿主机目录是依赖于特定主机的，并不能够保证在所有的宿主机上都存在这样的特定目录
-            ```
-            VOLUME["/数据卷绝对路径1", "/数据卷绝对路径2"......]
-            ```
-        - 构建DockerFile
-            ```
-            # volume test
-            FROM centos
-            VOLUME ["/dv1", "dv2"]
-            CMD echo "finshed......."
-            CMD /bin/bash
-            ```
-        - build后生成镜像
-        - 启动容器:`docker run`
-        - 启动后可以查询到数据卷
-        - 因为没有指定和宿主机上的那个路径绑定，docker会自动分配
-            - 通过`docker inspect`来查看`HostConfig`
+- `docker volume COMMAND` 指令
+    - 可用 COMMAND
 
-- 在容器中的挂载目录下进行操作，操作结果将会同步到宿主机中
-- 容器关闭后，如果在宿主机中修改数据卷目录，容器重新启动后，也能够同步数据卷的修改内容
+        |COMMAND|功能|备注|
+        |-|-|-|
+        |create|创建一个容器卷||
+        |inspect|显示一个或多个容器卷的详细信息|没发现特别有用的信息?????|
+        |ls|列出所有的容器卷列表|
+        |prune|删除所有未使用的本地容器卷||
+        |rm|删除一个或多个容器卷||
+
+
+### BindMounting模式
+[top](#catalog)
+- BindMounting模式 会将容器卷绑定到宿主机的绝对路径
+- 使用命令添加数据卷
+    - 添加：`docker run -it -v /宿主机绝对路径:/容器内目录 镜像名`
+        - 如果路径不存在，docker会自动新建
+    - 查看数据卷是否挂载成功:`docker inspect 容器ID`
+        1. `Volumes`中会显示挂在结果
+            - `"容器中的挂载位置":"宿主机的目录"`
+        2. `HostConfig`查看数据是否绑定
+            - `/宿主机路径 /容器中的路径`
+        3. `VolumesRM`显示`true`,当前容器对数据卷是可读可写的
+    - 如果出现:cannot open directory .:Permission denied，可以在指令后添加参数`--privileged=true`
+- 使用带有读写权限的命令添加
+    - 添加只读数据卷：`docker run -it -v /宿主机绝对路径:/容器内目录:ro 镜像名`
+    - 查看数据卷是否挂载成功:`docker inspect 容器ID`
+        1. `Volumes`中会显示挂在结果
+            - `"容器中的挂载位置":"宿主机的目录"`
+        2. `HostConfig`查看数据是否绑定
+            - `/宿主机路径 /容器中的路径:ro`
+        3. `VolumesRM`显示`false`,当前容器对数据卷是可读的
+
 - 示例
     - `docker run -it -v /mydata:/centosMydata centos`
     - `docker inspect 容器ID`
+
+### 在DockerFile添加容器卷
+[top](#catalog)
+- 根目录下新建mydocker文件夹进入
+- 可以在DockerFile中使用VOLUME指令给镜像添加一个或多个数据卷
+    - 出于可移植性和分析的考虑，`-v /宿主机绝对路径:/容器内目录 镜像名`的方式不能直接在DockerFile中使用
+    - 因为宿主机目录是依赖于特定主机的，并不能够保证在所有的宿主机上都存在这样的特定目录
+    ```
+    VOLUME["/数据卷绝对路径1", "/数据卷绝对路径2"......]
+    ```
+- 构建DockerFile
+    ```
+    # volume test
+    FROM centos
+    VOLUME ["/dv1", "dv2"]
+    CMD echo "finshed......."
+    CMD /bin/bash
+    ```
+- build后生成镜像
+- 启动容器:`docker run`
+- 启动后可以查询到数据卷
+- 因为没有指定和宿主机上的那个路径绑定，docker会自动分配
+    - 通过`docker inspect`来查看`HostConfig`
+
+
 
 ## 数据卷容器
 [top](#catalog)
@@ -711,6 +741,11 @@
 
     RUN yum -y install vim
     RUN yum -y install net-tools
+
+    # 安装并启用 epel-release 依赖
+    # yum install epel-release -y
+    # 使用 epel-release 依赖中的 YUM 命令来安装 DNF 包
+    # yum install dnf -y
 
     EXPOSE 80
     CMD /bin/bash
@@ -1137,8 +1172,8 @@
 - 默认的网桥：`bridge`即docker0，使用`docker run`启动时默认都会连接到这个网桥中
     ```
     [root@myhd001 ljs]# docker network ls
-    NETWORK ID          NAME                DRIVER              SCOPE   <--- 默认网桥
-    323ca44f570e        bridge              bridge              local
+    NETWORK ID          NAME                DRIVER              SCOPE
+    323ca44f570e        bridge              bridge              local   <--- 默认网桥
     49fd595f4549        host                host                local
     2027cfda8644        none                null                local
     ```
@@ -1314,7 +1349,7 @@
 
 ## none网络
 [top](#catalog)
-- 通过`docker run --network none`，在创建容器是将容器接入`none`网络
+- 通过`docker run --network none`，在创建容器时将容器接入`none`网络
 - 接入`none`网络的容器没有ip地址，内部也没有`eth0`，只能通过`docker exec -it 容器id/名 /bin/bash`的方式访问
 
 - 示例

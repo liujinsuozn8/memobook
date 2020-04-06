@@ -1,5 +1,7 @@
 - DevOps
     - [服务器软件的概念与比较](devops/server/base/serverCompare.md)
+    - git
+        - [基本知识](devops/git/base/base.md)
     - maven
         - [基本知识](devops/maven/base/base.md)
     - docker

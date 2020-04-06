@@ -95,6 +95,16 @@
     * 检测安装成功
         * 检测Rust：`rustc --version`
         * 检测Cargo：`cargo --version`
+
+    - 使用国内镜像
+        ```
+        [source.crates-io]
+        registry = "https://github.com/rust-lang/crates.io-index"
+        replace-with = 'ustc'
+        [source.ustc]
+        registry = "git://mirrors.ustc.edu.cn/crates.io-index"
+        ```
+
 * Rust的代码以`.rs`为文件后缀
 * Rust的代码包称为**crates**
 * 基本的编译与运行
@@ -161,6 +171,12 @@
     * `method!(...);`，如果方法名后面有`!`，表示调用宏
     * `method(...);`，表示调用方法
 
+- rust更新
+    - 参考：https://github.com/rust-lang/rustup
+    - `rustup update`，更新rust版本
+    - `rustup self update`，更新rustup的版本
+    - `rustup install nightly`，安装nightly版
+        - `rustup run nightly rustc --version`，查询版本
 # 常见编程概念
 ## 变量和可变性
 [top](#catalog)
