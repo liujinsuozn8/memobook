@@ -9,6 +9,8 @@
 - [版本控制](#版本控制)
 - [git简介](#git简介)
 - [git配置](#git配置)
+    - [git配置的基本知识](#git配置的基本知识)
+    - [git配置的crud操作](#git配置的crud操作)
 - [创建git仓库](#创建git仓库)
 - [git底层概念及底层命令](#git底层概念及底层命令)
     - [区域与对象](#区域与对象)
@@ -24,7 +26,15 @@
     - [mv指令](#mv指令)
     - [log指令](#log指令)
 - [git高层命令-分支操作](#git高层命令-分支操作)
-- [](#)
+    - [分支操作的基本知识](#分支操作的基本知识)
+    - [分支操作的指令](#分支操作的指令)
+    - [切换分支时需要注意的问题](#切换分支时需要注意的问题)
+    - [重置分支的提交信息](#重置分支的提交信息)
+- [HEAD指针](#HEAD指针)
+    - [HEAD指针的基本知识](#HEAD指针的基本知识)
+    - [分离HEAD指针](#分离HEAD指针)
+- [git存储](#git存储)
+- [git重置](#git重置)
 - [](#)
 - [总结](#总结)
 
@@ -149,7 +159,7 @@
     |-|-|-|-|
     |1|`/etc/gitconfig`|对当前系统中所有用户都适用的配置|`git config --system`|
     |2|`~/.gitconfig`|只适用于当前用户的|`git config --global`|
-    |3|`.git/config`|当前项目的git目录中的配置文件，只针对当前项目有效|`git config`|
+    |3|`.git/config`|当前项目的git目录中的配置文件，只针对当前项目有效|`git config [--local]`，默认就是`--local`|
 
 ## git配置的crud操作
 [top](#catalog)
@@ -257,6 +267,8 @@
             - `-p`，自动判断内容的类型，并显示格式友好的内容
             - `-t`，查看对象类型
 
+- **对于内容相同的文件，git只会生成一份git对象，并连接到不同的文件名，一次来降低容量**
+
 - 简单的版本控制
     1. 创建文件：`echo "SDFFE XCcvb  fbef" > my01.txt`
     2. 创建git对象/键值对：`git hash-object -w my01.txt`，生成一个键值
@@ -265,7 +277,7 @@
     5. 重新保存键值对：`git hash-object -w my01.txt`，生成一个**新的键值**
     6. 检查git对象/键值对的内容：`git cat-file -p 5的键值`
 
-- 只使用 `git hash-object` 和 `git cat-file` 做版本的问题
+- 只使用 `git hash-object` 和 `git cat-file` 做版本管理的问题
     1. 无法记住文件的每一个版本对于的SHA-1值
     2. 一个键值对只能代表一个文件的一个版本，不能代表整个项目的快照
     3. 文件名没有被保存，只保存了文件的内容
@@ -522,7 +534,7 @@
                 [root@ea284d43453a testpag]# git cat-file -p dd292f24bebab06712cd00fa7ecbcd9193ef243b
                 tree d1b27968fb9a42f524dd6889bdb405eb20c95009
                 author ljs <---------@qq.com> 1586149714 +0000
-                committer ljs <---------710419489@qq.com> 1586149714 +0000
+                committer ljs <---------@qq.com> 1586149714 +0000
 
                 first commit
                 [root@ea284d43453a testpag]# 
@@ -559,8 +571,8 @@
                 [root@ea284d43453a testpag]# git cat-file -p 6b759319f2e2ba73ddb174474c96cbf1339c9d91
                 tree d5f79d82cf046ee2a06095ad28f041ef6ec057b7
                 parent 77253a978b58f132feeb5318b134e9eae950cdbf
-                author ljs <710419489@qq.com> 1586150457 +0000
-                committer ljs <710419489@qq.com> 1586150457 +0000
+                author ljs <---------@qq.com> 1586150457 +0000
+                committer ljs <--------@qq.com> 1586150457 +0000
 
                 third commit
                 [root@ea284d43453a testpag]# 
@@ -705,6 +717,9 @@
             - 如果不使用 `-m` 参数，将会自动启动vi编辑器
         - `-a`，跳过暂存区，直接提交所有已跟踪已修改的文件
             - 使用`-a`之后，在已跟踪的文件中搜索所有已更改的文件，自动进行暂存并提交
+        - `--amend`
+            - 如果没有任何文件修改，可以修改最后一次的提交信息
+            - 如果有文件修改，会重新提交文件，参考：[git重置](#git重置)
 - commit指令执行后，数据在git区域中的流动
     - 表面：暂存区-->版本区
     - 底层：
@@ -762,50 +777,51 @@
 ## log指令
 [top](#catalog)
 - 用途：显示提交历史记录
-- 指令：`git log`，指令默认输出git对象中的相关内容
-- 通过下面两种参数来使每次修改的内容输出到一行
-    - `git log --pretty=oneline`
-    - `git log --oneline`，输出时提交对象的 SHA-1 值之后显示前几位
-- 查看详细的分支历史
-    - `git log --oneline --decorate --graph --all`
+- 指令：`git log [option] [分支名]`，查看有效的历史记录
+    - 如果不指定分支名，则默认显示的是当前分支的历史记录
+    - 选项说明
+        - `git log -nX`：显示最近X次的记录
+    - 每次修改的内容输出到一行
+        - `git log --pretty=oneline`
+        - `git log --oneline`，输出时提交对象的 SHA-1 值之后显示前几位
+    - 查看详细的图形化分支历史
+        - `git log --oneline --decorate --graph --all`
+- 指令：`git reflog`，查看所有分支历史，包括删除的分支
 
 # git高层命令-分支操作
-## 分支操作的概述
+## 分支操作的基本知识
 [top](#catalog)
 - git的分支模型极其高效和轻量，切换速度快
 - 分支的本质
     - git分支的本质：**指向提交对象的可移动指针**
     - 创建分支的本质：创建一个可移动的指针，并指向某一个提交对象
     - 切换分支的本质：让 `HEAD` 切换为不同的指针，来指向不同的提交对象
-        - 类似与指向指针的指针
+        - 类似于指向指针的指针
     - 分支提交的本质：每次有新的提交时，`HEAD`与分支一起向前移动
+    - 每次提交都是一个分支，区别就是有没有指针指向
 - 涉及分支操作的两个文件/目录
     - `refs`，存储指向数据的提交对象指针（分支）
-        - 每个分支一个文件文件，文件中保存的是版本区中git对象的 SHA-1 值
+        - 每个分支对应一个文件文件，文件中保存的是版本区中**提交对象的 SHA-1 值**
     - `HEAD`，表示当前正在使用的分支
-        - 该文件中保存的是`refs`目录下的一个地址
+        - 该文件中保存的是`refs`目录下的一个文件地址
             - 如:当前指向`master`分支，文件中的内容是
                 ```
                 [root@ea284d43453a testpag02]# cat ./.git/HEAD
                 ref: refs/heads/master
                 [root@ea284d43453a testpag02]# 
                 ```
-        - 如`git log --oneline`指令结果中会出现`HEAD`指向的内容
-            ```
-            [root@ea284d43453a testpag02]# git log --oneline
-            f73fc14 (HEAD -> master) update  <--- 表示当前指向 master 分支
-            6c107f4 rename
-            bec001a file01.txt second update
-            [root@ea284d43453a testpag02]# 
-            ```
 
+## 分支操作的指令
+[top](#catalog)
 - 显示分支列表：`git branch`
 - 创建分支：
     - `git branch 分支名`
         - 创建一个分支，并指向当前版本的提交对象
         - 该指令只负责创建分支，但是不会切换到新分支
     - `git branch 分支名 提交对象的SHA-1值`
-        - 创建一个分支，并指向指定的提交对象，即切换到指定的版本
+        - 创建一个分支，并指向指定的提交对象
+    - `git checkout -b 分支名`
+        - 创建一个新的分支，并切换到该分支
 - 切换分支：`git checkout 分支名`
 - 删除分支：
     - `git branch -d 分支名`
@@ -815,6 +831,354 @@
         - 如果分支没有合并到master，需要使用该指令来强制删除分支
 - 查看所有分支的最后一次提交：`git branch -v`
 - 查看详细的分支历史：`git log --oneline --decorate --graph --all`
+- 合并分支：`git merge 被合并的分支名`
+    - 合并分支之前，需要切换到需要合并的分支，然后合并被合并的分支
+    - 如果合并时产生了冲突(conflect)，需要手动修改冲突文件，并提交修改
+
+
+## 切换分支时需要注意的问题
+[top](#catalog)
+- 切换分支时，会修改3个地方
+    1. HEAD
+    2. 暂存区
+    3. 工作目录
+- 如果当前分支上存在未提交的内容，包括：未暂存的修改、已暂存但未提交的内容，<label style="color:red">切换分支时，会将这些部分带到其他分支，污染其他分支的内容。</label>所以切换之前，最好进行提交，保证工作区、暂存区是干净的
+- 如果git不能正常完成分支切换的任务，它将禁止切换分支
+    - 如：当前分支中又一个其他分支中没有的文件，做了一些修改，处于已修改、未暂存的状态，此时切换分支，会引发异常，无法切换。这种情况必须**提交或者存储**
+        ```
+        [root@ea284d43453a testpag02]# git checkout b05
+        error: Your local changes to the following files would be overwritten by checkout:
+                other.txt
+        Please commit your changes or stash them before you switch branches.
+        Aborting
+        [root@ea284d43453a testpag02]#
+        ```
+
+## 重置分支的提交信息
+[top](#catalog)
+- 重置最新提交的信息
+    - `git commit -amend`
+    - 修改的本质
+        - 创建一个新的提交对象，并指向同一个树对象，并使用新的message
+        - 在使用`git log`查看历史的时候，旧的提交不会显示
+- 重置旧版本的提交信息
+    - 重置方法
+        1. 执行指令：`git rebase -i 重置分支的父提交对象的SHA-1`
+        2. 在设置应用策略的vim界面中，将重置分支的策略设置为`reword`
+    - 修改的本质
+        - 以**重置分支的父提交对象**为基准，对提交链上后续的所有提交重新应用提交策略，并重新生成新的提交对象。
+        - 新旧提交对象指向相同的树对象，并根据提交链，调整父提交对象
+        - 在使用`git log`查看历史的时候，旧的提交不会显示
+
+- <label style="color:red">重置分支提交信息的功能最好只在自己的开发分支上使用，如果在master分支上使用，会影响项目中的其他成员</label>
+
+- 示例
+    - 重置最新提交的信息
+        1. 将最新版本的提交信息从：file01.txt 改为 file01.txt v5
+            ```
+            [root@ea284d43453a testpag02]# git log --oneline --graph
+            * 35e42fc (HEAD -> master) file01.txt
+            * 635a71b file01 v4
+            * 5eec1cc file01 v3
+            * 1f5df85 file01 v2
+            * 0f15db3 file01 v1
+            [root@ea284d43453a testpag02]# 
+            ```
+        2. 重置信息：
+            ```
+            [root@ea284d43453a testpag02]# git commit --amend
+            [master 25dc53b] file01.txt v5
+            Date: Tue Apr 7 22:00:11 2020 +0000
+            1 file changed, 1 insertion(+)
+            ```
+        3. 在vim界面重新输入提交信息
+            ```
+            file01.txt v5
+
+            # Please enter the commit message for your changes. Lines starting
+            # with '#' will be ignored, and an empty message aborts the commit.
+            #
+            # Date:      Tue Apr 7 22:00:11 2020 +0000
+            #
+            # On branch master
+            # Changes to be committed:
+            #       modified:   file01.txt
+            #
+            ```
+        4. 重新查看提交历史。虽然成功修改了提交信息，但是提交对象从 【35e42fc】变为 【25dc53b】
+            ```
+            [root@ea284d43453a testpag02]# git log --oneline --graph
+            * 25dc53b (HEAD -> master) file01.txt v5
+            * 635a71b file01 v4
+            * 5eec1cc file01 v3
+            * 1f5df85 file01 v2
+            * 0f15db3 file01 v1
+            [root@ea284d43453a testpag02]# 
+            ```
+        5. 查看所有的提交历史，两次提交【35e42fc】、【25dc53b】都存在
+            ```
+            [root@ea284d43453a testpag02]# git reflog
+            25dc53b (HEAD -> master) HEAD@{0}: commit (amend): file01.txt v5
+            35e42fc HEAD@{1}: commit: file01.txt
+            635a71b HEAD@{2}: commit: file01 v4
+            5eec1cc HEAD@{3}: checkout: moving from 9f3d95744246ae72822464df0e12380efb5de5f8 to master
+            9f3d957 (tempb) HEAD@{4}: commit: file01 v2.2
+            1f5df85 HEAD@{5}: checkout: moving from master to 1f5df85
+            5eec1cc HEAD@{6}: commit: file01 v3
+            1f5df85 HEAD@{7}: commit: file01 v2
+            0f15db3 HEAD@{8}: commit (initial): file01 v1
+            [root@ea284d43453a testpag02]
+            ```
+        6. 分别查看两个提交对象【35e42fc】、【25dc53b】的内容。**两个提交对象指向同一个树对象，只是提交信息不同**
+            ```
+            [root@ea284d43453a testpag02]# git cat-file -p 35e42fc
+            tree 9b0010d8bd0dc6885383f38534f9cf5ab5f7b776
+            parent 635a71b92d4c76b678b7505944512c29a0a1c7cc
+            author ljs <---------@qq.com> 1586296811 +0000
+            committer ljs <---------@@qq.com> 1586296811 +0000
+
+            file01.txt
+            [root@ea284d43453a testpag02]# git cat-file -p 25dc53b
+            tree 9b0010d8bd0dc6885383f38534f9cf5ab5f7b776
+            parent 635a71b92d4c76b678b7505944512c29a0a1c7cc
+            author ljs <---------@@qq.com> 1586296811 +0000
+            committer ljs <---------@@qq.com> 1586296989 +0000
+
+            file01.txt v5
+            [root@ea284d43453a testpag02]# 
+            ```
+    - 重置旧版本的提交信息
+        1. 查看当前分支的提交历史
+            ```
+            root@ea284d43453a testpag02]# git log --oneline --graph
+            * 25dc53b (HEAD -> master) file01.txt v5
+            * 635a71b file01 v4
+            * 5eec1cc file01 v3
+            * 1f5df85 file01 v2
+            * 0f15db3 file01 v1
+            [root@ea284d43453a testpag02]#
+            ```
+
+        2. 修改 1f5df85 的提交信息：`git rebase -i 0f15db3`，需要指定该版本的父提交对象：`0f15db3`
+        
+        3. 进入rebase界面，修改各分支的策略。将 1f5df85 的策略修改为：`reword`，使用提交对象同时修改提交信息
+            ```
+            reword 1f5df85 file01 v2
+            pick 5eec1cc file01 v3
+            pick 635a71b file01 v4
+            pick 25dc53b file01.txt v5
+            ```
+        4. 调入提交对象的界面，重新编辑提交信息
+        5. 修改成功
+            ```
+            [root@ea284d43453a testpag02]# git rebase -i 0f15db3
+            [detached HEAD d291ed1] file01 v2 rebasee log
+            Date: Tue Apr 7 15:50:09 2020 +0000
+            1 file changed, 1 insertion(+)
+            Successfully rebased and updated refs/heads/master.
+            [root@ea284d43453a testpag02]# 
+            ```
+        6. 查看提交历史
+            ```
+            [root@ea284d43453a testpag02]# git log --oneline --graph
+            * 8433fc8 (HEAD -> master) file01.txt v5
+            * cfb9745 file01 v4
+            * cf2700c file01 v3
+            * d291ed1 file01 v2 rebasee log
+            * 0f15db3 file01 v1
+            [root@ea284d43453a testpag02]# 
+            ```
+        7. 查看所有的提交历史。该指令对这一条提交链上的每一次提交都应用对应的修改策略，并生成一个新的提交对象
+            ```
+            [root@ea284d43453a testpag02]# git reflog
+            8433fc8 (HEAD -> master) HEAD@{0}: rebase (finish): returning to refs/heads/master
+            8433fc8 (HEAD -> master) HEAD@{1}: rebase (pick): file01.txt v5
+            cfb9745 HEAD@{2}: rebase (pick): file01 v4
+            cf2700c HEAD@{3}: rebase (pick): file01 v3
+            d291ed1 HEAD@{4}: rebase (reword): file01 v2 rebasee log
+            1f5df85 HEAD@{5}: rebase: fast-forward
+            0f15db3 HEAD@{6}: rebase (start): checkout 0f15db3
+            ```
+        8. 查看v2的新旧两个提交对象的内容。两个提交对象指向的同一个树对象
+            ```
+            [root@ea284d43453a testpag02]# git cat-file -p 1f5df85
+            tree ea26379f38ae550ee75f04e8d3b843e4b5027036
+            parent 0f15db301efe3fbcff3995dd2397ef5e5822233c
+            author ljs <710419489@qq.com> 1586274609 +0000
+            committer ljs <710419489@qq.com> 1586274609 +0000
+
+            file01 v2
+            [root@ea284d43453a testpag02]# git cat-file -p d291ed1
+            tree ea26379f38ae550ee75f04e8d3b843e4b5027036
+            parent 0f15db301efe3fbcff3995dd2397ef5e5822233c
+            author ljs <710419489@qq.com> 1586274609 +0000
+            committer ljs <710419489@qq.com> 1586298461 +0000
+
+            file01 v2 rebasee log
+            [root@ea284d43453a testpag02]# 
+            ```
+
+
+# HEAD指针
+## HEAD指针的基本知识
+[top](#catalog)
+- HEAD指针的两种状态
+    - 默认状态：指向一个branch
+    - 分离头指针状态：直接指向一个提交对象
+
+- HEAD指针的本质
+    - `.git/HEAD` 文件
+    - 文件中保存的是`refs`目录下的一个文件地址，即指向一个branch
+
+- HEAD 的指代作用
+    - `HEAD`，表示当前的branch，并指代某个提交对象(SHA-1)
+    - `HEAD~n`、`HEAD^n`，表示但前HEAD的前第n个父提交对象
+
+## 分离HEAD指针
+[top](#catalog)
+- 分离HEAD指针：`git checkout 提交对象的SHA-1值`
+    - 只是单独的切换到了某一个提交对象，即HEAD指针指向该对象，但是没有具体的branch
+    - 可以在此基础上继续开发，继续提交
+    - **从当前的提交对象切换到其他branch时，之前的修改内容、提交内容可能会被git视作垃圾**
+- 示例
+    1. 创建文件 file01.txt的三个版本
+        - `echo "file01 v1" > file01.txt`，`git commit -m 'file01 v1'`
+        - `echo "file01 v2" >> file01.txt`，`git commit -m 'file01 v2'`
+        - `echo "file01 v3" >> file01.txt`，`git commit -m "file01 v3"`
+    2. 检查提交历史
+        ```
+        [root@ea284d43453a testpag02]# git hpic      
+        * 5eec1cc (HEAD -> master) file01 v3
+        * 1f5df85 file01 v2
+        * 0f15db3 file01 v1
+        [root@ea284d43453a testpag02]# 
+        ```
+    3. 直接checkout第二个提交对象，制造HEAD指针分离
+        ```
+        [root@ea284d43453a testpag02]# git checkout 1f5df85
+        Note: switching to '1f5df85'.
+
+        You are in 'detached HEAD' state. You can look around, make experimental
+        changes and commit them, and you can discard any commits you make in this
+        state without impacting any branches by switching back to a branch.
+
+        If you want to create a new branch to retain commits you create, you may
+        do so (now or later) by using -c with the switch command. Example:
+
+        git switch -c <new-branch-name>
+
+        Or undo this operation with:
+
+        git switch -
+
+        Turn off this advice by setting config variable advice.detachedHead to false
+
+        HEAD is now at 1f5df85 file01 v2
+        [root@ea284d43453a testpag02]# 
+        ```
+
+    4. 查看所有的提交历史，HEAD指针只是指向了一个具体的提交对象，但是没有指向一个branch
+        ```
+        [root@ea284d43453a testpag02]# git hpic
+        * 5eec1cc (master) file01 v3
+        * 1f5df85 (HEAD) file01 v2          <----没有指向一个branch
+        * 0f15db3 file01 v1
+        [root@ea284d43453a testpag02]# 
+        ```
+    5. 在该版本上修改文件并提交
+        - `echo "file v2.2" >> file01.txt`
+        - `git commit -m "file01 v2.2"`
+    6. 查看所有的分支历史，新创建了提交对象：9f3d957。可以正常提交，但是没有具体的branch
+        ```
+        [root@ea284d43453a testpag02]# git hpic
+        * 9f3d957 (HEAD) file01 v2.2
+        | * 5eec1cc (master) file01 v3
+        |/  
+        * 1f5df85 file01 v2
+        * 0f15db3 file01 v1
+        [root@ea284d43453a testpag02]#
+        ```
+    7. 尝试切换到master分支，会产生一个警告，并提示：如果要通过穿件新的branch来保存提交，可以使用：`git branch <new-branch-name> 9f3d957`，将提交对象与某个branch相关联
+        ```
+        [root@ea284d43453a testpag02]# git checkout master
+        Warning: you are leaving 1 commit behind, not connected to
+        any of your branches:
+
+        9f3d957 file01 v2.2
+
+        If you want to keep it by creating a new branch, this may be a good time
+        to do so with:
+
+        git branch <new-branch-name> 9f3d957
+
+        Switched to branch 'master'
+        [root@ea284d43453a testpag02]# 
+        ```
+    8. 查看所有的提交历史，分离头指针时产生的提交都没有了
+        ```
+        [root@ea284d43453a testpag02]# git hpic
+        * 5eec1cc (HEAD -> master) file01 v3
+        * 1f5df85 file01 v2
+        * 0f15db3 file01 v1
+        [root@ea284d43453a testpag02]# 
+        ```
+    9. 为分离头指针时产生的提交创建一个branch，并重新查看提交历史
+        ```
+        [root@ea284d43453a testpag02]# git branch tempb 9f3d957
+        [root@ea284d43453a testpag02]# git hpic
+        * 9f3d957 (tempb) file01 v2.2
+        | * 5eec1cc (HEAD -> master) file01 v3
+        |/  
+        * 1f5df85 file01 v2
+        * 0f15db3 file01 v1
+        [root@ea284d43453a testpag02]# 
+        ```
+
+        
+
+# git存储
+[top](#catalog)
+- 通过git存储，可以将部分修改保存到栈中
+- `git stash list`，列出当前所有的存储列表
+- `git stash`，将未提交的修改保存到一个栈中
+    - 如果当前分支没有任何修改，则不会产生存储
+- `git stash apply [stash@{index}]`，对当前分支应用git存储
+    - **应用的分支，可以是任何分支，不只限于创建该存储的分支，所以应用git存储前，需要确认分支是否正确**
+    - 如果没有指定应用哪个存储，则默认使用最近的存储
+- `git stash drop stash@{index}`，通过存储的名字来删除某个存储
+- `git stash pop`，应用最新的存储，然后将该存储删除
+    - 该指令相当于先执行：`git stash apply`，再执行：`git stash drop`
+
+
+# git重置
+[top](#catalog)
+- git重置的范围
+    1. 工作区-->当前的暂存区
+        - 撤回当前在工作目录中作出的修改
+    2. 暂存区-->版本区
+        - 重置暂存
+    3. 版本区的版本A-->版本区的版本B
+        - 重置提交内容
+
+- 工作区-->当前的暂存区：
+    - `git restore 文件名`
+    - 旧命令：`git checkout -- 文件名`
+- 暂存区-->版本区
+    - `git reset HEAD 文件名`
+
+- 版本区的版本A-->版本区的版本B
+    - 需要执行两条指令
+        ```
+        git add 文件名
+        git commit -amend
+        ```
+    - 通过add指令将文件更新到暂存区
+    - 通过`git commit --amend`，重新覆盖提交对象
+    - 如果没有任何文件修改，可以通过 `git commit --amend` 修改最后一次的提交信息
+
+- reset
+    - git reset --soft HEAD~, git commit --amend
+        - reset 会移动HEAD指向的分支
 
 # 总结
 [top](#catalog)
@@ -838,7 +1202,7 @@
         |-|-|-|-|
         |1|`/etc/gitconfig`|对当前系统中所有用户都适用的配置|`git config --system`|
         |2|`~/.gitconfig`|只适用于当前用户的|`git config --global`|
-        |3|`.git/config`|当前项目的git目录中的配置文件，只针对当前项目有效|`git config`|
+        |3|`.git/config`|当前项目的git目录中的配置文件，只针对当前项目有效|`git config [--local]`，默认就是`--local`|
 
     - `git config [--system/global] --list`，查看所有配置内容
     - `git config [--system/global] -l`，查看所有配置内容
@@ -877,6 +1241,7 @@
         - `git log --pretty=oneline`
         - `git log --oneline`，输出时提交对象的 SHA-1 值之后显示前几位
         - `git log --oneline --decorate --graph --all`，查看详细的分支历史
+    - `git reflog`，查看所有分支历史，包括删除的分支
 
 - 分支命令
     - `git branch`，显示分支列表
@@ -887,3 +1252,15 @@
     - `git branch -D 分支名`，强制删除分支
     - `git branch -v`，查看所有分支的最后一次提交
     - `git log --oneline --decorate --graph --all`，查看详细的分支历史
+    - `git merge 被合并的分支名`，合并分支
+
+- git存储
+    - `git stash list`，列出当前所有的存储列表
+    - `git stash`，将未提交的修改保存到一个栈中
+    - `git stash apply [stash@{index}]`，对当前分支应用git存储，默认应用最近的存储
+    - `git stash drop stash@{index}`，通过存储的名字来删除某个存储
+    - `git stash pop`，应用最新的存储，然后将该存储删除
+
+- 重置提交信息
+    - `git commit -amend`，修改最近一次提交
+    - `git rebase -i 重置分支的父提交对象的SHA-1`，重置旧版本的提交信息
