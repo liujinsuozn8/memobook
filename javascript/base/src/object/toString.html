@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>toString test</title>
+        <script type="text/javascript">
+            function Person(name, age,gender){
+                this.name = name;
+                this.age = age;
+                this.gender = gender;
+            }
+
+            Person.prototype.toString = function(){
+                return "name = " + this.name + ", age = " + String(this.age) +
+                        ", gender = " + this.gender;
+            }
+
+            var p = new Person("aaa", 16, false);
+
+            // document.write(p);
+            console.log(p);
+            // 输出：name = aaa, age = 16, gender = false
+        </script>
+    </head>
+    <body>
+        
+    </body>
+</html>
