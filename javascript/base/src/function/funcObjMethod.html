@@ -1,0 +1,44 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>function object method test</title>
+        <script type="text/javascript">
+            // 1. 无参函数
+            function test01(){
+                console.log("func test01，this =", this);
+            }
+
+            // 1.1 空参调用
+            test01();
+            // 输出：func test01，this = Window 
+            test01.call();
+            // 输出：func test01，this = Window 
+            test01.apply();
+            // 输出：func test01，this = Window 
+
+            // 1.2 指定一个对象来调用
+            var obj01 = {};
+            test01.call(obj01);
+            // 输出：func test01，this = {}
+            test01.apply(obj01);
+            // 输出：func test01，this = {}
+
+            // 2. 有参函数
+            function test02(a, b){
+                console.log("this.name =", this.name, ", a =", a, ", b=", b);
+                
+            }
+
+            var obj0201 = {name:"obj0201_name"};
+            var obj0201 = {name:"obj0201_name"};
+            test02.call(obj0201, 11, 12);
+            // 输出：this.name = obj0201_name , a = 11 , b= 12
+            test02.apply(obj0201, [11, 12]);
+            // 输出：this.name = obj0201_name , a = 11 , b= 12
+        </script>
+    </head>
+    <body>
+        
+    </body>
+</html>
