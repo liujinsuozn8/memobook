@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>date test</title>
+    <script type="text/javascript">
+        // 1. 创建Date对象
+        var a01 = new Date();
+        console.log(a01);
+
+        var a02 = new Date("11/22/2008 12:34:56");
+        console.log(a02);
+        // 输出：Sat Nov 22 2008 12:34:56 GMT+0800
+
+        // 2. Date对象的方法
+        var b01 = new Date("11/22/2008 12:34:56");
+
+        // 2.1 获取几号
+        console.log("b01.getDate() =", b01.getDate());
+        // 输出：b01.getDate() = 22
+
+        // 2.2 周几
+        console.log("b01.getDay() =", b01.getDay());
+        // 输出：b01.getDay() = 6
+
+        //2.3 月份
+        console.log("b01.getMonth() =", b01.getMonth());
+        // 输出：b01.getMonth() = 10
+
+        // 2.4 年份
+        console.log("b01.getFullYear() =", b01.getFullYear());
+        // 输出：b01.getFullYear() = 2008
+
+        // 2.5获取当前时间的时间戳
+        console.log(Date.now());
+    </script>
+</head>
+<body>
+    
+</body>
+</html>
