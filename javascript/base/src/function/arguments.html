@@ -1,0 +1,60 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>argumetns test</title>
+        <script type="text/javascript">
+            // 1. 输出函数的arguments对象
+            function test01(){
+                console.log(arguments);
+            }
+
+            test01();
+            // 输出：Arguments [callee: ƒ, Symbol(Symbol.iterator): ƒ]
+
+            // 2. 测试arguments对象的类型
+            function test0201(){
+                console.log(Array.isArray(arguments));
+            }
+
+            test0201();
+            // 输出：false
+
+            function test0202(){
+                console.log(arguments instanceof Object);
+            }
+
+            test0202();
+            // 输出：true
+
+
+            // 3. 从arguments中获取信息
+            function test0301(a, b, c){
+                console.log("arguments.length =", arguments.length);
+                for(var i = 0; i < arguments.length; i++) {
+                    console.log("arguments[", arguments[i] ,"] =", arguments[i]);
+                }
+            }
+            test0301('aaaa',true,'zxcv',345);
+            // 输出：
+            // arguments.length = 4
+            // arguments[ aaaa ] = aaaa
+            // arguments[ true ] = true
+            // arguments[ zxcv ] = zxcv
+            // arguments[ 345 ] = 345
+
+            // 4. arguments中的callee属性
+            function test0401(){
+                console.log(arguments.callee);
+            }
+            test0401();
+            // 输出：
+            // ƒ test0401(){
+            //     console.log(arguments.callee);
+            // }
+
+        </script>
+    </head>
+    <body>
+    </body>
+</html>
