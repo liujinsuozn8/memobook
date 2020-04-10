@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>regEpx test</title>
+        <script type="text/javascript">
+            // 1. 使用构造函数创建
+            // 1.1 不使用匹配模式
+            var reg0101 = new RegExp('ab');
+            var result010101 = reg0101.test("qweAbzxc");
+            var result010102 = reg0101.test("qweabzxc");
+            console.log("result010101 =", result010101);
+            // 输出：result010101 = false
+            console.log("result010102 =", result010102);
+            // 输出：result010102 = true
+
+            // 1.2. 使用匹配模式：i，忽略大小写
+            var reg0102 = new RegExp('ab', 'i');
+            var result010201 = reg0102.test("qweAbzxc");
+            var result010202 = reg0102.test("qweabzxc");
+            console.log("result010201 =", result010201);
+            // 输出：result010201 = true
+            console.log("result010202 =", result010202);
+            // 输出：result010202 = true
+
+            // 2. 使用字面量创建
+            var reg0201 = /a/i;
+            var result020101 = reg0201.test("qweAbzxc");
+            console.log("result020101 =", result020101);
+            // 输出：result020101 = true
+        </script>
+    </head>
+    <body>
+    </body>
+</html>
