@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>wrapper class base test</title>
+    <script type="text/javascript">
+        // 1. 创建包装类对象
+        var a1 = new String("abcd");
+        var a2 = new Number(1234);
+        var a3 = new Boolean(true);
+        console.log("a1 =", a1);
+        // 输出：a1 = String {"abcd"}
+        console.log("a2 =", a2);
+        // 输出：a2 = Number {1234}
+        console.log("a3 =", a3);
+        // 输出：a3 = Boolean {true}
+
+        // 2. 包装类对象的比较
+        var b0101 = new String('abcd');
+        var b0102 = new String('abcd');
+        console.log("b0101==b0102 : ", b0101==b0102);
+        // 输出：b0101==b0102 :  false
+
+        var b0103 = new Number(1234);
+        var b0104 = new Number(1234);
+        console.log("b0103==b0104 : ", b0103==b0104);
+        // 输出：b0103==b0104 :  false
+
+        var b0105 = new Boolean(false);
+        if (b0105){
+            console.log("aaaaa"); 
+        }else {
+            console.log("bbbbb");
+        }
+        // 输出：aaaaa
+
+        // 3. 自动类型转换
+        var c0101 = "1234";
+        var c0102 = c0101.toString();
+        console.log("c0102 = ", c0102);
+        // 输出：c0102 =  1234
+        console.log("typeof c0102 = ", typeof c0102);
+        // 输出：typeof c0102 =  string
+    </script>
+</head>
+<body>
+</body>
+</html>
