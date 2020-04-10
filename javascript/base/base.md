@@ -28,6 +28,7 @@
     - [构造函数](#构造函数)
     - [原型对象](#原型对象)
     - [toString方法](#toString方法)
+- [this对象](#this对象)
 - [运算符](#运算符)
     - [二元算数运算符](#二元算数运算符)
     - [一元算数运算符](#一元算数运算符)
@@ -42,21 +43,32 @@
     - [函数的返回值](#函数的返回值)
     - [函数的参数](#函数的参数)
     - [匿名函数与立即执行函数iife](#匿名函数与立即执行函数iife)
+    - [函数对象的方法-call和apply](#函数对象的方法-call和apply)
+    - [arguments](#arguments)
 - [作用域](#作用域)
     - [js作用域的基本概念](#js作用域的基本概念)
     - [全局作用域](#全局作用域)
     - [函数作用域](#函数作用域)
 - [提升](#提升)
-- [this对象](#this对象)
-- [数组](#数组)
-- [](#)
+- [包装类](#包装类)
+- [内建对象-数组](#内建对象-数组)
+    - [数组的基本知识](#数组的基本知识)
+    - [数组的常用方法](#数组的常用方法)
+    - [数组去重](#数组去重)
+    - [数组的遍历](#数组的遍历)
+- [内建对象-Date](#内建对象-Date)
+- [内建对象-Math](#内建对象-Math)
+- [内建对象-正则表达式](#内建对象-正则表达式)
+- [内建对象-String](#内建对象-String)
+    - [String的基本原理和基本方法](#String的基本原理和基本方法)
+    - [String与正则表达式相关的方法](#String与正则表达式相关的方法)
 - [垃圾回收gc](#垃圾回收gc)
 - [弹出框](#弹出框)
 - [反射](#反射)
+- [](#)
+- [](#)
+- [](#)
 - [总结](#总结)
-- [](#)
-- [](#)
-- [](#)
 
 # JavaSctipt简介
 [top](#catalog)
@@ -360,6 +372,7 @@
 
 ## 基本数据类型
 [top](#catalog)
+- <label style="color:red">无法给基本数据类型 添加方法和属性，只能添加给对象</label>
 - String
     - 需要使用引号 `"` 或 `'` 括起来
         ```js
@@ -923,8 +936,9 @@
 ## 对象的基本概念
 [top](#catalog)
 - 对象是引用类型
-- 对象是一种符合的数据类型，在对象中可以保存多个不同数据类型的属性
 - <label style="color:red">所有对象都是Object的后代</label>
+- 对象是一种符合的数据类型，在对象中可以保存多个不同数据类型的属性和方法
+    - <label style="color:red">方法和属性只能添加给对象，不能添加给基本类型</label>
 - 对象的分类
 
     |类别|提供者|例子|
@@ -1195,7 +1209,40 @@
         // 输出：name = aaa, age = 16, gender = false
         ```
 
+# this对象
+[top](#catalog)
+- 解析器在调用函数时，每次都会向函数内部传递一个隐含的参数 `this`
+- `this` 对象也被称为**函数上下文对象**
 
+- `this` 对象一般指向调用方法的那个对象
+
+    |函数/方法的调用位置|this的指向|
+    |-|-|
+    |全局作用域中调用函数|window 对象|
+    |调用对象的方法|对象本身|
+    |调用构造函数|新创建的对象（类的实例）|
+    |调用函数对象的:`call`、`apply`方法|<ul><li>第一个参数指定的对象</li><li>如果没有参数，是window 对象</li></ul>|
+
+
+- 示例
+    ```js
+    var name = "name01";
+
+    function test(){
+        console.log(this.name);
+    }
+
+    var obj = {
+        func : test,
+        name : "name02"
+    }
+
+    // 调用对象相当于 widnow
+    test();     // 输出：name01
+
+    // 调用对象是obj，所以使用obj中的name属性
+    obj.func(); // 输出：name02
+    ```
 
 # 运算符
 ## 二元算数运算符
@@ -1716,6 +1763,8 @@
 - `===`，全等判断；`!==`，不全等判断
     - 和相等/不相等类似，如果两个数据的类型不同，则直接返回 false；如果数据类型相同，再进行比较
 
+- 对于对象类型，比较的是对象的地址；对于基本数据类型，比较的是变量中保存的值
+
 - 特殊的判断
     - <label style="color:red">Undefined衍生自Null</label>，两者的相等与全等判断如下：
         - `Undefined == Null`，返回true
@@ -1988,6 +2037,128 @@
         })("aaa", "bbb");
         ```
 
+## 函数对象的方法-call和apply
+[top](#catalog)
+- 函数对象的两个方法：`call`、`apply`，需要通过函数对象来调用
+- 通过 `call`、`apply` 重新设置 `this` 对象爱你个
+    - 在调用 call 和 apply 可以将一个对象指定为第一个参数，函数会将对象绑定到`this`
+    - 如果没有指定参数，则将 window对象绑定到 `this`
+- `call`、`apply`的区别
+    - 如果函数对象有参数
+        - `call` 需要从第二个参数开始依次传递参数
+        - `apply` 需要将函数所需的所有参数放在一个数组中作为第二个参数传递给`apply`
+
+- 示例
+    - 参考代码
+        - /javascript/base/src/function/funcObjMethod.html
+    - js内容
+        ```js
+        // 1. 无参函数
+        function test01(){
+            console.log("func test01，this =", this);
+        }
+
+        // 1.1 空参调用
+        test01();
+        // 输出：func test01，this = Window 
+        test01.call();
+        // 输出：func test01，this = Window 
+        test01.apply();
+        // 输出：func test01，this = Window 
+
+        // 1.2 指定一个对象来调用
+        var obj01 = {};
+        test01.call(obj01);
+        // 输出：func test01，this = {}
+        test01.apply(obj01);
+        // 输出：func test01，this = {}
+
+        // 2. 有参函数
+        function test02(a, b){
+            console.log("this.name =", this.name, ", a =", a, ", b=", b);
+            
+        }
+
+        var obj0201 = {name:"obj0201_name"};
+        var obj0201 = {name:"obj0201_name"};
+        test02.call(obj0201, 11, 12);
+        // 输出：this.name = obj0201_name , a = 11 , b= 12
+        test02.apply(obj0201, [11, 12]);
+        // 输出：this.name = obj0201_name , a = 11 , b= 12
+        ```
+
+## arguments
+[top](#catalog)
+- 调用函数时，js引擎每次都会传递两个隐含的参数
+    - 函数的上下文对象 `this`
+    - 封装实参的对象 `arguments`
+- `arguments` 对象
+    - 在调用函数时，传递的**实参**都会保存到 `arguments`
+        - 只看实参，与形参无关
+        - 即使函数没有定义形参，也可以通过 `arguments` 来获取参数
+    - `arguments`是一个类数组对象（ 类型是对象 ）
+        - `arguments[index]`，通过索引来操作参数，index 从 0 开始
+        - `arguments.length`, 获取参数长度
+
+- `arguments.callee`属性
+    - 该属性指向一个函数对象，就是当前正在执行的函数对象
+
+- 示例
+    - 参考代码
+        - [/javascript/base/src/function/arguments.html](/javascript/base/src/function/arguments.html)
+    - js内容
+        ```js
+        // 1. 输出函数的arguments对象
+        function test01(){
+            console.log(arguments);
+        }
+
+        test01();
+        // 输出：Arguments [callee: ƒ, Symbol(Symbol.iterator): ƒ]
+
+        // 2. 测试arguments对象的类型
+        function test0201(){
+            console.log(Array.isArray(arguments));
+        }
+
+        test0201();
+        // 输出：false
+
+        function test0202(){
+            console.log(arguments instanceof Object);
+        }
+
+        test0202();
+        // 输出：true
+
+
+        // 3. 从arguments中获取信息
+        function test0301(a, b, c){
+            console.log("arguments.length =", arguments.length);
+            for(var i = 0; i < arguments.length; i++) {
+                console.log("arguments[", arguments[i] ,"] =", arguments[i]);
+            }
+        }
+        test0301('aaaa',true,'zxcv',345);
+        // 输出：
+        // arguments.length = 4
+        // arguments[ aaaa ] = aaaa
+        // arguments[ true ] = true
+        // arguments[ zxcv ] = zxcv
+        // arguments[ 345 ] = 345
+
+        // 4. arguments中的callee属性
+        function test0401(){
+            console.log(arguments.callee);
+        }
+        test0401();
+        // 输出：
+        // ƒ test0401(){
+        //     console.log(arguments.callee);
+        // }
+        ```
+
+
 # 作用域
 ## js作用域的基本概念
 [top](#catalog)
@@ -2191,42 +2362,8 @@
         // 4. 在函数中创建了全局变量 b，此处输出 20
         console.log("outter = ", b); //输出：outter =  20
         ```
-    
-# this对象
-[top](#catalog)
-- 解析器在调用函数时，每次都会向函数内部传递一个隐含的参数 `this`
-- `this` 对象也被称为**函数上下文对象**
 
-- `this` 对象一般指向调用方法的那个对象
-
-    |函数/方法的调用位置|this的指向|
-    |-|-|
-    |全局作用域中调用函数|window 对象|
-    |调用对象的方法|对象本身|
-    |调用构造函数|新创建的对象（类的实例）|
-
-
-- 示例
-    ```js
-    var name = "name01";
-
-    function test(){
-        console.log(this.name);
-    }
-
-    var obj = {
-        func : test,
-        name : "name02"
-    }
-
-    // 调用对象相当于 widnow
-    test();     // 输出：name01
-
-    // 调用对象是obj，所以使用obj中的name属性
-    obj.func(); // 输出：name02
-    ```
-
-# 数组
+# 内建对象-数组
 ## 数组的基本知识
 [top](#catalog)
 - 数组也是一个对象
@@ -2291,10 +2428,10 @@
         - start_index 是开始位置的索引
         - end_index 是结束位置的索引
             - end_index可以不指定。不指定时，获取从start开始到数组末尾的所有元素
-            - end_index可以指定负数。指定负数时，end可以转换为：`end_index = 数组.length + end_index`
+        - start_index、end_index可以指定负数。index相当于：`index = 数组.length + index`
     - 截取范围
         - 截取元素的范围：`[start_index, end_index)`
-        - 如果 `start_index <= end_index`，则会返回一个空数组：`[]`
+        - 如果 `start_index >= end_index`，则会返回一个空数组：`[]`
 
 - `splice(start_index, count [, 需要添加的元素...])`，删除元素并返回、添加元素
     - 该方法会直接修改原始数组
@@ -2347,6 +2484,7 @@
                     });
                     ```
 
+- `Array.isArray(参数)`，判断参数的类型是否是数组
 
 - 示例
     - 参考代码
@@ -2354,25 +2492,215 @@
 
     - 尾部元素操作
         ```js
+        var a1 = [1,2,3];
+
+        // 1.1. push
+        var a1_length01 = a1.push("abc", "def", true);
+        console.log("a1 = ", a1);
+        // 输出：a1 =  (6) [1, 2, 3, "abc", "def", true]
+        console.log("a1_length01 = ", a1_length01);
+        // 输出：a1_length01 =  6
+
+        // 1.2. pop
+        var node = a1.pop();
+        console.log("a1 = ", a1);
+        // 输出：a1 =  (5) [1, 2, 3, "abc", "def"]
+        console.log("node = ", node);
+        // 输出：node =  true
         ```
 
-    - 
+    - 头部元素操作
         ```js
-        ```
-    - 
-        ```js
-        ```
-    - 
-        ```js
-        ```
-    - 
-        ```js
-        ```
-    - 
-        ```js
-        ```
+        var a2 = [1,2,3];
+        // 2.1. unshift()
+        var a2_length02 = a2.unshift("adsdg", 345);
+        console.log("a2 = ", a2);
+        // 输出：a2 =  (5) ["adsdg", 345, 1, 2, 3]
+        console.log("a2_length02 = ", a2_length02);
+        // 输出：a2_length02 =  5
 
+        // 2.2. shift()
+        var node02 = a2.shift();
+        console.log("a2 = ", a2);
+        // 输出：a2 =  (4) [345, 1, 2, 3]
+        console.log("node02 = ", node02);
+        // 输出：node02 =  adsdg
+        ```
+    - slice 切片操作
+        ```js
+        var a3 = ['a','b','c','d','e','f'];
 
+        // 3.1 不指定end
+        var slice0301 = a3.slice(1);
+        console.log("slice0301 = ", slice0301);
+        // 输出：slice0301 =  (5) ["b", "c", "d", "e", "f"]
+
+        // 3.2 end是正数
+        var slice0302 = a3.slice(1,3);
+        console.log("slice0302 = ", slice0302);
+        // 输出：slice0302 =  (2) ["b", "c"]
+
+        // 3.3 start 小于 end
+        var slice0303 = a3.slice(3, 1);
+        console.log("slice0303 = ", slice0303);
+        // 输出：slice0303 =  []
+
+        // 3.4 start 等于 end
+        var slice0304 = a3.slice(1, 1);
+        console.log("slice0304 = ", slice0304);
+        // 输出：slice0304 =  []
+
+        // 3.5 end是负数
+        var slice0305 = a3.slice(1,-1);
+        console.log("slice0305 = ", slice0305);
+        // 输出：slice0305 =  (4) ["b", "c", "d", "e"]
+
+        // 3.6 end是负数，并且在start的前面
+        var slice0306 = a3.slice(3, -5);
+        console.log("slice0306 = ", slice0306);
+        // 输出：slice0306 =  []
+
+        console.log("a3 = ", a3);
+        // 输出：a3 =  (6) ["a", "b", "c", "d", "e", "f"]
+        ```
+    - splice
+        ```js
+        var a4 = ['a','b','c','d','e','f'];
+
+        // 4.1 不删除元素
+        var deleted_nodes01 = a4.splice(2,0);
+        console.log("deleted_nodes01 = ", deleted_nodes01);
+        // 输出：deleted_nodes01 =  []
+
+        // 4.2 删除多个元素
+        var deleted_nodes02 = a4.splice(2,3);
+        console.log("deleted_nodes02 = ", deleted_nodes02);
+        // 输出：deleted_nodes02 =  (3) ["c", "d", "e"]
+        console.log("a4 = ", a4);
+        // 输出：a4 =  ["a", "b", "f"]
+
+        // 4.3 删除并添加多个元素
+        var a402 = ['a','b','c','d','e','f'];
+        var deleted_nodes03 = a402.splice(2, 3, "xcvcbv", "rty", 567);
+        console.log("deleted_nodes03 = ", deleted_nodes03);
+        // 输出：deleted_nodes03 =  (3) ["c", "d", "e"]
+        console.log("a402 = ", a402);
+        // 输出：a402 =  (6) ["a", "b", "xcvcbv", "rty", 567, "f"]
+
+        // 4.4. 不删除元素，只添加元素
+        var a403 = ['a','b','c','d','e','f'];
+        var deleted_nodes04 = a403.splice(2, 0, "zzzzz", "yyyyy");
+        console.log("deleted_nodes04 = ", deleted_nodes04);
+        // 输出：deleted_nodes04 =  []
+        console.log("a403 = ", a403);
+        // 输出：a403 =  (8) ["a", "b", "zzzzz", "yyyyy", "c", "d", "e", "f"]
+        ```
+    
+    - concate连接两个或更多的数组，并返回一个新的数组
+        ```js
+        var a0501 = [1,2,3,4,5];
+        var a0502 = [6,7,89];
+        var a0503 = ["sdf","xv"];
+        var a0504 = a0501.concat(a0502, a0503);
+        console.log("a0501 = ", a0501);
+        // 输出：a0501 =  (5) [1, 2, 3, 4, 5]
+        console.log("a0502 = ", a0502);
+        // 输出：a0501 =  (5) [1, 2, 3, 4, 5]
+        console.log("a0503 = ", a0503);
+        // 输出：a0501 =  (5) [1, 2, 3, 4, 5]
+        console.log("a0504 = ", a0504);
+        // 输出：a0504 =  (10) [1, 2, 3, 4, 5, 6, 7, 89, "sdf", "xv"]
+
+        // 6. join 将数组中的所有元素连接成一个字符串
+        // 6.1. 连接基本数据类型，指定连接符
+        var a0601 = [1, true, "aaaa", 65];
+        var a0601_str = a0601.join("--");
+        console.log("a0601_str = ", a0601_str);
+        // 输出：a0601_str =  1--true--aaaa--65
+
+        // 6.2. 连接基本数据类型，不指定连接符
+        var a0602 = [1, true, "aaaa", 65];
+        var a0602_str = a0602.join();
+        console.log("a0602_str = ", a0602_str);
+        // 输出：a0602_str =  1,true,aaaa,65
+
+        // 6.3. 连接Object类型，类没有toString方法
+        function Persion01(name, age){
+            this.name = name;
+            this.age = age;
+        }
+
+        var p0601 = new Persion01("aaa",10);
+        var p0602 = new Persion01("aaa",11);
+        var p0603 = new Persion01("aaa",12);
+
+        var a0603 = [p0601, p0602, p0603];
+        var a0603_str = a0603.join();
+        console.log("a0603_str = ", a0603_str);
+        // 输出：a0603_str =  [object Object],[object Object],[object Object]
+
+        // 6.4. 连接Object类型，类有toString方法
+        function Persion02(name, age){
+            this.name = name;
+            this.age = age;
+        }
+
+        Persion02.prototype.toString = function(){
+            return 'Persion02[ name = ' + this.name + ', age = ' + this.age + ']';
+        }
+
+        var p0604 = new Persion02("zxcv",11);
+        var p0605 = new Persion02("qwer",22);
+        var p0606 = new Persion02("yhnm",33);
+
+        var a0604 = [p0604, p0605, p0606];
+        var a0604_str = a0604.join();
+        console.log("a0604_str = ", a0604_str);
+        // 输出：a0604_str =  Persion02[ name = zxcv, age = 11],Persion02[ name = qwer, age = 22],Persion02[ name = yhnm, age = 33]
+        ```
+    - reverse 反转数组
+        ```js
+        var a0701 = [1,2,3,4,5,6,7];
+        a0701.reverse();
+        console.log("a0701 = ", a0701);
+        // 输出：a0701 =  (7) [7, 6, 5, 4, 3, 2, 1]
+        ```
+    - sort 对数组进行排序
+        ```js
+        // 8.1. 默认排序
+        var a0801 = [11,1,4,3,5,2,5,3];
+        a0801.sort();
+        console.log("a0801 = ", a0801);
+        // 输出：a0801 =  (8) [1, 11, 2, 3, 3, 4, 5, 5]
+
+        // 8.2 定制排序:升序排序
+        var a0802 = [11,1,4,3,5,2,5,3];
+        a0802.sort(function(a, b){
+        //     if (a > b){
+        //         return 1;
+        //     }else {
+        //         return -1;
+        //     }
+            return a-b;
+        });
+        console.log("a0802 = ", a0802);
+        // 输出：a0802 =  (8) [1, 2, 3, 3, 4, 5, 5, 11]
+
+        // 8.2 定制排序:降序排序
+        var a0803 = [11,1,4,3,5,2,5,3];
+        a0803.sort(function(a, b){
+        //     if (a > b){
+        //         return -1;
+        //     }else if (a < b) {
+        //         return 1;
+        //     }else {
+        //         return 0;
+        //     }
+            return b-a;
+        });
+        console.log("a0803 = ", a0803);
+        // 输出：a0803 =  (8) [11, 5, 5, 4, 3, 3, 2, 1]
+        ```
 
 ## 数组去重
 [top](#catalog)
@@ -2394,7 +2722,6 @@ for (var i = 0; i<a.length - 1; i++){
 console.log("a = ", a);
 ```
 
-
 ## 数组的遍历
 [top](#catalog)
 - for遍历
@@ -2405,6 +2732,464 @@ console.log("a = ", a);
         ...
     }
     ```
+
+# 包装类
+[top](#catalog)
+- **包装类自身有一些问题，导致其行为与基本数据类型不一致，一般开发中尽量不要使用包装类**
+- js中提供3个包装类，来将基本数据类型转换为对象
+    - `String()`
+    - `Number()`
+    - `Boolean()`
+
+- 包装类的问题
+    - 包装类对象，在进行比较时，比较的是对象的地址，可能会产生预期外的结果
+    - 对于`var obj= new Boolean(false)`，虽然对象内部的值是false，但是本身是包装类对象，所以进行 `if (obj){...}` 的判断时，对象自动转换为true，导致返回值永远都是 true
+
+- js内部使用包装类进行自动的类型转换
+    - 当通过基本数据类型调用方法或属性时，js引擎会自动将基本数据类型转换为对应的包装类对象，并调用对象的方法或属性，调用完后，再还原为基本类型
+- 示例
+    - 参考代码
+        - [/javascript/base/src/wrapperClass/base.html](#/javascript/base/src/wrapperClass/base.html)
+    - js内容
+        ```js
+        // 1. 创建包装类对象
+        var a1 = new String("abcd");
+        var a2 = new Number(1234);
+        var a3 = new Boolean(true);
+        console.log("a1 =", a1);
+        // 输出：a1 = String {"abcd"}
+        console.log("a2 =", a2);
+        // 输出：a2 = Number {1234}
+        console.log("a3 =", a3);
+        // 输出：a3 = Boolean {true}
+
+        // 2. 包装类对象的比较
+        var b0101 = new String('abcd');
+        var b0102 = new String('abcd');
+        console.log("b0101==b0102 : ", b0101==b0102);
+        // 输出：b0101==b0102 :  false
+
+        var b0103 = new Number(1234);
+        var b0104 = new Number(1234);
+        console.log("b0103==b0104 : ", b0103==b0104);
+        // 输出：b0103==b0104 :  false
+
+        var b0105 = new Boolean(false);
+        if (b0105){
+            console.log("aaaaa"); 
+        }else {
+            console.log("bbbbb");
+        }
+        // 输出：aaaaa
+
+        // 3. 自动类型转换
+        var c0101 = "1234";
+        var c0102 = c0101.toString();
+        console.log("c0102 = ", c0102);
+        // 输出：c0102 =  1234
+        console.log("typeof c0102 = ", typeof c0102);
+        // 输出：typeof c0102 =  string
+        ```
+
+
+# 内建对象-Date
+[top](#catalog)
+- js中使用Date对象表示一个时间
+- 创建时间对象的方式
+    1. 空参构造函数。时间为创建对象的时间
+        ```js
+        var a = new Date();
+        ```
+    2. 时间字符串
+        - 字符串格式：`MM/dd/yyyy HH:mm:ss`
+            ```js
+            var b = new Date("11/22/2008 12:34:56");
+            ```
+- Date 对象的常用方法
+    - `getDate()`，返回几号，即`dd`
+    - `getDay()`，返回周几，返回值: 0 ～ 6，0表示周日
+    - `getMonth()`，返回月份，返回值：0 ～ 11
+    - `getFullYear()`，返回年份
+    - `getTime()`，获取当前时间对象的时间戳
+    - `Date.now()`，获取执行时的时间戳
+- 时间戳
+    - 从格林威治标准时间：1970/01/01 00:00:00到当前日期所花费的**毫秒数**
+
+- 示例
+    - 参考代码
+        - [/javascript/base/src/innerObject/date/date.html](#/javascript/base/src/innerObject/date/date.html)
+    - js内容
+        ```js
+                // 1. 创建Date对象
+        var a01 = new Date();
+        console.log(a01);
+
+        var a02 = new Date("11/22/2008 12:34:56");
+        console.log(a02);
+        // 输出：Sat Nov 22 2008 12:34:56 GMT+0800
+
+        // 2. Date对象的方法
+        var b01 = new Date("11/22/2008 12:34:56");
+
+        // 2.1 获取几号
+        console.log("b01.getDate() =", b01.getDate());
+        // 输出：b01.getDate() = 22
+
+        // 2.2 周几
+        console.log("b01.getDay() =", b01.getDay());
+        // 输出：b01.getDay() = 6
+
+        //2.3 月份
+        console.log("b01.getMonth() =", b01.getMonth());
+        // 输出：b01.getMonth() = 10
+
+        // 2.4 年份
+        console.log("b01.getFullYear() =", b01.getFullYear());
+        // 输出：b01.getFullYear() = 2008
+
+        // 2.5获取当前时间的时间戳
+        console.log(Date.now());
+        ```
+
+# 内建对象-Math
+[top](#catalog)
+- Math不是一个构造函数，它是一个工具类
+- Math中分装了与数学运算相关的属性和方法
+
+# 内建对象-正则表达式
+[top](#catalog)
+- 创建正则表达式对象
+    - 使用构造函数
+        ```js
+        var reg = new RegExp("正则表达式" [, "匹配模式"]);
+        ```
+    - 使用字面量。字面量两边没有引号
+        ```js
+        // 使用匹配模式
+        var reg = /正则表达式/匹配模式;
+        // 不使用匹配模式
+        var reg = /正则表达式/;
+        ```
+
+- 匹配模式
+    - `i`，忽略大小写
+    - `g`，全局匹配模式
+
+- 正则表达式对象的常用方法
+    - `test("被检查的字符串")`，检查字符串是否符合正则表达式的规则
+
+- 示例
+    - 参考代码
+        - [/javascript/base/src/innerObject/regEpx/regEpx.html](/javascript/base/src/innerObject/regEpx/regEpx.html)
+    - js内容
+        ```js
+        // 1. 使用构造函数创建
+        // 1.1 不使用匹配模式
+        var reg0101 = new RegExp('ab');
+        var result010101 = reg0101.test("qweAbzxc");
+        var result010102 = reg0101.test("qweabzxc");
+        console.log("result010101 =", result010101);
+        // 输出：result010101 = false
+        console.log("result010102 =", result010102);
+        // 输出：result010102 = true
+
+        // 1.2. 使用匹配模式：i，忽略大小写
+        var reg0102 = new RegExp('ab', 'i');
+        var result010201 = reg0102.test("qweAbzxc");
+        var result010202 = reg0102.test("qweabzxc");
+        console.log("result010201 =", result010201);
+        // 输出：result010201 = true
+        console.log("result010202 =", result010202);
+        // 输出：result010202 = true
+
+        // 2. 使用字面量创建
+        var reg0201 = /a/i;
+        var result020101 = reg0201.test("qweAbzxc");
+        console.log("result020101 =", result020101);
+        // 输出：result020101 = true
+        ```
+
+
+# 内建对象-String
+## String的基本原理和基本方法
+[top](#catalog)
+- **String对象本身属于包装类**
+- 字符串底层是以字符数组的形式保存的，所以可以通过索引来获取字符：`字符串[index]`、通过`length`属性来获取字符串的长度
+
+- String对象属性
+    - `length`，获取字符串的长度
+- String对象的基本方法
+    - 字符操作
+        - `charAt(index)`，通过索引获取字符，与`字符串[index]`的方式相同
+        - `charCodeAt(index)`，通过索引获取字符的Unicode值
+        - `String.fromCharCode(2/8/10/16进制数字)`，通过字符编码创建字符
+    - 字符串连接
+        - `concate(...)`，连接字符串，与 `+` 运算符的操作相同
+    - 字符串搜索
+        - `indexOf("目标字符串" [, start_index])`，从指定位置开始，检索目标字符串第一次出现的位置
+            - 从左向右搜索
+            - 如果不设置 start_index， 则默认为0
+            - 如果目标字符串存在，则返回第一次出现的索引
+            - 如果目标字符串不存在，则返回 **-1**
+        - `lastIndexOf("目标字符串" [, start_index])`
+            - 与 `indexOf` 的用法基本相同
+            - 从右向左搜索
+
+    - 字符串截取
+        - `slice(start_index [, end_index])`
+            - 截取指定范围的字符串，并返回新的字符串
+            - 该方法不会改变原字符串，会返回一个新的字符串
+            - 参数说明
+                - start_index 是开始位置的索引
+                - end_index 是结束位置的索引
+                    - end_index可以不指定。不指定时，获取从start开始到数组末尾的所有元素
+                - start_index、end_index可以指定负数。index相当于：`index = 数组.length + index`
+            - 截取范围
+                - 截取元素的范围：`[start_index, end_index)`
+                - 如果 `start_index >= end_index`，则会返回一个空字符串：`""`
+
+        - `substring(start_index [, end_index])`
+            - 截取指定范围的字符串，并返回新的字符串
+            - 该方法不会改变原字符串，会返回一个新的字符串
+            - 参数说明
+                - start_index ，开始位置的索引
+                - end_index ，结束位置的索引
+                    - 如果不指定，截取从start开始到字符串末尾的所有元素
+            - 截取范围
+                - 截取元素的范围：`[start_index, end_index)`
+                - 如果 `start_index = end_index`，则会返回一个空字符串：`""`
+                - 如果 `start_index > end_index`，方法会自动调整参数的大小关系，转换为 `[end_index, start_index)`
+            - 使用方法与 `slice` 类似
+            - 与 `slice` 的不同点
+                1. 不接受负数作为参数。如果有负数参数，会自动转换为0
+                2. 如果 `start_index > end_index` , 方法会自动调整参数的顺序
+
+        - `substr(start_index [, char_count])`
+            - <label style="color:red">ECMAScript并没有对该方法进行标准化定义，所以尽量少用</label>
+            - 从start_index开始截取指定数量的字符，并返回新的字符串
+            - 参数说明
+                - start_index ，开始位置的索引
+                - char_count ，截取字符的个数
+                    - 如果不指定，截取从start开始到字符串末尾的所有元素
+    - 大小写转换
+        - `toUpperCase()`，大写转换
+        - `toLowerCase()`，小写转换
+
+- 示例
+    - 参考代码
+        - [/javascript/base/src/innerObject/string/base.html](/javascript/base/src/innerObject/string/base.html)
+    - js内容
+        ```js
+        // 1. 字符串对象的属性
+        // 1.1 获取字符串的长度
+        var a0101 = "abcdefg";
+        console.log("a0101.length =", a0101.length);
+        // 输出：a0101.length = 7
+
+        // 2. 字符串对象的方法
+        // 2.1 通过索引获取字符--数组方式
+        var b0101 = "abcdefg";
+        console.log("b0101[2] =", b0101[2]);
+        // 输出：b0101[2] = c
+
+        // 2.2 通过索引获取字符
+        var b0201 = "abcdefg";
+        console.log("b0201.charAt(3) = ", b0201.charAt(3));
+        // 输出：b0201.charAt(3) =  d
+
+        // 2.3 通过索引获取字符的Unicode值
+        var b0301 = "abcdefg";
+        console.log("b0301.charCodeAt(0) =", b0301.charCodeAt(0));
+        // 输出：b0301.charCodeAt(0) = 97
+
+        // 2.4 通过字符编码创建字符
+        var b0401 = String.fromCharCode(97);
+        console.log("b0401 =", b0401);
+        // 输出：b0401 = a
+        var b0105 = String.fromCharCode(0x1112);
+        console.log("b0105 =", b0105);
+
+        // 2.5 连接字符串
+        var b0501 = "qwer";
+        var b0502 = b0501.concat(1234, "vcbcn", true);
+        console.log("b0501 =", b0501);
+        // 输出：b0501 = qwer
+        console.log("b0502 =", b0502);
+        // 输出：b0502 = qwer1234vcbcntrue
+
+        // 2.6 搜索字符串
+        // 未搜索到指定字符串
+        var b0601 = "asff";
+        var result0601 = b0601.indexOf("cd");
+        console.log("result0601 =", result0601);
+        // 输出：result0601 = -1
+
+        // 从左向右，不指定开始位置
+        var b0602 = "abcdefg";
+        var result0602 = b0602.indexOf("cd");
+        console.log("result0602 =", result0602);
+        // 输出：result0602 = 2
+
+        // 从左向右，指定开始位置
+        var b0603 = "abcdefg sdfcdwqw";
+        var result0603 = b0603.indexOf("cd", 7);
+        console.log("result0603 =", result0603);
+        // 输出：result0603 = 11
+
+        // 从右向左，不指定开始位置
+        var b0604 = "abcdefg sdfcdwqw";
+        var result0604 = b0604.lastIndexOf("cd");
+        console.log("result0604 =", result0604);
+        // 输出：result0604 = 11
+
+        // 从右向左，指定开始位置
+        var b0605 = "abcdefg sdfcdwqw";
+        var result0605 = b0605.lastIndexOf("cd", 10);
+        console.log("result0605 =", result0605);
+        // 输出：result0605 = 2
+
+        // 2.7 字符串截取
+        // 2.7.1 slice 截取字符串: start_index ~ 末尾
+        var b0701 = "abcdefghijk";
+        var result0701 = b0701.slice(2);
+        console.log("result0701 =", result0701);
+        // 输出：result0701 = cdefghijk
+
+        // 2.7.2 slice 截取字符串: start_index < end_index
+        var b0702 = "abcdefghijk";
+        var result0702 = b0702.slice(2,6);
+        console.log("result0702 =", result0702);
+        // 输出：result0702 = cdef
+
+        // 2.7.3 slice 截取字符串: start_index >= end_index
+        var b0703 = "abcdefghijk";
+        var result0703 = b0703.slice(6,2);
+        console.log("result0703 =", result0703);
+        // 输出：result0703 = 
+
+        // 2.7.4 slice 截取字符串: end_index 指定为负数
+        var b0704 = "abcdefghijk";
+        var result0704 = b0704.slice(2, -3);  //(2, 8)
+        console.log("result0704 =", result0704);
+        // 输出：result0704 = cdefgh
+
+        // 2.7.5 slice 截取字符串: start_index, end_index 指定为负数
+        var b0705 = "abcdefghijk";
+        var result0705 = b0705.slice(-5, -3);  //(6, 8)
+        console.log("result0705 =", result0705);
+        // 输出：result0705 = gh
+
+        // 2.7.6 substring 截取字符串：start_index < 0
+        // start_index 将会被调整为 0 
+        var b0706 = "abcdefghijk";
+        var result0706 = b0706.substring(-5, 8);
+        console.log("result0706 =", result0706);
+        // 输出：result0706 = abcdefgh
+
+        // 2.7.7 substring 截取字符串：start_index > end_index
+        var b0707 = "abcdefghijk";
+        var result0707 = b0707.substring(5, 2); // (2, 5)
+        console.log("result0707 =", result0707);
+        // 输出：result0707 = cde
+
+        // 2.7.8 substr 截取字符串
+        var b0708 = "abcdefghijk";
+        var result0708 = b0708.substr(5, 2);
+        console.log("result0708 =", result0708);
+        // 输出：result0708 = fg
+
+        // 2.8 大小写转换
+        var b0801 = "abcDeFghiJ";
+        var resutl0801 = b0801.toUpperCase();
+        console.log("resutl0801 =", resutl0801);
+        // 输出：resutl0801 = ABCDEFGHIJ
+
+        var b0802 = "abcDeFghiJ";
+        var resutl0802 = b0802.toLowerCase();
+        console.log("resutl0802 =", resutl0802);
+        // 输出：resutl0802 = abcdefghij
+        ```
+
+## String与正则表达式相关的方法
+[top](#catalog)
+- `split("分割字符串"/正则表达式)`
+    - 用途：根据分割字符串或正则表达式，将字符串拆分为数组
+- `search(字符串/正则表达式)`
+    - 用途：搜索字符串，或匹配正则表达式，类似于`indexOf`
+    - 如果搜索到了指定内容，则返回第一次出现的索引
+    - 如果没有搜索到则返回 -1
+
+- `match()`
+    - 用途：根据正则表达式，从字符串中提取内容
+    - 默认情况下，该方法找到第一个匹配的内容后，就会停止并返回
+    - 可以设置全局匹配模式：`/正则表达式/g`，来匹配所有内容
+    - 返回结果是一个 Array 对象
+
+- `replace("被替换字符串"/正则表达式, "新字符串")`
+    - 用途：替换指定字符串
+    - 使用`"被替换字符串"`时，默认情况下，该方法只会替换第一个匹配结果
+    - 可以通过 `/正则表达式/g`，来进行全局替换
+
+- 示例
+    - 参考代码
+        - [/javascript/base/src/innerObject/string/regEpxMethod.html](/javascript/base/src/innerObject/string/regEpxMethod.html)
+    - js内容
+        ```js
+        // 1. split 拆分数组
+        // 1.1 根据分割字符串，将字符串拆分为数组
+        var a01 = "asdf,etr,xb";
+        var resultA01 = a01.split(',');
+        console.log("typeof resultA01 =", typeof resultA01);
+        // 输出：
+        console.log("resultA01 =", resultA01);
+        // 输出：
+
+        // 1.2 根据正则表达式，将字符串拆分为数组
+        var a02 = "sdf2bvn4gth6";
+        // 用数字来拆分字符串
+        var resultA02 = a02.split(/\d/g);
+        console.log("resultA02 =", resultA02);
+        // 输出：
+
+        // 2. search 
+        // 2.1 search 字符串搜索
+        var b01 = "abcdefg";
+        var resultB01 = b01.search("de");
+        console.log("resultB01 =", resultB01);
+        // 输出：
+
+        // 2.2 search 正则表达式匹配
+        var b02 = "et gh abcd afc aecdfg";
+        var resultB02 = b02.search(/a.c/);
+        console.log("resultB02 =", resultB02);
+        // 输出：
+
+        // 3. match
+        // 3.1 默认的匹配模式
+        var c01 = "et gh abcd afc aecdfg";
+        var resultC01 = c01.match(/a.c/);
+        console.log("resultC01 =", resultC01);
+        // 输出：resultC01 = ["abc", index: 6, input: "et gh abcd afc aecdfg", groups: undefined]
+
+        // 3.2 全局匹配，并且忽略大小写
+        var c02 = "et gh aBcd afc aecdfg s4avc3r ";
+        var resultC02 = c02.match(/a.c/ig);
+        console.log("resultC02 =", resultC02);
+        // 输出：resultC02 = (4) ["aBc", "afc", "aec", "avc"]
+
+        // 4. replace
+        // 4.1 替换字符串
+        var d01 = "abcdeadfgawax";
+        var resultD01 = d01.replace("a","@");
+        console.log("resultD01 =", resultD01);
+        // 输出：resultD01 = @bcdeadfgawax
+
+        // 4.2 使用正则表达式进行全局替换
+        var d02 = "abcdeadfgawax";
+        var resultD02 = d02.replace(/a/g,"@");
+        console.log("resultD02 =", resultD02);
+        // 输出：resultD02 = @bcde@dfg@w@x
+        ```
 
 
 # 垃圾回收gc
@@ -2454,3 +3239,4 @@ console.log("a = ", a);
 - 在全局作用域中创建的函数，都会作为：window对象的方法
 - 所有对象都是Object的后代，所有对象执行：`对象 instanceof Object`，返回值都是true
 - 任何类型和String型的`+`运算，都会先将非String型转换为String型，然后再执行字符串连接
+- 方法和属性只能添加给对象，不能添加给基本类型
