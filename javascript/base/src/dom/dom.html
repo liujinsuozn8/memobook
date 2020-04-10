@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>dom base</title>
+    <style>
+        /* 清除默认css */
+        ul, li{
+            margin: 0;
+            padding: 0;
+            border: 0;
+            font-size: 100%;
+            font: inherit;
+            vertical-align: baseline;
+        }
+
+        ol, ul {
+            list-style: none;
+        }
+
+        /* 页面css */
+        body{
+            width: 500px;
+            margin:0 auto;
+        }
+
+        .select{
+            height: 350px;
+            border:black 1px solid;
+        }
+
+        .select p {
+            margin-left: 10px;
+        }
+
+        .showList{
+            margin:10px auto;
+        }
+        .showList li{
+            width:50px;
+            height:50px;
+            margin:0px 10px;
+            border:black 1px solid;
+            /* background-color: #bfa; */
+            float:left;
+            text-align: center;
+            vertical-align: bottom;
+        }
+
+        .clearfixed::before,
+        .clearfixed::after{
+            clear: both;
+            content: "";
+            display: table;
+        }
+
+        .inputs{
+            height: 50px;
+            border:black 1px solid;
+            margin-top: 10px;
+        }
+
+        .leftbox{
+            float:left;
+            margin-right:20px;
+            width:300px;
+            
+            
+        }
+        .rightbox{
+            float:left;
+        }
+    </style>
+    <script type="text/javascript">
+        // 通过id获取元素，并输出元素的文本内容
+
+        // 通过li标签获取一组元素，并遍历输出各元素的文本内容
+
+        // 获取name=gender的对象，并遍历输出各元素的文本内容
+    </script>
+</head>
+<body>
+    <div class="leftbox">
+        <div class="select">
+            <p>1. problem01</p>
+            <ul class="showList clearfixed">
+                <li>aa</li>
+                <li>bb</li>
+                <li>cc</li>
+                <li>dd</li>
+            </ul>
+            
+            <p>2. problem02</p>
+            <ul class="showList clearfixed">
+                <li>ee</li>
+                <li>ff</li>
+                <li>gg</li>
+                <li>hh</li>
+            </ul>
+            
+            <p>3. problem03</p>
+            <ul class="showList clearfixed">
+                <li>ii</li>
+                <li>jj</li>
+                <li>kk</li>
+                <li>ll</li>
+            </ul>
+        </div>
+
+        <div class="inputs">
+            <span>gender: </span>
+            <input type="radio" name="gender" id="radio01" value="1">
+            <span>r01</span>
+            <input type="radio" name="gender" id="radio01" value="2" >
+            <span>r02</span>
+            <input type="radio" name="gender" id="radio01" value="3" >
+            <span>r03</span>
+            <br>
+            <span>name：</span>
+            <input type="text" name="text01" id="text01" value='default'>
+        </div>
+    </div>
+    <div class="rightbox">
+        <div><button>btn01</button></div>
+        <div><button>btn02</button></div>
+        <div><button>btn03</button></div>
+        <div><button>btn04</button></div>
+        <div><button>btn05</button></div>
+        <div><button>btn06</button></div>
+        <div><button>btn07</button></div>
+    </div>
+</body>
+</html>
