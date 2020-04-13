@@ -72,11 +72,45 @@
         }
     </style>
     <script type="text/javascript">
-        // 通过id获取元素，并输出元素的文本内容
 
-        // 通过li标签获取一组元素，并遍历输出各元素的文本内容
+        window.onload = function(){
+            // 1. 通过id获取元素，并输出元素的文本内容
+            var btn01 = document.getElementById("btn01");
+            btn01.onclick = function(){
+                var aa = document.getElementById("aa_id");
+                output(aa); // 输出当前元素
+                output(aa.innerHTML);
+            };
 
-        // 获取name=gender的对象，并遍历输出各元素的文本内容
+            // 2. 通过li标签获取一组元素，并遍历输出各元素的文本内容
+            var btn02 = document.getElementById("btn02");
+            btn02.onclick = function(){
+                var lis = document.getElementsByTagName("li");
+                for (var i=0; i< lis.length; i++){
+                    output(lis[i].innerHTML);
+                }
+            }
+            
+            // 3. 获取name=gender的对象，并遍历输出各元素的文本内容
+            var btn03 = document.getElementById("btn03");
+            btn03.onclick = function(){
+                var gender = document.getElementsByName("gender");
+                for(var i=0; i<gender.length; i++){
+                    output(
+                        "type = " + gender[i].type +
+                        ", class = " + gender[i].className + 
+                        ", id = " + gender[i].id + 
+                        ", value = " + gender[i].value
+                    );
+                }
+            };
+        };
+
+        function output(param){
+            console.log(param);
+        }
+        
+
     </script>
 </head>
 <body>
@@ -84,7 +118,7 @@
         <div class="select">
             <p>1. problem01</p>
             <ul class="showList clearfixed">
-                <li>aa</li>
+                <li id="aa_id">aa</li>
                 <li>bb</li>
                 <li>cc</li>
                 <li>dd</li>
@@ -109,11 +143,11 @@
 
         <div class="inputs">
             <span>gender: </span>
-            <input type="radio" name="gender" id="radio01" value="1">
+            <input type="radio" class="rc0101 rc0102" name="gender" id="radio01" value="1">
             <span>r01</span>
-            <input type="radio" name="gender" id="radio01" value="2" >
+            <input type="radio" class="rc02" name="gender" id="radio01" value="2" >
             <span>r02</span>
-            <input type="radio" name="gender" id="radio01" value="3" >
+            <input type="radio" class="rc03" name="gender" id="radio01" value="3" >
             <span>r03</span>
             <br>
             <span>name：</span>
@@ -121,13 +155,13 @@
         </div>
     </div>
     <div class="rightbox">
-        <div><button>btn01</button></div>
-        <div><button>btn02</button></div>
-        <div><button>btn03</button></div>
-        <div><button>btn04</button></div>
-        <div><button>btn05</button></div>
-        <div><button>btn06</button></div>
-        <div><button>btn07</button></div>
+        <div><button id="btn01">btn01</button></div>
+        <div><button id="btn02">btn02</button></div>
+        <div><button id="btn03">btn03</button></div>
+        <div><button id="btn04">btn04</button></div>
+        <div><button id="btn05">btn05</button></div>
+        <div><button id="btn06">btn06</button></div>
+        <div><button id="btn07">btn07</button></div>
     </div>
 </body>
 </html>
