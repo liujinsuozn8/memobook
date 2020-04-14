@@ -1,0 +1,81 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>doc css test</title>
+        <style>
+            .box01{
+                width: 200px;
+                height: 200px;
+                background-color:#bfa;
+                margin:10px;
+            }
+            
+            .box2{
+                width: 200px;
+                height: 200px;
+                background-color:#bfa;
+                margin:10px;
+            }
+        </style>
+        <script type="text/javascript">
+            function addElemClickById(id, fn){
+                var elem = document.getElementById(id);
+                elem.onclick = fn;
+            }
+
+            window.onload = function(){
+                // 写内联样式
+                addElemClickById(
+                    "change01",
+                    function(){
+                        var box01 = document.querySelector(".box01");
+                        box01.style.width = "100px";
+                        box01.style.backgroundColor = "#47e";
+                    }
+                );
+
+                // 读内联样式
+                addElemClickById(
+                    "read01",
+                    function(){
+                        var box01 = document.querySelector(".box01");
+                        alert(box01.style.width);
+                    }
+                );
+
+                // 当前正在使用的样式是只读的，无法写
+                // addElemClickById(
+                //     "change02",
+                //     function(){
+                //         var box2 = document.querySelector(".box2");
+                        
+                //         var style = box2.currentStyle || getComputedStyle(box2, null);
+                //         style.backgroundColor = "rgb(88,119,228)";
+                //     }
+                // );
+
+                // 读当前元素正在使用的样式
+                addElemClickById(
+                    "read02",
+                    function(){
+                        var box2 = document.querySelector(".box2");
+                        
+                        var style = box2.currentStyle || getComputedStyle(box2, null);
+                        alert(style.width);
+                    }
+                );
+            };
+        </script>
+    </head>
+    <body>
+        <div class="box01"></div>
+        <button id="change01">change01</button>
+        <button id="read01">read01</button>
+        <br>
+        
+        <div class="box2"></div> 
+        <!-- <button id="change02">change02</button> -->
+        <button id="read02">read02</button>
+    </body>
+</html>
