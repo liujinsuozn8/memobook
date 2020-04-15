@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>doc element object test</title>
+    <style>
+        .box1{
+            width: 100px;
+            height: 75px;
+            background-color:#bfa;
+            padding: 10px;
+            border: #47e 5px solid;
+            margin:10px;
+        }
+
+        #box0401{
+            width:100px;
+            height:100px;
+            background-color: #bfa;
+            overflow: auto;
+        }
+        
+        #box0402{
+            width:50px;
+            height:200px;
+            background-color: #47e;
+        }
+
+        #info05{
+            width: 200px;
+            height: 150px;
+            overflow: auto;
+        }
+
+    </style>
+    <script type="text/javascript">
+        function addElemClickById(id, fn){
+            var elem = document.getElementById(id);
+            elem.onclick = fn;
+        }
+
+        window.onload = function(){
+            // 1. 读取 clientXXXX 和 offset 属性
+            addElemClickById(
+                "read01",
+                function(){
+                    var box1 = document.querySelector(".box1");
+                    alert(
+                        "box1.clientHeight = " + box1.clientHeight + "\n" +
+                        "box1.clientWidth = " + box1.clientWidth + "\n" +
+                        "box1.offsetHeight = " + box1.offsetHeight + "\n" +
+                        "box1.offsetWidth = " + box1.offsetWidth + "\n" +
+                        "box1.offsetLeft = " + box1.offsetLeft + "\n" +
+                        "box1.offsetTop = " + box1.offsetTop + "\n"
+                    );
+                }
+            );
+
+            // 2. 获取box0204的 offserParent
+            addElemClickById(
+                "read02",
+                function(){
+                    var box0204 = document.getElementById("box0204");
+                    alert(box0204.offsetParent.id);
+                }
+            );
+
+            // 3. 分别获取box0303、box0302、box0301 的 offsetLeft offsetTop
+            addElemClickById(
+                "read03",
+                function(){
+                    var box0303 = document.getElementById("box0303");
+                    var box0302 = document.getElementById("box0302");
+                    var box0301 = document.getElementById("box0301");
+                    alert(
+                        "box0303.offsetLeft =" + box0303.offsetLeft + "\n" +
+                        "box0303.offsetTop =" + box0303.offsetTop + "\n" +
+                        "box0302.offsetLeft =" + box0302.offsetLeft + "\n" +
+                        "box0302.offsetTop =" + box0302.offsetTop + "\n" +
+                        "box0301.offsetLeft =" + box0301.offsetLeft + "\n" +
+                        "box0301.offsetTop =" + box0301.offsetTop + "\n"
+                    );
+                }
+            );
+
+            // 4. 获取box0401的 scrollHeight 和 scrollTop
+            addElemClickById(
+                "read04",
+                function(){
+                    var box0401 = document.getElementById("box0401");
+                    alert(
+                        "box0401.clientHeight = " + box0401.clientHeight + '\n' +
+                        "box0401.clientWidth = " + box0401.clientWidth + '\n' +
+                        "box0401.scrollHeight = " + box0401.scrollHeight + '\n' +
+                        "box0401.scrollTop = " + box0401.scrollTop + '\n'
+                    );
+                }
+            );
+
+            // 5. 测试滚动公式。当滚动条到底的时候，submit05按钮可用
+            var info05 = document.getElementById("info05");
+            // 绑定滚动条的滚动事件
+            info05.onscroll = function(){
+                var submit05 = document.getElementById("submit05");
+                if (this.scrollHeight - this.scrollTop === this.clientHeight){
+                    submit05.disabled = false;
+                } else {
+                    submit05.disabled = true;
+                }
+            };
+        };
+    </script>
+</head>
+    <body>
+        <section>1. 读取 clientXXXX 和 offsetXXX 属性</section>
+        <div class="box1"></div> 
+        <button id="read01">read01</button>
+        <br>
+        <br>
+
+        <section>2. 获取box0204的 offsetParent</section>
+        <div id="box0201" style="position: relative;">
+            <div id="box0202" style="position: relative;">
+                <div id="box0203">
+                    <div id="box0204"></div>
+                </div>
+            </div>
+        </div>
+        <button id="read02">read02</button>
+        <br>
+        <br>
+
+        <section>3. 分别获取box0303、box0302、box0301 的 offsetLeft offsetTop</section>
+        <div id="box0301" style="position: relative; padding:100px; border:black 1px solid;">
+            <div id="box0302" style="position: relative;">
+                <div id="box0303"></div>
+            </div>
+        </div>
+        <button id="read03">read03</button>
+        <br>
+        <br>
+        
+        <section>4. 获取box0401的 scrollHeight 和 scrollTop</section>
+        <div id="box0401">
+            <div id="box0402"></div>
+        </div>
+        <button id="read04">read04</button>
+        <br>
+        <br>
+
+        <section>5. 测试滚动公式。当滚动条到底的时候，submit05按钮可用</section>
+        <p id="info05">
+            abcdefgabcdefgabcdef
+            abcdefgabcdefgabcdef
+            abcdefgabcdefgabcdef
+            abcdefgabcdefgabcdef
+            abcdefgabcdefgabcdef
+            abcdefgabcdefgabcdef
+            abcdefgabcdefgabcdef
+            abcdefgabcdefgabcdef
+            abcdefgabcdefgabcdef
+            abcdefgabcdefgabcdef
+            abcdefgabcdefgabcdef
+            abcdefgabcdefgabcdef
+            abcdefgabcdefgabcdef
+            abcdefgabcdefgabcdef
+            abcdefgabcdefgabcdef
+            abcdefgabcdefgabcdef
+            abcdefgabcdefgabcdef
+            abcdefgabcdefgabcdef
+            abcdefgabcdefgabcdef
+            abcdefgabcdefgabcdef
+        </p>
+        <button id="submit05" disabled="disabled">submit05</button>
+    </body>
+</html>
