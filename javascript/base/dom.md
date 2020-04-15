@@ -14,7 +14,13 @@
         - [示例-table操作](#示例-table操作)
     - [dom操作css](#dom操作css)
     - [DOMElement对象的一些常用属性与方法](#DOMElement对象的一些常用属性与方法)
+    - [DOMEvent事件对象](#DOMEvent事件对象)
+        - [事件对象](#事件对象)
+        - [示例-获取鼠标坐标](#示例-获取鼠标坐标)
+        - [示例-div跟随鼠标移动](#示例-div跟随鼠标移动)
 - [事件绑定](#事件绑定)
+- [](#)
+- [](#)
 - [](#)
 - [](#)
 
@@ -125,7 +131,7 @@
             - 方法2：`documnet.body`
                 - document 对象的body属性中，默认保存body元素对象的引用
 
-        - `document.documentElement`，获取html对象
+        - 获取html对象，`document.documentElement`
         - 获取页面中的所有元素
             - 方法1：`document.getElementsByTagName("*")`
             - 方法2：`document.all`
@@ -1149,6 +1155,139 @@
                 submit05.disabled = true;
             }
         };
+        ```
+
+
+## DOMEvent事件对象
+### 事件对象
+[top](#catalog)
+- 当事件的响应函数被触发时，浏览器**每次**都会将一个事件对象作为实参传递给响应函数
+    - 无论响应函数中是否有形参，浏览器都会传递事件对象
+
+- 事件对象中封装了与当前事件相关的一切信息
+    - 信息包括：鼠标的坐标、哪个键盘按钮被按下、鼠标滚轮滚动的方向
+
+- IE8及以下版本浏览器的兼容
+    - IE8及以下版本的浏览器**不会**向响应函数中传递事件对象
+    - 在IE8及以下版本的浏览器中，事件对象是 `window` 对象的一个属性
+    - 兼容处理
+        ```js
+        event = event || window.event;
+        ```
+
+- 常用属性
+    - 属性及其含义
+
+        |属性名|含义|IE8及以下的兼容性|
+        |-|-|-|
+        |clientX|相对于可见窗口的鼠标水平坐标|y|
+        |clientY|相对于可见窗口的鼠标垂直坐标|y|
+        |pageX|相对于当前页面的鼠标水平坐标|n|
+        |pageY|相对于当前页面的鼠标垂直坐标|n|
+    
+    - pageX 与 pageY 的兼容方法
+        - 鼠标在可见窗口的坐标 + 页面滚动条的滚动距离
+        - 滚动条产生是由于`<body>`的 height 属性过大，`<html>`标签无法容纳产生了滚动条，所以需要通过 `<html>` 对象来获取滚动条的移动距离
+            ```js
+            event.clientX + document.documentElement.scrollLeft
+            event.clientY + document.documentElement.scrollTop
+            ```
+
+### 示例-获取鼠标坐标
+[top](#catalog)
+- 功能需求
+    - 两个区域：box01、box02
+    - 在box01中移动鼠标时，在box02中显示鼠标的坐标
+- 参考代码
+    - [/javascript/base/src/dom/domEvent/mouseCoordinate.html](/javascript/base/src/dom/domEvent/mouseCoordinate.html)
+
+- html内容
+    ```html
+    <div id="box01"></div>
+    <div id="box02"></div>
+    ```
+
+- js内容
+    ```js
+    window.onload = function(){
+        var box01 = document.getElementById("box01");
+        var box02 = document.getElementById("box02");
+        box01.onmousemove = function(event){
+            event = event || window.event;
+            box02.innerHTML = "x = " + event.clientX + 
+                                ", y = " + event.clientY;
+        };
+    };
+    ```
+
+### 示例-div跟随鼠标移动
+[top](#catalog)
+- 参考代码
+    - [/javascript/base/src/dom/domEvent/divMoveWithMouse.html](/javascript/base/src/dom/domEvent/divMoveWithMouse.html)
+
+- html内容
+    ```html
+    <div id="box01">pageX</div>
+    <div id="box02"> <br> clientX</div>
+    ```
+
+- css内容
+    ```css
+    body{
+        height: 1000px;
+    }
+    #box01{
+        width: 50px;
+        height: 50px;
+        background-color: #bfa;
+        position: absolute;
+    }
+    
+    #box02{
+        width: 50px;
+        height: 50px;
+        background-color: rgba(68, 119, 238, 0.5);
+        position: absolute;
+        clear:both;
+    }
+    ```
+
+- js内容
+    ```js
+    window.onload = function(){
+        var box01 = document.getElementById("box01");
+        var box02 = document.getElementById("box02");
+        document.onmousemove = function(event){
+            event = event || widnow.event;
+
+            // box01 完全跟随鼠标移动
+            // box01.style.left = event.pageX + "px";
+            // box01.style.top = event.pageY +  "px";
+            box01.style.left = event.clientX + document.documentElement.scrollLeft + "px";
+            box01.style.top = event.clientY + document.documentElement.scrollTop +  "px";
+            
+            // box02 相对于
+            box02.style.left = event.clientX + "px";
+            box02.style.top = event.clientY +  "px";
+        };
+    };
+    ```
+
+## 事件的冒泡
+[top](#catalog)
+- 事件的冒泡是指：事件的向上传导
+    - 当后代元素上的事件被触发时，其祖先元素的**相同事件**也会被触发
+    - 冒泡会从当前元素一直向上传导，到达 `<html>` 后，会再传导到 `document` 结束
+
+- 事件冒泡的使用场景
+    - 一般开发中的事件冒泡都是有价值的
+    - 如：页面元素跟随鼠标移动
+        - 该操作本身绑定的是 `document`
+
+- 取消事件冒泡
+    - 将**事件对象**的 `cancelBubble` 属性设为 true 来取消事件冒泡
+        ```js
+        event.cancelBubble = true;
         ```
 
 
