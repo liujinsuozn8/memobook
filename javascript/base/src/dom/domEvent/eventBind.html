@@ -1,0 +1,83 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>event bind test</title>
+        <script type="text/javascript">
+            window.onload = function(){
+                // 1. 只为事件绑定一个方法：元素对象.事件 = 处理函数
+                var btn01 = document.getElementById("btn01");
+
+                // 绑定多个事件，后面的会覆盖前面的
+                btn01.onclick = function(){
+                    alert("btn01_click01");
+                };
+                btn01.onclick = function(){
+                    alert("btn01_click02");
+                };
+
+                // 2. 使用 addEventListener 为btn02绑定多方法 IE8以上
+                // var btn02 = document.getElementById("btn02");
+                // btn02.addEventListener(
+                //     'click',
+                //     function(){alert("btn02_click01");},
+                //     false
+                // );
+                // btn02.addEventListener(
+                //     'click',
+                //     function(){alert("btn02_click02");},
+                //     false
+                // );
+
+                // 3. 使用 attachEvent 为btn03绑定多方法 IE8及以下
+                // var btn03 = document.getElementById("btn03");
+                // btn03.attachEvent(
+                //     "onclick",
+                //     function(){alert("btn03_click01");}
+                // );
+                // btn03.attachEvent(
+                //     "onclick",
+                //     function(){alert("btn03_click02");}
+                // );
+
+                // 4. 通过兼容方法，为btn04绑定多个处理函数
+                mybind(
+                    document.getElementById("btn04"),
+                    "click",
+                    function(){
+                        alert("btn04_click01, this =" + this);
+                    }
+                );
+                    
+                mybind(
+                    document.getElementById("btn04"),
+                    "click",
+                    function(){
+                        alert("btn04_click02, this =" + this);
+                    }
+                );
+            };
+
+            // 事件绑定兼容方法
+            function mybind(obj, eventName, callback){
+                if (obj.addEventListener) {
+                    obj.addEventListener(eventName, callback, false);
+                } else if (obj.attachEvent) {
+                    obj.attachEvent(
+                        "on"+eventName,
+                        function(){callback.call(obj);} // 调整this对象为当前元素对象
+                    );
+                }
+            }
+        </script>
+    </head>
+    <body>
+        <button id="btn01">btn01</button>
+        <br>
+        <button id="btn02">btn02</button>
+        <br>
+        <button id="btn03">btn03</button>
+        <br>
+        <button id="btn04">btn04</button>
+    </body>
+</html>
