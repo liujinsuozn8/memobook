@@ -2,6 +2,7 @@
 
 ### 目录
 - [dom概述](#dom概述)
+- [dom对象的包含关系](#dom对象的包含关系)
 - [dom操作](#dom操作)
     - [dom查询](#dom查询)
         - [元素与属性的读写](#元素与属性的读写)
@@ -14,11 +15,19 @@
         - [示例-table操作](#示例-table操作)
     - [dom操作css](#dom操作css)
     - [DOMElement对象的一些常用属性与方法](#DOMElement对象的一些常用属性与方法)
+
+- [事件基础](#事件基础)
     - [DOMEvent事件对象](#DOMEvent事件对象)
         - [事件对象](#事件对象)
         - [示例-获取鼠标坐标](#示例-获取鼠标坐标)
         - [示例-div跟随鼠标移动](#示例-div跟随鼠标移动)
-- [事件绑定](#事件绑定)
+    - [事件的冒泡](#事件的冒泡)
+        - [事件冒泡的基本原理](#事件冒泡的基本原理)
+        - [示例-阻止元素跟随鼠标移动](#示例-阻止元素跟随鼠标移动)
+        - [事件冒泡的应用-事件委派](#事件冒泡的应用-事件委派)
+    - [事件绑定](#事件绑定)
+    - [事件传播](#事件传播)
+- [事件应用](#事件应用)
 - [](#)
 - [](#)
 - [](#)
@@ -106,6 +115,15 @@
             </script>
             ```
 
+# dom对象的包含关系
+[top](#catalog)
+- window对象
+    - documnet对象: `window.document`，或直接使用 `document`
+        - html对象：`document.documentElement`
+            - 可以通过 `document.documentElement.getElementsByTagName("body")[0];`，以获取子节点的方式获取 body对象
+        - body对象：`document.body`
+            - 页面中的其他对象 `document.getXXXX(...)`
+
 # dom操作
 ## dom查询
 ### 元素与属性的读写
@@ -140,7 +158,7 @@
 
 - 获取元素节点的子对象
     - 常用方法
-        - `document` 下的方法，元素节点中都有，只是返回的是当前节点下的**子节点**
+        - <label style="color:red">`document` 下的获取元素的方法，在元素对象中都可以使用，只是返回的是当前节点下的**子节点** </label>
     - 常用属性
         - `firstChild`，返回当前节点下的第一个**子节点**
         - `lastChild`，返回当前节点下的最后一个**子节点**
@@ -1016,6 +1034,8 @@
 
 ## DOMElement对象的一些常用属性与方法
 [top](#catalog)
+- 在DOM中，每个Element对象都代表一个html标签
+- Element对象中的方法和属性，每个元素都可以使用
 - 常用属性，这些属性都是只读的
 
     |属性名|返回内容|备注|
@@ -1028,7 +1048,7 @@
     |offserLeft|当前元素相对于**定位元素**的水平偏移量||
     |offsetTop|当前元素相对于**定位元素**的垂直偏移量||
     |scrollHeight|获取元素滚动区域的高度||
-    |scrollWidth|获取元素滚动区域的高度||
+    |scrollWidth|获取元素滚动区域的宽度||
     |scrollLeft|滚动条移动的水平距离||
     |scrollTop|滚动条移动的垂直距离||
 
@@ -1158,11 +1178,13 @@
         ```
 
 
+# 事件基础
 ## DOMEvent事件对象
 ### 事件对象
 [top](#catalog)
 - 当事件的响应函数被触发时，浏览器**每次**都会将一个事件对象作为实参传递给响应函数
     - 无论响应函数中是否有形参，浏览器都会传递事件对象
+    - 如果函数没有形参，可以通过 `arguments` 来获取；如果有形参，则第一个形参默认为事件对象
 
 - 事件对象中封装了与当前事件相关的一切信息
     - 信息包括：鼠标的坐标、哪个键盘按钮被按下、鼠标滚轮滚动的方向
@@ -1178,12 +1200,15 @@
 - 常用属性
     - 属性及其含义
 
-        |属性名|含义|IE8及以下的兼容性|
+        |属性名|含义|备注|
         |-|-|-|
-        |clientX|相对于可见窗口的鼠标水平坐标|y|
-        |clientY|相对于可见窗口的鼠标垂直坐标|y|
-        |pageX|相对于当前页面的鼠标水平坐标|n|
-        |pageY|相对于当前页面的鼠标垂直坐标|n|
+        |clientX|相对于可见窗口的鼠标水平坐标|该属性只返回数值<br><label style="color:red">如果要用来设置css，需要加`px`</label>|
+        |clientY|相对于可见窗口的鼠标垂直坐标|该属性只返回数值<br><label style="color:red">如果要用来设置css，需要加`px`</label>|
+        |offsetX|相对于元素左上角鼠标的水平坐标|该属性只返回数值<br><label style="color:red">如果要用来设置css，需要加`px`</label>|
+        |offsetY|相对于元素左上角鼠标的垂直坐标|该属性只返回数值<br><label style="color:red">如果要用来设置css，需要加`px`</label>|
+        |pageX|相对于当前页面的鼠标水平坐标|IE8及以下不兼容<br>该属性只返回数值<br><label style="color:red">如果要用来设置css，需要加`px`</label>|
+        |pageY|相对于当前页面的鼠标垂直坐标|IE8及以下不兼容<br>该属性只返回数值<br><label style="color:red">如果要用来设置css，需要加`px`</label>|
+        |target|触发事件的真实对象|在事件冒泡中，可以辅助查找真实调用对象<br>参考：[事件冒泡的应用-事件委派](#事件冒泡的应用-事件委派)|
     
     - pageX 与 pageY 的兼容方法
         - 鼠标在可见窗口的坐标 + 页面滚动条的滚动距离
@@ -1274,6 +1299,7 @@
     ```
 
 ## 事件的冒泡
+### 事件冒泡的基本原理
 [top](#catalog)
 - 事件的冒泡是指：事件的向上传导
     - 当后代元素上的事件被触发时，其祖先元素的**相同事件**也会被触发
@@ -1290,18 +1316,311 @@
         event.cancelBubble = true;
         ```
 
+- 示例
+    - [/javascript/base/src/dom/domEvent/eventBubble.html](/javascript/base/src/dom/domEvent/eventBubble.html)
+
+    - html内容
+        ```html
+        <div id="box01">
+            this is box01
+            <span id="span01">this is span01</span>
+        </div>
+        ```
+
+    - js内容
+        ```js
+        function addElemClickById(id, fn){
+            var elem = document.getElementById(id);
+            elem.onclick = fn;
+        }
+
+        window.onload = function(){
+            // 默认事件冒泡
+            addElemClickById(
+                "box01",
+                function(){
+                    alert("this is box01");
+                }
+            );
+                
+            // 取消事件冒泡
+            addElemClickById(
+                "span01",
+                function(event){
+                    alert("this is span01");
+                    event.cancelBubble = true;
+                }
+            );
+                
+            // 默认事件冒泡
+            document.body.onclick = function(){
+                alert("this is body");
+            };
+        };
+        ```
+
+### 示例-阻止元素跟随鼠标移动
+[top](#catalog)
+- 功能需求
+    - 两个块元素：box01、box02
+    - box02跟随鼠标移动
+    - box01阻止事件冒泡，当鼠标移动到box01内部时，阻止box02跟随鼠标移动
+
+- 参考代码
+    - [/javascript/base/src/dom/domEvent/cancelBubbleSample.html](/javascript/base/src/dom/domEvent/cancelBubbleSample.html)
+    - js内容
+        ```js
+        var box01 = document.getElementById("box01");
+        var box02 = document.getElementById("box02");
+
+        // 在box01中通过阻止事件冒泡来组织元素跟随鼠标移动
+        box01.onmousemove = function(event){
+            event.cancelBubble = true;
+        };
+
+        // 元素box02跟随鼠标移动
+        document.onmousemove = function(event){
+            box02.style.left = event.clientX + document.documentElement.scrollLeft + "px";
+            box02.style.top = event.clientY + document.documentElement.scrollTop + "px";
+        };
+        ```
+
+### 事件冒泡的应用-事件委派
+[top](#catalog)
+- [示例-table操作](#示例-table操作) 中的问题
+    - 初始化时，需要获取所有的超链接元素，并为每个超链接元素绑定 `onclick` 事件
+    - 当点击按钮添加一行数据时，需要要为新的超链接 `onclick` 事件
+    - 为每个元素绑定事件的效率比较低
+
+- 事件委派的思路：只绑定一次事件，就能够应用到多个元素上，即使元素是后添加的
+- 事件委派的实现：
+    - 将为多个元素绑定的事件删除，然后将事件绑定到所有元素的祖先元素中
+    - 当元素的事件被触发时，通过**事件冒泡**将事件传递到祖先元素，然后触发事件
+
+- 事件委派的优点
+    - 事件委派利用了**事件冒泡**，避免的重复绑定元素事件，提供了性能
+
+- 事件委派的缺点
+    - 被绑定事件的祖先元素下的素有元素都可以触发事件委派，需要事件处理函数中**过滤事件触发对象**
+
+- 示例
+    - 功能需求
+        - 初始化时，不为每个超链接绑定事件，直接将事件绑定到父元素中
+        - 点击按钮，添加一个新的超链接，不绑定事件，通过事件委派使用父元素中的事件处理
+        - 在元素的实现响应中，过滤事件的触发对象，保证只有点击 `<a>` 触发的事件有效
+        - 事件触发后，在页面提示框中显示超链接中的文本内容
+    - 参考代码
+        - [/javascript/base/src/dom/domEvent/eventDelegate.html](/javascript/base/src/dom/domEvent/eventDelegate.html)
+
+    - html内容
+        ```html
+        <button id="btn01">add btn</button>
+
+        <ul id="ul01">
+            <li><a href="javascript:;">hype 1</a></li>
+            <li><a href="javascript:;">hype 2</a></li>
+            <li><a href="javascript:;">hype 3</a></li>
+        </ul>
+        ```
+
+    - js内容
+        ```js
+        var ul01 = document.getElementById("ul01");
+
+        // 添加事件委派
+        ul01.onclick = function(event){
+            // 过滤事件触发对象
+            if (event.target.tagName.toLowerCase() == "a") {      
+                alert(event.target.innerText + "x");
+            }
+        };
+
+        // 点击按钮后向 ul01 中添加节点
+        var btn01 = document.getElementById("btn01");
+        btn01.onclick = function(){
+            var new_li = document.createElement("li");
+            new_li.innerHTML = "<a href='javascript:;'> hype " +
+                                (ul01.children.length + 1 ) +
+                                "</a>";
+            ul01.appendChild(new_li);
+        };
+        ```
 
 ## 事件绑定
 [top](#catalog)
-- 通过将处理函数绑定到页面对象的事件，来设置事件的响应方式：`元素节点.事件 = 处理函数`
+- 事件绑定方法
+    - 绑定一个处理函数
+        - 绑定方法：`元素.事件 = 处理函数`
+        - 该方法只能一种事件绑定**一个**处理函数
+        - 如果执行多次绑定，则后面的会覆盖前面的
+        
+    - 绑定多个处理函数
+        ||IE8以上|IE8及以下|
+        |-|-|-|
+        |绑定方法|`元素.addEventListener(eventName, callback [,useCapture])`|`元素.attachEvent(eventName, callback)`|
+        |参数说明|<ul><li>`eventName`: 事件名字符串<ul><li>不需要写开头的 `on`</li><li>如： `onclick`事件，只写 `click`</li></ul></li><li>`callback`: 回调函数</li><li>`useCapture`: 是否在捕获阶段触发事件<ul><li>bool型参数，可选参数</li><li>一般都使用 false</li></ul></li></ul>|<ul><li>`eventName`: 事件名字符串<ul><li>需要写开头的 `on`</li></ul></li><li>`callback`: 回调函数</li></ul>|
+        |函数执行顺序|按照绑定顺序**顺序执行**|按照绑定顺序**逆序执行**|
+        |this对象|绑定事件的元素对象|`window` 对象|
 
+    - 绑定多个处理函数 的兼容方法
+        ```js
+        function mybind(obj, eventName, callback){
+            if (obj.addEventListener) {
+                obj.addEventListener(eventName, callback, false);
+            } else if (obj.attachEvent) {
+                obj.attachEvent(
+                    "on"+eventName,
+                    function(){callback.call(obj);} // 调整this对象为当前元素对象
+                );
+            }
+        }
+        ```
+
+- 一般情况下多个绑定事件是功能分离的，所以对于事件的执行顺序不会有严格的要求
+
+- 有一些特殊的事件只能通过 方式2 来绑定处理函数
+    - ?????
+
+- 示例
+    - 参考代码
+        - [/javascript/base/src/dom/domEvent/eventBind.html](/javascript/base/src/dom/domEvent/eventBind.html)
+    
+    - js内容
+        ```js
+        window.onload = function(){
+            // 1. 只为事件绑定一个方法：元素对象.事件 = 处理函数
+            var btn01 = document.getElementById("btn01");
+
+            // 绑定多个事件，后面的会覆盖前面的
+            btn01.onclick = function(){
+                alert("btn01_click01");
+            };
+            btn01.onclick = function(){
+                alert("btn01_click02");
+            };
+
+            // 2. 使用 addEventListener 为btn02绑定多方法 IE8以上
+            // var btn02 = document.getElementById("btn02");
+            // btn02.addEventListener(
+            //     'click',
+            //     function(){alert("btn02_click01");},
+            //     false
+            // );
+            // btn02.addEventListener(
+            //     'click',
+            //     function(){alert("btn02_click02");},
+            //     false
+            // );
+
+            // 3. 使用 attachEvent 为btn03绑定多方法 IE8及以下
+            // var btn03 = document.getElementById("btn03");
+            // btn03.attachEvent(
+            //     "onclick",
+            //     function(){alert("btn03_click01");}
+            // );
+            // btn03.attachEvent(
+            //     "onclick",
+            //     function(){alert("btn03_click02");}
+            // );
+
+            // 4. 通过兼容方法，为btn04绑定多个处理函数
+            mybind(
+                document.getElementById("btn04"),
+                "click",
+                function(){
+                    alert("btn04_click01, this =" + this);
+                }
+            );
+                
+            mybind(
+                document.getElementById("btn04"),
+                "click",
+                function(){
+                    alert("btn04_click02, this =" + this);
+                }
+            );
+        };
+
+        // 事件绑定兼容方法
+        function mybind(obj, eventName, callback){
+            if (obj.addEventListener) {
+                obj.addEventListener(eventName, callback, false);
+            } else if (obj.attachEvent) {
+                obj.attachEvent(
+                    "on"+eventName,
+                    function(){callback.call(obj);} // 调整this对象为当前元素对象
+                );
+            }
+        }
+        ```
+
+## 事件传播
+[top](#catalog)
+- 两种不同的事件传播的理解
+    - 微软：由内向外传播、事件冒泡
+        - 事件触发时，先触发当前元素的事件，然后再向各级祖先元素传递
+    - 网景：由外向内传播、事件捕获
+        - 事件触发时，先触发当前元素的最外层的祖先元素的事件，然后再向个子元素传播
+
+- **w3c标准: 事件传播的三个阶段**
+
+    |阶段|名称|描述|备注|
+    |-|-|-|-|
+    |1|事件捕获|方向：从外向内<br>从最外层的祖先元素开始，向目标元素进行事件的捕获，但是默认不会触发事件|最外层元素是什么? <br>w3c的标准是document，但是大部分浏览器都设计成从window对象开始|
+    |2|目标阶段|事件捕获到目标元素。捕获结束时，触发目标的事件||
+    |3|冒泡阶段|方向：从内到外<br>事件从目标元素向各级祖先元素传递，并依次触发每个祖先元素的事件||
+
+- **在IE8及以下版本的浏览器中，没有事件捕获**
+
+- 可以通过 `addEventListener(eventName, callback, true)`，将第三个参数设置为 true，使事件在捕获阶段被触发
+
+- 示例
+    - 参考代码
+        - [/javascript/base/src/dom/domEvent/eventNotify.html](/javascript/base/src/dom/domEvent/eventNotify.html)
+
+    - js内容
+        ```js
+        var box01 = document.getElementById("box01");
+        var box02 = document.getElementById("box02");
+        var box03 = document.getElementById("box03");
+
+        // 设置事件都在捕获阶段被触发
+        box01.addEventListener(
+            "click",
+            function(){alert("this is box01")},
+            true    
+        )
+
+        box02.addEventListener(
+            "click",
+            function(){alert("this is box02")},
+            true    
+        )
+
+        box03.addEventListener(
+            "click",
+            function(){alert("this is box03")},
+            true    
+        )
+        ```
+
+# 事件应用
+## 元素拖拽
+[top](#catalog)
+- 实现思路
+    1. 当元素被点击时，即触发 `onmousedown`事件时，为 document 绑定鼠标移动事件 `onmousemove`
+    2. 不松开鼠标并移动鼠标，在 1 中绑定的`onmousemove`事件被触发，元素跟随鼠标移动，产生拖拽效果
+    3. 当鼠标松开时，触发 document 的 `onmouseup` 事件，从 document 中删除鼠标移动事件
+        - 为了保证鼠标移动到任何元素的区域内都能删除`onmousemove`事件，必须将`onmouseup`事件设置在 document 中，利用事件冒泡删除事件
+    4. 删除 `onmousemove` 事件之后，document 的 `onmouseup` 不再有任何意义，将 `onmouseup` 事件也删除
+
+
+
+
+# 其他
+[top](#catalog)
 - window对象
     - onload 事件会在整个页面加载完成之后才触发
-- 一般元素节点
-    - onclick
 
 - 在事件的响应函数中返回 `return false;`，可以取消事件的默认行为
-
-
-
 
