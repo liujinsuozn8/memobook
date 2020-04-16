@@ -1,0 +1,55 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title></title>
+        <style>
+            #box01{
+                width: 300px;
+                height: 100px;
+                background: #bfa;
+            }
+
+            #span01{
+                background-color: #47e;
+            }
+        </style>
+        <script type="text/javascript">
+            function addElemClickById(id, fn){
+                var elem = document.getElementById(id);
+                elem.onclick = fn;
+            }
+
+            window.onload = function(){
+                // 默认事件冒泡
+                addElemClickById(
+                    "box01",
+                    function(){
+                        alert("this is box01");
+                    }
+                );
+                    
+                // 取消事件冒泡
+                addElemClickById(
+                    "span01",
+                    function(event){
+                        alert("this is span01");
+                        event.cancelBubble = true;
+                    }
+                );
+                    
+                // 默认事件冒泡
+                document.body.onclick = function(){
+                    alert("this is body");
+                };
+            };
+
+        </script>
+    </head>
+    <body>
+        <div id="box01">
+            this is box01
+            <span id="span01">this is span01</span>
+        </div>
+    </body>
+</html>
