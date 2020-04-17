@@ -56,6 +56,51 @@
                         alert("btn04_click02, this =" + this);
                     }
                 );
+
+                // 5. 同时使用两种方法为同一个元素绑定方法: 
+                // 5.1 先使用 addEventListener 绑定， 再使用 onclick 绑定
+                var btn0501 = document.getElementById("btn0501");
+                mybind(
+                    btn0501,
+                    "click",
+                    function(){alert("btn0502_click03");}
+                );
+
+                mybind(
+                    btn0501,
+                    "click",
+                    function(){alert("btn0501_click04");}
+                );
+
+                btn0501.onclick = function(){
+                    alert("btn0501_click01");
+                };
+
+                btn0501.onclick = function(){
+                    alert("btn0501_click02");
+                };
+
+                // 5.2 先使用 onclick 绑定，再使用 addEventListener 绑定
+                var btn0502 = document.getElementById("btn0502");
+                btn0502.onclick = function(){
+                    alert("btn0502_click01");
+                };
+
+                btn0502.onclick = function(){
+                    alert("btn0502_click02");
+                };
+
+                mybind(
+                    btn0502,
+                    "click",
+                    function(){alert("btn0502_click03");}
+                );
+
+                mybind(
+                    btn0502,
+                    "click",
+                    function(){alert("btn0502_click04");}
+                );
             };
 
             // 事件绑定兼容方法
@@ -79,5 +124,9 @@
         <button id="btn03">btn03</button>
         <br>
         <button id="btn04">btn04</button>
+        <br>
+        <button id="btn0501">btn0501</button>
+        <br>
+        <button id="btn0502">btn0502</button>
     </body>
 </html>
