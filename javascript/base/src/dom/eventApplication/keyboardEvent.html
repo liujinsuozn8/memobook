@@ -1,0 +1,71 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>keyboard event test</title>
+        <style>
+            #box01{
+                width: 50px;
+                height: 50px;
+                background-color: #ccc;
+                position:absolute;
+            }
+        </style>
+        <script type="text/javascript">
+            window.onload = function(){
+                // document.onkeydown = function(event){
+                //     // console.log("key down");
+                //     console.log(event.keyCode);
+                // };
+                // document.onkeyup = function(event){
+                //     console.log("key up");
+                // };
+
+                // 1. 禁止 txt01 输入数字
+                var txt01 = document.getElementById("txt01");
+                txt01.onkeydown = function(event){
+                    if (
+                        (event.keyCode >= 48 && event.keyCode <= 57)||
+                        (event.keyCode >= 96 && event.keyCode <= 105)
+
+                    ){
+                        return false;
+                    }
+                };
+
+                
+                // 2. 按下按键移动元素
+                var box01 = document.getElementById("box01");
+                document.addEventListener(
+                    "keydown",
+                    function(event){
+                        switch (event.keyCode){
+                            // 左 37
+                            case 37: 
+                                box01.style.left = box01.offsetLeft - 10 + "px";
+                                break;
+                            // 上 38
+                            case 38:
+                                box01.style.top = box01.offsetTop - 10 + "px";
+                                break;
+                            // 右 39
+                            case 39:
+                                box01.style.left = box01.offsetLeft + 10 + "px";
+                                break;
+                            // 下 40
+                            case 40:
+                                box01.style.top = box01.offsetTop + 10 + "px";
+                                break;
+                        }
+                    }
+                );
+
+            };
+        </script>
+    </head>
+    <body>
+        <input type="text" id="txt01">
+        <br>
+        <div id="box01"></div>
+    </body>
+</html>
