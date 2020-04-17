@@ -28,9 +28,12 @@
     - [事件绑定](#事件绑定)
     - [事件传播](#事件传播)
 - [事件应用](#事件应用)
-- [](#)
-- [](#)
-- [](#)
+    - [元素拖拽](#元素拖拽)
+    - [滚轮事件](#滚轮事件)
+    - [键盘事件](#键盘事件)
+    - [](#)
+    - [](#)
+- [浏览器默认行为](#浏览器默认行为)
 - [](#)
 
 
@@ -948,19 +951,19 @@
 - **读取**元素节点**当前正在使用**的样式
     - 不限于内联、内部、外部中的任意一种，当前元素节点使用的是哪个位置的样式，就操作哪个
     - 当前正在使用的样式都是**只读**的
-    - 方式1 ： 通过 `currentStyle`属性
-        - <label style="color:red">只限IE浏览器可以使用</label>
-        - 操作语法： `元素.currentStyle.样式名`
-    
-    - 方式2 ： 通过 `window.getComputedStyle(元素对象, null/为元素)` 方法
-        - <label style="color:red">IE8及以下浏览器不兼容</label>
-        - 第二个参数一般都会使用 null
-        - 该方法位于 window 对象中，可以直接通过方法名来调用
-        - 对于css属性值是 auto 的值，该方法会自动转换为真实值
 
-    - 方式1 和 方式2 的兼容
+    - 不同浏览器版本的使用方法
+
+        ||其他浏览器|IE浏览器|
+        |-|-|-|
+        |使用方法|`window.getComputedStyle(元素对象, null/伪元素)`|`元素.currentStyle`|
+        |参数说明|第二个参数一般都会使用 null|-|
+        |auto属性值|自动将 `auto` 转换为真实值|直接返回 `auto`|
+        |备注|<label style="color:red">IE8及以下浏览器不兼容</label>||
+
+    - 不同浏览器版本的兼容
         ```js
-         var style = 元素节点.currentStyle || getComputedStyle(元素节点, null);
+        var style = 元素节点.currentStyle || getComputedStyle(元素节点, null);
         ```
 
 - 对于包含特殊字符 `-` 的css样式名，使用时需要将样式名转换为**驼峰命名法**
@@ -1209,6 +1212,8 @@
         |pageX|相对于当前页面的鼠标水平坐标|IE8及以下不兼容<br>该属性只返回数值<br><label style="color:red">如果要用来设置css，需要加`px`</label>|
         |pageY|相对于当前页面的鼠标垂直坐标|IE8及以下不兼容<br>该属性只返回数值<br><label style="color:red">如果要用来设置css，需要加`px`</label>|
         |target|触发事件的真实对象|在事件冒泡中，可以辅助查找真实调用对象<br>参考：[事件冒泡的应用-事件委派](#事件冒泡的应用-事件委派)|
+        |wheelDelta|鼠标滚轮的滚动方向<br>向上滚是正数，向下滚是负数<br>该属性一般只关系正负，不关系大小|firefox中没有该属性，使用`detail`替代<br>参考：[滚轮事件](#滚轮事件)|
+        |detail|鼠标滚轮的滚动方向<br>向上滚是负数，向下滚是正数<br>该属性一般只关系正负，不关系大小|**firefox专用属性**，用来替代 `wheelDelta`|
     
     - pageX 与 pageY 的兼容方法
         - 鼠标在可见窗口的坐标 + 页面滚动条的滚动距离
@@ -1455,6 +1460,7 @@
         - 如果执行多次绑定，则后面的会覆盖前面的
         
     - 绑定多个处理函数
+
         ||IE8以上|IE8及以下|
         |-|-|-|
         |绑定方法|`元素.addEventListener(eventName, callback [,useCapture])`|`元素.attachEvent(eventName, callback)`|
@@ -1476,6 +1482,9 @@
         }
         ```
 
+- **如果同时使用两种方法绑定事件，绑定的事件会同时存在，并按绑定顺序顺次执行**
+    - 绑定方法1 `元素.事件 = 处理函数` 的特性不变，仍然是后面的覆盖前面的
+
 - 一般情况下多个绑定事件是功能分离的，所以对于事件的执行顺序不会有严格的要求
 
 - 有一些特殊的事件只能通过 方式2 来绑定处理函数
@@ -1485,6 +1494,21 @@
     - 参考代码
         - [/javascript/base/src/dom/domEvent/eventBind.html](/javascript/base/src/dom/domEvent/eventBind.html)
     
+    - html内容
+        ```html
+        <button id="btn01">btn01</button>
+        <br>
+        <button id="btn02">btn02</button>
+        <br>
+        <button id="btn03">btn03</button>
+        <br>
+        <button id="btn04">btn04</button>
+        <br>
+        <button id="btn0501">btn0501</button>
+        <br>
+        <button id="btn0502">btn0502</button>
+        ```
+
     - js内容
         ```js
         window.onload = function(){
@@ -1538,6 +1562,51 @@
                 function(){
                     alert("btn04_click02, this =" + this);
                 }
+            );
+            
+            // 5. 同时使用两种方法为同一个元素绑定方法: 
+            // 5.1 先使用 addEventListener 绑定， 再使用 onclick 绑定
+            var btn0501 = document.getElementById("btn0501");
+            mybind(
+                btn0501,
+                "click",
+                function(){alert("btn0502_click03");}
+            );
+
+            mybind(
+                btn0501,
+                "click",
+                function(){alert("btn0501_click04");}
+            );
+
+            btn0501.onclick = function(){
+                alert("btn0501_click01");
+            };
+
+            btn0501.onclick = function(){
+                alert("btn0501_click02");
+            };
+
+            // 5.2 先使用 onclick 绑定，再使用 addEventListener 绑定
+            var btn0502 = document.getElementById("btn0502");
+            btn0502.onclick = function(){
+                alert("btn0502_click01");
+            };
+
+            btn0502.onclick = function(){
+                alert("btn0502_click02");
+            };
+
+            mybind(
+                btn0502,
+                "click",
+                function(){alert("btn0502_click03");}
+            );
+
+            mybind(
+                btn0502,
+                "click",
+                function(){alert("btn0502_click04");}
             );
         };
 
@@ -1608,12 +1677,272 @@
 ## 元素拖拽
 [top](#catalog)
 - 实现思路
-    1. 当元素被点击时，即触发 `onmousedown`事件时，为 document 绑定鼠标移动事件 `onmousemove`
+    1. 当元素被点击时，即触发 `onmousedown` 事件时，为 document 绑定鼠标移动事件 `onmousemove`
     2. 不松开鼠标并移动鼠标，在 1 中绑定的`onmousemove`事件被触发，元素跟随鼠标移动，产生拖拽效果
     3. 当鼠标松开时，触发 document 的 `onmouseup` 事件，从 document 中删除鼠标移动事件
         - 为了保证鼠标移动到任何元素的区域内都能删除`onmousemove`事件，必须将`onmouseup`事件设置在 document 中，利用事件冒泡删除事件
     4. 删除 `onmousemove` 事件之后，document 的 `onmouseup` 不再有任何意义，将 `onmouseup` 事件也删除
 
+- 注意事项
+    1. `onmousedown`、`onmouseup` 是成对出现的，需要在元素的 `onmousedown` 事件中同时设置。保证处理函数只在鼠标拖拽的时候有效
+        - `onmouseup` 必须要在 `onmousedown` 内部设置。
+            - 因为 `onmouseup` 会将自身删除，如果在外部设置，会导致 `onmouseup` 事件变为**一次性事件**
+
+    2. 元素拖拽时可能会被浏览器默认行为干扰，需要手动取消
+        - 参考：[浏览器默认行为](#浏览器默认行为)
+
+
+- 示例
+    - 参考代码
+        - [/javascript/base/src/dom/eventApplication/elemDrap.html](/javascript/base/src/dom/eventApplication/elemDrap.html)
+
+    - html内容
+        ```html
+        <div id="box01"></div>
+        <div id="box02"></div>
+        ```
+
+    - css内容
+        ```css
+        #box01{
+            width: 50px;
+            height: 50px;
+            background-color: #ccc;
+            /* position: relative; */
+            position: absolute;
+        }   
+
+        #box02{
+            width: 50px;
+            height: 50px;
+            background-color: #bfa;
+            /* position: relative; */
+            position: absolute;
+            top:100px;
+        }   
+        ```
+
+    - js内容
+        ```js
+        window.onload = function(){
+            // 分别为 box01 和 box02 绑定拖拽事件
+            var box01 = document.getElementById("box01");
+            drap(box01);
+
+            var box02 = document.getElementById("box02");
+            drap(box02);
+        };
+        
+        function drap(obj){
+            // 点击鼠标时，绑定鼠标移动事件
+            // 鼠标移动，并且鼠标未放开
+            // 放开鼠标，删除鼠标移动事件
+            // 1. 在 box01 内部按下按钮
+            obj.onmousedown = function(event){
+                var obj_mouse_click_offsetX = event.offsetX
+                var obj_mouse_click_offsetY = event.offsetY
+                
+                // 2. 设置鼠标的移动事件
+                document.onmousemove = function(event){
+                    // 减去鼠标点击时的偏移量，使鼠标移动时，元素与鼠标的相对位置不变
+                    obj.style.left = event.pageX - obj_mouse_click_offsetX + "px";
+                    obj.style.top = event.pageY - obj_mouse_click_offsetY + "px";
+                };
+
+                // 3. 在任意位置放开鼠标时，将鼠标的移动事件删除
+                document.onmouseup = function(){
+                    document.onmousemove = null;
+
+                    // 该事件与box01.onmousedown是成对的，当鼠标放开时，该方法
+                    // 不再有任何意义，需要删除
+                    document.onmouseup = null;
+                };
+
+                // 取消浏览器
+                return false;
+            };
+        }
+        ```
+
+## 滚轮事件
+[top](#catalog)
+
+- 功能需求
+    - 页面上有一个块元素
+    - 将鼠标放在块元素内部时，同时向下滑动鼠标滚轮时，元素的长度变长
+    - 将鼠标放在块元素内部时，同时向上滑动鼠标滚轮时，元素的长度变短
+
+- 通过 `元素.onmousewheel` 设置鼠标滚轮滚动的事件
+    - firefox不兼容该事件
+    - firefox的兼容方法
+        - `元素.addEventListener("DOMMouseScroll", callback)`
+
+- 通过`event.wheelDelta`属性的正负来判读是向上滚动还是向下滚动
+    - 参考：[事件对象](事件对象)
+    - 正数向上滚动，负数向下滚动
+    - firefox浏览器需要使用 `event.detail` 来判断。正数向下滚动，负数向上滚动
+
+- 注意事项
+    - 鼠标滚轮滚动时会被浏览器的默认行为干扰，需要手动取消
+        - 参考:[浏览器默认行为](#浏览器默认行为)
+
+- 示例
+    - 参考代码
+        - [/javascript/base/src/dom/eventApplication/mouseWheel.html](/javascript/base/src/dom/eventApplication/mouseWheel.html)
+
+    - html内容
+        ```html
+        <div id="box01"></div>
+        ```
+    
+    - css内容
+        ```css
+        body{
+            height: 1000px;
+        }
+
+        #box01{
+            width: 50px;
+            height: 50px;
+            background-color: #eee;
+        }
+        ```
+
+    - js内容
+        ```js
+        window.onload = function(){
+            var box01 = document.getElementById("box01");
+            
+            box01.onmousewheel = function(event){
+                if (event.wheelDelta > 0) {
+                    if (box01.clientHeight > 20){
+                        // 向上滚动
+                        box01.style.height = box01.clientHeight - 10 + "px";
+                    }
+                } else {
+                    // 向下滚动
+                    box01.style.height = box01.clientHeight + 10 + "px";
+                }
+
+                // 取消浏览器的默认行为
+                event.preventDefault();
+            };
+        };
+        ```
+
+## 键盘事件
+[top](#catalog)
+- 键盘事件一般会绑定给**可以获取焦点的元素对象，或者是 documnet对象**
+    - 如：按钮、input输入框、redio button、checkbox、下拉列表 等等
+    - 像 `<div>` 这中元素一般不会绑定键盘事件
+        - 无法定义 `<div>` 这中元素在什么状态下是 获取到了焦点
+
+- 键盘事件
+
+    |事件名|描述|备注|
+    |-|-|-|
+    |onkeydown|某个键盘按钮被按下|<ul><li>如果键盘按钮一直被按下不松开，则该事件会被连续触发</li><li>浏览器的防误操作设计<ul><li>当该事件被连续触发时，第一次和第二次之间会有一点延迟，后面的就没有问题</li><li>通过第一次和第二次之间的延迟，保证一次键盘按下的事件不会被识别为多次</li></ul></li></ul>|
+    |onkeyup|某个键盘按钮被松开||
+    ||||
+
+- 通过 `event` 对象获取键盘按下时的按钮信息
+
+    |属性|描述|备注|
+    |-|-|-|
+    |keyCode|按钮编码||
+    |altKey|alt是否被按下<br>被按下返回true，没按下返回false|识别组合键时，用来单独判断使用|
+    |ctrlKey|ctrl是否被按下<br>被按下返回true，没按下返回false|识别组合键时，用来单独判断使用|
+    |shiftKey|shift是否被按下<br>被按下返回true，没按下返回false|识别组合键时，用来单独判断使用|
+    ||||
+
+- 示例
+    - 参考代码
+        - [/javascript/base/src/dom/eventApplication/keyboardEvent.html](/javascript/base/src/dom/eventApplication/keyboardEvent.html)
+    
+    - 1、进制文本框输入数字
+        - html内容
+            ```html
+            <input type="text" id="txt01">
+            ```
+        - js内容
+            ```js
+            // 1. 禁止 txt01 输入数字
+            var txt01 = document.getElementById("txt01");
+            txt01.onkeydown = function(event){
+                if (
+                    (event.keyCode >= 48 && event.keyCode <= 57)||
+                    (event.keyCode >= 96 && event.keyCode <= 105)
+
+                ){
+                    return false;
+                }
+            };
+            ```
+    - 2、按方向键移动元素
+        - html内容
+            ```html
+            <div id="box01"></div>
+            ```
+
+        - css内容
+            ```css
+            #box01{
+                width: 50px;
+                height: 50px;
+                background-color: #ccc;
+                position:absolute;
+            }            
+            ```
+
+        - js内容
+            ```js
+            var box01 = document.getElementById("box01");
+            document.addEventListener(
+                "keydown",
+                function(event){
+                    switch (event.keyCode){
+                        // 左 37
+                        case 37: 
+                            box01.style.left = box01.offsetLeft - 10 + "px";
+                            break;
+                        // 上 38
+                        case 38:
+                            box01.style.top = box01.offsetTop - 10 + "px";
+                            break;
+                        // 右 39
+                        case 39:
+                            box01.style.left = box01.offsetLeft + 10 + "px";
+                            break;
+                        // 下 40
+                        case 40:
+                            box01.style.top = box01.offsetTop + 10 + "px";
+                            break;
+                    }
+                }
+            );
+            ```
+
+# 浏览器默认行为
+[top](#catalog)
+- 浏览器默认行为
+    
+    |行为|描述|备注|
+    |-|-|-|
+    |元素拖拽|当拖拽一个网页中的内容时，浏览器会默认到搜索引擎中搜索内容|这种 默认行为 可能会导致拖拽功能的异常|
+    |鼠标滚轮滚动|如果页面有滚动条，鼠标在某个元素上滚轮滚动时，会触发浏览器的默认事件，整个页面也会同时滚动||
+    |键盘按下|当在文本框中按下键盘时，一些按钮的内容会输入到文本框中||
+    
+- 取消默认行为
+    - 两种取消方法
+        1. `return false;`
+        2. `event.preventDefault()`
+            - **该方法不兼容IE8及以下**
+
+    - 对于不同的事件绑定方法
+        - `元素.事件 = 处理函数`
+            - 可以使用 `return false;` 或 `event.preventDefault()` 取消默认行为
+        - `addEventListener`        
+            - 只能使用 `event.preventDefault()` 取消默认行为
 
 
 
@@ -1621,6 +1950,3 @@
 [top](#catalog)
 - window对象
     - onload 事件会在整个页面加载完成之后才触发
-
-- 在事件的响应函数中返回 `return false;`，可以取消事件的默认行为
-
