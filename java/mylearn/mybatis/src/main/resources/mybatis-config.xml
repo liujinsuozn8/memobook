@@ -12,11 +12,15 @@
     <settings>
         <!--<setting name="logImpl" value="STDOUT_LOGGING"/>-->
         <setting name="logImpl" value="LOG4J"/>
+        <setting name="mapUnderscoreToCamelCase" value="true"/>
     </settings>
 
     <!--扫描包来添加别名-->
     <typeAliases>
         <package name="com.ljs.learn.mybatis.common.bean"/>
+        <package name="com.ljs.learn.mybatis.common.bean02"/>
+        <package name="com.ljs.learn.mybatis.common.bean03"/>
+        <package name="com.ljs.learn.mybatis.common.bean04"/>
     </typeAliases>
 
     <!--配置多套环境-->
@@ -48,7 +52,18 @@
         <mapper class="com.ljs.learn.mybatis.mapperXml.resultmap.simpleMap.UserMapper12"/>
         <mapper class="com.ljs.learn.mybatis.mapperXml.paging.UserMapper13"/>
 
+        <!--sql片段-->
+        <mapper class="com.ljs.learn.mybatis.mapperXml.sqlCode.UserMapper15"/>
+
         <!--配置使用注解开发的mapper-->
         <mapper class="com.ljs.learn.mybatis.annotation.UserMapper14"/>
+
+        <!--多对一、一对多关系-->
+        <mapper class="com.ljs.learn.mybatis.relation.moreToOne.StudentMapper"/>
+        <mapper class="com.ljs.learn.mybatis.relation.moreToOne.TeacherMapper"/>
+        <mapper class="com.ljs.learn.mybatis.relation.oneToMore.Teacher02Mapper"/>
+
+        <!-- 动态sql -->
+        <mapper class="com.ljs.learn.mybatis.dynamicSql.BlogMapper"></mapper>
     </mappers>
 </configuration>

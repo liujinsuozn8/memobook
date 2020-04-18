@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--namespace绑定一个Dao/Mapper接口-->
+<mapper namespace="com.ljs.learn.mybatis.relation.oneToMore.Teacher02Mapper">
+    <!--1. 按照查询嵌套处理一对多关系-->
+    <!--主查询-->
+    <select id="getTeacherById" resultMap="teacherMap02">
+        select id, name from teacher
+    </select>
+
+    <resultMap id="teacherMap02" type="teacher02">
+        <!--id被子查询使用，需要手动添加id的映射，否则会为0-->
+        <result property="id" column="id"></result>
+        <collection property="students" column="id" javaType="ArrayList" ofType="student02" select="getStudent"></collection>
+    </resultMap>
+
+    <!--子查询-->
+    <select id="getStudent" resultType="student02">
+        select id, name from student where tid = #{id}
+    </select>
+    
+    <!--2. 按照结果嵌套处理-->
+    <!--联合查询sql-->
+    <select id="getTeacherById02" resultMap="teacherMap">
+        select t.id as tid, t.name as tname, s.id as sid, s.name as sname
+        from teacher t
+        inner join student s on t.id = s.tid
+    </select>
+
+    <resultMap id="teacherMap" type="teacher02">
+        <!--student表的id和name使用了别名，所以配置别名与属性的对应关系-->
+        <result property="id" column="tid"></result>
+        <result property="name" column="tname"></result>
+        <collection property="students" javaType="ArrayList" ofType="student02">
+            <result property="id" column="sid"></result>
+            <result property="name" column="sname"></result>
+        </collection>
+    </resultMap>
+
+
+</mapper>

@@ -22,12 +22,12 @@
     - [resultMap-结果映射](#resultMap-结果映射)
 - [mybatis-config配置分析](#mybatis-config配置分析)
     - [配置内容的顺序](#配置内容的顺序)
-    - [environments-环境配置](#environments-环境配置)
     - [properties-属性](#properties-属性)
+    - [settings-设置](#settings-设置)
+    - [environments-环境配置](#environments-环境配置)
     - [typeAliases-类型别名](#typeAliases-类型别名)
         - [类型别名的配置方法](#类型别名的配置方法)
-        - [java常见类型内建的类型别名](#java常见类型内建的类型别名)
-    - [settings-设置](#settings-设置)
+        - [mybatis中java常见类型的内建类型别名](#mybatis中java常见类型的内建类型别名)
     - [生命周期和作用域](#生命周期和作用域)
     - [日志工厂](#日志工厂)
 - [分页](#分页)
@@ -35,10 +35,33 @@
     - [RowBounds分页](#RowBounds分页)
 - [使用注解开发mapper](#使用注解开发mapper)
 - [Mybatis执行流程分析](#Mybatis执行流程分析)
+- [多对一与一对多示例使用的数据库环境](#多对一与一对多示例使用的数据库环境)
+- [多对一关系处理](#多对一关系处理)
+    - [创建多对一关系的表](#创建多对一关系的表)
+    - [按照查询进行嵌套处理多对一关系](#按照查询进行嵌套处理多对一关系)
+    - [按照结果进行嵌套处理多对一关系](#按照结果进行嵌套处理多对一关系)
+- [一对多关系处理](#一对多关系处理)
+    - [创建一对多关系](#创建一对多关系)
+    - [按照查询嵌套处理一对多关系](#按照查询嵌套处理一对多关系)
+    - [按照结果嵌套处理一对多关系](#按照结果嵌套处理一对多关系)
+- [动态sql](#动态sql)
+    - [动态sql概述](#动态sql概述)
+    - [创建动态sql使用的数据库环境](#创建动态sql使用的数据库环境)
+    - [动态sql语句](#动态sql语句)
+        - [所有动态sql语句的配置及测试内容](#所有动态sql语句的配置及测试内容)
+        - [if语句](#if语句)
+        - [where语句](#where语句)
+        - [choose_when_otherwise语句](#choose_when_otherwise语句)
+        - [set语句](#set语句)
+        - [trim语句](#trim语句)
+        - [foreach语句](#foreach语句)
+- [](#)
+- [](#)
 - [](#)
 - [](#)
 - [](#)
 
+[top](#catalog)
 
 # MyBatis概述
 [top](#catalog)
@@ -274,6 +297,11 @@
         </resources>
         ```
     
+- `mapper.xml`下的 select语句 中没有指定 `resultType` 或 `resultMap`，导致查询结果无法映射到实体类中
+    ```
+    org.apache.ibatis.executor.ExecutorException: A query was run and no Result Maps were found for the Mapped Statement '全类名.方法名'.  It's likely that neither a Result Type nor a Result Map was specified.
+    ```
+
 - 绑定接口错误
     - **必须在`mapper.xml`文件下的`namespace`属性中配置接口，否则启动后，无法绑定**
 - 方法名异常
@@ -414,7 +442,7 @@
     - `<update>`
     - `<delete>`
     
-- 增删该处理，需要提交事务：`sqlSession.commit();`
+- 增删改处理，需要提交事务：`sqlSession.commit();`
 
 - 示例
     - Dao接口及其`mapper.xml`
@@ -546,7 +574,7 @@
           
 ## Map对象作为接口参数
 [top](#catalog)
-- 当实体类或表的字段过多，可以使用map
+- 当实体类或表的字段过多，可以使用map对象
 - 使用map对象作为接口参数时，可以自由控制key的名字
 - 配置文件中，通过`#{key}`来从map对象中根据key获取参数值
 - 示例
@@ -737,6 +765,26 @@
 
 - 解决方式2：使用resultMap
     - [resultMap-结果映射](#resultMap-结果映射)
+
+- 解决方法3：驼峰命名自动转换
+    - 该方法只适用于实体类字段和数据库字段命名规则不一致的情况
+        - 如下，表中的字段为 `create_time`，Java实体类中的属性名为 `createTime`，只是命名规则不同
+            ```sql
+            create table xxx (
+                create_time datetime,
+            );
+            ```
+            ```java
+            class xxx{
+                private Date createTime;
+            }
+            ```
+    - 在 mybatis-config.xml 中添加配置
+        ```xml
+        <settings>
+            <setting name="mapUnderscoreToCamelCase" value="true"/>
+        </settings>
+        ```
     
 ## resultMap-结果映射
 [top](#catalog)
@@ -818,6 +866,70 @@
                 User02{id=1, name='aaa', password='aaapwd'}
                 ```
 
+## sql片段
+[top](#catalog)
+- **通过sql片段可以实现代码复用**
+- 语法
+    - 创建sql片段，片段中可以包含参数
+        ```xml
+        <sql id="sql片段id">
+            ${参数名}
+            ...
+        </sql>
+        ```
+    - 引用sql片段
+        ```xml
+        <select id="select" resultType="map">
+            ...
+            <!-- 引用sql片段 -->
+            <include refid="sql片段id">
+                <property name="sql片段中的参数名" value="参数值"/>
+            </include>
+
+            ...
+        </select>
+        ```
+- 创建sql片段的注意事项
+    1. 尽量只为单表创建sql片段
+    2. 不要包含 [where语句](#where语句)、[set语句](#set语句)
+        - 添加后，sql片段就完全被限定为where条件，或set语句的内容，降低了复用功能
+
+- 示例
+    - mapper
+        - 参考代码
+            - [/java/mylearn/mybatis/src/main/java/com/ljs/learn/mybatis/mapperXml/sqlCode/UserMapper15.xml](/java/mylearn/mybatis/src/main/java/com/ljs/learn/mybatis/mapperXml/sqlCode/UserMapper15.xml)
+        - 代码内容
+            ```xml
+            <mapper namespace="com.ljs.learn.mybatis.mapperXml.sqlCode.UserMapper15">
+                <sql id="user_item">
+                    ${table}.id, ${table}.name, ${table}.pwd
+                </sql>
+
+                <select id="getUserById" parameterType="int" resultType="MyUser">
+                    select
+                        <include refid="user_item">
+                            <property name="table" value="u"/>
+                        </include>
+                    from user u where u.id = #{id}
+                </select>
+            </mapper>
+            ```
+
+    - 测试类
+        - 参考代码
+            - [/java/mylearn/mybatis/src/test/java/com/ljs/learn/mybatis/mapperXml/sqlCode/UserMapper15Test.java](/java/mylearn/mybatis/src/test/java/com/ljs/learn/mybatis/mapperXml/sqlCode/UserMapper15Test.java)
+        - 测试内容
+            ```java
+            @Test
+            public void test01(){
+                SqlSession sqlSession = MybatisUtils.getSqlSession();
+                UserMapper15 mapper = sqlSession.getMapper(UserMapper15.class);
+                User user = mapper.getUserById(1);
+                System.out.println(user);
+                sqlSession.close();
+            }
+            ```
+
 # mybatis-config配置分析
 ## 配置内容的顺序
 [top](#catalog)
@@ -833,45 +945,8 @@
     9. environments（环境配置）
     10. databaseIdProvider（数据库厂商标识）
     11. mappers（映射器）
-## environments-环境配置
-[top](#catalog)
-- 配置示例
-    ```xml
-    <environments default="development">
-      <environment id="development">
-        <transactionManager type="JDBC">
-          <property name="..." value="..."/>
-        </transactionManager>
-        <dataSource type="POOLED">
-          <property name="driver" value="${driver}"/>
-          <property name="url" value="${url}"/>
-          <property name="username" value="${username}"/>
-          <property name="password" value="${password}"/>
-        </dataSource>
-      </environment>
-    </environments>
-    ```
-- `<environments>`：多套测试环境
-    - mybatis可以配置多种环境，以适应开发、测试的不同需求。但是**每个`SqlSessionFactory`实现只能使用一种环境**
-    - 存在多套环境时，通过`<environments default="环境ID">`
-- `<transactionManager>`：事务管理器
-    - mybatis有两种事务管理器：JDBC、MANAGED
-        - JDBC：这个配置直接使用了 JDBC 的提交和回滚设施，它依赖从数据源获得的连接来管理事务作用域。
-        - MANAGED：这个配置几乎没做什么。它从不提交或回滚一个连接，而是让容器来管理事务的整个生命周期（比如 JEE 应用服务器的上下文）
-            - 默认情况下它会关闭连接
-            - 如果不希望连接被关闭，因此需要将 closeConnection 属性设置为 false 来阻止默认的关闭行为
-                ```xml
-                <property name="closeConnection" value="false"/>
-                ```
-    - 默认值:JDBC
-    - 如果使用的是：Spring+MyBatis，没有必要配置事务管理器，Spring模块会使用自带的管理器来覆盖该配置
-- `<dataSource>`：数据源
-    - 3中内建数据源
-        1. UNPOOLED：不是用连接池，每次请求都会重新打开关闭连接
-        2. POOLED：使用连接池
-        3. JNDI：为了能在如 EJB 或应用服务器这类容器中使用，容器可以集中或在外部配置数据源，然后放置一个 JNDI 上下文的数据源引用
-    - 默认值：POOLED
-    
+
+
 ## properties-属性
 [top](#catalog)
 - 配置示例
@@ -898,6 +973,62 @@
       <property name="password" value="${password}"/>
     </dataSource>
     ```
+
+## settings-设置
+[top](#catalog)
+- `settings` 是MyBatis中极为重要的调整设置，它们会改变 MyBatis 的运行时行为
+
+- settings的可配置内容
+
+    |设置名|描述|有效值|参考|
+    |-|-|-|-|
+    |logImpl|设置日志实现|<ul><li>SLF4J</li><li>LOG4J</li><li>LOG4J2</li><li>JDK_LOGGING</li><li>COMMONS_LOGGING</li><li>STDOUT_LOGGING</li><li>NO_LOGGING</li></ul>|[日志工厂](#日志工厂)|
+    |mapUnderscoreToCamelCase|是否开启驼峰命名自动映射<br>开启后，可以从列名 A_COLUMN 映射属性名 aColumn|true | false||
+    |||||
+    |||||
+
+
+
+
+## environments-环境配置
+[top](#catalog)
+- 配置示例
+    ```xml
+    <environments default="development">
+      <environment id="development">
+        <transactionManager type="JDBC">
+          <property name="..." value="..."/>
+        </transactionManager>
+        <dataSource type="POOLED">
+          <property name="driver" value="${driver}"/>
+          <property name="url" value="${url}"/>
+          <property name="username" value="${username}"/>
+          <property name="password" value="${password}"/>
+        </dataSource>
+      </environment>
+    </environments>
+    ```
+- `<environments>`：多套测试环境
+    - mybatis可以配置多种环境，以适应开发、测试的不同需求。但是**每个`SqlSessionFactory`实现只能使用一种环境**
+    - 存在多套环境时，通过`<environments default="环境ID">`
+- `<transactionManager>`：事务管理器
+    - mybatis有两种事务管理器：JDBC、MANAGED
+        - JDBC：这个配置直接使用了 JDBC 的提交和回滚设施，它依赖从数据源获得的连接来管理事务作用域。
+        - MANAGED：这个配置几乎没做什么。它从不提交或回滚一个连接，而是让容器来管理事务的整个生命周期（比如 J2EE 应用服务器的上下文）
+            - 默认情况下它会关闭连接
+            - 如果不希望连接被关闭，因此需要将 closeConnection 属性设置为 false 来阻止默认的关闭行为
+                ```xml
+                <property name="closeConnection" value="false"/>
+                ```
+    - 默认值:JDBC
+    - 如果使用的是：Spring+MyBatis，没有必要配置事务管理器，Spring模块会使用自带的管理器来覆盖该配置
+- `<dataSource>`：数据源
+    - 3中内建数据源
+        1. UNPOOLED：不是用连接池，每次请求都会重新打开关闭连接
+        2. POOLED：使用连接池
+        3. JNDI：为了能在如 EJB 或应用服务器这类容器中使用，容器可以集中或在外部配置数据源，然后放置一个 JNDI 上下文的数据源引用
+    - 默认值：POOLED
+    
   
 ## typeAliases-类型别名
 ### 类型别名的配置方法
@@ -944,7 +1075,7 @@
     3. 在`mapper.xml`中使用别名
         ```xml
         <mapper namespace="...">
-          <select id="..." parameterType="..." resultType="注解中的别名/类名">
+          <select id="..." parameterType="..." resultType="注解中的别名/类名(第一个字母小写)">
               ...
           </select>
         </mapper>
@@ -1018,7 +1149,7 @@
             }
             ```
 
-### java常见类型内建的类型别名
+### mybatis中java常见类型的内建类型别名
 [top](#catalog)
 - 基本规则
     - 基本类型的别名 = `_`基本类型名
@@ -1056,10 +1187,6 @@
     |arraylist|ArrayList|
     |collection|Collection|
     |iterator|Iterator|
-    
-## settings-设置
-[top](#catalog)
-- `settings` 是MyBatis中极为重要的调整设置，它们会改变 MyBatis 的运行时行为
 
 ## mappers-映射器
 [top](#catalog)
@@ -1276,6 +1403,17 @@
         - 方法存在多个参数时，所有的参数前面必须加上
         - 引用对象不需要添加该注解
         - 在SQL中引用的是 `@Param("属性名")` 中的属性名
+        - 示例
+            ```java
+            @Select("select * from user where id = #{id}")
+            User findById(@Param("id") long id);
+
+            @Select("select * from user where name = #{name}")
+            User findByName(@Param("name") String name);
+
+            @Select("select * from user where email = #{email}")
+            User findByEmail(@Param("email") String email);
+            ```
         
 - 示例
     - 接口
@@ -1324,3 +1462,677 @@
 - 实现 CRUD
 - 执行成功，提交事务；执行失败，回滚事务
 - 关闭
+
+# 多对一与一对多示例使用的数据库环境
+[top](#catalog)
+- 多个学生对应一个老师
+- 创建表并插入数据
+    ```sql
+    create table teacher (
+        id int(10) not null primary key,
+        `name` varchar(30) default null
+    );
+    insert into teacher(id, `name`) values(1, "teacher001");
+    
+    ----------------------------------------
+    create table student(
+        id int(10) not null primary key,
+        `name` varchar(30) default null,
+        tid int(10) default null,
+        key fktid (tid),
+        constraint fktid foreign key (tid) references teacher (id)
+    );
+    
+    insert into student (id,`name`,tid) values
+    ("1", "student01", "1"), 
+    ("2", "student02", "1"), 
+    ("3", "student03", "1"), 
+    ("4", "student04", "1"), 
+    ("5", "student05", "1"), 
+    ("6", "student06", "1"); 
+    ```
+
+
+# 多对一关系处理
+## 创建多对一关系
+[top](#catalog)
+- 参考代码
+    - [/java/mylearn/mybatis/src/main/java/com/ljs/learn/mybatis/common/bean02/Student.java](/java/mylearn/mybatis/src/main/java/com/ljs/learn/mybatis/common/bean02/Student.java)
+    - [/java/mylearn/mybatis/src/main/java/com/ljs/learn/mybatis/common/bean02/Teacher.java](/java/mylearn/mybatis/src/main/java/com/ljs/learn/mybatis/common/bean02/Teacher.java)
+- Teacher
+    ```java
+    public class Teacher {
+        private int id;
+        private String name;
+        
+        //getter、setter
+    }
+    ```
+- Student
+    ```java
+    public class Student {
+        private int id;
+        private String name;
+    
+        // 产生关联关系时，不直接参照数据库表来设置字段
+        // 而已直接添加类之间的依赖关系
+        // private int tid;
+        private Teacher teacher;
+        
+        // getter、setter
+    }
+    ```
+
+## 按照查询进行嵌套处理多对一关系
+[top](#catalog)
+- 处理方法
+    - 将复杂关系的查询拆分成两个sql，即主查询与子查询
+    - 主查询中查询student，主查询的结果是一个ResultMap，通过ResultMap来设置子查询的转化规则
+    - 通过`<association>`来处理对象
+        - 通过select属性标注对应的检索子查询sql
+        ```xml
+        <association property="主查询对应的类中的属性" column="主查询sql的标识字段，作为子查询的查询条件"
+                     javaType="全类名/别名" select="子查询"/>
+        ```
+
+- 配置示例
+    - 参考配置
+        - [/java/mylearn/mybatis/src/main/java/com/ljs/learn/mybatis/relation/StudentMapper.xml](/java/mylearn/mybatis/src/main/java/com/ljs/learn/mybatis/relation/StudentMapper.xml)
+
+    - 配置内容
+        ```xml
+        <!--按照查询进行嵌套处理-->
+        <!--主查询-->
+        <select id="getStudents" resultMap="StudentTeacher">
+            select * from student;
+        </select>
+    
+        <resultMap id="StudentTeacher" type="student">
+            <!--单独处理复杂属性-->
+            <association property="teacher" column="tid" javaType="teacher" select="getTeacherById"/>
+        </resultMap>
+    
+        <!--子查询-->
+        <select id="getTeacherById" parameterType="int" resultType="teacher">
+            select * from teacher where id = #{tid};
+        </select>
+        ```
+- 测试内容
+    - 参考代码
+        - [/java/mylearn/mybatis/src/test/java/com/ljs/learn/mybatis/relation/RelationTest.java](/java/mylearn/mybatis/src/test/java/com/ljs/learn/mybatis/relation/RelationTest.java)
+    - 测试代码
+        ```java
+        @Test
+        public void test01(){
+            SqlSession sqlSession = MybatisUtils.getSqlSession();
+            StudentMapper mapper = sqlSession.getMapper(StudentMapper.class);
+            List<Student> students = mapper.getStudents();
+            for (Student student : students) {
+                System.out.println(student);
+            }
+        }
+        ```
+
+
+## 按照结果进行嵌套处理多对一关系
+[top](#catalog)
+- 处理方法
+    1. 编写一个完整的sql，通过sql联表查询两个表的内容
+    2. 配置 resultMap 处理结果映射
+        - `<association>` 处理对象
+            ```xml
+            <association property="主查询对应的类中的属性名" javaType="全类名/别名" >
+                <result property="类属性" column="sql中的字段"/>
+                ...
+            </association>
+            ```
+   
+- 配置示例
+    - 参考配置
+        - [/java/mylearn/mybatis/src/main/java/com/ljs/learn/mybatis/relation/StudentMapper.xml](/java/mylearn/mybatis/src/main/java/com/ljs/learn/mybatis/relation/StudentMapper.xml)
+
+    - 配置内容
+        ```xml
+        <select id="getStudents02" resultMap="StudentTeacher02">
+            select s.id as sid, s.name as sname, s.tid as tid, t.name as tname
+            from student s, teacher t
+            where s.tid = t.id
+        </select>
+        
+        <resultMap id="StudentTeacher02" type="student">
+            <!--student表的id和name使用了别名，所以配置别名与属性的对应关系-->
+            <result property="id" column="sid"/>
+            <result property="name" column="sname"/>
+            <association property="teacher" javaType="teacher" >
+                <result property="id" column="tid"/>
+                <result property="name" column="tname"></result>
+            </association>
+        </resultMap>
+        ```
+- 测试内容
+    - 参考代码
+        - [/java/mylearn/mybatis/src/test/java/com/ljs/learn/mybatis/relation/RelationTest.java](/java/mylearn/mybatis/src/test/java/com/ljs/learn/mybatis/relation/RelationTest.java)
+    - 测试代码
+        ```java
+        @Test
+        public void test02(){
+            SqlSession sqlSession = MybatisUtils.getSqlSession();
+            StudentMapper mapper = sqlSession.getMapper(StudentMapper.class);
+            List<Student> students = mapper.getStudents02();
+            for (Student student : students) {
+                System.out.println(student);
+            }
+        }
+        ```
+      
+# 一对多关系处理
+## 创建一对多关系
+[top](#catalog)
+- 参考代码
+    - [/java/mylearn/mybatis/src/main/java/com/ljs/learn/mybatis/common/bean03/Teacher02.java](/java/mylearn/mybatis/src/main/java/com/ljs/learn/mybatis/common/bean03/Teacher02.java)
+    - [/java/mylearn/mybatis/src/main/java/com/ljs/learn/mybatis/common/bean03/Student02.java](/java/mylearn/mybatis/src/main/java/com/ljs/learn/mybatis/common/bean03/Student02.java)
+
+- Teacher
+    ```java
+    public class Teacher02 {
+        private int id;
+        private String name;
+  
+        // 配置一对多关系：一个老师对应多个学生
+        private List<Student02> students;
+    
+        // getter，setter
+    }
+    ```
+    
+## 按照查询嵌套处理一对多关系
+[top](#catalog)
+- 处理方法
+    - 配置主查询和子查询的sql
+    - 配置ResultMap来设置`集合类<T>`的转换规则
+    - 通过`<collection>`来处理集合
+        ```xml
+        <resultMap id="teacherMap02" type="teacher02">
+            <!--id被子查询使用，需要手动添加id的映射，否则会为0-->
+            <result property="id" column="id"></result>
+            <collection property="主查询对应的类中的属性" column="主查询sql的标识字段，作为子查询的查询条件" 
+                        javaType="集合类类名" ofType="集合类中的泛型" select="子查询"></collection>
+        </resultMap>
+        ```
+
+- 配置示例
+    - 参考配置
+        - [/java/mylearn/mybatis/src/main/java/com/ljs/learn/mybatis/relation/oneToMore/Teacher02Mapper.xml](/java/mylearn/mybatis/src/main/java/com/ljs/learn/mybatis/relation/oneToMore/Teacher02Mapper.xml)
+
+    - 配置内容
+        ```xml
+        <!--主查询-->
+        <select id="getTeacherById" resultMap="teacherMap02">
+            select id, name from teacher
+        </select>
+      
+        <resultMap id="teacherMap02" type="teacher02">
+            <!--id被子查询使用，需要手动添加id的映射，否则会为0-->
+            <result property="id" column="id"></result>
+            <collection property="students" column="id" javaType="集合类类名" ofType="集合中的泛型类" select="getStudent"></collection>
+        </resultMap>
+      
+        <!--子查询-->
+        <select id="getStudent" resultType="student02">
+            select id, name from student where tid = #{id}
+        </select>
+        ```
+      
+- 测试内容
+    - 参考代码
+        - [/java/mylearn/mybatis/src/test/java/com/ljs/learn/mybatis/relation/RelationTest.java](/java/mylearn/mybatis/src/test/java/com/ljs/learn/mybatis/relation/RelationTest.java)
+    - 测试代码  
+        ```java
+        @Test
+        public void test03(){
+            SqlSession sqlSession = MybatisUtils.getSqlSession();
+            Teacher02Mapper mapper = sqlSession.getMapper(Teacher02Mapper.class);
+            Teacher02 t = mapper.getTeacherById(1);
+            System.out.println(t);
+        }
+        ```
+
+
+## 按照结果嵌套处理一对多关系
+[top](#catalog)
+- 处理方法
+    - 配置联合查询sql
+    - 配置ResultMap来设置`集合类<T>`的转换规则
+    - 通过`<collection>`来处理集合
+        ```xml
+        <collection property="主查询对应的类中的属性" javaType="集合类类名" ofType="集合中的泛型类">
+            <result property="泛型类中的属性名" column="sql中的字段名"></result>
+        </collection>
+        ```
+
+- 配置示例
+    - 参考配置
+        - [/java/mylearn/mybatis/src/main/java/com/ljs/learn/mybatis/relation/oneToMore/Teacher02Mapper.xml](/java/mylearn/mybatis/src/main/java/com/ljs/learn/mybatis/relation/oneToMore/Teacher02Mapper.xml)
+
+    - 配置内容
+        ```xml
+        <!--联合查询sql-->
+        <select id="getTeacherById02" resultMap="teacherMap">
+            select t.id as tid, t.name as tname, s.id as sid, s.name as sname
+            from teacher t
+            inner join student s on t.id = s.tid
+        </select>
+    
+        <resultMap id="teacherMap" type="teacher02">
+            <result property="id" column="tid"></result>
+            <result property="name" column="tname"></result>
+            <collection property="students" ofType="student02">
+                <result property="id" column="sid"></result>
+                <result property="name" column="sname"></result>
+            </collection>
+        </resultMap>
+        ```
+      
+- 测试内容
+    - 参考代码
+        - [/java/mylearn/mybatis/src/test/java/com/ljs/learn/mybatis/relation/RelationTest.java](/java/mylearn/mybatis/src/test/java/com/ljs/learn/mybatis/relation/RelationTest.java)
+    - 测试代码  
+        ```java
+        @Test
+        public void test04(){
+            SqlSession sqlSession = MybatisUtils.getSqlSession();
+            Teacher02Mapper mapper = sqlSession.getMapper(Teacher02Mapper.class);
+            Teacher02 t = mapper.getTeacherById02(1);
+            System.out.println(t);
+        }
+        ```
+
+# 动态sql
+## 动态sql概述
+[top](#catalog)
+- 动态sql是指：根据不同的条件生成不同的sql语句
+- 动态sql本质还是sql语句，只是可以在sql中执行一些逻辑代码
+
+## 创建动态sql使用的数据库环境
+[top](#catalog)
+- 创建一个博客信息的table
+- sql
+    ```sql
+    create table blog (
+      id varchar(50) not null,
+      title varchar(100) not null,
+      author varchar(30) not null,
+      create_time datetime not null,
+      views int(30) not null
+    );
+    ```
+
+- 创建实体类
+    - 参考代码
+        - [/java/mylearn/mybatis/src/main/java/com/ljs/learn/mybatis/common/bean04/Blog.java](/java/mylearn/mybatis/src/main/java/com/ljs/learn/mybatis/common/bean04/Blog.java)
+    - 代码内容
+        ```java
+        public class Blog {
+            private String id;
+            private String title;
+            private String author;
+            private Date create_time;
+            private int views;
+            // getter setter
+        }
+        ```  
+
+- 通过测试类添加数据
+    - 参考代码
+        - [/java/mylearn/mybatis/src/test/java/com/ljs/learn/mybatis/dynamicSql/BlogMapperTest.java](/java/mylearn/mybatis/src/test/java/com/ljs/learn/mybatis/dynamicSql/BlogMapperTest.java)
+    - 代码内容
+        ```java
+        @Test
+        public void testAdd(){
+            SqlSession sqlSession = MybatisUtils.getSqlSession();
+            BlogMapper mapper = sqlSession.getMapper(BlogMapper.class);
+    
+            Blog blog = new Blog();
+            blog.setId(IDUtils.getUUID());
+            blog.setAuthor("mine");
+            blog.setTitle("a01");
+            blog.setViews(500);
+            blog.setCreateTime(new Date());
+            mapper.addBlog(blog);
+    
+            blog.setId(IDUtils.getUUID());
+            blog.setTitle("a02");
+            mapper.addBlog(blog);
+    
+            blog.setId(IDUtils.getUUID());
+            blog.setTitle("a04");
+            mapper.addBlog(blog);
+    
+            blog.setId(IDUtils.getUUID());
+            blog.setTitle("a04");
+            mapper.addBlog(blog);
+    
+            sqlSession.commit();
+            sqlSession.close();
+        }
+        ```
+
+## 动态sql语句
+### 所有动态sql语句的配置及测试内容
+[top](#catalog)
+
+- [/java/mylearn/mybatis/src/main/java/com/ljs/learn/mybatis/dynamicSql/BlogMapper.xml](/java/mylearn/mybatis/src/main/java/com/ljs/learn/mybatis/dynamicSql/BlogMapper.xml)
+- [/java/mylearn/mybatis/src/test/java/com/ljs/learn/mybatis/dynamicSql/BlogMapperTest.java](/java/mylearn/mybatis/src/test/java/com/ljs/learn/mybatis/dynamicSql/BlogMapperTest.java)
+
+### if语句
+[top](#catalog)
+- 语法:
+    ```xml
+    <if test="判断表达式">...</if>
+    ```
+- if语句的问题
+    - 在语句外需要使用 `where 1=1` 连接多个以 `and` 开头的条件，防止sql中缺少 and 或 where 导致的异常
+
+- 示例
+    - 配置
+        ```xml
+        <select id="getBlogsIf" parameterType="map" resultType="blog">
+            select * from blog where 1=1
+            <if test="title != null">
+                and title = #{title}
+            </if>
+            <if test="author != null">
+                and author = #{author}
+            </if>
+        </select>
+        ```
+    - 测试
+        ```java
+        @Test
+        public void testIf(){
+            SqlSession sqlSession = MybatisUtils.getSqlSession();
+            BlogMapper mapper = sqlSession.getMapper(BlogMapper.class);
+            Map<String,Object> map =  new HashMap<>();
+    
+            // 1. 没有条件
+            List<Blog> result = mapper.getBlogsIf(map);
+            System.out.println(result);
+    
+            // 2. 1个条件
+            map.put("title", "a01");
+            result = mapper.getBlogsIf(map);
+            System.out.println(result);
+    
+            // 3. 2个条件
+            map.put("title", "a02");
+            map.put("author", "mine");
+            result = mapper.getBlogsIf(map);
+            System.out.println(result);
+      
+            sqlSession.close();
+        }
+        ```
+      
+### where语句
+[top](#catalog)
+- 语法：
+    ```xml
+    <where>其他语句</where>
+    ```
+  
+- where语句的本质，参考：[trim语句](#trim语句)
+    ```xml
+    <trim prefix="WHERE" prefixOverrides="AND |OR ">
+      ...
+    </trim>
+    ```
+
+- where语句的作用
+    - 外部的语句不用额外包含 `where 1=1` 这样的语句来保证结果的正确性
+    - 内部的语句按照正常的sql书写习惯设置即可。
+    - 拼接sql时，mybatis会检查第一个条件，如果条件是以`and`或`or`开头的，会**自动取去除**
+    - 如果内部的语句是空(如if语句全部是false)，则不会添加 where 关键字
+- 示例
+    - 配置
+        ```xml
+        <select id="getBlogsWhere" parameterType="map" resultType="blog">
+            select * from blog
+            <where>
+                <if test="title != null">
+                    title = #{title}
+                </if>
+                <if test="author != null">
+                    and author = #{author}
+                </if>
+            </where>
+        </select>
+        ```
+    - 测试
+        ```java
+        @Test
+        public void testWhere(){
+            SqlSession sqlSession = MybatisUtils.getSqlSession();
+            BlogMapper mapper = sqlSession.getMapper(BlogMapper.class);
+            Map<String,Object> map =  new HashMap<>();
+    
+            // 1. 没有条件
+            List<Blog> result = mapper.getBlogsWhere(map);
+            System.out.println(result);
+    
+            // 2. 只输入第二个条件
+            map.put("author", "mine");
+            result = mapper.getBlogsWhere(map);
+            System.out.println(result);
+    
+            // 3. 输入2个条件
+            map.put("title", "a02");
+            map.put("author", "mine");
+            result = mapper.getBlogsWhere(map);
+            System.out.println(result);
+      
+            sqlSession.close();
+        }
+        ```
+
+### choose_when_otherwise语句
+[top](#catalog)
+- 语法，类似于`switch...case`，只会执行一个
+    ```xml
+    <choose>
+        <when test="判断表达式">
+            ...
+        </when>
+        <when test="判断表达式">
+            ...
+        </when>
+        <otherwise>
+            ...
+        </otherwise>
+    </choose>
+    ```
+
+- 示例
+    - 配置
+        ```xml
+        <select id="getBlogsChoose" parameterType="map" resultType="blog">
+            select * from blog
+            <where>
+                <choose>
+                    <when test="title != null">
+                        title = #{title}
+                    </when>
+                    <when test="author != null">
+                        and author = #{author}
+                    </when>
+                    <otherwise>
+                        and views = #{views}
+                    </otherwise>
+                </choose>
+            </where>
+        </select>
+        ```
+    - 测试
+        ```java
+        @Test
+        public void testChoose(){
+            SqlSession sqlSession = MybatisUtils.getSqlSession();
+            BlogMapper mapper = sqlSession.getMapper(BlogMapper.class);
+    
+            // 1. 只输入第二个条件
+            Map<String,Object> map01 =  new HashMap<>();
+            map01.put("author", "mine");
+            List<Blog> result01 = mapper.getBlogsChoose(map01);
+            System.out.println("result01 = " + result01);
+    
+            // 2. 输入2个条件
+            Map<String,Object> map02 =  new HashMap<>();
+            map02.put("title", "a02");
+            map02.put("author", "mine");
+            List<Blog> result02 = mapper.getBlogsChoose(map02);
+            System.out.println("result02 = " + result02);
+    
+            // 3. 只输入第3个条件
+            Map<String,Object> map03 =  new HashMap<>();
+            map03.put("views", "500");
+            List<Blog> result03 = mapper.getBlogsChoose(map03);
+            System.out.println("result02 = " + result02);
+            System.out.println(result03);
+    
+            sqlSession.close();
+        }
+        ```
+
+### set语句
+[top](#catalog)
+- 语法
+    ```xml
+    update xxx
+    <set>
+       <if>a=#{a},</if>
+       <if>b=#{b},</if>
+       <if>c=#{c},</if>
+       ...
+    </set>
+    ```
+  
+- set语句的本质，参考：[trim语句](#trim语句)
+    ```xml
+    <trim prefix="SET" suffixOverrides=",">
+      ...
+    </trim>
+    ```
+  
+- set 语句用于更新语句，会动态设置set关键字，并删除更新语句中无关的 `,`
+    - 当语句中有判断语句时，set会自动除去最后一个语句末尾的 `,` 来保证sql的正确性
+    - 使用set语句时，内部的判断语句最好在末尾都加 `,`
+- 示例
+    - 配置
+        ```xml
+        <update id="updateBlog" parameterType="map">
+            update blog
+            <set>
+                <if test="createTime != null">
+                    create_time = #{createTime},
+                </if>
+                <if test="author != null">
+                    author = #{author},
+                </if>
+                <if test="views != null">
+                    views = #{views},
+                </if>
+            </set>
+    
+            where title = #{title}
+        </update>
+        ```
+    - 测试
+        ```java
+        @Test
+        public void tetstUpdate(){
+            SqlSession sqlSession = MybatisUtils.getSqlSession();
+            BlogMapper mapper = sqlSession.getMapper(BlogMapper.class);
+    
+            Map<String, Object> map = new HashMap<>();
+            map.put("title", "a02");
+            map.put("createTime", new Date());
+            map.put("views", 600);
+    
+            int i = mapper.updateBlog(map);
+    
+            if (i > 0){
+                sqlSession.commit();
+            }
+    
+            sqlSession.close();
+        }
+        ```
+      
+### trim语句
+[top](#catalog)
+- 语法
+    ```xml
+    <trim prefix="需要在开头添加的内容" 
+          prefixOverrides="需要删除的前缀" 
+          suffixOverrides="需要删除的后缀">
+      ...
+    </trim>
+    ```
+  
+- 如：where语句的实现
+    - prefixOverrides 会忽略通过管道符分隔的文本序列，前后必须添加空格
+    ```xml
+    <trim prefix="WHERE" prefixOverrides="AND |OR ">
+      ...
+    </trim>
+    ```
+  
+### foreach语句
+[top](#catalog)
+- foreach语句可以进行集合遍历
+    - 通常用于创建 `IN` 条件语句。如传入一个数组：`[1,2,3]`，遍历后转换为：`(1, 2, 3)`
+
+- 语法
+    - `需要遍历的集合` 一般是参数中的一个集合类型的属性，或者是 map 中的一个键值对
+    ```xml
+      <foreach item="集合项" index="索引" collection="需要遍历的集合"
+          open="前缀" separator="分隔符" close="后缀">
+            #{集合项}
+      </foreach>
+    ```
+  
+- 示例
+    - 配置
+        ```xml
+        <select id="getBlogsForeach" parameterType="map" resultType="blog">
+            select * from blog
+            <where>
+                <if test="titleList != null">
+                    title in
+                </if>
+                <foreach collection="titleList" item="node"
+                        open="(" separator="," close=")">
+                    '${node}'
+                </foreach>
+            </where>
+        </select>
+        ```
+    - 测试
+        ```java
+        @Test
+        public void testForeach(){
+            SqlSession sqlSession = MybatisUtils.getSqlSession();
+            BlogMapper mapper = sqlSession.getMapper(BlogMapper.class);
+    
+            List<String> titleList = new ArrayList<>(3);
+            titleList.add("a01");
+            titleList.add("a03");
+            titleList.add("a04");
+    
+            Map<String, Object> map = new HashMap<>();
+            map.put("titleList", titleList);
+            List<Blog> result = mapper.getBlogsForeach(map);
+            System.out.println(result);
+        
+            sqlSession.close();
+        }
+        ```
