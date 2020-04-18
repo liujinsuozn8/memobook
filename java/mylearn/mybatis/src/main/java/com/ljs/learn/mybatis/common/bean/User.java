@@ -2,9 +2,11 @@ package com.ljs.learn.mybatis.common.bean;
 
 import org.apache.ibatis.type.Alias;
 
+import java.io.Serializable;
+
 // 通过注解配置扫描包时的别名
 @Alias("MyUser")
-public class User {
+public class User { //implements Serializable {
     private int id;
     private String name;
     private String pwd;

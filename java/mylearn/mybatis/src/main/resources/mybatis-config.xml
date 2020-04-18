@@ -8,11 +8,16 @@
         <property name="password" value="12345"/>
     </properties>
 
-    <!--添加日志-->
     <settings>
+        <!--添加日志-->
         <!--<setting name="logImpl" value="STDOUT_LOGGING"/>-->
         <setting name="logImpl" value="LOG4J"/>
+
+        <!--开启数据库自动名 与 java属性名 命名规则的自动转换-->
         <setting name="mapUnderscoreToCamelCase" value="true"/>
+
+        <!--显示开启mybatis二级缓存-->
+        <setting name="cacheEnabled" value="true"/>
     </settings>
 
     <!--扫描包来添加别名-->
@@ -65,5 +70,9 @@
 
         <!-- 动态sql -->
         <mapper class="com.ljs.learn.mybatis.dynamicSql.BlogMapper"></mapper>
+
+        <!--缓存-->
+        <mapper class="com.ljs.learn.mybatis.cache.l1.UserMapper16"></mapper>
+        <mapper class="com.ljs.learn.mybatis.cache.l2.UserMapper17"></mapper>
     </mappers>
 </configuration>

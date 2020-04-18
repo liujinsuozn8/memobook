@@ -55,13 +55,18 @@
         - [set语句](#set语句)
         - [trim语句](#trim语句)
         - [foreach语句](#foreach语句)
-- [](#)
-- [](#)
+- [缓存](#缓存)
+    - [缓存简介](#缓存简介)
+    - [mybayis缓存](#mybayis缓存)
+    - [测试缓存的步骤](#测试缓存的步骤)
+    - [mybayis一级缓存](#mybayis一级缓存)
+    - [mybayis二级缓存](#mybayis二级缓存)
+    - [mybatis缓存原理](#mybatis缓存原理)
+    - [自定义二级缓存](#自定义二级缓存)
 - [](#)
 - [](#)
 - [](#)
 
-[top](#catalog)
 
 # MyBatis概述
 [top](#catalog)
@@ -306,6 +311,12 @@
     - **必须在`mapper.xml`文件下的`namespace`属性中配置接口，否则启动后，无法绑定**
 - 方法名异常
 - 返回类型异常
+
+- 开启**可读写**缓存时，实体类不是可序列化的
+    ```
+    org.apache.ibatis.cache.CacheException: Error serializing object.
+    Cause: java.io.NotSerializableException: 全类名
+    ```
    
 ## helloWorld示例 
 [top](#catalog)
@@ -980,15 +991,12 @@
 
 - settings的可配置内容
 
-    |设置名|描述|有效值|参考|
-    |-|-|-|-|
-    |logImpl|设置日志实现|<ul><li>SLF4J</li><li>LOG4J</li><li>LOG4J2</li><li>JDK_LOGGING</li><li>COMMONS_LOGGING</li><li>STDOUT_LOGGING</li><li>NO_LOGGING</li></ul>|[日志工厂](#日志工厂)|
-    |mapUnderscoreToCamelCase|是否开启驼峰命名自动映射<br>开启后，可以从列名 A_COLUMN 映射属性名 aColumn|true | false||
+    |设置名|描述|有效值|默认值|参考|
+    |-|-|-|-|-|
+    |logImpl|设置日志实现|<ul><li>SLF4J</li><li>LOG4J</li><li>LOG4J2</li><li>JDK_LOGGING</li><li>COMMONS_LOGGING</li><li>STDOUT_LOGGING</li><li>NO_LOGGING</li></ul>|-|[日志工厂](#日志工厂)|
+    |mapUnderscoreToCamelCase|是否开启驼峰命名自动映射<br>开启后，可以从列名 A_COLUMN 映射属性名 aColumn|true,false|false||
+    |cacheEnabled|开启所有以配置的mybatis二级缓存|true,false|true|[mybayis二级缓存](#mybayis二级缓存)|
     |||||
-    |||||
-
-
-
 
 ## environments-环境配置
 [top](#catalog)
@@ -1454,9 +1462,9 @@
 - Resources 获取加载全局配置文件
 - 实例化 SqlSessionFactoryBuilder 构造器
 - 解析配置文件流 XMLConfigBuilder
-- 转化为 Configuration 对象，内部有所有的配置信息
+- 转化为 Configuration 对象，对象内部保存所有的配置信息
 - 实例化 SqlSessionFactory 对象
-- 创建事务管理器
+- 创建transactiional事务管理器
 - 创建 exector 执行器
 - 创建 SqlSession
 - 实现 CRUD
@@ -1644,6 +1652,15 @@
         // getter，setter
     }
     ```
+- Student
+    ```java
+    public class Student02 {
+        private int id;
+        private String name;
+
+        // getter，setter
+    }
+    ```
     
 ## 按照查询嵌套处理一对多关系
 [top](#catalog)
@@ -1652,9 +1669,9 @@
     - 配置ResultMap来设置`集合类<T>`的转换规则
     - 通过`<collection>`来处理集合
         ```xml
-        <resultMap id="teacherMap02" type="teacher02">
-            <!--id被子查询使用，需要手动添加id的映射，否则会为0-->
-            <result property="id" column="id"></result>
+        <resultMap id="..." type="主查询对应的实体类/别名">
+            <!--主查询sql的标识字段，作为子查询的查询条件。需要手动添加该映射，否则实体类对象中该属性将是零值-->
+            <result property="实体类中的属性" column="主查询sql的标识字段"></result>
             <collection property="主查询对应的类中的属性" column="主查询sql的标识字段，作为子查询的查询条件" 
                         javaType="集合类类名" ofType="集合类中的泛型" select="子查询"></collection>
         </resultMap>
@@ -1674,7 +1691,7 @@
         <resultMap id="teacherMap02" type="teacher02">
             <!--id被子查询使用，需要手动添加id的映射，否则会为0-->
             <result property="id" column="id"></result>
-            <collection property="students" column="id" javaType="集合类类名" ofType="集合中的泛型类" select="getStudent"></collection>
+            <collection property="students" column="id" javaType="ArrayList" ofType="student02" select="getStudent"></collection>
         </resultMap>
       
         <!--子查询-->
@@ -2136,3 +2153,431 @@
             sqlSession.close();
         }
         ```
+
+# 缓存
+## 缓存简介
+[top](#catalog)
+- 什么是缓存
+    - 保存在内存中的临时数据
+- 为什么需要缓存
+    - 将用户经常查询的数据放在缓存中，在用户查询数据时，就不需要通过数据库来访问磁盘上的数据（不与磁盘进行交互），直接从缓存中查询，来提高查询效率
+    - 减少高并发系统的性能问题
+    - 减少与数据库的交互次数、减少系统开销、提高系统效率
+- 经常使用且很少修改的数据 适合使用缓存
+
+## mybayis缓存
+[top](#catalog)
+- mybatis包含一个查询缓存特性，可以方便的定制和配置缓存
+- mybatis中的缓存
+
+    |缓存类型|启动状态|描述|
+    |-|-|-|-|
+    |一级缓存|默认开启|`SqlSession`级别的缓存，也称为本地缓存|
+    |默认二级缓存|手动配置和开启|基于`namespace`级别的缓存，也成为全局缓存。开启后在整个mapper中都可以使用|
+    |自定义二级缓存|手动配置和开启|通过实现mybatis的`Cache接口`来自定义二级缓存|
+    
+- 所有 `select` 语句的结果会被缓存
+- 缓存失效的情况
+    1. 增删改操作(不限于同一条数据)，可能会改变原来的数据，所以会刷新缓存
+    2. 查询不同的 mapper.xml
+    3. 手动清除：`sqlSession.clearCache()`
+
+## 测试缓存的步骤
+[top](#catalog)
+- 在 `mybatis-config.xml` 中开启日志
+- 编写测试类，如多次执行同一个sql查询相同的记录
+- 观察日志中的输出内容
+ 
+## mybayis一级缓存
+[top](#catalog)
+- mybayis的一级缓存默认开启
+- 一级缓存是`SqlSession`级别的缓存，也称为本地缓存
+- 一级缓存的作用域：一个`SqlSession`对象的开启到关闭
+- 一级缓存的本质：一个Map对象
+
+- 示例
+    - mapper.xml
+        - 参考代码
+            - [/java/mylearn/mybatis/src/main/java/com/ljs/learn/mybatis/cache/l1/UserMapper16.xml](/java/mylearn/mybatis/src/main/java/com/ljs/learn/mybatis/cache/l1/UserMapper16.xml)
+        - 配置内容
+            ```xml
+            <mapper namespace="com.ljs.learn.mybatis.cache.l1.UserMapper16">
+                <select id="getUserById" parameterType="int" resultType="MyUser">
+                    select * from user where id = #{id}
+                </select>
+            
+                <update id="updateUser" parameterType="map">
+                    update user
+                    set name=#{name}, pwd=#{pwd}
+                    where id = #{id}
+                </update>
+            </mapper>
+            ```
+    - 测试类
+        - 参考代码
+            - [/java/mylearn/mybatis/src/test/java/com/ljs/learn/mybatis/cache/l1/UserMapper16Test.java](/java/mylearn/mybatis/src/test/java/com/ljs/learn/mybatis/cache/l1/UserMapper16Test.java)
+        - 测试内容
+            1. 连续多次查询相同的数据来测试一级缓存
+                - 测试方法
+                    ```java
+                    @Test
+                    public void test01(){
+                        SqlSession sqlSession = MybatisUtils.getSqlSession();
+                        UserMapper16 mapper = sqlSession.getMapper(UserMapper16.class);
+                        User result01 = mapper.getUserById(1);
+                        User result02 = mapper.getUserById(1);
+                        System.out.println("result01 == result02 : " + (result01 == result02));
+                    }
+                    ```
+                - log：两次访问，只执行了一次sql，第二次使用的是一级缓存
+                    ```
+                     - Created connection 892555958.
+                     - Setting autocommit to false on JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@353352b6]
+                     - ==>  Preparing: select * from user where id = ?  <<-----执行检索
+                     - ==> Parameters: 1(Integer)
+                     - <==      Total: 1
+                    result01 == result02 : true        <<-----访问一级缓存
+                    ```
+                  
+            2. 更新**相同**的数据数据后缓存失效，再次访问**相同**的数据会重新检索
+                - 测试方法
+                    ```java
+                    @Test
+                    public void test02(){
+                        SqlSession sqlSession = MybatisUtils.getSqlSession();
+                        UserMapper16 mapper = sqlSession.getMapper(UserMapper16.class);
+                        User result01 = mapper.getUserById(1);
+                        
+                        // 再次查询 
+                        User result02 = mapper.getUserById(1);
+                
+                        System.out.println("result01 == result02 : " + (result01 == result02));
+                
+                        // 更新同一条数据
+                        Map<String, Object> map = new HashMap<>();
+                        map.put("id", 1);
+                        map.put("name", "newName");
+                        map.put("pwd", "123456");
+                
+                        mapper.updateUser(map);
+                
+                        // 重新检索相同的数据
+                        User result03 = mapper.getUserById(1);
+                
+                        System.out.println("result01 == result03 : " + (result01 == result03));
+                    }
+                    ```
+                - log
+                    - 更新数据前使用的一级缓存，更新数据后，缓存失效，再次查询会重新进行检索
+                    ```
+                     - ==>  Preparing: select * from user where id = ?  <<------执行检索
+                     - ==> Parameters: 1(Integer)
+                     - <==      Total: 1
+                    result01 == result02 : true                         <<---访问一级缓存
+                     - ==>  Preparing: update user set name=?, pwd=? where id = ? <<--执行更新
+                     - ==> Parameters: newName(String), 123456(String), 1(Integer) <--更新不同数据
+                     - <==    Updates: 1
+                     - ==>  Preparing: select * from user where id = ? <<---重新执行检索
+                     - ==> Parameters: 1(Integer)
+                     - <==      Total: 1
+                    result01 == result03 : false                        
+                    ```
+        
+            3. 更新**不同**的数据后缓存失效，再次访问**相同**的会重新检索
+                - 测试方法
+                    ```java
+                    @Test
+                    public void test03(){
+                        SqlSession sqlSession = MybatisUtils.getSqlSession();
+                        UserMapper16 mapper = sqlSession.getMapper(UserMapper16.class);
+                        User result01 = mapper.getUserById(1);
+                        
+                        // 再次查询
+                        User result02 = mapper.getUserById(1);
+                
+                        System.out.println("result01 == result02 : " + (result01 == result02));
+                
+                        // 更新其他数据
+                        Map<String, Object> map = new HashMap<>();
+                        map.put("id", 2);
+                        map.put("name", "newName");
+                        map.put("pwd", "123456");
+                
+                        mapper.updateUser(map);
+                
+                        // 重新检索相同的数据
+                        User result03 = mapper.getUserById(1);
+                
+                        System.out.println("result01 == result03 : " + (result01 == result03));
+                    }
+                    ```
+                - log
+                    - 更新数据前使用的一级缓存，更新数据后，缓存失效，再次查询会重新进行检索
+                    ```
+                     - ==>  Preparing: select * from user where id = ? <<------执行检索
+                     - ==> Parameters: 1(Integer)
+                     - <==      Total: 1
+                    result01 == result02 : true                        <<---访问一级缓存
+                     - ==>  Preparing: update user set name=?, pwd=? where id = ?  <<--执行更新
+                     - ==> Parameters: newName(String), 123456(String), 2(Integer) <--更新相同数据
+                     - <==    Updates: 1
+                     - ==>  Preparing: select * from user where id = ? <<---重新执行检索
+                     - ==> Parameters: 1(Integer)
+                     - <==      Total: 1
+                    result01 == result03 : false
+                    ```
+
+## mybayis二级缓存
+[top](#catalog)
+- 什么是mybayis二级缓存
+    - 二级缓存也称为**全局缓存**
+    - mybatis二级缓存基于**namespace级别的缓存**，即 `一个命名空间/mapper = 一个二级缓存`
+    - 因为一级缓存的作用域太小，所以一些场景下需要使用二级缓存
+    
+- **二级缓存只会在同一个mapper中有效**
+    - 多个相同的mapper对象共享一个二级缓存
+
+- 数据如何保存到二级缓存
+    - 只有当一级缓存关闭时，如果开启了二级缓存，则数据会自动保存到二级缓存中
+
+- 二级缓存的工作机制
+    - 通过`SqlSession`查询的数据被保存在一级缓存中
+    - `SqlSession`关闭时，将一级缓存的数据保存到二级缓存
+    - 新的`SqlSession`开启后，直接从二级缓存中获取数据
+
+- mybatis二级缓存的使用步骤
+    1. mybatis-config.xml 中显示的添加 `cacheEnabled`设置。
+        - `cacheEnabled` 默认只为 true，即开启状态，但是一般开发都会进行显示的配置
+        ```xml
+        <settings>
+            <setting name="cacheEnabled" value="true"/>
+        </settings>
+        ```
+    2. 在mapper.xml 中添加 ：`<cache/>` 来启动并配置当前 mapper 的二级缓存
+        ```xml
+        <cache
+          eviction="清除策略"
+          flushInterval="刷新间隔"
+          size="引用数目"
+          readOnly="缓存是否只读"/>
+        ```
+        
+- 二级缓存的策略说明
+    - 每个策略的默认值
+        
+        |策略|说明|默认值|
+        |-|-|-|
+        |eviction|缓存清除|LRU|
+        |flushInterval|刷新间隔|没有刷新时间|
+        |size|引用数目|1024|
+        |readOnly|缓存是否只读|false|
+        
+    - `eviction` 缓存清除
+    
+        |缓存策略|含义|描述|
+        |-|-|-|
+        |LRU|最近最少使用|**默认策略**，删除最长时间不被使用的对象|
+        |FIFP|先进先出|按对象进入缓存的顺序来删除|
+        |SOFT|软引用|基于垃圾回收器状态和软引用规则删除对象|
+        |WEAK|弱引用|更积极的基于垃圾回收器状态和弱引用规则删除对象|
+
+    - `flushInterval` 刷新间隔
+        - 属性值：正整数，单位：毫秒 
+        - 默认没有刷新间隔，缓存仅会在增删改时刷新
+    
+    - `size`
+        - 缓存中可用的对象引用数量
+        - 使用时需要注意缓存对象的大小和运行环境中的可用内存大小
+        - 默认值：1024 
+        
+    - `readOnly`
+        - true：只读缓存，false：可读写缓存
+        - 默认值：false
+        - 设置为true时，只读缓存会给所有调用者返回相同的实例，并且不能被修改
+            - 这种情况下相当于单例的，能有效提升性能
+        - 设置为false时，可读写缓存会通过**序列化**返回缓存对象的拷贝
+            - 这种情况速度会下降，但是更安全
+    
+- 示例
+    - mapper.xml
+        - 使用**只读**缓存进行测试
+        - 参考代码
+            - [/java/mylearn/mybatis/src/main/java/com/ljs/learn/mybatis/cache/l2/UserMapper17.xml](/java/mylearn/mybatis/src/main/java/com/ljs/learn/mybatis/cache/l2/UserMapper17.xml)
+        - 配置内容
+            ```xml
+            <mapper namespace="com.ljs.learn.mybatis.cache.l2.UserMapper17">
+                <cache
+                        eviction="FIFO"
+                        flushInterval="6000"
+                        size="512"
+                        readOnly="true"/>
+                        <!--readOnly="false"/>-->
+            
+                <select id="getUserById" parameterType="int" resultType="MyUser">
+                    select * from user where id = #{id}
+                </select>            
+            </mapper>
+            ```
+
+    - 测试类
+        - 参考代码
+            - [/java/mylearn/mybatis/src/test/java/com/ljs/learn/mybatis/cache/l2/UserMapper17Test.java](/java/mylearn/mybatis/src/test/java/com/ljs/learn/mybatis/cache/l2/UserMapper17Test.java)
+        - 测试内容
+            1. 测试不关闭 SqlSession，一级缓存能够转换为二级缓存
+                - 同时打开两个SqlSession对象，同时操作一个mapper，并且同时启动、同时关闭
+                - 测试方法
+                    ```java
+                    @Test
+                    public void test01(){
+                        // 1. 同时打开两个SqlSession对象，同时操作一个mapper接口，
+                        SqlSession sqlSession01 = MybatisUtils.getSqlSession();
+                        UserMapper17 mapper1701 = sqlSession01.getMapper(UserMapper17.class);
+                
+                        SqlSession sqlSession02 = MybatisUtils.getSqlSession();
+                        UserMapper17 mapper1702 = sqlSession02.getMapper(UserMapper17.class);
+                
+                        // 2. 两个SqlSession分别进行检索
+                        User result01 = mapper1701.getUserById(1);
+                        User result02 = mapper1702.getUserById(1);
+                
+                        System.out.println("result01 == result02 : " + (result01 == result02));
+                
+                        // 3. 同时关闭
+                        sqlSession01.close();
+                        sqlSession02.close();
+                    }
+                    ```
+                - log
+                    - 两个sqlSession分别执行了一次检索操作，都还在操作各自的一级缓存，还没有保存到二级缓存，所以结果不同
+                    ```
+                     - Cache Hit Ratio [com.ljs.learn.mybatis.cache.l2.UserMapper17]: 0.0 <----第一次访问
+                     - Opening JDBC Connection
+                     - Created connection 1040776996.
+                     - Setting autocommit to false on JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@3e08ff24]
+                     - ==>  Preparing: select * from user where id = ? 
+                     - ==> Parameters: 1(Integer)
+                     - <==      Total: 1
+                    
+                     - Cache Hit Ratio [com.ljs.learn.mybatis.cache.l2.UserMapper17]: 0.0 <----第二次访问
+                     - Opening JDBC Connection
+                     - Created connection 292138977.
+                     - Setting autocommit to false on JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@1169afe1]
+                     - ==>  Preparing: select * from user where id = ? 
+                     - ==> Parameters: 1(Integer)
+                     - <==      Total: 1
+                     
+                    result01 == result02 : false   <-----两次访问的结果不同
+                    ```
+            2. 创建第一个sqlSession并执行检索，然后关闭，一级缓存的数据保存到二级缓存。再创建第二个sqlSession并执行检索
+                - 测试方法
+                    ```java
+                    @Test
+                    public void test02(){
+                        // 1. 创建第一个sqlSession并执行检索，然后关闭
+                        SqlSession sqlSession01 = MybatisUtils.getSqlSession();
+                        UserMapper17 mapper1701 = sqlSession01.getMapper(UserMapper17.class);
+                
+                        User result01 = mapper1701.getUserById(1);
+                        sqlSession01.close();
+                
+                        // 2. 再创建第二个sqlSession并执行检索
+                        SqlSession sqlSession02 = MybatisUtils.getSqlSession();
+                        UserMapper17 mapper1702 = sqlSession02.getMapper(UserMapper17.class);
+                
+                        User result02 = mapper1702.getUserById(1);
+                        sqlSession02.close();
+                
+                        System.out.println("result01 == result02 : " + (result01 == result02));
+                    }
+                    ```
+                - log
+                    - 只有第一次查询执行了数据库检索。
+                    - 关闭第一个SqlSession之后，一级缓存的数据保存到二级缓存中
+                    - 第二次检索时，直接到二级缓存中查询数据。两次的结果是同一个对象
+                    ```
+                     - Cache Hit Ratio [com.ljs.learn.mybatis.cache.l2.UserMapper17]: 0.0
+                     - Opening JDBC Connection
+                     - Created connection 308433917.
+                     - Setting autocommit to false on JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@126253fd]
+                     - ==>  Preparing: select * from user where id = ? 
+                     - ==> Parameters: 1(Integer)
+                     - <==      Total: 1
+                     - Resetting autocommit to true on JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@126253fd]
+                     - Closing JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@126253fd]
+                     - Returned connection 308433917 to pool.
+                     - Cache Hit Ratio [com.ljs.learn.mybatis.cache.l2.UserMapper17]: 0.5
+                    result01 == result02 : true
+                    ```
+            3. 测试二级缓存刷新时间
+                - 测试方法
+                    ```java
+                    @Test
+                    public void test03(){
+                        // 1. 创建第一个sqlSession并执行检索，然后关闭
+                        SqlSession sqlSession01 = MybatisUtils.getSqlSession();
+                        UserMapper17 mapper1701 = sqlSession01.getMapper(UserMapper17.class);
+                
+                        User result01 = mapper1701.getUserById(1);
+                        sqlSession01.close();
+                
+                        // 2. 再创建第二个sqlSession并执行检索
+                        SqlSession sqlSession02 = MybatisUtils.getSqlSession();
+                        UserMapper17 mapper1702 = sqlSession02.getMapper(UserMapper17.class);
+                
+                        // 3. 暂停
+                        try {
+                            Thread.sleep(10000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                
+                        User result02 = mapper1702.getUserById(1);
+                        sqlSession02.close();
+                
+                        System.out.println("result01 == result02 : " + (result01 == result02));
+                    }
+                    ```
+                - log
+                    ```
+                    <-------第一次执行检索
+                    - Cache Hit Ratio [com.ljs.learn.mybatis.cache.l2.UserMapper17]: 0.0
+                    - Opening JDBC Connection
+                    - Created connection 1040776996.
+                    - Setting autocommit to false on JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@3e08ff24]
+                    - ==>  Preparing: select * from user where id = ? 
+                    - ==> Parameters: 1(Integer)
+                    - <==      Total: 1
+                    - Resetting autocommit to true on JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@3e08ff24]
+                    - Closing JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@3e08ff24]
+                    - Returned connection 1040776996 to pool.
+                    
+                    <-------第二次执行检索
+                    - Cache Hit Ratio [com.ljs.learn.mybatis.cache.l2.UserMapper17]: 0.0
+                    - Opening JDBC Connection
+                    - Checked out connection 1040776996 from pool.
+                    - Setting autocommit to false on JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@3e08ff24]
+                    - ==>  Preparing: select * from user where id = ?  <<------缓存被刷新，重新进行了检索
+                    - ==> Parameters: 1(Integer)
+                    - <==      Total: 1
+                    - Resetting autocommit to true on JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@3e08ff24]
+                    - Closing JDBC Connection [com.mysql.cj.jdbc.ConnectionImpl@3e08ff24]
+                    - Returned connection 1040776996 to pool.
+                    result01 == result02 : false
+                    ```
+                  
+## mybatis缓存原理
+[top](#catalog)
+- 缓存原理
+    - [/java/mybatis/base/imgs/cache/mybatis_Cache_principle.png](/java/mybatis/base/imgs/cache/mybatis_Cache_principle.png)
+
+- 一次数据库访问的缓存顺序
+    1. 先在二级缓存中查找
+    2. 如果二级缓存中没有，则到一级缓存中查找
+    3. 如果缓存中没有数据，则访问数据库
+
+## 自定义二级缓存
+[top](#catalog)
+- ?????
+
+- useCache ?????
+- flushCache ?????
