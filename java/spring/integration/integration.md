@@ -7,8 +7,9 @@
     - [mybatis-spring基本使用步骤的示例分析](#mybatis-spring基本使用步骤的示例分析)
     - [整合mybatis的基本配置方式分析](#整合mybatis的基本配置方式分析)
     - [使用SqlSessionDaoSupport简化Mapper](#使用SqlSessionDaoSupport简化Mapper)
+    - [配置声明式事务](#配置声明式事务)
     - [mybatis-spring配置的注意事项](#mybatis-spring配置的注意事项)
-- [](#)
+
 - [](#)
 - [](#)
 
@@ -298,6 +299,77 @@
                 List<User> users = useMapper.getAllUsers();
                 System.out.println(users);
             }
+            ```
+
+## 配置声明式事务
+[top](#catalog)
+- 事务将一组业务当作一个业务来做，即所有业务同时成功，同时失败
+- 事务涉及到数据的完整性、一致性，非常重要
+- spring中的事务管理
+    - 声明式事务：通过AOP，将事务织入到业务中
+    - 编程式事务：需要修改代码，在代码中进行事务管理
+
+- 配置声明式事务的一种方式：通过AOP织入事务
+    1. 开启声明式事务
+    2. 通过 `<tx:advice>` 配置spring事务
+    3. 添加事务切入点，并将事务切入mapper中
+    
+- 示例说明
+    - mapper实现类
+        - 参考代码
+            - [/java/mylearn/myspring/src/main/java/com/ljs/learn/myspring/integration/mybatis/transaction/UserMapperImpl.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/myspring/integration/mybatis/transaction/UserMapperImpl.java)
+        - 代码内容
+            ```xml
+            <mapper namespace="com.ljs.learn.myspring.integration.mybatis.transaction.UserMapper">
+                ...
+                <!-- 创建一个sql异常  -->
+                <delete id="deleteUser" >
+                    deleteX from user where id = #{id};
+                    <!--delete from user where id = #{id};-->
+                </delete>
+            </mapper>
+            ```
+            ```java
+            public class UserMapperImpl implements UserMapper {
+                  ...            
+                // 先插入在删除，删除时会有异常，通过数据的插入状况来检查事务
+                public void transcation(){
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("id", 100);
+                    map.put("name", "xxx");
+                    map.put("pwd", "xcvb");
+                    addUser(map);
+            
+                    deleteUser(10);
+                }
+            }
+            ```
+    - spring配置
+        - 参考内容
+            - [/java/mylearn/myspring/src/main/resources/integration/mybatis/transaction/spring-mybatis.xml](/java/mylearn/myspring/src/main/resources/integration/mybatis/transaction/spring-mybatis.xml)
+        - 配置内容
+            ```xml
+            <!--配置声明式事务-->
+            <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+                <constructor-arg ref="dataSource" />
+            </bean>
+        
+            <!--通过AOP织入事务-->
+            <tx:advice id="txAdvice" transaction-manager="transactionManager">
+                <!-- 配置事务的传播特性-->
+                <!-- 为方法配置事务 -->
+                <tx:attributes>
+                    <tx:method name="*" propagation="REQUIRED"/>
+                </tx:attributes>
+            </tx:advice>
+        
+            <!--配置事务切入-->
+            <aop:config proxy-target-class="true">
+                <!--添加切入点：transcation下的所有类的所有方法-->
+                <aop:pointcut id="transactionPoint" expression="execution(* com.ljs.learn.myspring.integration.mybatis.transaction.*.*(..))"/>
+                <!--事务切入-->
+                <aop:advisor advice-ref="txAdvice" pointcut-ref="transactionPoint"/>
+            </aop:config>
             ```
      
 ## mybatis-spring配置的注意事项

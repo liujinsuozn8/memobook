@@ -263,7 +263,7 @@
         Cause: java.lang.NullPointerException
         ```
     
-- dao/mapper接口的`mapper.xml`没有在`mybatis-config.xml`中配置
+- dao/mapper接口的`mapper.xml`没有在`mybatis-config.xml`中配置，或 mapper.xml 中的 `namespcase` 配置错误
     ```
     org.apache.ibatis.binding.BindingException: 
   Type interface com.ljs.learn.mybatis.firstSample.dao.UserDao 
@@ -312,6 +312,15 @@
 - `mapper.xml`下的 select语句 中没有指定 `resultType` 或 `resultMap`，导致查询结果无法映射到实体类中
     ```
     org.apache.ibatis.executor.ExecutorException: A query was run and no Result Maps were found for the Mapped Statement '全类名.方法名'.  It's likely that neither a Result Type nor a Result Map was specified.
+    ```
+
+- `mapper.xml`中的 `resultType` 或 `resultMap` 的类型与接口方法中的类型不一致
+    ```
+    org.mybatis.spring.MyBatisSystemException: 
+    nested exception is org.apache.ibatis.reflection.ReflectionException: 
+    Error instantiating interface com.ljs.learn.myspring.integration.mybatis.transaction.UserMapper with invalid types () or values (). 
+
+    Cause: java.lang.NoSuchMethodException: com.ljs.learn.myspring.integration.mybatis.transaction.UserMapper.<init>()
     ```
 
 - 绑定接口错误
