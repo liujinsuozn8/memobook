@@ -3,11 +3,11 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-    <bean id="address" class="com.ljs.learn.base.di.complex.Address">
+    <bean id="address" class="com.ljs.learn.myspring.base.di.complex.Address">
         <property name="address" value="TestAddress"/>
     </bean>
 
-    <bean id="student" class="com.ljs.learn.base.di.complex.Student">
+    <bean id="student" class="com.ljs.learn.myspring.base.di.complex.Student">
         <!--1. value注入-->
         <property name="name" value="StudentTsetName"/>
         <!--2. bean注入-->

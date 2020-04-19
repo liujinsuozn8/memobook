@@ -6,7 +6,7 @@
 
 <!--使用Spring来创建对象，-->
 <!--分别配置类的全类名及类对应的id-->
-<bean id="hello" class="com.ljs.learn.base.ioc.springHello.Hello">
+<bean id="hello" class="com.ljs.learn.myspring.base.ioc.springHello.Hello">
     <!--通过该标签为实例对象中的属性设值-->
     <property name="str" value="helloTest"/>
 </bean>

@@ -7,13 +7,13 @@
                 http://www.springframework.org/schema/aop
                 https://www.springframework.org/schema/aop/spring-aop.xsd">
 
-    <bean id="userService" class="com.ljs.learn.base.aop.xml.service.UserServiceImpl"/>
-    <bean id="beforeLog" class="com.ljs.learn.base.aop.xml.log.BeforeLog"/>
-    <bean id="afterLog" class="com.ljs.learn.base.aop.xml.log.AfterLog"/>
+    <bean id="userService" class="com.ljs.learn.myspring.base.aop.xml.service.UserServiceImpl"/>
+    <bean id="beforeLog" class="com.ljs.learn.myspring.base.aop.xml.log.BeforeLog"/>
+    <bean id="afterLog" class="com.ljs.learn.myspring.base.aop.xml.log.AfterLog"/>
 
     <aop:config>
         <!--配置切入点-->
-        <aop:pointcut id="serviceCut" expression="execution(* com.ljs.learn.base.aop.xml.service.UserServiceImpl.*(..))"/>
+        <aop:pointcut id="serviceCut" expression="execution(* com.ljs.learn.myspring.base.aop.xml.service.UserServiceImpl.*(..))"/>
         
         <aop:advisor advice-ref="beforeLog" pointcut-ref="serviceCut"/>
         <aop:advisor advice-ref="afterLog" pointcut-ref="serviceCut"/>

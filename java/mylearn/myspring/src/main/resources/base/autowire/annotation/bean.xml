@@ -10,22 +10,22 @@
     <context:annotation-config/>
 
     <!--配置多个cat类-->
-    <bean id="cat01" class="com.ljs.learn.base.autowire.annotation.Cat">
+    <bean id="cat01" class="com.ljs.learn.myspring.base.autowire.annotation.Cat">
         <property name="name" value="TestCat01"/>
     </bean>
 
-    <bean id="cat02" class="com.ljs.learn.base.autowire.annotation.Cat">
+    <bean id="cat02" class="com.ljs.learn.myspring.base.autowire.annotation.Cat">
         <property name="name" value="TestCat02"/>
     </bean>
 
     <!--配置多个dog类-->
-    <bean id="dog01" class="com.ljs.learn.base.autowire.annotation.Dog">
+    <bean id="dog01" class="com.ljs.learn.myspring.base.autowire.annotation.Dog">
         <property name="name" value="TestDog01"/>
     </bean>
-    <bean id="dog02" class="com.ljs.learn.base.autowire.annotation.Dog">
+    <bean id="dog02" class="com.ljs.learn.myspring.base.autowire.annotation.Dog">
         <property name="name" value="TestDog02"/>
     </bean>
 
-    <bean id="people" class="com.ljs.learn.base.autowire.annotation.People"/>
-    <bean id="people02" class="com.ljs.learn.base.autowire.annotation.People02"/>
+    <bean id="people" class="com.ljs.learn.myspring.base.autowire.annotation.People"/>
+    <bean id="people02" class="com.ljs.learn.myspring.base.autowire.annotation.People02"/>
 </beans>

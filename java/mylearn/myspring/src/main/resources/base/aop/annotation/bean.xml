@@ -9,6 +9,6 @@
 
     <aop:aspectj-autoproxy/>
 
-    <bean id="log" class="com.ljs.learn.base.aop.annotation.log.Log"/>
-    <bean id="userService" class="com.ljs.learn.base.aop.annotation.service.UserServiceImpl"/>
+    <bean id="log" class="com.ljs.learn.myspring.base.aop.annotation.log.Log"/>
+    <bean id="userService" class="com.ljs.learn.myspring.base.aop.annotation.service.UserServiceImpl"/>
 </beans>

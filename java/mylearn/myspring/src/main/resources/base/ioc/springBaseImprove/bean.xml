@@ -3,17 +3,17 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-    <bean id="mySqlImpl" class="com.ljs.learn.base.ioc.springBaseImprove.dao.UserDaoMySqlImpl"/>
-    <bean id="oracleImpl" class="com.ljs.learn.base.ioc.springBaseImprove.dao.UserDaoOracleImpl"/>
+    <bean id="mySqlImpl" class="com.ljs.learn.myspring.base.ioc.springBaseImprove.dao.UserDaoMySqlImpl"/>
+    <bean id="oracleImpl" class="com.ljs.learn.myspring.base.ioc.springBaseImprove.dao.UserDaoOracleImpl"/>
 
     <!--想service中注入MySql的实现对象-->
-    <bean id="serviceMysql" class="com.ljs.learn.base.ioc.springBaseImprove.service.UserServiceImpl">
+    <bean id="serviceMysql" class="com.ljs.learn.myspring.base.ioc.springBaseImprove.service.UserServiceImpl">
         <!--直接使用Spring容器中创建的对象-->
         <property name="dao" ref="mySqlImpl"/>
     </bean>
 
     <!--想service中注入Oracle的实现对象-->
-    <bean id="serviceOracle" class="com.ljs.learn.base.ioc.springBaseImprove.service.UserServiceImpl">
+    <bean id="serviceOracle" class="com.ljs.learn.myspring.base.ioc.springBaseImprove.service.UserServiceImpl">
         <!--直接使用Spring容器中创建的对象-->
         <property name="dao" ref="oracleImpl"/>
     </bean>

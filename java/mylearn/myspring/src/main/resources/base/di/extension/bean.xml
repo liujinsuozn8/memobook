@@ -7,9 +7,9 @@
 
     <!--P命名空间测试-->
     <!--p:属性名-->
-    <bean id="student01" class="com.ljs.learn.base.di.extension.Student" p:name="PName" p:age="15" />
+    <bean id="student01" class="com.ljs.learn.myspring.base.di.extension.Student" p:name="PName" p:age="15" />
 
     <!--C命名空间测试-->
     <!--p:构造器参数名-->
-    <bean id="student02" class="com.ljs.learn.base.di.extension.Student" c:n="CName" c:a="18"/>
+    <bean id="student02" class="com.ljs.learn.myspring.base.di.extension.Student" c:n="CName" c:a="18"/>
 </beans>

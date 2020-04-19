@@ -4,13 +4,13 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
     <!--使用单例模式-->
-    <bean id="studentS" class="com.ljs.learn.base.di.beanScope.Student" scope="singleton">
+    <bean id="studentS" class="com.ljs.learn.myspring.base.di.beanScope.Student" scope="singleton">
         <property name="name" value="TestName"/>
         <property name="age" value="15"/>
     </bean>
 
     <!--使用原型模式-->
-    <bean id="studentP" class="com.ljs.learn.base.di.beanScope.Student" scope="prototype">
+    <bean id="studentP" class="com.ljs.learn.myspring.base.di.beanScope.Student" scope="prototype">
         <property name="name" value="NewName"/>
         <property name="age" value="18"/>
     </bean>
