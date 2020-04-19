@@ -139,9 +139,9 @@
     
 - `UserDao`及其实现类
     - 参考代码
-        - [/java/mylearn/myspring/src/main/java/com/ljs/learn/ioc/improve/dao/UserDao.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/ioc/improve/dao/UserDao.java)
-        - [/java/mylearn/myspring/src/main/java/com/ljs/learn/ioc/improve/dao/UserDaoMySqlImpl.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/ioc/improve/dao/UserDaoMySqlImpl.java)
-        - [/java/mylearn/myspring/src/main/java/com/ljs/learn/ioc/improve/dao/UserDaoOracleImpl.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/ioc/improve/dao/UserDaoOracleImpl.java)
+        - [/java/mylearn/myspring/src/main/java/com/ljs/learn/base/ioc/improve/dao/UserDao.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/base/ioc/improve/dao/UserDao.java)
+        - [/java/mylearn/myspring/src/main/java/com/ljs/learn/base/ioc/improve/dao/UserDaoMySqlImpl.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/base/ioc/improve/dao/UserDaoMySqlImpl.java)
+        - [/java/mylearn/myspring/src/main/java/com/ljs/learn/base/ioc/improve/dao/UserDaoOracleImpl.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/base/ioc/improve/dao/UserDaoOracleImpl.java)
     - 代码内容
         ```java
         public interface UserDao {
@@ -168,8 +168,8 @@
         ```
 - `UserService`及其实现类
     - 参考代码
-        - [/java/mylearn/myspring/src/main/java/com/ljs/learn/ioc/base/service/UserService.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/ioc/base/service/UserService.java)
-        - [/java/mylearn/myspring/src/main/java/com/ljs/learn/ioc/base/service/UserServiceImpl.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/ioc/base/service/UserServiceImpl.java)
+        - [/java/mylearn/myspring/src/main/java/com/ljs/learn/base/ioc/base/service/UserService.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/base/ioc/base/service/UserService.java)
+        - [/java/mylearn/myspring/src/main/java/com/ljs/learn/base/ioc/base/service/UserServiceImpl.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/base/ioc/base/service/UserServiceImpl.java)
     - 代码内容
         ```java
         public interface UserService {
@@ -194,7 +194,7 @@
       
 - 测试类
     - 参考代码
-        - [/java/mylearn/myspring/src/test/java/com/ljs/learn/ioc/base/IocBaseTest.java](/java/mylearn/myspring/src/test/java/com/ljs/learn/ioc/base/IocBaseTest.java)
+        - [/java/mylearn/myspring/src/test/java/com/ljs/learn/base/ioc/base/IocBaseTest.java](/java/mylearn/myspring/src/test/java/com/ljs/learn/base/ioc/base/IocBaseTest.java)
     - 代码内容
         ```java
         @Test
@@ -217,7 +217,7 @@
 
 - 改进后的service实现
     - 参考代码
-        - [/java/mylearn/myspring/src/main/java/com/ljs/learn/ioc/improve/service/UserServiceImpl.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/ioc/improve/service/UserServiceImpl.java)
+        - [/java/mylearn/myspring/src/main/java/com/ljs/learn/base/ioc/improve/service/UserServiceImpl.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/base/ioc/improve/service/UserServiceImpl.java)
     - 代码内容
         ```java
         public class UserServiceImpl implements UserService {
@@ -241,7 +241,7 @@
         ```
 - 测试内容
     - 参考代码
-        - [/java/mylearn/myspring/src/test/java/com/ljs/learn/ioc/improve/IocImporveTest.java](/java/mylearn/myspring/src/test/java/com/ljs/learn/ioc/improve/IocImporveTest.java)
+        - [/java/mylearn/myspring/src/test/java/com/ljs/learn/base/ioc/improve/IocImporveTest.java](/java/mylearn/myspring/src/test/java/com/ljs/learn/base/ioc/improve/IocImporveTest.java)
     - 代码内容
         ```java
         @Test
@@ -294,7 +294,7 @@
     - `ApplicationContext context = new ClassPathXmlApplicationContext("services.xml", "daos.xml");`
 - Hello类
     - 参考代码
-        - [/java/mylearn/myspring/src/main/java/com/ljs/learn/ioc/springHello/Hello.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/ioc/springHello/Hello.java)  
+        - [/java/mylearn/myspring/src/main/java/com/ljs/learn/base/ioc/springHello/Hello.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/base/ioc/springHello/Hello.java)  
     - 代码内容
         ```java
         public class Hello {
@@ -326,7 +326,7 @@
 
 - Spring配置
     - 配置文件
-        - [/java/mylearn/myspring/src/main/resources/ioc/springHello/bean.xml](/java/mylearn/myspring/src/main/resources/ioc/springHello/bean.xml)
+        - [/java/mylearn/myspring/src/main/resources/base/ioc/springHello/bean.xml](/java/mylearn/myspring/src/main/resources/base/ioc/springHello/bean.xml)
     - 配置内容
         ```xml
         <?xml version="1.0" encoding="UTF-8"?>
@@ -346,7 +346,7 @@
         ```
 - 测试类
     - 参考代码
-        - [/java/mylearn/myspring/src/test/java/com/ljs/learn/ioc/springHello/HelloTest.java](/java/mylearn/myspring/src/test/java/com/ljs/learn/ioc/springHello/HelloTest.java)
+        - [/java/mylearn/myspring/src/test/java/com/ljs/learn/base/ioc/springHello/HelloTest.java](/java/mylearn/myspring/src/test/java/com/ljs/learn/base/ioc/springHello/HelloTest.java)
     - 代码内容
         ```java
         import org.junit.Test;
@@ -382,7 +382,7 @@
 [top](#catalog)
 - service实现类的修改：只保留`setter`注入方式，并且提供空参构造器
     - 参考代码
-        - [/java/mylearn/myspring/src/main/java/com/ljs/learn/ioc/springBaseImprove/service/UserServiceImpl.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/ioc/springBaseImprove/service/UserServiceImpl.java)
+        - [/java/mylearn/myspring/src/main/java/com/ljs/learn/base/ioc/springBaseImprove/service/UserServiceImpl.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/base/ioc/springBaseImprove/service/UserServiceImpl.java)
     - 代码内容
         ```java
         public class UserServiceImpl implements UserService {
@@ -402,7 +402,7 @@
         ```
 - XML配置
     - 配置文件
-        - [/java/mylearn/myspring/src/main/resources/ioc/springBaseImprove/bean.xml](/java/mylearn/myspring/src/main/resources/ioc/springBaseImprove/bean.xml)
+        - [/java/mylearn/myspring/src/main/resources/base/ioc/springBaseImprove/bean.xml](/java/mylearn/myspring/src/main/resources/base/ioc/springBaseImprove/bean.xml)
     - 配置内容
         ```xml
         <?xml version="1.0" encoding="UTF-8"?>
@@ -428,7 +428,7 @@
         ```
 - 测试类
     - 测试代码
-        - [/java/mylearn/myspring/src/test/java/com/ljs/learn/ioc/springBaseImprove/UserTest.java](/java/mylearn/myspring/src/test/java/com/ljs/learn/ioc/springBaseImprove/UserTest.java)
+        - [/java/mylearn/myspring/src/test/java/com/ljs/learn/base/ioc/springBaseImprove/UserTest.java](/java/mylearn/myspring/src/test/java/com/ljs/learn/base/ioc/springBaseImprove/UserTest.java)
     - 代码内容
         ```java
         public class UserTest {
@@ -547,7 +547,7 @@
 - 示例
     - Hello类
         - 参考代码
-            - [/java/mylearn/myspring/src/main/java/com/ljs/learn/config/alias/Hello.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/config/alias/Hello.java)
+            - [/java/mylearn/myspring/src/main/java/com/ljs/learn/base/config/alias/Hello.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/base/config/alias/Hello.java)
         - 代码内容
             ```java
             public class Hello {
@@ -564,7 +564,7 @@
             ```
     - 配置文件
         - 文件路径：
-            - [/java/mylearn/myspring/src/main/resources/config/alias/bean.xml](/java/mylearn/myspring/src/main/resources/config/alias/bean.xml)
+            - [/java/mylearn/myspring/src/main/resources/base/config/alias/bean.xml](/java/mylearn/myspring/src/main/resources/base/config/alias/bean.xml)
         - 配置内容
             ```xml
             <?xml version="1.0" encoding="UTF-8"?>
@@ -586,7 +586,7 @@
             ```
     - 测试类
         - 参考代码：
-            - [/java/mylearn/myspring/src/test/java/com/ljs/learn/config/alias/HelloAliasTest.java](/java/mylearn/myspring/src/test/java/com/ljs/learn/config/alias/HelloAliasTest.java)
+            - [/java/mylearn/myspring/src/test/java/com/ljs/learn/base/config/alias/HelloAliasTest.java](/java/mylearn/myspring/src/test/java/com/ljs/learn/base/config/alias/HelloAliasTest.java)
         - 测试内容
             ```java
             @Test
@@ -658,7 +658,7 @@
 - 示例
     - Hello类
         - 参考代码
-            - [/java/mylearn/myspring/src/main/java/com/ljs/learn/di/constructor/Hello.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/di/constructor/Hello.java)  
+            - [/java/mylearn/myspring/src/main/java/com/ljs/learn/base/di/constructor/Hello.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/base/di/constructor/Hello.java)  
         - 代码内容
             ```java
             public class Hello {
@@ -677,7 +677,7 @@
             ```
     - 配置文件
         - 文件路径
-            - [/java/mylearn/myspring/src/main/resources/di/constructor/bean.xml](/java/mylearn/myspring/src/main/resources/di/constructor/bean.xml)
+            - [/java/mylearn/myspring/src/main/resources/base/di/constructor/bean.xml](/java/mylearn/myspring/src/main/resources/base/di/constructor/bean.xml)
         - 配置内容
             ```xml
             <?xml version="1.0" encoding="UTF-8"?>
@@ -707,7 +707,7 @@
 
     - 测试类
         - 参考代码
-            - [/java/mylearn/myspring/src/test/java/com/ljs/learn/di/constructor/HelloTest.java](/java/mylearn/myspring/src/test/java/com/ljs/learn/di/constructor/HelloTest.java)   
+            - [/java/mylearn/myspring/src/test/java/com/ljs/learn/base/di/constructor/HelloTest.java](/java/mylearn/myspring/src/test/java/com/ljs/learn/base/di/constructor/HelloTest.java)   
         - 测试内容
             ```java
             @Test
@@ -737,7 +737,7 @@
 - `bean`下通过 `<property name="name" ....>` 来注入参数值
 - 类
     - 参考代码
-        - [/java/mylearn/myspring/src/main/java/com/ljs/learn/di/complex/Student.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/di/complex/Student.java)
+        - [/java/mylearn/myspring/src/main/java/com/ljs/learn/base/di/complex/Student.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/base/di/complex/Student.java)
     - 代码内容
         ```java
         public class Student {
@@ -755,7 +755,7 @@
         ```
 - 配置文件
     - 文件路径
-        - [/java/mylearn/myspring/src/main/resources/di/complex/bean.xml](/java/mylearn/myspring/src/main/resources/di/complex/bean.xml)
+        - [/java/mylearn/myspring/src/main/resources/base/di/complex/bean.xml](/java/mylearn/myspring/src/main/resources/base/di/complex/bean.xml)
     - 配置内容
         ```xml
         <?xml version="1.0" encoding="UTF-8"?>
@@ -824,7 +824,7 @@
         ```
 - 测试内容
     - 参考代码
-        - [/java/mylearn/myspring/src/test/java/com/ljs/learn/di/complex/StudentTest.java](/java/mylearn/myspring/src/test/java/com/ljs/learn/di/complex/StudentTest.java)
+        - [/java/mylearn/myspring/src/test/java/com/ljs/learn/base/di/complex/StudentTest.java](/java/mylearn/myspring/src/test/java/com/ljs/learn/base/di/complex/StudentTest.java)
     - 代码内容
         ```java
         @Test
@@ -877,7 +877,7 @@
             ```
     - 配置文件
         - 文件路径
-            - [/java/mylearn/myspring/src/main/resources/di/extension/bean.xml](/java/mylearn/myspring/src/main/resources/di/extension/bean.xml)
+            - [/java/mylearn/myspring/src/main/resources/base/di/extension/bean.xml](/java/mylearn/myspring/src/main/resources/base/di/extension/bean.xml)
         - 配置内容
             ```xml
             <?xml version="1.0" encoding="UTF-8"?>
@@ -898,7 +898,7 @@
             ```
     - 测试类
         - 参考代码
-            - [/java/mylearn/myspring/src/test/java/com/ljs/learn/di/extension/StudentTest.java](/java/mylearn/myspring/src/test/java/com/ljs/learn/di/extension/StudentTest.java)
+            - [/java/mylearn/myspring/src/test/java/com/ljs/learn/base/di/extension/StudentTest.java](/java/mylearn/myspring/src/test/java/com/ljs/learn/base/di/extension/StudentTest.java)
         - 代码内容
             ```java
             @Test
@@ -933,7 +933,7 @@
 - 示例
     - 类`Student`
         - 参考代码
-            - [/java/mylearn/myspring/src/main/java/com/ljs/learn/di/beanScope/Student.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/di/beanScope/Student.java)
+            - [/java/mylearn/myspring/src/main/java/com/ljs/learn/base/di/beanScope/Student.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/base/di/beanScope/Student.java)
         - 代码内容
             ```java
             public class Student {
@@ -953,7 +953,7 @@
             ```
     - 配置文件
         - 文件路径
-            - [/java/mylearn/myspring/src/main/resources/di/beanScope/bean.xml](/java/mylearn/myspring/src/main/resources/di/beanScope/bean.xml)
+            - [/java/mylearn/myspring/src/main/resources/base/di/beanScope/bean.xml](/java/mylearn/myspring/src/main/resources/base/di/beanScope/bean.xml)
         - 配置内容
             ```xml
             <?xml version="1.0" encoding="UTF-8"?>
@@ -977,7 +977,7 @@
     
     - 测试类
         - 参考代码
-            - [/java/mylearn/myspring/src/test/java/com/ljs/learn/di/beanScope/StudentTest.java](/java/mylearn/myspring/src/test/java/com/ljs/learn/di/beanScope/StudentTest.java)
+            - [/java/mylearn/myspring/src/test/java/com/ljs/learn/base/di/beanScope/StudentTest.java](/java/mylearn/myspring/src/test/java/com/ljs/learn/base/di/beanScope/StudentTest.java)
         - 测试内容
             ```java
             @Test
@@ -1034,9 +1034,9 @@
 - 示例
     - 参考类
         - 参考代码：        
-            - [/java/mylearn/myspring/src/main/java/com/ljs/learn/autowire/xml/People.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/autowire/xml/People.java)
-            - [/java/mylearn/myspring/src/main/java/com/ljs/learn/autowire/xml/Dog.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/autowire/xml/Dog.java)
-            - [/java/mylearn/myspring/src/main/java/com/ljs/learn/autowire/xml/Cat.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/autowire/xml/Cat.java)
+            - [/java/mylearn/myspring/src/main/java/com/ljs/learn/base/autowire/xml/People.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/base/autowire/xml/People.java)
+            - [/java/mylearn/myspring/src/main/java/com/ljs/learn/base/autowire/xml/Dog.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/base/autowire/xml/Dog.java)
+            - [/java/mylearn/myspring/src/main/java/com/ljs/learn/base/autowire/xml/Cat.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/base/autowire/xml/Cat.java)
         - 代码内容
             ```java
             public class Cat {
@@ -1089,7 +1089,7 @@
     - 配置文件
         - `byName`配置
             - 文件路径
-                - [/java/mylearn/myspring/src/main/resources/autowire/xml/bean.xml](/java/mylearn/myspring/src/main/resources/autowire/xml/bean.xml)
+                - [/java/mylearn/myspring/src/main/resources/base/autowire/xml/bean.xml](/java/mylearn/myspring/src/main/resources/base/autowire/xml/bean.xml)
             - 配置内容
                 ```xml
                 <bean id="cat" class="com.ljs.learn.autowire.xml.Cat"/>
@@ -1102,7 +1102,7 @@
                 ```
         - `byType`配置
             - 文件路径
-                - [/java/mylearn/myspring/src/main/resources/autowire/xml/bean02.xml](/java/mylearn/myspring/src/main/resources/autowire/xml/bean02.xml)
+                - [/java/mylearn/myspring/src/main/resources/base/autowire/xml/bean02.xml](/java/mylearn/myspring/src/main/resources/base/autowire/xml/bean02.xml)
             - 配置内容
                 ```xml
                 <bean id="xxx" class="com.ljs.learn.autowire.xml.Cat"/>
@@ -1116,7 +1116,7 @@
                 ```
     - 测试类
         - 参考代码
-            - [/java/mylearn/myspring/src/test/java/com/ljs/learn/autowire/xml/PeopleTest.java](/java/mylearn/myspring/src/test/java/com/ljs/learn/autowire/xml/PeopleTest.java)
+            - [/java/mylearn/myspring/src/test/java/com/ljs/learn/base/autowire/xml/PeopleTest.java](/java/mylearn/myspring/src/test/java/com/ljs/learn/base/autowire/xml/PeopleTest.java)
         - 测试内容
             - byName 测试
                 ```java
@@ -1234,7 +1234,7 @@
 - 示例
     - 使用 `@Autowired` 注解进行自动装配
         - 参考代码
-            - [/java/mylearn/myspring/src/main/java/com/ljs/learn/autowire/annotation/People.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/autowire/annotation/People.java)
+            - [/java/mylearn/myspring/src/main/java/com/ljs/learn/base/autowire/annotation/People.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/base/autowire/annotation/People.java)
         - 代码内容
             ```java
             public class People {
@@ -1255,7 +1255,7 @@
     
     - 使用 `@Resource` 注解进行自动装配
         - 参考代码
-            - [/java/mylearn/myspring/src/main/java/com/ljs/learn/autowire/annotation/People02.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/autowire/annotation/People02.java)
+            - [/java/mylearn/myspring/src/main/java/com/ljs/learn/base/autowire/annotation/People02.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/base/autowire/annotation/People02.java)
         - 代码内容
             ```java
             public class People02 {
@@ -1274,7 +1274,7 @@
 
     - 配置文件
         - 文件路径
-            - [/java/mylearn/myspring/src/main/resources/autowire/annotation/bean.xml](/java/mylearn/myspring/src/main/resources/autowire/annotation/bean.xml)
+            - [/java/mylearn/myspring/src/main/resources/base/autowire/annotation/bean.xml](/java/mylearn/myspring/src/main/resources/base/autowire/annotation/bean.xml)
         - 配置内容
             ```xml
             <?xml version="1.0" encoding="UTF-8"?>
@@ -1311,7 +1311,7 @@
             ```
     - 测试类
         - 参考代码
-            - [/java/mylearn/myspring/src/test/java/com/ljs/learn/autowire/annotattion/PeopleTest.java](/java/mylearn/myspring/src/test/java/com/ljs/learn/autowire/annotattion/PeopleTest.java)
+            - [/java/mylearn/myspring/src/test/java/com/ljs/learn/base/autowire/annotattion/PeopleTest.java](/java/mylearn/myspring/src/test/java/com/ljs/learn/base/autowire/annotattion/PeopleTest.java)
         - 测试内容
             ```java
             //测试@Autowire装配
@@ -1472,8 +1472,8 @@
 [top](#catalog)
 - 类
     - 参考代码
-        - [/java/mylearn/myspring/src/main/java/com/ljs/learn/annotation/User.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/annotation/User.java)
-        - [/java/mylearn/myspring/src/main/java/com/ljs/learn/annotation/User02.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/annotation/User02.java)
+        - [/java/mylearn/myspring/src/main/java/com/ljs/learn/base/annotation/User.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/base/annotation/User.java)
+        - [/java/mylearn/myspring/src/main/java/com/ljs/learn/base/annotation/User02.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/base/annotation/User02.java)
     - 代码内容
         ```java
         //等价于<bean id="user" class=".....User"/>
@@ -1537,7 +1537,7 @@
 
 - 配置文件
     - 文件路径
-        - [/java/mylearn/myspring/src/main/resources/annotation/bean.xml](/java/mylearn/myspring/src/main/resources/annotation/bean.xml)
+        - [/java/mylearn/myspring/src/main/resources/base/annotation/bean.xml](/java/mylearn/myspring/src/main/resources/base/annotation/bean.xml)
     - 配置内容
         ```xml
         <?xml version="1.0" encoding="UTF-8"?>
@@ -1557,7 +1557,7 @@
         ```
 - 测试类
     - 参考代码
-        - [/java/mylearn/myspring/src/test/java/com/ljs/learn/autowire](/java/mylearn/myspring/src/test/java/com/ljs/learn/autowire)
+        - [/java/mylearn/myspring/src/test/java/com/ljs/learn/base/autowire](/java/mylearn/myspring/src/test/java/com/ljs/learn/base/autowire)
     - 测试内容
         ```java
         // @Component测试
@@ -1805,8 +1805,8 @@
     - 在 `MyConfig` 中引入配置类 `SubConfig`，通过 `MyConfig` 就可以获取所有的类
 - bean类
     - 参考代码
-        - [/java/mylearn/myspring/src/main/java/com/ljs/learn/javaconfig/bean/Student.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/javaconfig/bean/Student.java)
-        - [/java/mylearn/myspring/src/main/java/com/ljs/learn/javaconfig/bean/User.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/javaconfig/bean/User.java)
+        - [/java/mylearn/myspring/src/main/java/com/ljs/learn/base/javaconfig/bean/Student.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/base/javaconfig/bean/Student.java)
+        - [/java/mylearn/myspring/src/main/java/com/ljs/learn/base/javaconfig/bean/User.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/base/javaconfig/bean/User.java)
     - 代码内容
         ```java
         // 不使用@Bean注解在配置类中注册该类，
@@ -1853,8 +1853,8 @@
 
 - 配置类
     - 参考代码
-        - [/java/mylearn/myspring/src/main/java/com/ljs/learn/javaconfig/config/MyConfig.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/javaconfig/config/MyConfig.java)
-        - [/java/mylearn/myspring/src/main/java/com/ljs/learn/javaconfig/config/SubConfig.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/javaconfig/config/SubConfig.java)
+        - [/java/mylearn/myspring/src/main/java/com/ljs/learn/base/javaconfig/config/MyConfig.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/base/javaconfig/config/MyConfig.java)
+        - [/java/mylearn/myspring/src/main/java/com/ljs/learn/base/javaconfig/config/SubConfig.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/base/javaconfig/config/SubConfig.java)
     - 代码内容
         ```java
         // 主配置类
@@ -1877,7 +1877,7 @@
         ```
 - 测试类
     - 参考代码
-        - [/java/mylearn/myspring/src/test/java/com/ljs/learn/javaconfig/JavaConfigTest.java](/java/mylearn/myspring/src/test/java/com/ljs/learn/javaconfig/JavaConfigTest.java)
+        - [/java/mylearn/myspring/src/test/java/com/ljs/learn/base/javaconfig/JavaConfigTest.java](/java/mylearn/myspring/src/test/java/com/ljs/learn/base/javaconfig/JavaConfigTest.java)
     - 测试内容
         ```java
         // 主配置类测试
@@ -2019,8 +2019,8 @@
 - 示例
     - 业务接口及其实现类
         - 参考代码
-            - [/java/mylearn/myspring/src/main/java/com/ljs/learn/aop/xml/service/UserService.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/aop/xml/service/UserService.java)
-            - [/java/mylearn/myspring/src/main/java/com/ljs/learn/aop/xml/service/UserServiceImpl.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/aop/xml/service/UserServiceImpl.java)
+            - [/java/mylearn/myspring/src/main/java/com/ljs/learn/base/aop/xml/service/UserService.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/base/aop/xml/service/UserService.java)
+            - [/java/mylearn/myspring/src/main/java/com/ljs/learn/base/aop/xml/service/UserServiceImpl.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/base/aop/xml/service/UserServiceImpl.java)
         - 代码内容
             ```java
             public interface UserService {
@@ -2051,8 +2051,8 @@
 
     - 切面类
         - 参考代码
-            - [/java/mylearn/myspring/src/main/java/com/ljs/learn/aop/xml/log/BeforeLog.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/aop/xml/log/BeforeLog.java)
-            - [/java/mylearn/myspring/src/main/java/com/ljs/learn/aop/xml/log/AfterLog.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/aop/xml/log/AfterLog.java)
+            - [/java/mylearn/myspring/src/main/java/com/ljs/learn/base/aop/xml/log/BeforeLog.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/base/aop/xml/log/BeforeLog.java)
+            - [/java/mylearn/myspring/src/main/java/com/ljs/learn/base/aop/xml/log/AfterLog.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/base/aop/xml/log/AfterLog.java)
         - 代码内容
             ```java
             //方法执行前输出log
@@ -2075,7 +2075,7 @@
             ```
     - 配置文件
         - 文件路径
-            - [/java/mylearn/myspring/src/main/resources/aop/xml/bean.xml](/java/mylearn/myspring/src/main/resources/aop/xml/bean.xml)
+            - [/java/mylearn/myspring/src/main/resources/base/aop/xml/bean.xml](/java/mylearn/myspring/src/main/resources/base/aop/xml/bean.xml)
         - 配置内容
             ```xml
             <bean id="userService" class="com.ljs.learn.aop.xml.service.UserServiceImpl"/>
@@ -2092,7 +2092,7 @@
             ```
     - 测试类
         - 参考代码
-            - [/java/mylearn/myspring/src/test/java/com/ljs/learn/aop/xml/ServiceTest.java](/java/mylearn/myspring/src/test/java/com/ljs/learn/aop/xml/ServiceTest.java)
+            - [/java/mylearn/myspring/src/test/java/com/ljs/learn/base/aop/xml/ServiceTest.java](/java/mylearn/myspring/src/test/java/com/ljs/learn/base/aop/xml/ServiceTest.java)
         - 测试内容
             ```java
             // 通过抽象类型来获取bean
@@ -2158,8 +2158,8 @@
 - 示例
     - 业务接口及其实现类
         - 参考代码
-            - [/java/mylearn/myspring/src/main/java/com/ljs/learn/aop/aspect/service/UserService.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/aop/aspect/service/UserService.java)
-            - [/java/mylearn/myspring/src/main/java/com/ljs/learn/aop/aspect/service/UserServiceImpl.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/aop/aspect/service/UserServiceImpl.java)
+            - [/java/mylearn/myspring/src/main/java/com/ljs/learn/base/aop/aspect/service/UserService.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/base/aop/aspect/service/UserService.java)
+            - [/java/mylearn/myspring/src/main/java/com/ljs/learn/base/aop/aspect/service/UserServiceImpl.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/base/aop/aspect/service/UserServiceImpl.java)
         - 代码内容
             ```java
             public interface UserService {
@@ -2188,7 +2188,7 @@
           
     - 切面类
         - 参考代码
-            - [/java/mylearn/myspring/src/main/java/com/ljs/learn/aop/aspect/log/Log.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/aop/aspect/log/Log.java)
+            - [/java/mylearn/myspring/src/main/java/com/ljs/learn/base/aop/aspect/log/Log.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/base/aop/aspect/log/Log.java)
         - 代码内容
             ```java
             public class Log {
@@ -2203,7 +2203,7 @@
             ```
     - 配置文件
         - 文件路径
-            - [/java/mylearn/myspring/src/main/resources/aop/aspect/bean.xml](/java/mylearn/myspring/src/main/resources/aop/aspect/bean.xml)
+            - [/java/mylearn/myspring/src/main/resources/base/aop/aspect/bean.xml](/java/mylearn/myspring/src/main/resources/base/aop/aspect/bean.xml)
         - 配置内容
             ```xml
             <bean id="userService" class="com.ljs.learn.aop.aspect.service.UserServiceImpl"/>
@@ -2223,7 +2223,7 @@
             ```
     - 测试类
         - 参考代码
-            - [/java/mylearn/myspring/src/test/java/com/ljs/learn/aop/aspect/ServiceTest.java](/java/mylearn/myspring/src/test/java/com/ljs/learn/aop/aspect/ServiceTest.java)
+            - [/java/mylearn/myspring/src/test/java/com/ljs/learn/base/aop/aspect/ServiceTest.java](/java/mylearn/myspring/src/test/java/com/ljs/learn/base/aop/aspect/ServiceTest.java)
         - 代码内容
             ```java
             @Test
@@ -2292,8 +2292,8 @@
 - 示例
     - 业务接口及其实现类
         - 参考代码
-            - [/java/mylearn/myspring/src/main/java/com/ljs/learn/aop/annotation/service/UserService.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/aop/annotation/service/UserService.java)
-            - [/java/mylearn/myspring/src/main/java/com/ljs/learn/aop/annotation/service/UserServiceImpl.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/aop/annotation/service/UserServiceImpl.java)
+            - [/java/mylearn/myspring/src/main/java/com/ljs/learn/base/aop/annotation/service/UserService.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/base/aop/annotation/service/UserService.java)
+            - [/java/mylearn/myspring/src/main/java/com/ljs/learn/base/aop/annotation/service/UserServiceImpl.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/base/aop/annotation/service/UserServiceImpl.java)
         - 代码内容
             ```java
             public interface UserService {
@@ -2321,7 +2321,7 @@
             ``` 
     - 切面类
         - 参考代码
-            - [/java/mylearn/myspring/src/main/java/com/ljs/learn/aop/annotation/log/Log.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/aop/annotation/log/Log.java)
+            - [/java/mylearn/myspring/src/main/java/com/ljs/learn/base/aop/annotation/log/Log.java](/java/mylearn/myspring/src/main/java/com/ljs/learn/base/aop/annotation/log/Log.java)
             
         - 代码内容
             ```java
@@ -2350,7 +2350,7 @@
             ```
     - 配置文件
         - 文件路径
-            - [/java/mylearn/myspring/src/main/resources/aop/annotation/bean.xml](/java/mylearn/myspring/src/main/resources/aop/annotation/bean.xml)
+            - [/java/mylearn/myspring/src/main/resources/base/aop/annotation/bean.xml](/java/mylearn/myspring/src/main/resources/base/aop/annotation/bean.xml)
         - 配置内容
             ```xml
             <aop:aspectj-autoproxy/>
@@ -2360,7 +2360,7 @@
             ```
     - 测试类
         - 参考代码
-            - [/java/mylearn/myspring/src/test/java/com/ljs/learn/aop/annotation/ServiceTest.java](/java/mylearn/myspring/src/test/java/com/ljs/learn/aop/annotation/ServiceTest.java)
+            - [/java/mylearn/myspring/src/test/java/com/ljs/learn/base/aop/annotation/ServiceTest.java](/java/mylearn/myspring/src/test/java/com/ljs/learn/base/aop/annotation/ServiceTest.java)
         - 测试内容
             ```java
             @Test

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+            https://www.springframework.org/schema/beans/spring-beans.xsd
+            http://www.springframework.org/schema/context
+            https://www.springframework.org/schema/context/spring-context.xsd">
+    <!--开启注解支持-->
+    <context:annotation-config/>
+
+    <!--配置多个cat类-->
+    <bean id="cat01" class="com.ljs.learn.base.autowire.annotation.Cat">
+        <property name="name" value="TestCat01"/>
+    </bean>
+
+    <bean id="cat02" class="com.ljs.learn.base.autowire.annotation.Cat">
+        <property name="name" value="TestCat02"/>
+    </bean>
+
+    <!--配置多个dog类-->
+    <bean id="dog01" class="com.ljs.learn.base.autowire.annotation.Dog">
+        <property name="name" value="TestDog01"/>
+    </bean>
+    <bean id="dog02" class="com.ljs.learn.base.autowire.annotation.Dog">
+        <property name="name" value="TestDog02"/>
+    </bean>
+
+    <bean id="people" class="com.ljs.learn.base.autowire.annotation.People"/>
+    <bean id="people02" class="com.ljs.learn.base.autowire.annotation.People02"/>
+</beans>
