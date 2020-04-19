@@ -271,13 +271,20 @@
     ```
 - 启动时，无法找到dao/mapper接口的`mapper.xml`
     - 异常信息
-        ```
-        org.apache.ibatis.builder.BuilderException: 
-        Error parsing SQL Mapper Configuration. 
-        Cause: java.io.IOException: 
-        Could not find resource 
-        com/ljs/learn/batis/dao/UserMapper.xml
-        ```
+        - 异常1 : 通过 `<mapper resource="类路径">` 配置mapper
+            ```
+            org.apache.ibatis.builder.BuilderException: 
+            Error parsing SQL Mapper Configuration. 
+            Cause: java.io.IOException: 
+            Could not find resource 
+            类路径
+            ```
+        - 异常2 : 通过`<mapper class="类路径">` 配置mapper
+            ```
+            org.apache.ibatis.binding.BindingException: 
+            Invalid bound statement (not found): 
+            类路径
+            ```
     - 异常原因
         - 在maven中，约定大于配置，所以可能会产生配置文件无法别导出、无法生效的问题
     - 在`pom.xml`的`<build>`中配置`<resources>`，来防止资源导出失败
