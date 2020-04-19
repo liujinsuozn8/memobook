@@ -11,7 +11,7 @@
 
 - 框架
     - Spring
-        - [基本知识](java/spring/base.md)
+        - [基本知识](java/spring/base/base.md)
     - Mybatis
         - [基本知识](java/mybatis/base/base.md)
 

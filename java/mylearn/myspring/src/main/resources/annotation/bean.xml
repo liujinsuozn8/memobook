@@ -7,7 +7,7 @@
             http://www.springframework.org/schema/context
             https://www.springframework.org/schema/context/spring-context.xsd">
 
-    <!--扫描指定的包，该包下的注解会生效-->
+    <!--扫描指定的包，该包下的@Component注解会生效-->
     <context:component-scan base-package="com.ljs.learn.annotation"/>
     <context:annotation-config/>
 

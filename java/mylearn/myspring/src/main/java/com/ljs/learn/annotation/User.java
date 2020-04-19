@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 //等价于<bean id="user" class=".....User"/>
 @Component
 // @Scope("singleton") //配置作用域：单例模式
-@Scope("prototype") //配置作用域：单例模式
+@Scope("prototype") //配置作用域：原型模式
 public class User {
     //相当于<property name="name" value="TestName"/>
     @Value("TestName")
