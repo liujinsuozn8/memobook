@@ -1,0 +1,20 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>navigator test</title>
+        <script type="text/javascript">
+            if (/chrome/i.test(navigator.userAgent)){
+                console.log("this is chrome");
+            } else if (/msie/i.test(navigator.userAgent)){
+                console.log("this is ie")
+            } else if ("ActiveXObject" in window){
+                console.log("this is ie 11");
+            }
+            //  else if (/msie/i.test(navigator.userAgent))
+        </script>
+    </head>
+    <body>
+        
+    </body>
+</html>
