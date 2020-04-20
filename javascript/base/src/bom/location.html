@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>location</title>
+        <script type="text/javascript">
+            // alert(location);
+            window.onload = function(){
+
+                // 1. 手动修改 Location对象
+                var toBaidu = document.getElementById("toBaidu");
+                toBaidu.onclick = function(){
+                    location = "https://www.baidu.com";
+                    // location = "history/test01.html";
+                };
+
+                // 2. 加载其他页面
+                var assignBtn = document.getElementById("assignBtn");
+                assignBtn.onclick = function(){
+                    location.assign("https://www.baidu.com");
+                };
+                
+                // 3. 加载自身
+                var assignSelf = document.getElementById("assignSelf");
+                assignSelf.onclick = function(){
+                    location.assign("location.html");
+                };
+
+                // 4. 重新加载当前页面
+                var reloadBtn = document.getElementById("reloadBtn");
+                reloadBtn.onclick = function(){
+                    location.reload();
+                };
+
+                // 5. 强制情况缓存刷新页面
+                var clearReload = document.getElementById("clearReload");
+                clearReload.onclick = function(){
+                    location.reload(true);
+                };
+
+                // 6. 页面替换
+                var replaceBtn = document.getElementById("replaceBtn");
+                replaceBtn.onclick = function(){
+                    location.replace("https://www.baidu.com");
+                };
+            };
+        </script>
+    </head>
+    <body>
+        <button id="toBaidu">go to other html</button> <br>
+        <button id="assignBtn">加载baidu</button> <br>
+        <button id="assignSelf">加载当前页面</button> <br>
+        <button id="reloadBtn">重新加载</button> <br>
+        <input type="text"> <button id="clearReload">强制情况缓存刷新页面</button> <br>
+        <button id="replaceBtn">页面替换</button> <br>
+    </body>
+</html>
