@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>history</title>
+        <script type="text/javascript">
+            // console.log(history);
+            window.onload = function(){
+                // 显示历史列表的URL数量
+                var showLength = document.getElementById("showLength");
+                showLength.onclick = function(){
+                    alert("history.length = " +history.length);
+                };
+
+                // 跳转到上一个页面
+                var backBtn = document.getElementById("backBtn");
+                backBtn.onclick = function(){
+                    history.back();
+                };
+
+                // 跳转到下一个页面
+                var forwardBtn = document.getElementById("forwardBtn");
+                forwardBtn.onclick = function(){
+                    history.forward();
+                };
+
+                // 跳转到上2个页面
+                var goBtn = document.getElementById("goBtn");
+                goBtn.onclick = function(){
+                    history.go(-2);
+                };
+            };
+        </script>
+    </head>
+    <body>
+        <p>history</p>
+
+        <button id="showLength">showLength</button><br>
+        <button id="backBtn">back</button><br>
+        <button id="forwardBtn">forward</button><br>
+        <button id="goBtn">go</button><br>
+
+        <a href="test03.html">go to test03.html</a>
+    </body>
+</html>
