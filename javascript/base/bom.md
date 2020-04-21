@@ -5,7 +5,13 @@
 - [Navigator对象](#Navigator对象)
 - [History对象](#History对象)
 - [Location对象](#Location对象)
-- [定时器](#定时器)
+- [定时器Interval](#定时器Interval)
+    - [定时器的基本使用方法](#定时器的基本使用方法)
+    - [定时器应用-颜色自动切换](#定时器应用-颜色自动切换)
+    - [定时器应用-解决键盘事件的延迟](#定时器应用-解决键盘事件的延迟)
+- [](#)
+- [](#)
+- [延时器](#延时器)
 - [](#)
 - [](#)
 
@@ -240,6 +246,180 @@
         };
         ```
 
-# 定时器
+# 定时器Interval
+## 定时器的基本使用方法
 [top](#catalog)
-- 
+- 定时器每个一段时间执行一次，只要定时器没有被清除，就会一直执行
+- 创建定时器：`setInterval(回调函数, 毫秒间隔)`
+    - 可以将一个函数**每隔一段时间执行一次**
+    - 该方法会返回一个Number类型的结果，并且该结果作为**定时器的唯一标识**
+
+- 清除定时器：`clearInterval(定时器标识)`
+    - 该函数可以接受任何类型的参数，包括：null、undefined
+    - 如果参数是一个有效的定时器标识，则清除该定时器；如果不是，则不执行任何操作
+
+## 定时器应用-颜色自动切换
+[top](#catalog)
+- 功能需求
+    - 点击 start 按钮，开始切换颜色
+    - 点击 end 按钮，停止切换样色
+
+- 实现方式
+    - 点击 start 按钮时，添加定时器，并将定时器的标识设置到全局变量中
+    - 点击 end 按钮，通过全局变量来清除定时器
+
+- 多次点击的问题
+    - 产生的问题
+        - 点击 start 按钮时，如果只是添加定时器，那么每次点击时，都会创建一个定时器。多次点击按钮后，就会创建多个定时器，导致图片切换加速
+        - 每次创建的定时器标识都会设置到全局变量中，导致全局变量中保存的是最新的定时器。点击 end 按钮时，**只能关闭最新的定时器，旧的定时器无法关闭**
+    - 问题的解决方法
+        - 为了保证在元素上只有一个有效的定时器，点击 start 按钮后，添加定时器之前，需要**先通过全局变量清除定时器**
+
+- 示例
+    - 参考代码
+        - [/javascript/base/src/bom/timer/interval/autoChangeColor.html](/javascript/base/src/bom/timer/interval/autoChangeColor.html)
+    
+    - html内容
+        ```html
+        <div id="box01"></div>
+        <button id="startBtn">start</button>
+        <button id="endBtn">end</button>
+        ```
+    
+    - css内容
+        ```css
+        #box01{
+            width: 100px;
+            height:100px;
+            background-color: #bfa;
+        }
+        ```
+    
+    - js内容
+        ```js
+        // 使用全局变量来保存定时器
+        var timer;
+        var colorList = ["#bfa", "#47e", "#ccc", "#eda"]
+        var colorIndex = 0;
+        var box01 = document.getElementById("box01");
+        
+        // 每次点击都会创建一个定时器，多次点击按钮后，就会创建多个定时器，
+        // 导致图片切换加速
+        // 但是timer只会保存最新的定时器，所以点击关闭按钮时，也只能关闭最新的定时器，
+        // 无法关闭其他的定时器
+        // var startBtn = document.getElementById("startBtn");
+        // startBtn.onclick = function(){
+        //     // 点击开始按钮后，创建定时器
+        //     timer = setInterval(function(){
+        //         colorIndex = (colorIndex + 1)%colorList.length;
+        //         box01.style.backgroundColor = colorList[colorIndex];
+        //     }, 500);
+        // };
+
+        
+        var startBtn = document.getElementById("startBtn");
+        startBtn.onclick = function(){
+            // 点击开始按钮后，先关闭当前元素中的上一个定时器
+            clearInterval(timer);
+
+            // 创建定时器
+            timer = setInterval(function(){
+                colorIndex = (colorIndex + 1)%colorList.length;
+                box01.style.backgroundColor = colorList[colorIndex];
+            }, 500);
+        };
+
+        var endBtn = document.getElementById("endBtn");
+        endBtn.onclick = function(){
+            clearInterval(timer);
+        };
+        ```
+
+## 定时器应用-解决键盘事件的延迟
+[top](#catalog)
+- 最基本的做法
+    - 在onkeydown事件中，根据方向键的keycode，控制移动方向，并每次移动一定的距离
+    - 元素移动的两个要素
+        - 方向 : keycode
+        - 速度 : 每次出发事件的时候，移动多大的距离
+    - 方向没有问题，但是速度有问题。浏览器为了避免键盘事件的异常捕获，每次按下按钮都会产生一个延迟，所以连续按下键盘时，第一次与第二次直接会产生延迟
+
+- 解决键盘事件延迟的方法
+    - 分离元素移动的两个要素
+        - onkeydown : 控制方向
+        - 定时器 : 控制速度
+
+- 实现方式
+    - 按下键盘时，设置方向参数，并创建定时器
+        - 为了避免多次设置定时器，导致移动加速，每次创建定时器之前需要先清除定时器，保证定时器只有一个
+    - 松开键盘时，清除定时器
+- 示例
+    - 参考代码
+        - [/javascript/base/src/bom/timer/interval/moveElemByKeydown.html](/javascript/base/src/bom/timer/interval/moveElemByKeydown.html)
+    
+    - html内容
+        ```html
+        <div id="box01"></div>
+        ```
+    
+    - css内容
+        ```css
+        #box01{
+            width: 50px;
+            height: 50px;
+            background-color: #ccc;
+            position: absolute;
+        }
+        ```
+
+    - js内容
+        ```js
+        var box01 = document.getElementById("box01");
+        var direction = 0;
+        var timer
+
+        // 1. 按下键盘，添加一个定时器，并开始移动
+        document.onkeydown = function(event){
+            // 固定方向
+            direction = event.keyCode;
+
+            // 每次创建定时器之前需要先清除定时器，保证定时器只有一个
+            clearInterval(timer);
+            // 每30毫秒进行移动
+            timer = setInterval(moveBox01, 30);
+            
+            // 2. 松开键盘，清除定时器，同时清除松开键盘的事件
+            document.onkeyup = function(event){
+                clearInterval(timer);
+                document.onkeyup = null;
+            }
+        }
+        
+        function moveBox01(){
+            switch (direction) {
+                case 37: // 左
+                    box01.style.left = box01.offsetLeft - 5 + "px";
+                    break;
+                case 38: // 上
+                    box01.style.top = box01.offsetTop - 5 + "px";
+                    break;
+                case 39: // 右
+                    box01.style.left = box01.offsetLeft + 5 + "px";
+                    break;
+                case 40: // 下
+                    box01.style.top = box01.offsetTop + 5 + "px";
+                    break;
+            }
+        }
+        ```
+
+# 延时器
+[top](#catalog)
+- 延时器使一个函数不马上执行，而是隔一段时间之后再执行，并且只执行一次
+- 创建延时器：`setTimeout(回调函数, 毫秒间隔)`
+    - 该函数会返回一个延时器标识
+- 清除延时器：`clearTimeout(延时器标识)`
+
+- 延时器与定时器互相转化
+    - 连续多次调用延时器 = 定时器
+    - 定时器只调用一次，然后被清除 = 延时器
