@@ -1,0 +1,240 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title></title>
+        <style>
+            /* 0. 去除浏览器默认样式 */
+            ol, ul {
+                list-style: none;
+            }
+            ol, ul, a {
+                margin: 0;
+                padding: 0;
+                border: 0;
+                font-size: 100%;
+                font: inherit;
+                vertical-align: baseline;
+            }
+
+            /* 1. 使用div作为图片 */
+            div.box{
+                width: 100px;
+                height: 100px;
+            }
+
+            /* 2. 轮播图样式 */
+            .carousel-outter{
+                /* 固定大小颜色 */
+                width: 100px;
+                height: 100px;
+                padding: 10px;
+                background-color: rgb(229, 248, 178);
+                /* 居中 */
+                margin: 5px auto;
+                /* 开启相对定位，作为.carousel-list的定位位置 */
+                position: relative;
+                overflow: hidden;
+            }
+
+            .carousel-list{
+                /* 单独设置大小，否则会继承.carousel-outter的 width
+                   使得 li 开启 float 之后，因为没有足够的宽度而无法水平排列 */
+                /* 为了能够根据图片自动变换，需要通过js来设置 */
+                /* width:5000px;  */
+
+                /* 开启绝对定位，使得列表可以移动 */
+                position: absolute;
+
+                /* left:-100px; */
+            }
+
+            /* 设置 .carousel-list 下的所有 li 水平排列 */
+            .carousel-list > li {
+                float: left;
+                margin-right: 10px;
+            }
+
+            /* 设置各个图片的导航超链接按钮 */
+            .carousel-nav{
+                position:absolute;
+                bottom: 0px;
+                /* 
+                margin:auto;
+                left:0px;
+                right:0px;
+                */
+            }
+
+            /* 导航超链接按钮水平排列 */
+            .carousel-nav > li {
+                float: left;
+                margin: 0px 3px;
+            }
+            
+            /* 设置超链接按钮的样式 */
+            .carousel-nav a{
+                float: left;
+                background-color: rgb(241, 146, 146);
+                width: 10px;
+                height: 10px;
+            }
+
+            /* 设置超链接按钮的鼠标移入样式 */
+            .carousel-nav a:hover{
+                background-color: rgb(87, 87, 87);
+            }
+            
+            /* 设置超链接按钮被选择、点击时的样式 */
+            /* a.carousel-nav-a-clicked{
+                background-color: rgb(87, 87, 87);
+            } */
+        </style>
+        <script type="text/javascript">
+            window.onload = function(){
+
+                var outter = document.querySelector(".carousel-outter");
+                var ul = document.querySelector(".carousel-list");
+                var ul_items =  document.querySelectorAll(".carousel-list > li");
+                var nav = document.querySelector(".carousel-nav");
+                var nav_a_list = document.querySelectorAll(".carousel-nav a");
+
+                // 1. 根据 carousel-list > li 的数量，设置 carousel-list 的 width
+                ul.style.width = ul_items.length * 110 + "px";
+                
+                // 2. 根据导航部分的整体长度
+                nav.style.left = (outter.offsetWidth - nav.offsetWidth) / 2 + "px";
+                
+                // 3. 设置第一个超链接按钮的样式
+                nav_a_list[0].style.backgroundColor = "rgb(87, 87, 87)";
+
+                // 4. 为每个导航的超链接按钮绑定事件
+                for(var i=0; i < nav_a_list.length; i++){
+                    // 保存当前元素的index
+                    nav_a_list[i].nav_item_index = i;
+                    // 先切换图片，选中导航按钮
+                    nav_a_list[i].onclick = function(){
+                        autoIndex = this.nav_item_index
+                        clearInterval(autoChangeTimer);
+                        changeAttr(
+                            ul,
+                            "left",
+                            -(this.nav_item_index * 110) + 10,
+                            20,
+                            10,
+                            function(){
+                                setAClicked();
+                                autoChange();
+                            }
+                        );
+                    };
+                }
+
+                // 5. 开启自动切换
+                autoChange();
+                var autoChangeTimer;
+
+                // 设置按钮的选择状态
+                function setAClicked(){
+                    // 如果到达了最后一个元素
+                    if (autoIndex >= ul_items.length - 1){
+                        autoIndex = 0;
+                        ul.style.left = "10px";
+                    }
+
+                    // 先清除所有按钮的选中样式
+                    for(var i=0; i < nav_a_list.length; i++){
+                        nav_a_list[i].style.backgroundColor="";
+                    }
+
+                    // 在将当前按钮设置为按下状态
+                    nav_a_list[autoIndex].style.backgroundColor = "rgb(87, 87, 87)";
+                };
+
+                // 自动切换
+                var autoIndex = 0;
+                function autoChange(){
+                    var max_index = ul_items.length;
+                    autoChangeTimer = setInterval(
+                        function(){
+                            autoIndex = (autoIndex + 1) % max_index;
+                            changeAttr(ul, "left", -(autoIndex * 110) + 10, 20, 10,
+                                function(){
+                                    setAClicked(autoIndex);
+                                }
+                            );
+                        },
+                        3000
+                    );
+                }
+            }; 
+
+            
+            /*
+                obj:需要移动的对象
+                attr:需要变换的属性
+                target:变换的最终结果
+                interval:移动的时间间隔
+                speed:每次移动的距离, 正整数
+                callback:回调函数
+            */
+            function changeAttr(obj, attr, target, interval, speed, callback){
+                // obj.style.left = 100 local = 1000
+                // obj.style.left < local ==>>> mark = 1, 即应该加
+                // obj.style.left > local ==>>> mark = -1, 即应该加
+                // obj.style.left = local ==>>> 直接退出
+
+                var currentValue = parseInt(getComputedStyle(obj,null)[attr]);
+              
+                if (currentValue === target || speed === 0) {
+                    return;
+                } else if (currentValue > target){
+                    speed = -speed;
+                }
+                
+                obj.timer = setInterval(function(){
+                    var oldValue = parseInt(getComputedStyle(obj,null)[attr]);;
+                    oldValue +=  speed;
+
+                    // 当元素的偏移量已经等于，或者超过了local，则固定到local
+                    if (speed < 0 && oldValue <= target || speed > 0 && oldValue >= target){
+                        obj.style[attr] = target + "px";
+                        clearInterval(obj.timer);
+                        callback && callback();
+                    } else {
+                        obj.style[attr] = oldValue + "px";
+                    }
+
+                }, interval)
+            }
+        </script>
+    </head>
+    <body>
+        <div class="carousel-outter">
+            <ul class="carousel-list">
+               <li>
+                   <div class="box" style="background-color: #bfa"></div>
+               </li>
+               <li>
+                   <div class="box" style="background-color: #47e"></div>
+                </li>
+                <li>
+                    <div class="box" style="background-color: #ccc"></div>
+                </li>
+                <li>
+                    <div class="box" style="background-color: #eba"></div>
+                </li> 
+                <li>
+                    <div class="box" style="background-color: #bfa"></div>
+                </li>
+            </ul>
+            <ul class="carousel-nav">
+                <li><a href="javascript:;"></a></li>
+                <li><a href="javascript:;"></a></li>
+                <li><a href="javascript:;"></a></li>
+                <li><a href="javascript:;"></a></li>
+                <!-- <li><a href="javascript:;"></a></li> -->
+            </ul>
+        </div>
+    </body>
+</html>
