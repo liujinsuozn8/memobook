@@ -1,0 +1,58 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>move element by keydown</title>
+        <style>
+            #box01{
+                width: 50px;
+                height: 50px;
+                background-color: #ccc;
+                position: absolute;
+            }
+        </style>
+        <script type="text/javascript">
+            window.onload = function(){
+                var box01 = document.getElementById("box01");
+                var direction = 0;
+
+                // 1. 按下键盘，添加一个定时器，并开始移动
+                document.onkeydown = function(event){
+                    // 固定方向
+                    direction = event.keyCode;
+
+                    // 每次创建定时器之前需要先清除定时器，保证定时器只有一个
+                    clearInterval(box01.timer);
+                    // 每30毫秒进行移动
+                    box01.timer = setInterval(moveBox01, 30);
+                    
+                    // 2. 松开键盘，清除定时器，同时清除松开键盘的事件
+                    document.onkeyup = function(event){
+                        clearInterval(box01.timer);
+                        document.onkeyup = null;
+                    }
+                }
+                
+                function moveBox01(){
+                    switch (direction) {
+                        case 37: // 左
+                            box01.style.left = box01.offsetLeft - 5 + "px";
+                            break;
+                        case 38: // 上
+                            box01.style.top = box01.offsetTop - 5 + "px";
+                            break;
+                        case 39: // 右
+                            box01.style.left = box01.offsetLeft + 5 + "px";
+                            break;
+                        case 40: // 下
+                            box01.style.top = box01.offsetTop + 5 + "px";
+                            break;
+                    }
+                }
+            };
+        </script>
+    </head>
+    <body>
+        <div id="box01"></div>
+    </body>
+</html>
