@@ -1,16 +1,23 @@
 <span id="catalog"></span>
 
+- 参考
+    - https://www.cnblogs.com/st-leslie/p/5617130.html
+    - https://www.cnblogs.com/yexiaochai/p/4509472.html
+
 ### 目录
 - [BOM概述](#BOM概述)
 - [Navigator对象](#Navigator对象)
 - [History对象](#History对象)
 - [Location对象](#Location对象)
+- [localStorage](#localStorage)
+    - [localStorage的基本知识](#localStorage的基本知识)
+    - [localStorage的CRUD操作](#localStorage的CRUD操作)
+- [](#)
 - [定时器Interval](#定时器Interval)
     - [定时器的基本使用方法](#定时器的基本使用方法)
     - [定时器应用-颜色自动切换](#定时器应用-颜色自动切换)
     - [定时器应用-解决键盘事件的延迟](#定时器应用-解决键盘事件的延迟)
 - [延时器](#延时器)
-- [](#)
 - [](#)
 - [](#)
 - [](#)
@@ -31,9 +38,14 @@
     |Location|代表当期浏览器的地址栏信息|通过location可以获取地址栏信息，或者操作浏览器跳转页面|
     |History|代表浏览器的历史记录|<ul><li>通过该对象可以操作浏览器的历史记录</li><li>因为存在隐私问题，所以该对象不能获取到具体的历史记录，只能操控浏览器向前或向后移动，该操作只在当次访问时有效</li></ul>|
     |Screen|代表用户的屏幕信息|<ul><li>通过该对象可以获取到用户显示器的相关信息</li><li>该属性在移动端更常用</li></ul>|
-        
+    |localStorage|**本地级别**的存储对象|<ul><li>在浏览器中存储 key/value 对的数据</li><li>用于长期保存**整个网站**的数据，保存的数据没有过期时间</li><li>不使用时，需要手动删除</li></ul>|
+    |sessionStorage|**会话级别**的存储对象|<ul><li>允许在浏览器中存储 key/value 对的数据</li><li>将数据保存在当前会话中</li><li>该对象会保存当前页面(tab)的数据，关闭浏览器、或关闭当前页面后，将会被删除</li></ul>|
+
+- localStorage和sessionStorage都是存储对象，只是生命周期不同，用法基本相同
+    - 用法都可以参考：[localStorage的CRUD操作](#localStorage的CRUD操作)
+
 - 如何使用BOM对象
-    - navigator、location、history、screen 这四个BOM对象在浏览器中**作为window对象的属性**保存
+    - BOM对象在浏览器中**作为window对象的属性**保存
     - 可以通过 window 对象来使用，也可以直接使用
 
 # Navigator对象
@@ -244,6 +256,202 @@
         replaceBtn.onclick = function(){
             location.replace("https://www.baidu.com");
         };
+        ```
+
+# localStorage
+## localStorage的基本知识
+[top](#catalog)
+- localStorage对象是H5新加入的特性
+- localStorage对象的用途
+    - 主要作为本地存储来使用，用于解决cookie存储空间不足的问题
+    - 可以长期保存**整个网站**的数据，保存的数据没有过期时间。不使用时，需要手动删除
+        - **不同的网站不能共用localStorage**
+
+- localStorage对象中保存的内容
+    - key/value 数据
+        - 所有的 value 都会使用string来保存
+        - 基本数据类型的value会自动转会为String类型
+        - 对象类型的数据，只能手动转换为JSON字符串，然后保存。取出来使用之前还需要将JSON还原为js对象
+    - 内置属性：`length`，可以获取当前对象中保存的键值对数量
+
+- localStorage与cookie的对比
+    - cookie
+        - 大小限制在4k左右，不适合存业务数据
+        - 每次随HTTP事务一起发送，浪费带宽
+    - localStorage
+        - 大小限制在5M左右，各浏览器的标准不同
+        - 不会跟随HTTP传输
+
+- localStorage的优势
+    - 解决了cookie的存储限制
+    - 降低了带宽的消耗
+    - 可以将第一次请求的数据直接存储到本地，相当于一个5M大小的**针对前端页面的数据库**
+        - 相比于cookie，可以节约带宽，但只有在高版本的浏览器中才支持
+
+- localStorage的局限
+    - 不同浏览器的容量不统一
+    - IE8及以下不兼容
+    - 只支持string类型的存储，js对象类型无法直接保存，需要借助JSON
+    - 在隐私模式下不可读取
+    - 不能被爬虫抓取到，不能完全取代URL传参
+    - 本质是在读写文件，数据多的话会比较卡
+
+## localStorage的CRUD操作
+[top](#catalog)
+- 三种读写方式
+    - 官方推荐使用：`getItem`、`setItem` 来读写数据
+        ```js
+        // 写入/更新数据
+        localStorage['a'] = "this is a";
+        localStorage.b = 1234;
+        localStorage.setItem("c", 23456);
+
+        // 读取数据
+        localStorage.getItem('a');
+        localStorage['b'];
+        localStorage.c;
+        ```
+
+- 删除操作
+    - 删除所有键值对
+        ```js
+        localStorage.clear();
+        ```
+    - 删除某个键值对
+        ```js
+        // 该方法只负责删除，不会返回任何值
+        localStorage.removeItem("key");
+        ```
+
+- 获取所有的key
+    - `storage.key(i);`，通过index获取key
+    - 一般在for循环中，配合 `localStorage.length`来遍历所有的key、或者value
+        ```js
+        for(var i=0; i<localStorage.length; i++){
+            // 遍历key
+            var k = localStorage.key(i);
+            // 遍历value
+            var v = localStorage.getItem(k);
+            //...
+        }
+        ```
+
+- 读写对象类型
+    - 写对象：将js对象转换为JSON字符串，然后保存JSON字符串
+        ```js
+        localStorage.setItem("key", JSON.stringify(obj));
+        ```
+    - 读对象：从localStorage读取JSON字符串，然后将JSON字符串转换为js对象
+        ```js
+        var key_json = localStorage.getItem("key");
+        var obj = JSON.parse(key_json);
+        ```
+
+- 示例
+    - 参考代码
+        - [/javascript/base/src/bom/localStorage/storageCRUD.html](/javascript/base/src/bom/localStorage/storageCRUD.html)
+    - js内容
+        ```js
+        // 1. localStorage对象的读写操作
+        localStorage['a'] = "this is a";
+        localStorage.b = 1234;
+        localStorage.setItem("c", 23456);
+
+        console.log("localStorage.getItem('a') =", localStorage.getItem('a'));
+        // localStorage.getItem('a') = this is a
+
+        console.log("localStorage['b'] =", localStorage['b']);
+        // localStorage['b'] = 1234
+
+        console.log("localStorage.c =", localStorage.c);
+        // localStorage.c = 23456
+
+        // 2. 查看内置属性
+        console.log("localStorage.length =", localStorage.length);
+        // localStorage.length = 3
+
+        // 3. 遍历所有的key 和 value
+        for(var i=0; i<localStorage.length; i++){
+            var k = localStorage.key(i);
+            var v = localStorage.getItem(k);
+            console.log("localStorage.key("+ i + ") = " + k, ", localStorage.getItem(" + k + ") = " + v);
+            
+            // localStorage.key(0) = b , localStorage.getItem(b) = 1234
+            // localStorage.key(1) = c , localStorage.getItem(c) = 23456
+            // localStorage.key(2) = a , localStorage.getItem(a) = this is a
+        }
+
+
+        // 4. 删除操作
+        // 4.1 删除指定的键值对 （没有返回值）
+        var c_del = localStorage.removeItem("c");
+        console.log('localStorage.getItem("c") =', localStorage.getItem("c"));
+        // localStorage.getItem("c") = null
+        console.log("c_del =", c_del);
+        // c_del = undefined
+        console.log("typeof c_del =", typeof c_del);
+        // typeof c_del = undefined
+
+        // 4.2 删除所有键值对
+        console.log(localStorage);
+        localStorage.clear();
+        console.log(localStorage);
+        console.log("localStorage.length =", localStorage.length);
+        // Storage {b: "1234", a: "this is a", length: 2}
+        // Storage {length: 0}
+        // localStorage.length = 0
+
+        // 5. js的基本数据类型存储测试
+        localStorage.setItem("myString", "this is my string");
+        localStorage.setItem("myNumber", 123456);
+        localStorage.setItem("myFalse", false);
+        localStorage.setItem("myTrue", true);
+        localStorage.setItem("myNull", null);
+        localStorage.setItem("myUndefined", undefined);
+
+        console.log('localStorage.getItem("myString") =', localStorage.getItem("myString"));
+        console.log("typeof localStorage.getItem('myString') =", typeof localStorage.getItem('myString'));
+        // localStorage.getItem("myString") = this is my string
+        // typeof localStorage.getItem('myString') = string
+
+        console.log('localStorage.getItem("myNumber") =', localStorage.getItem("myNumber"));
+        console.log("typeof localStorage.getItem('myNumber') =", typeof localStorage.getItem('myNumber'));
+        // localStorage.getItem("myNumber") = 123456
+        // typeof localStorage.getItem('myNumber') = string
+
+        console.log('localStorage.getItem("myFalse") =', localStorage.getItem("myFalse"));
+        console.log("typeof localStorage.getItem('myFalse') =", typeof localStorage.getItem('myFalse'));
+        // localStorage.getItem("myFalse") = false
+        // typeof localStorage.getItem('myFalse') = string
+
+        console.log('localStorage.getItem("myTrue") =', localStorage.getItem("myTrue"));
+        console.log("typeof localStorage.getItem('myTrue') =", typeof localStorage.getItem('myTrue'));
+        // localStorage.getItem("myTrue") = true
+        // typeof localStorage.getItem('myTrue') = string
+
+        console.log('localStorage.getItem("myNull") =', localStorage.getItem("myNull"));
+        console.log("typeof localStorage.getItem('myNull') =", typeof localStorage.getItem('myNull'));
+        // localStorage.getItem("myNull") = null
+        // typeof localStorage.getItem('myNull') = string
+
+        console.log('localStorage.getItem("myUndefined") =', localStorage.getItem("myUndefined"));
+        console.log("typeof localStorage.getItem('myUndefined') =", typeof localStorage.getItem('myUndefined'));
+        // localStorage.getItem("myUndefined") = undefined
+        // typeof localStorage.getItem('myUndefined') = string
+
+        // 6. js对象类型的对写
+        var person = {
+            name:"tom",
+            age:18,
+            address:"xxxyyyzzz",
+        };
+        // 转换为JSON并保存
+        localStorage.setItem("person", JSON.stringify(person));
+        // 读取，并将JSON转换为js对象
+        var person_json = localStorage.getItem("person");
+        var new_person = JSON.parse(person_json);
+        console.log("new_person.name =", new_person.name, ", new_person.age =", new_person.age);
+        // new_person.name = tom , new_person.age = 18
         ```
 
 # 定时器Interval
