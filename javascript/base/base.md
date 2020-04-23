@@ -44,6 +44,7 @@
     - [函数的参数](#函数的参数)
     - [匿名函数与立即执行函数iife](#匿名函数与立即执行函数iife)
     - [函数对象的方法-call和apply](#函数对象的方法-call和apply)
+    - [eval执行字符串中的代码](#eval执行字符串中的代码)
     - [arguments](#arguments)
 - [作用域](#作用域)
     - [js作用域的基本概念](#js作用域的基本概念)
@@ -65,10 +66,10 @@
 - [垃圾回收gc](#垃圾回收gc)
 - [弹出框](#弹出框)
 - [反射](#反射)
-- [](#)
-- [](#)
-- [](#)
-- [总结](#总结)
+- [JSON](#JSON)
+    - [JSON的基本知识](#JSON的基本知识)
+    - [通过工具类对象JSON来转换json与js对象](#通过工具类对象JSON来转换json与js对象)
+- [注意事项](#注意事项)
 
 # JavaSctipt简介
 [top](#catalog)
@@ -2087,6 +2088,22 @@
         // 输出：this.name = obj0201_name , a = 11 , b= 12
         ```
 
+## eval执行字符串中的代码
+[top](#catalog)
+- `eval("字符串")`
+    - 该函数可以用来执行一段字符串形式的JS代码，并返回执行结果
+    - 如果字符串中包含 `{}`，该函数会将 `{}` 当成代码块
+        - 可以在字符串前后添加 `(`、`)`，将字符串转换为一个整体，来避免这个问题
+            ```js
+            var a = "{...}";
+            eval("(" + a + ")")
+            ```
+
+- 在开发中尽量不要使用该函数，因为
+    1. 该函数的性能比较差
+    2. 有安全问题
+        - 如果从软件外部输入了一个恶意的js代码字符串，可能会导致敏感信息泄露
+
 ## arguments
 [top](#catalog)
 - 调用函数时，js引擎每次都会传递两个隐含的参数
@@ -2868,16 +2885,26 @@ console.log("a = ", a);
 [top](#catalog)
 - 创建正则表达式对象
     - 使用构造函数
-        ```js
-        var reg = new RegExp("正则表达式" [, "匹配模式"]);
-        ```
+        - 创建方式
+            ```js
+            var reg = new RegExp("正则表达式" [, "匹配模式"]);
+            ```
+        - <label style="color:red">使用正则表达式元字符时的注意事项</label>
+            - 当使用：`\s`,`\w`,`\b`等元字符时，需要将`\`转义为：`\\`
+            - 示例
+                ```js
+                // 匹配字符串，并区分单词的开头与结束
+                var reg = new RegExp("\\b" + xx + "\\b");
+                ```
     - 使用字面量。字面量两边没有引号
-        ```js
-        // 使用匹配模式
-        var reg = /正则表达式/匹配模式;
-        // 不使用匹配模式
-        var reg = /正则表达式/;
-        ```
+        - 使用方法
+            ```js
+            // 使用匹配模式
+            var reg = /正则表达式/匹配模式;
+            // 不使用匹配模式
+            var reg = /正则表达式/;
+            ```
+        - 在这种方式下，可以直接使用正则表达式的元字符，不需要转义
 
 - 匹配模式
     - `i`，忽略大小写
@@ -3120,20 +3147,20 @@ console.log("a = ", a);
 
 ## String与正则表达式相关的方法
 [top](#catalog)
-- `split("分割字符串"/正则表达式)`
+- `新字符串 = 字符串.split("分割字符串"/正则表达式)`
     - 用途：根据分割字符串或正则表达式，将字符串拆分为数组
-- `search(字符串/正则表达式)`
+- `新字符串 = 字符串.search(字符串/正则表达式)`
     - 用途：搜索字符串，或匹配正则表达式，类似于`indexOf`
     - 如果搜索到了指定内容，则返回第一次出现的索引
     - 如果没有搜索到则返回 -1
 
-- `match()`
+- `新字符串 = 字符串.match()`
     - 用途：根据正则表达式，从字符串中提取内容
     - 默认情况下，该方法找到第一个匹配的内容后，就会停止并返回
     - 可以设置全局匹配模式：`/正则表达式/g`，来匹配所有内容
     - 返回结果是一个 Array 对象
 
-- `replace("被替换字符串"/正则表达式, "新字符串")`
+- `新字符串 = 字符串.replace("被替换字符串"/正则表达式, "新字符串")`
     - 用途：替换指定字符串
     - 使用`"被替换字符串"`时，默认情况下，该方法只会替换第一个匹配结果
     - 可以通过 `/正则表达式/g`，来进行全局替换
@@ -3237,14 +3264,106 @@ console.log("a = ", a);
     console.log("qwert");
     ```
 
-# 总结
+# JSON
+## JSON的基本知识
 [top](#catalog)
-- 函数如果不指定返回值，默认也会返回 `undefined`
-- 在全局作用域中创建的变量都会作为：window 对象的属性
+- json：JavaScript Object Notation，JS对象表示法
+- json的本质
+    - json就是特殊格式的**字符串**，这个字符串可以被任意的语言所识别
+    
+- json的用途
+    - 做为一种数据交换格式
+        - js中的对象只有js语言自身能够识别，其他语言都无法识别。需要使用json，然后其他语言解析json并生成对象
+    - json在开发中主要用来做数据的交互/传递
+
+- json和js对象的格式一样，只是JSON字符串中的属性名必须添加**双引号**
+- json的两种格式
+    - json对象：`{}`
+        ```js
+        var a = '{"name":"aaa", "age":10}';
+        ```
+    - json数组：`[]`
+        ```js
+        var b = '[1, 2, 3, 4]';
+        var c = '[{"name":"aaa", "age":10}, {"name":"bbb", "age":11}, {"name":"ccc", "age":12}]';
+        ```
+- json中合法的值类型
+    1. 字符串，String
+    2. 数值，Number
+    3. 布尔值，Boolean
+    4. 空值，Null
+    5. 对象，Object
+    6. 数组，Array
+
+## 通过工具类对象JSON来转换json与js对象
+[top](#catalog)
+- js中json的工具类对象：`JSON`
+    - 通过该对象可以在json与js对象之间进行相互转换
+    - JSON对象在IE7及以下的浏览器中不支持
+    - 转换方法
+        - json -->> js对象：`var js对象 = JSON.parse("json字符串")`
+            ```js
+            var a = '[1,2,3,4,5]';
+            var b = JSON.parse(a);
+            console.log(b); // (5) [1, 2, 3, 4, 5]
+            console.log(typeof b); // object
+            console.log(b instanceof Array); // true
+
+            var c = '{"name":"aaa", "age":10}';
+            var d = JSON.parse(c);
+            console.log(typeof d); // object
+            console.log(d instanceof Object); // true
+            console.log("d.name=",d.name, ", d.age=", d.age);
+            // d.name= aaa , d.age= 10
+            ```
+
+        - js对象 -->> json：`var json字符串 = JSON.stringify(js对象)`
+            ```js
+            var a = {
+                name: "abcd",
+                age:16,
+                address:"xxxxx"
+            };
+
+            var b = JSON.stringify(a);
+            console.log(b);
+            // {"name":"abcd","age":16,"address":"xxxxx"}
+            console.log(typeof b);
+            // string
+            ```
+
+- `JSON`对象如何兼容IE7及以下的浏览器
+    - 引入一个外部的JS文件：`json2.js`
+        ```html
+        <script type="text/javascript" src=".../json2.js"></script>
+        ```
+
+
+# 注意事项
+[top](#catalog)
+- JS实现的三大部分
+    - ECMAScript：实现标准 (简称ES)
+    - DOM：文档对象模型
+    - BOM：浏览器对象模型
+- 字符串
+    - 使用Unicode的方法：`"\u16进制Unicode编码"`
+    - 任何类型和String型的`+`运算，都会先将非String型转换为String型，然后再执行字符串连接
+- 对象
+    - 无法给基本数据类型 添加方法和属性，只能添加给对象
+    - 所有对象都是Object的后代，所有对象执行：`对象 instanceof Object`，返回值都是true
+    - 在全局作用域中创建的函数，都会作为：window对象的方法
+    
 - Undefined衍生自Null，两者的相等与全等判断如下：
     - `Undefined == Null`，返回true
     - `Undefined === Null`，返回false
-- 在全局作用域中创建的函数，都会作为：window对象的方法
-- 所有对象都是Object的后代，所有对象执行：`对象 instanceof Object`，返回值都是true
-- 任何类型和String型的`+`运算，都会先将非String型转换为String型，然后再执行字符串连接
-- 方法和属性只能添加给对象，不能添加给基本类型
+
+- 函数
+    - 函数如果不指定返回值，默认也会返回 `undefined`
+    - 使用**函数表达式** `var 变量名 = function([参数列表]){...}`创建的函数
+            - 函数表达式<label style="color:red">不会提升</label>，所以不要函数表达式声明之前使用函数
+
+- 通过构造函数创建正则表达式的时候，如果使用了：`\s`,`\w`,`\b`等元字符时，需要将`\`转义为：`\\`
+    ```js
+    // 匹配字符串，并区分单词的开头与结束
+    var reg = new RegExp("\\b" + xx + "\\b");
+        ```
