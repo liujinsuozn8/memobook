@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <script type="text/javascript">
+        // 1. 基本数据类型的判断
+        // 判断 undefined
+        var a;
+        console.log(typeof a === 'undefined');
+        console.log(a === undefined);
+
+        // 判断 null
+        var b = null;
+        console.log("typeof b =", typeof b);
+        console.log(b === null);
+
+        // 判断String
+        var c = "abcde";
+        console.log(typeof c === 'string');
+
+        // 判断Number
+        var d = 1234;
+        console.log(typeof d === 'number');
+
+        // 判断Boolean
+        var e = true;
+        console.log(typeof e === 'boolean');
+
+        // 2. 判断对象类型
+        // 判断函数
+        var f = function(){};
+        console.log(typeof f === 'function');
+
+        // 判读数组
+        var g = [1,2,3,4];
+        console.log(typeof g); // object,数组类型无法使用 typeof
+        console.log(g instanceof Array); // 只能通过 instanceof 来判断
+
+    </script>
+    
+</head>
+<body>
+    
+</body>
+</html>
