@@ -31,9 +31,9 @@
     - [元素拖拽](#元素拖拽)
     - [滚轮事件](#滚轮事件)
     - [键盘事件](#键盘事件)
-    - [](#)
-    - [](#)
 - [浏览器默认行为](#浏览器默认行为)
+- [类的操作](#类的操作)
+- [其他](#其他)
 - [](#)
 
 
@@ -947,6 +947,15 @@
     - 写操作的结果
         - 执行写操作后，会直接在当前的html标签中添加 `style` 属性
 
+- 通过 `style` 设置内联样式的缺点以及解决方式
+    - 缺点
+        - 每次使用该方式设置元素的样式时，浏览器都需要重新渲染一次画面，执行的性能比较差
+        - 修改多个样式时很不方便
+        - 使css与js耦合，即表现与动作耦合
+    - 解决方法
+        - 将样式封装到css的类选择器中。修改时，通过修改class来修改样式
+            - 这种方式只会重新渲染一次页面
+        - 参考：
 
 - **读取**元素节点**当前正在使用**的样式
     - 不限于内联、内部、外部中的任意一种，当前元素节点使用的是哪个位置的样式，就操作哪个
@@ -1832,7 +1841,7 @@
 
 ## 键盘事件
 [top](#catalog)
-- 键盘事件一般会绑定给**可以获取焦点的元素对象，或者是 documnet对象**
+- 键盘事件一般会绑定给**可以获取焦点的元素对象，或者是 documnet 对象**
     - 如：按钮、input输入框、redio button、checkbox、下拉列表 等等
     - 像 `<div>` 这中元素一般不会绑定键盘事件
         - 无法定义 `<div>` 这中元素在什么状态下是 获取到了焦点
@@ -1944,6 +1953,144 @@
         - `addEventListener`        
             - 只能使用 `event.preventDefault()` 取消默认行为
 
+# 类的操作
+[top](#catalog)
+- 问题引入
+    - css 修改方式： `obj.style.css样式名 = 样式值` 的问题
+        - 每次使用该方式设置元素的样式时，浏览器都需要重新渲染一次画面，执行的性能比较差
+        - 修改多个样式时很不方便
+        - 使css与js耦合，即表现与动作耦合
+
+    - 优化方式：通过 class 来修改样式
+        - 将多个样式封装到一个css中，然后通过设置class来设置样式，即可同时设置多个样式
+        - 无论css中封装了多少个样式，浏览器**只会重新渲染页面一次**，性能比较好
+        - 通过这种方式可以进一步分离 css与js
+
+- 最简单的类操作方法:
+    - 操作代码
+        ```js
+        obj.className = "指定类名";
+        ```
+    - 这种方式的问题
+        - 会使用指定类名直接覆盖原有的类名
+        - 大多数情况下会希望保留原有类名，并在此基础上添加或删除其他类
+        - 这种方式开发时使用的比较少
+
+- 将类的：增、删、查操作封装为函数
+    - 判断一个元素是否包含某个属性
+        ```js
+        function hasClassName(obj, cn){
+            var regExp = new RegExp("\\b" + cn + "\\b");
+            return regExp.test(obj.className);
+        }
+        ```
+    - 为一个元素添加指定的 class
+        ```js
+        function addClassName(obj, cn){
+            // 取出元素的class，检查 cn 是否已经存在
+            // 如果不包含，则添加；已包含则跳过
+            if ( !hasClassName(obj, cn) ){
+                obj.className += " " + cn;
+            }
+        }
+        ```
+    - 从元素中删除指定的 class，即将匹配结果替换为空字符串
+        ```js
+        function removeClassName(obj, cn){
+            // 删除时，不需要判断元素是否包含指定的class
+            // 直接进行替换，有就替换，没有就跳过
+            var regExp = new RegExp("\\b" + cn + "\\b");
+            obj.className = obj.className.replace(regExp, "");
+        }
+        ```
+    - 切换元素中的指定类：如果元素中未包含指定类，就添加；如果元素中包含指定类，就删除
+    ```js
+    function toggleClassName(obj, cn){
+        var regExp = new RegExp("\\b" + cn + "\\b");
+        if (regExp.test(obj.className)){
+            // 如果元素中包含指定类，就删除
+            obj.className = obj.className.replace(regExp, "");
+        } else {
+            // 如果元素中未包含指定类，就添加
+            obj.className += " " + cn;
+        }
+    }
+    ```
+
+- 示例
+    - 参考代码
+        - [/javascript/base/src/dom/class/classOperator.html](/javascript/base/src/dom/class/classOperator.html)
+
+    - 功能
+        - change01 按钮：直接将 div 的class替换为box02
+        - add box3 按钮：向 div 的class中添加新的类: box03
+        - remove box3 按钮，从 div 中将类: box03 删除
+        - toggle box3 按钮，点击按钮后，判读 div 中是否包含类: box03，如果包含就删除，入股不包含就添加
+    
+    - 类的增、删、查分别使用上面封装的函数来执行
+
+    - 代码内容
+        - html内容
+            ```html
+            <button id="changeBtn01">change01</button>
+            <button id="addBtn">add box3</button>
+            <button id="removeBtn">remove box3</button>
+            <button id="toggleBtn">toggle box3</button>
+            <div id="box" class="box01"></div>
+            ```
+
+        - css内容
+            ```css
+            .box01{
+                width: 50px;
+                height:50px;
+                background-color: #ccc;
+            }
+
+            .box02{
+                width: 70px;
+                height: 70px;
+                background-color: #bfa;
+            }
+
+            /* 添加删除测试使用，width默认使用原始class中的值，而不是使用auto */
+            .box03{
+                height: 70px;
+                background-color: #ebc;
+            }
+            ```
+
+        - js内容
+            ```js
+            var box = document.querySelector("#box");
+                
+            // 1. 通过class直接替换样式
+            var changeBtn01 = document.getElementById("changeBtn01");
+            changeBtn01.onclick = function(){
+                box.className = "box02";
+            };
+            
+            // 2. 在原有class的基础上附加其他的样式
+            var addBtn = document.getElementById("addBtn");
+            addBtn.onclick = function(){
+                // 每次点击都会添加一次 box03
+                // box.className += " box03";
+                // 通过方法来添加class，每次添加前自动检查类是否已经存在
+                addClassName(box, "box03");
+            };
+
+            // 3. 从元素的class中删除指定的class
+            var removeBtn = document.getElementById("removeBtn");
+            removeBtn.onclick = function(){
+                removeClassName(box, "box03");
+            };
+
+            // 4. 切换元素中的类 box3
+            var toggleBtn = document.getElementById("toggleBtn");
+            toggleBtn.onclick = function(){
+                toggleClassName(box, "box03");
+            };
+            ```
 
 
 # 其他
