@@ -15,6 +15,8 @@
     - [chrome导航过程分析](#chrome导航过程分析)
 - [渲染进程的工作方式](#渲染进程的工作方式)
 - [](#)
+- [](#)
+- [](#)
 
 # 浏览器中的线程
 [top](#catalog)
@@ -241,8 +243,19 @@ js代码其实都是由renderer Process控制
     |-|-|
     |Main thread|主线程|
     |Worker thread|工作线程|
-    |Compositor thread|排版线程|
-    |Raster thread|光栅线程|
+    |Compositor thread|合成器线程|
+    |Raster thread|栅格线程|
+
+- 渲染过程中的主要技术
+    - 复合技术
+        - 将页面分割为不同的层，并单独栅格化，随后组合为合成桢
+        - 不同层的组合由 合成器线程完成
+    - 合成器负责组成合成桢，其工作与主线程无关，不需要等到样式计算或者js执行完成
+
+- 绘制页面的要素
+    - 元素的（最终）样式
+    - 元素的位置信息
+    - 所有元素的绘制顺序
 
 - 渲染的流程分析
     1. 构建DOM
@@ -252,7 +265,7 @@ js代码其实都是由renderer Process控制
         - 次级资源包括
             - 图片、css、js等额外资源
         - 次级资源需要从网络或者 cache 中获取
-        - `Main thread` 可以在构建 DOM的过程中**逐一请求**
+        - `Main thread` 可以在构建 DOM的过程中**逐一请求它们**
         - 同时运行 preload scanner， 来加速次级资源的加载
             - 遇到 `<img>`，`<link>` 等标签时， preload scanner 会把请求传递给 Browser process 中的 network thread 进行相关资源的下载
     3. js的下载与执行
@@ -265,27 +278,171 @@ js代码其实都是由renderer Process控制
             - 如，在 `<script>` 标签上添加了 async、defer 等属性。浏览器贵
             - https://developers.google.com/web/fundamentals/performance/resource-prioritization
                 - ?????
+    4. 样式计算
+        - Main thread 基于css选择器解析css，计算每一个元素节点最终样式的值
+            - 即Computed Style
+        - 如果没有提供css，将会使用浏览器的默认样式
+    5. 获取布局
+        - 布局的本质
+            - 所有元素的几何关系 + 位置信息
+        - 获取几何关系的步骤
+            1. 主线程遍历DOM及元素的计算样式，创建每个元素的坐标信息 + 盒子大小
+            2. 所有元素的信息最终构造出**布局树**
+        - 布局树和DOM树的区别
+            - DOM树：有不可见元素，伪元素不可见
+            - 布局树：**没有**不可见元素类似，伪元素可见
+                - 如果一个元素设置了 `display:none`，则该元素不会出现在布局树上
+        - 最终主线程会遍历DOM及对应元素的样式，创建出**布局树**
+    6. 绘制阶段：创建**绘制记录**，来绘制各个元素
+        - Main thread 遍历**布局树**来创建**绘制记录**
+        - 绘制记录即绘制的先后顺序
+            - 只有正确的绘制顺序才能绘制出正确的页面
+    7. 创建层树
+        - 主线程遍历布局树来创建层树（layer tree）
+        - 添加了 `will-change` CSS 属性的元素，会被看做单独的一层
+    8. 层栅格化
+        - Main thread 将层树、绘制记录 发送给合成器线程
+        - 合成器线程会栅格化每一层
+        - 因为有的层的大小接近整个页面的大小，所以合成器线程将层分成多个磁贴，并将每个磁贴发送到栅格线程，栅格线程会栅格化每一个磁贴并存储在GPU中
+    9. 合成桢
+        - 层栅格化之后，合成器线程会收集称为绘制四边形的磁贴信息以创建合成桢
+        - 合成帧随后会通过 IPC 消息传递给 Browser Process
+        - 合成帧会被传递给 GPU ，并在屏幕上显示
+            - 浏览器的 UI 改变或者其它拓展的渲染进程也可以添加合成帧，都会传到GPU中进行显示
+        - 如果页面滚动，合成器线程会创建另一个合成帧发送给 GPU
 
 - 渲染流程示意图
-```
-Browser process 向 renderer process 发送确认导航信息
-renderer process 的 Main thread 开始将html解析为DOM
-   
-   <!doctype html>
-   <html>
-    <head>
-        <meta charset="utf-8">
-        <title>...</title>
-        <style>...</style>
-        <link rel="stylesheet" href=".../*.css">
-        <script type="text/javascript">
-        </script>
-    </head>
-        <body>
-        </body>
-   </html>
-构建
-```
+    ```
+                            Browser process
+                                    │     
+                                    │ 发送确认导航信息
+                                    V
+                            renderer process
+                                    │ 调用线程     
+                                    │     
+                                    V
+    ┌──────────────────────────Main thread──────────────────────────────────┐
+    │                                                                       │
+    │                      解析html                                        　│
+    │  ┌────────────────────────────────────────────┐                       │
+    │  │<!doctype html>                             │ 生成DOM              　│
+    │  │<html>                                      │ 生成DOM              　│
+    │  │<head>                                      │ 生成DOM              　│
+    │  │    <meta charset="utf-8">                  │ 生成DOM              　│
+    │  │    <title>...</title>                      │ 生成DOM              　│
+    │  │    <style>...</style>                      │ 生成DOM              　│
+    │  │    <link rel="stylesheet" href=".../*.css">│ network thread下载资源 │
+    │  │    <script type="text/javascript">         │ 暂停解析html           │
+    │  │        ...                                 │ 加载、解析、执行 JS代码  │
+    │  │    </script>                               │                       │
+    │  │</head>                                     │                       │
+    │  │    <body>                                  │ 生成DOM              　│
+    │  │        <img src/>                          │ network thread下载资源 │
+    │  │        <div class="box">     str</div>     │ 生成DOM              　│
+    │  │    </body>                                 │                       │
+    │  │</html>                                     │                       │
+    │  └────────────────────────────────────────────┘                       │
+    └───────────────────────────┬───────────────────────────────────────────┘
+                                │
+                                V
+    ┌─────────────────────Main thread───────────────────────┐
+    │     样式计算：                                        　│
+    │         解析css，计算每一个元素节点最终样式的值             │
+    │ ┌────────┐       ┌──────────────┐                     │
+    │ │ .box{  │       │ docunment    │ ──>> Computed Style │
+    │ │   ...  │       │    ╱╲        │                     │
+    │ │   ...  │       │head  body    │ ──>> Computed Style │
+    │ │ }      │ ───>> │       ╱╲     │                     │
+    │ │ body{  │       │    img  div  │ ──>> Computed Style │
+    │ │   ...  │       │          ╲   │                     │
+    │ │ }      │       │         "str"│                     │
+    │ └────────┘       └──────────────┘                     │
+    └───────────────────────────┬───────────────────────────┘
+                                │
+                                │
+                                V
+    ┌─────────────────────Main thread────────────────────────────────┐
+    │     获取布局：                                       　          │
+    │         遍历DOM及元素的计算样式，创建布局树            　　          │
+    │  DOM树+css最终计算样式                布局树                   　　│
+    │ ┌──────────────┐               ┌──────────────┐                │
+    │ │ docunment    │Computed Style │ docunment    │                │
+    │ │    ╱╲        │               │      ╲       │                │
+    │ │head  body    │Computed Style │      body    │LayoutBLock flow│
+    │ │       ╱╲     │               │       ╱╲     │                │
+    │ │    img  div  │Computed Style │    img  div  │LayoutBLock flow│
+    │ │          ╲   │               │           ╲  │                │
+    │ │         "str"│               │         "str"│Layouttext      │
+    │ └──────────────┘               └──────────────┘                │
+    └───────────────────────────┬────────────────────────────────────┘
+                                │
+                                │
+                                V
+    ┌─────────────────────Main thread────────────────────────────────┐
+    │     创建绘制记录，即元素的绘制顺序:                                 │
+    │     布局树                                绘制记录 Paint Records │
+    │┌──────────────┐                                                │
+    ││ docunment    │                        Draw Rect               │
+    ││      ╲       │                        {width, height,color}   │
+    ││      body    │LayoutBLock flow           V                    │
+    ││       ╱╲     │                 ───>>  Draw Text               │
+    ││    img  div  │LayoutBLock flow           V                    │
+    ││           ╲  │                        Draw Rect               │   
+    ││         "str"│Layouttext              {width, height,color}   │
+    │└──────────────┘                                                │
+    └───────────────────────────┬────────────────────────────────────┘
+                                │
+                                │
+                                V
+    ┌─────────────────────Main thread────────────────────────────────┐
+    │     创建层树:                                                   │
+    │     布局树                                   层树              　│
+    │┌──────────────┐                          ┌──────────────┐      │
+    ││ docunment    │                          │    ┌─┐       │      │
+    ││      ╲       │                          │    └─┘       │      │
+    ││      body    │LayoutBLock flow          │      ╲       │      │
+    ││       ╱╲     │                 ───>>    │      ┌─┐     │      │
+    ││    img  div  │LayoutBLock flow          │      └─┘     │      │
+    ││           ╲  │                          │   ╱      ╲   │      │
+    ││         "str"│Layouttext                │┌─┐       ┌─┐ │      │
+    │└──────────────┘                          │└─┘       └─┘ │      │
+    │                                          │layer1  layer2│      │
+    │                                          └──────────────┘      │
+    └───────────────────────────┬────────────────────────────────────┘
+                                │
+                                │
+                                V
+    ┌────────Compositor thread───合成器线程──────────┐
+    │  层栅格化:                                 　　│
+    │   将层划分成磁贴            磁贴栅格化           │
+    │   ─┼────┼────┼─  ───>> 　栅格线程 01　─────────┼───>> ┌────────────┐
+    │    │    │    │   ───>>  Raster thread 02  ───┼───>> │GPU:        │
+    │   ─┼────┼────┼─  ───>>  ........    ─────────┼───>> │  栅格化后的　│
+    │    │    │    │   ───>>  Raster thread NA ────┼───>> │  磁贴     　│
+    │   ─┼────┼────┼─                        　　 　│      └────────────┘
+    │    │    │    │                         　　 　│
+    │   ─┼────┼────┼─                        　　 　│
+    └──────────────┬───────────────────────────────┘
+                   │
+                   │                         Browser Process
+                   │                              │
+                   V                              V
+    ┌──Compositor thread─合成器线程──┐    ┌────────UI thread─────┐
+    │                　　┌─────┐    │    │     ┌──────────┐     │
+    │收集绘制四边形 ───>>　│合成桢├────┼────┼──>>>│GPU:      │     │
+    │                　　└─────┘    │    │     │显示合成桢　│     │
+    └──────────────────────────────┘ 　　│     └──────────┘     │
+                                     　　└──────────────────────┘
+    ```
+
+# 浏览器对事件的处理
+## 鼠标事件
+[top](#catalog)
+- 对于浏览器，鼠标操作 与 手势操作，都是输入
+- 最先接收到操作信息的是 Browser process，感知到哪里发生了输入，
+- 将事件的类型、发生事件的坐标 发送给 renderer process
+- renderer process找到事件对象，执行该对象所有绑定的相关事件处理函数
+
 
 # 页面加载的过程
 [top](#catalog)
@@ -294,6 +451,10 @@ renderer process 的 Main thread 开始将html解析为DOM
     2. 渲染tree的控制器
     3. 布局渲染 tree
     4. 绘制
+
+```
+UI thread 添加合成桢--页面显示响应的效果 renderer process 感知
+```
 
 # 其他
 [top](#catalog)
