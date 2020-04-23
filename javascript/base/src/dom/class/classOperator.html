@@ -1,0 +1,102 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title></title>
+        <style>
+            .box01{
+                width: 50px;
+                height:50px;
+                background-color: #ccc;
+            }
+
+            .box02{
+                width: 70px;
+                height: 70px;
+                background-color: #bfa;
+            }
+
+            /* 添加删除测试使用，width默认使用原始class中的值，而不是使用auto */
+            .box03{
+                height: 70px;
+                background-color: #ebc;
+            }
+        </style>
+        <script type="text/javascript">
+            window.onload = function(){
+                var box = document.querySelector("#box");
+                
+                // 1. 通过class直接替换样式
+                var changeBtn01 = document.getElementById("changeBtn01");
+                changeBtn01.onclick = function(){
+                    box.className = "box02";
+                };
+                
+                // 2. 在原有class的基础上附加其他的样式
+                var addBtn = document.getElementById("addBtn");
+                addBtn.onclick = function(){
+                    // 每次点击都会添加一次 box03
+                    // box.className += " box03";
+                    // 通过方法来添加class，每次添加前自动检查类是否已经存在
+                    addClassName(box, "box03");
+                };
+
+                // 3. 从元素的class中删除指定的class
+                var removeBtn = document.getElementById("removeBtn");
+                removeBtn.onclick = function(){
+                    removeClassName(box, "box03");
+                };
+
+                // 4. 切换元素中的类 box3
+                var toggleBtn = document.getElementById("toggleBtn");
+                toggleBtn.onclick = function(){
+                    toggleClassName(box, "box03");
+                };
+            };
+
+            // 为一个元素添加指定的 class
+            function addClassName(obj, cn){
+                // 取出元素的class，检查 cn 是否已经存在
+                // 如果不包含，则添加；已包含则跳过
+                if ( !hasClassName(obj, cn) ){
+                    obj.className += " " + cn;
+                }
+            }
+
+            // 从元素中删除指定的 class，即将匹配结果替换为空字符串
+            function removeClassName(obj, cn){
+                // 删除时，不需要判断元素是否包含指定的class
+                // 直接进行替换，有就替换，没有就跳过
+                var regExp = new RegExp("\\b" + cn + "\\b");
+                obj.className = obj.className.replace(regExp, "");
+            }
+
+            // 切换元素中的指定类
+            // 如果元素中未包含指定类，就添加
+            // 如果元素中包含指定类，就删除
+            function toggleClassName(obj, cn){
+                var regExp = new RegExp("\\b" + cn + "\\b");
+                if (regExp.test(obj.className)){
+                    // 如果元素中包含指定类，就删除
+                    obj.className = obj.className.replace(regExp, "");
+                } else {
+                    // 如果元素中未包含指定类，就添加
+                    obj.className += " " + cn;
+                }
+            }
+
+            // 判断一个元素是否包含某个属性
+            function hasClassName(obj, cn){
+                var regExp = new RegExp("\\b" + cn + "\\b");
+                return regExp.test(obj.className);
+            }
+        </script>
+    </head>
+    <body>
+        <button id="changeBtn01">change01</button>
+        <button id="addBtn">add box3</button>
+        <button id="removeBtn">remove box3</button>
+        <button id="toggleBtn">toggle box3</button>
+        <div id="box" class="box01"></div>
+    </body>
+</html>
