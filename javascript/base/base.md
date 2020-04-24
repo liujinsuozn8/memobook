@@ -1157,7 +1157,8 @@
     2. 将新建的对象设置为函数中的this
         - 可以通过 `this` 来设置对象的属性及方法
     3. 执行函数体
-    4. 将对象返回
+    4. 将 `this` 对象返回
+        - 如果构造函数中有返回值，将会返回指定的返回值，**而不返回 this 对象**
 
 - 可以通过 `变量 instanceof 类`，检查变量是不是某个类的实例
     - 因为所有对象都是Object的后代，所以任何对象执行：`对象 instanceof Object`，返回值都是true
@@ -1175,6 +1176,36 @@
         - 多个函数对象会浪费内存
     - 解决方法
         - 在全局作用域中声明函数，然后在构造函数中引用
+
+- 示例
+    - 参考代码
+        - [/javascript/base/src/function/constructor.html](/javascript/base/src/function/constructor.html)
+
+    - 测试构造函数的执行流程
+        ```js
+        // 返回一个指定的值
+        function Person01(){
+            this.name = "this is p01";
+            this.age = 16;
+            return {name:"bbbb", age:18};
+        }
+
+        // 默认返回 this 对象
+        function Person02(){
+            this.name = "this is p02";
+            this.age = 16;
+        }
+        
+        // 返回指定值后，返回结果的类型与类不相同
+        var p01 = new Person01();
+        console.log(p01); // {name: "bbbb", age: 18}
+        console.log(p01 instanceof Person01); // false
+
+        // 默认返回this对象，类型与类相同
+        var p02 = new Person02();
+        console.log(p02); // Person02 {name: "this is p02", age: 16}
+        console.log(p02 instanceof Person02); // true
+        ```
 
 ## 原型对象
 [top](#catalog)
@@ -1217,12 +1248,15 @@
 
 - `this` 对象一般指向调用方法的那个对象
 
-    |函数/方法的调用位置|this的指向|
-    |-|-|
-    |全局作用域中调用函数|window 对象|
-    |调用对象的方法|对象本身|
-    |调用构造函数|新创建的对象（类的实例）|
-    |调用函数对象的:`call`、`apply`方法|<ul><li>第一个参数指定的对象</li><li>如果没有参数，是window 对象</li></ul>|
+    |调用方式|说明|this指向|
+    |-|-|-|
+    |`test()`|直接调用|window 对象|
+    |`obj.test()`|调用对象的方法。调用时，会自动绑定this对象|obj|
+    |`new test()`|以构造函数的方式调用|新创建的类对象|
+    |`test.call(obj, param1, param2...)`|临时绑定this对象调用|obj|
+    |`test.call()`|临时绑定this对象调用|window 对象|
+    |`test.apply(obj, [param1, param2])`|临时绑定this对象调用|obj|
+    |`test.apply()`|临时绑定this对象调用|window 对象|
 
 
 - 示例
@@ -3352,7 +3386,7 @@ console.log("a = ", a);
     - 无法给基本数据类型 添加方法和属性，只能添加给对象
     - 所有对象都是Object的后代，所有对象执行：`对象 instanceof Object`，返回值都是true
     - 在全局作用域中创建的函数，都会作为：window对象的方法
-    
+
 - Undefined衍生自Null，两者的相等与全等判断如下：
     - `Undefined == Null`，返回true
     - `Undefined === Null`，返回false
@@ -3367,3 +3401,246 @@ console.log("a = ", a);
     // 匹配字符串，并区分单词的开头与结束
     var reg = new RegExp("\\b" + xx + "\\b");
         ```
+
+- 示例
+    - 参考代码
+        - [/javascript/base/src/scope/global.html](/javascript/base/src/scope/global.html)
+
+    - js内容
+        ```js
+        var a = 111;
+        var b = 123;
+
+        function test01(){
+            console.log("this is test01");
+        }
+
+        console.log(window.a); //输出：111
+        console.log(window.b); //输出：123
+        console.log("a" in window); //输出：true
+        console.log("b" in window); //输出：true
+        console.log(window.test01()); //输出：this is test01
+        ```
+
+## 函数作用域
+[top](#catalog)
+- 生命周期
+    - 调用函数时创建
+    - 函数执行完后销毁
+    - 每次调用函数，都会创建一个新的作用域。新、旧作用域是相互独立的
+        ```js
+        function test(){...}
+        test(); // 创建作用域1
+        test(); // 创建作用域2
+        test(); // 创建作用域3
+        // 3个作用域之间相互独立
+        ```
+- 在函数作用域可以访问全局作用域的变量
+- 在函数作用域中使用变量时的搜索过程
+    1. 先在当前函数作用域中查找，如果有就直接使用
+    2. 如果当前作用域没有，到上一级作用域中查找，直到全局作用域
+    3. 如果全局作用域中也没有找到，则引发异常：`Uncaught ReferenceError: xxxx is not defined`
+- 在函数内部，如果需要直接访问全局作用域的变量，可以通过：`window.变量名` 的方式使用
+
+
+# 提升
+[top](#catalog)
+- 变量的提升
+    - 使用`var 变量` 声明变量
+        - 这种方式创建的变量会被提升到当前作用域的起始位置，执行**声明**，然后在赋值代码处执行赋值
+        - 在变量声明之前使用变量
+            - 因为变量的提升，只有声明，没有具体的值，所以只能输出undefined
+                ```js
+                console.log(param);
+                // 输出：undefined
+                var param = 1234;
+                ```
+    - 不使用 `var` 关键字声明变量
+        - 如果声明变量时，没有使用`var` 关键字，则变量不会提升
+        - <label style="color:red">所有没有使用 `var` 声明的变量，无论代码写在什么位置，都会变为全局变量，相当于做了：`window.变量 = 变量值` </label>
+        - 在变量声明之前使用变量，会引发异常
+            - 因为变量没有被提升，所以在变量声明之前使用时，会引发变量未定义的异常
+                ```js
+                // Uncaught ReferenceError: param is not defined
+                console.log(param);
+                param = 1234;
+                ```
+
+- 函数的提升
+    - 使用**函数声明** `function 函数名([参数列表]){...}`创建的函数
+        - 函数声明<label style="color:red">会提升</label>，在当前作用域的起始位置被**声明并创建**
+        - 因为存在函数提升，所以可以在函数声明之前使用函数
+        - 在声明之前使用函数
+            - 在执行前，整个函数对象被提升并创建，所以可以正常执行
+                ```js
+                func();
+                // 输出：this is func
+
+                function func (){
+                    console.log("this is func");
+                }
+                ```
+
+    - 使用**函数表达式** `var 变量名 = function([参数列表]){...}`创建的函数
+        - 函数表达式<label style="color:red">不会提升</label>，所以不要函数表达式声明之前使用函数
+        - 两个阶段
+            1. 这样创建的函数，在执行前，只有变量部分：`var 变量名` 会被提升
+            2. 执行函数表达式时，才会将函数赋值给变量
+        - 在声明之前执行函数，会引发异常
+            - func不是一个函数，因为只有变量名被提升了，函数对象还没有创建，所以执行时无法识别
+                ```js
+                // Uncaught TypeError: func is not a function
+                func();
+
+                var func = function(){
+                    console.log("this is func");
+                }
+                ```
+
+- 示例分析
+    - 全局作用域与函数作用域的变量重名
+        1. 函数作用域中不使用`var` 关键字声明变量
+            ```js
+            var a = 10;
+            function test(){
+                // 1. 因为内部的变量a没有使用 var声明，所以函数内部没有提升后的变量a
+
+                // 2. 此处使用的是全局作用域中的a，所以输出10
+                console.log("inner =", a);//输出：inner = 10
+
+                // 3. 此处使用的是全局作用域中的a，a被该成了20
+                a = 20;
+            }
+
+            test();
+
+            // 4. a在test()内部被修改了，所以输出20
+            console.log("outter = ", a); //输出：outter =  20
+            ```
+        2. 函数作用域中使用`var` 关键字声明变量
+            ```js
+            var a = 10;
+            function test(){
+                // 1. 因为内部的变量a 使用 var声明，所以此处会有提升
+                // var a;       // 被提升的 变量a
+                
+                // 2. 输出时，在当前函数作用域找到了变量a，但是变量a只有声明还没有赋值
+                // 所以输出：undefined
+                console.log("inner =", a);//输出：inner = undefined
+
+                // 3. 此处使用的是当前函数作用域内部的 变量a，所以不会影响全局作用域中的变量
+                var a = 20;
+            }
+
+            test();
+
+            // 4. 全局变量a 没有被函数修改，所以输出的仍然是a
+            console.log("outter = ", a); //输出：outter =  10
+            ```
+        3. 函数参数与全局变量重名
+            ```js
+            var a = 10;
+
+            function test(a){
+                // 2. 函数参数 相当于在函数作用域中声明的变量，所以当前作用域中有 变量a
+                // var a;           // 函数参数的效果
+
+                // 3. 调用函数时，没有传递参数，所以 a=undefined
+                console.log("inner =", a);//输出：inner = undefined
+
+                // 4. 此处修改函数作用域内部的变量a
+                a = 20;
+            }
+
+            // 1. 函数参数与全局变量重名，并且不输入任何参数
+            test();
+
+            // 5. 函数内部没有修改变量a，所以输出的仍然是 10
+            console.log("outter = ", a); //输出：outter =  10
+            ```
+
+    - 在函数内部不使用 `var` 声明变量
+        ```js
+        var a = 10;
+        function test(){
+            // 1. 函数内部没有 变量a 的声明，所以使用全局变量
+
+            // 2. 输出全局变量 a
+            console.log("inner =", a);//输出：inner = 10
+
+            // 3. 没有使用 var 声明变量，相当于 window.b = 20;
+            // 创建了全局变量 b
+            b = 20;
+        }
+
+        test();
+        
+        // 4. 在函数中创建了全局变量 b，此处输出 20
+        console.log("outter = ", b); //输出：outter =  20
+        ```
+
+# 内建对象-数组
+## 数组的基本知识
+[top](#catalog)
+- 数组也是一个对象
+- 数组与普通对象的异同
+    - 和普通对象的功能类似，都是用来保存数据
+    - 普通对象使用字符串作为属性名，数组使用数字作为索引来操作元素
+    - 数组的性能比对象更好
+
+- 数组的创建方法
+    1. 使用构造函数创建数组
+        - 创建空数组
+            ```js
+            var a = new Array();
+            ...
+
+        - 创建指定长度的数组
+            ```js
+            var a = new Array(数组长度);
+            ```
+        - 创建数组，同时添加元素
+            - **这种方法必须要有2个及以上的参数，才能正常创建。如果只有一个参数，该参数会被当作数组长度使用**
+            ```js
+            var a = new Array(1, 2, 3, 4);
+            ```
+
+    2. 使用数组字面量
+        ```js
+        // 创建空数组
+        var a = [];
+
+        // 创建时指定数组元素
+        var a = [1, 2, 3, 4, 5];
+        ```
+
+- 数组的index
+    - 数组通过:`变量[index]` 的方式来设值和取值，`index`从 0 开始。如果index不存在，不会报错，会返回 `undefined`
+    - js数组在设值时，**index可以不连续**
+
+- `数组.length` 属性
+    - 该属性会返回数组的长度，即`最大index + 1`（无论数组是否连续）
+    - 该属性可以手动修改
+        - 如果修改后的length大于原长度，会自动对数组扩容
+        - 如果修改后的length小于原长度，数组中多余的元素会被删除
+    - 为了防止数组不连续，**可以通过length属性来保证每次都在数组的最后添加元素** : `数组[数组.length] = 元素值`
+
+- 数组的元素
+    - 数组的元素可以是任意类型，包含对象和函数
+
+
+## 数组的常用方法
+[top](#catalog)
+- 尾部元素操作
+    - `push()`，向数组的末尾添加一个或多个元素，并返回数组的长度
+    - `pop()`，删除数组**最后一个**元素，并返回该元素
+- 头部元素操作
+    - `unshift()`，向数组开头添加一个或多个元素，并返回数组的长度
+    - `shift()`，删除数组的**第一个**元素，并返回该元素
+
+- `slice(start_index, [end_index])`，切片操作
+    - 该方法不会改变原数组，会返回一个新的数组
+    - 参数说明
+        - start_index 是开始位置的索引
+        - end_index 是结束位置的索引
+            - end_index可以不指定。不指定时，获取从
