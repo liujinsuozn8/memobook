@@ -15,8 +15,10 @@
     <module>myrpc</module>
     <module>myspring</module>
     <module>mybatis</module>
-      <module>myjvm</module>
-      <module>mylog4j</module>
+    <module>myjvm</module>
+    <module>mylog4j</module>
+    <module>myspringMVC</module>
+    <module>myssm</module>
 
   </modules>
 

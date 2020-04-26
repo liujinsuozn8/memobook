@@ -13,8 +13,11 @@
     - Spring
         - [基本知识](java/spring/base/base.md)
         - [集成其他框架](java/spring/integration/integration.md)
+        - [SSM框架集成](/java/spring/ssm/base.md)
     - Mybatis
         - [基本知识](java/mybatis/base/base.md)
+    - SpringMVC
+        - [基本知识](java/springMVC/base/base.md)
 
 - 数据库
     - mysql
@@ -47,7 +50,7 @@
         - [官网文档](Rust/base/base.md)
         - [rust编程之路](Rust/base/rustroad.md)
 
-- 前端
+- 前端        
     - html
         - [基本知识](frontend/html/base/base.md)
     - css

@@ -136,12 +136,12 @@
         - [两种监听接口](#两种监听接口)
         - [HttpSessionBingdingListener接口](#HttpSessionBingdingListener接口)
         - [HttpSessionActivationListener接口](#HttpSessionActivationListener接口)
-- [](#)
-- [](#)
-- [](#)
-- [](#)
 - [JavaWeb开发中的路径问题](#JavaWeb开发中的路径问题)
 - [其他](#其他)
+- [](#)
+- [](#)
+- [](#)
+- [](#)
 
 # JavaWeb应用的概念
 [top](#catalog)
@@ -351,12 +351,16 @@
 
 - Servlet映射的细节
     - 同一个Servlet可以被映射到多个URL上，即多个`<servlet-mapping>`中的`<servlet-name>`可以指向同一个Servlet的注册名称
-    - 在Servlet映射到的URL中也可以使用通配符：`*`，但是只能有两种固定格式
-        - `*.扩展名`
+    - `*` 与 `/`
+        - `*.扩展名`，`*`作为通配符来使用
             - 如`*.html`，那么所有相关的路径如：`localhost:8080/xxx.html`都会有这一个Servlet来处理
-
+        - `/`
+            - 只匹配路径类型的url
+            - '/'代表当前web应用的根目录，相当于：`localhost:8080/应用名/`
+            - 如`localhost:8080/app/hello`
         - `/*`
             - '/'代表当前web应用的根目录，相当于：`localhost:8080/应用名/`
+            - 匹配 路径型url 、 带后缀的url、 带参数的路径
 
     - 如果映射的URL为：`/*.html`，启动Servlet容器时会产生异常
         - 即 `/`和`*`不能共存
@@ -396,7 +400,6 @@
 - Filter配置的细节
     - 一个Filter节点可以对应多个Filter映射
     - <label style="color:red">多个拦截相同url的Filter映射会自动构成Filter链，并且：`<filter-mapping>`的顺序决定了整个Filter链的顺序</label>
-    - 配置
     
 ## 配置监听器Listener
 [top](#catalog)
@@ -567,7 +570,7 @@
 
 ## 编写一个Servlet示例
 [top](#catalog)
-- HelloServlet.java，`Servlet`接口的实现类 : `weblearn/src/main/java/com/ljs/test/HelloServlet.java`
+- HelloServlet.java，`Servlet`接口的实现类 : [/java/mylearn/weblearn/src/main/java/com/ljs/test/HelloServlet.java](/java/mylearn/weblearn/src/main/java/com/ljs/test/HelloServlet.java)
     ```java
     public class HelloServlet implements Servlet {
         public HelloServlet() {
@@ -780,7 +783,7 @@
             <param-value>jdbc:mysq:127.0.0.1:3306</param-value>
         </context-param>
         ```
-    - Servlet实现 : `weblearn/src/main/java/com/ljs/test/ParamInitServlet.java`
+    - Servlet实现 : [/java/mylearn/weblearn/src/main/java/com/ljs/test/ParamInitServlet.java](/java/mylearn/weblearn/src/main/java/com/ljs/test/ParamInitServlet.java)
         ```java
         public class ParamInitServlet implements Servlet {
             public ParamInitServlet() {
@@ -912,12 +915,12 @@
                 - get方式，获取url`?`后的内容，如：`user=1111&password=222&interesting=game&interesting=sport`
             - `public String getServletPath();`
                 - 获取请求的servlet的路径
-                - 取得的结果，如：`/loginServletHtml`
+                - 即配置中的：url-pattern
             - 和attribute相关的几个方法
                 - 参考：[JSP域对象的属性作用范围](#JSP域对象的属性作用范围)
 
 - 使用示例
-    - `weblearn/src/main/webapp/myservlet/login.html`
+    - [/java/mylearn/weblearn/src/main/webapp/myservlet/login.html](/java/mylearn/weblearn/src/main/webapp/myservlet/login.html)
         ```html
         <!DOCTYPE html>
         <html lang="en">
@@ -950,7 +953,7 @@
         </body>
         </html>
         ```
-    - `weblearn/src/main/java/com/ljs/test/myservlet/LoginServlet.java`
+    - [/java/mylearn/weblearn/src/main/java/com/ljs/test/myservlet/LoginServlet.java](/java/mylearn/weblearn/src/main/java/com/ljs/test/myservlet/LoginServlet.java)
         ```java
         @Override
         public void service(ServletRequest servletRequest, ServletResponse servletResponse) throws ServletException, IOException {
@@ -1075,7 +1078,7 @@
                 - 请求的重定向
 
 - 使用示例
-    - `weblearn/src/main/java/com/ljs/test/myservlet/LoginServlet.java`
+    - [/java/mylearn/weblearn/src/main/java/com/ljs/test/myservlet/LoginServlet.java](/java/mylearn/weblearn/src/main/java/com/ljs/test/myservlet/LoginServlet.java)
         ```java
         @Override
         public void service(ServletRequest servletRequest, ServletResponse servletResponse) throws ServletException, IOException {
@@ -1100,7 +1103,7 @@
 [top](#catalog)
 - 为什么要使用包装类：方便扩展对象的功能
 - 扩展对象产生的问题及分析：**以Request为例**
-    - 问题场景：在转发和重定向之前，需要操作请求参数，然后在做转发和重定向
+    - 问题场景：在转发和重定向之前，需要操作请求参数，然后再做转发和重定向
     - 出现的问题
         1. reuqest中没有`setParamter`方法，无法重新设定请求参数
         2. HttpServletRequset是一个接口，无法通过重写getParamter来改变获取方式
@@ -1193,7 +1196,7 @@
 - 可以自己创建一个Servlet接口的实现类，每次都继承这个实现类，不用再实现全部方法
     - 实现Servlet, 来避免空方法
     - 实现ServletConfig，使得在子类中也可以通过servletConfig对象来获取配置信息
-- 自定义实现：`weblearn/src/main/java/com/ljs/test/myservlet/MyGenericServlet.java`
+- 自定义实现：[/java/mylearn/weblearn/src/main/java/com/ljs/test/myservlet/MyGenericServlet.java](/java/mylearn/weblearn/src/main/java/com/ljs/test/myservlet/MyGenericServlet.java)
     ```java
     import javax.servlet.*;
     import java.io.IOException;
@@ -1384,7 +1387,7 @@
         </servlet-mapping>
         ```
     
-    - `weblearn/src/main/webapp/myservlet/login2.html`
+    - [/java/mylearn/weblearn/src/main/webapp/myservlet/login2.html](/java/mylearn/weblearn/src/main/webapp/myservlet/login2.html)
         ```html
         <!DOCTYPE html>
         <html lang="en">
@@ -1406,7 +1409,7 @@
         </html>
         ```
     
-    - `weblearn/src/main/java/com/ljs/test/myservlet/LoginServlet2.java`，继承GenericServlet
+    - GenericServlet的实现类 : [/java/mylearn/weblearn/src/main/java/com/ljs/test/myservlet/LoginServlet2.java](/java/mylearn/weblearn/src/main/java/com/ljs/test/myservlet/LoginServlet2.java)
         ```java
         import javax.servlet.*;
         import java.io.IOException;
@@ -1443,7 +1446,7 @@
     - 在`service(HttpServletRequest, HttpServletResponse)`中获取请求方式：`request.getMethod()`
     - 根据请求方式创建:`doXxx`方法，`Xxx`为具体的请求方式,如：doPost，doGet等等
 
-- 自定义实现：`weblearn/src/main/java/com/ljs/test/myservlet/MyHttpServlet.java`
+- 自定义实现：[/java/mylearn/weblearn/src/main/java/com/ljs/test/myservlet/MyHttpServlet.java](/java/mylearn/weblearn/src/main/java/com/ljs/test/myservlet/MyHttpServlet.java)
 
     ```java
     @Override
@@ -1505,7 +1508,7 @@
     - 创建一个LoginServlet，继承自HttpServlet，并重写doPost方法
     - 在Servlet中获取请求的uest，password
     - 利用JDBC从test_users中查询有没有和页面输入的user，passwoed对应的记录若有，响应`Hello:user`，不一致则响应`Sorry:user`
-- Servlet: `weblearn/src/main/java/com/ljs/test/myservlet/LoginServlet3.java`
+- Servlet: [/java/mylearn/weblearn/src/main/java/com/ljs/test/myservlet/LoginServlet3.java](/java/mylearn/weblearn/src/main/java/com/ljs/test/myservlet/LoginServlet3.java)
     ```java
     import javax.servlet.ServletException;
     import javax.servlet.http.HttpServlet;
@@ -1579,8 +1582,8 @@
     }
     ```
 
-- 入口：`weblearn/src/main/webapp/myservlet/login3.html`
-    ```java
+- 入口：[/java/mylearn/weblearn/src/main/webapp/myservlet/login3.html](/java/mylearn/weblearn/src/main/webapp/myservlet/login3.html)
+    ```html
     <!DOCTYPE html>
     <html lang="en">
     <head>
@@ -1664,7 +1667,7 @@
 
 - **JSP是简化Servlet编写的一种技术**，它将Java代码和HTML语句混合在同一个文件中编写，动态生成的部分使用Java代码来编写，静态的部分采用普通的静态HTML页面编写
 
-- **JSP可以在html中嵌入java代码，可以使用Servlet容器来解释、执行**
+- **JSP可以在html中嵌入java代码，可以使用Servlet容器来解释、执行**，如：
     ```html
     <%@ page import="java.util.Date" %>
     <%@ page contentType="text/html;charset=UTF-8" language="java" %>
@@ -1809,7 +1812,10 @@
         - page 与 this 相同
 
     9. **exception**：在JSP页面中声明了`<%@ page isErrorPage="true" %>`时，才可以使用
-        - exception对象的获取方式：`java.lang.Throwable exception = org.apache.jasper.runtime.JspRuntimeLibrary.getThrowable(request);`
+        - exception对象的获取方式：
+            ```java
+            java.lang.Throwable exception = org.apache.jasper.runtime.JspRuntimeLibrary.getThrowable(request);
+            ```
 
 
 - 9个隐式对象 对属性的作用域的范围从小到大排列
@@ -2179,7 +2185,7 @@ pageContext, request, session, application
     - 常用属性 
         - import="{package.class | package.*},...."
             - 需要导入的jar包  
-            - 以下的这些包会默认添加到编译后的Servlet中，所以不同导入
+            - 以下的这些包会默认添加到编译后的Servlet中，所以不用导入
                 - `javax.servlet.*;`
                 - `javax.servlet.http.*;`
                 - `javax.servlet.jsp.*;`
@@ -2201,12 +2207,12 @@ pageContext, request, session, application
             - 指定当前JSP页面的响应类型
                 - 可以参考：`apache-tomcat-9.0.30/conf/web.xml` 来设置
                 - 一般对JSP来说，`<%@ page contentType="text/html;charset=UTF-8" %>` 就足够了
-                    - 通过将响应类型设置为`text/html`，虽然访问时使用的`*.jsp`，但是实际结果时html页面
+                    - 通过将响应类型设置为`text/html`，虽然访问时使用的`*.jsp`，但是实际结果是html页面
             - charset="响应页面的字符编码"
                 - 指定返回页面的字符编码
                 - 通常使用UTF-8
         - pageEncoding="当前JSP页面的字符编码"
-            - 指定当前JSP页面的字符编码，通常情况下和contentType中的charset时
+            - 指定当前JSP页面的字符编码，通常情况下和contentType中的charset是相同的
         - isELIgnored="true/false"
             - 指定当前JSP页面是否可以使用EL表达式
             - 通常取值为false
@@ -2227,7 +2233,7 @@ pageContext, request, session, application
     - <label style="color:red">最终只会生成一个Servlet源文件</label>
     - 静态引入是源码级引入
     - 静态引入的原理
-        - 在编译时，像Map型静态变量中添加其他页面的内容，在Servlet加载时就能使用
+        - 在编译时，向Map型静态变量中添加其他页面的内容，在Servlet加载时就能使用
         - ![include_jsp](./imgs/webbase/jspcmd_include/include_jsp.png)
 
 - include的细节
@@ -2259,7 +2265,7 @@ pageContext, request, session, application
     - 最好不要这样使用
     
 - 示例
-    - `weblearn/src/main/webapp/jspcmd/include01.jsp`
+    - [/java/mylearn/weblearn/src/main/webapp/jspcmd/include01.jsp](/java/mylearn/weblearn/src/main/webapp/jspcmd/include01.jsp)
         ```html
         <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
@@ -2284,7 +2290,7 @@ pageContext, request, session, application
         </html>
         ```
 
-    - `weblearn/src/main/webapp/jspcmd/include02.jsp`
+    - [/java/mylearn/weblearn/src/main/webapp/jspcmd/include02.jsp](/java/mylearn/weblearn/src/main/webapp/jspcmd/include02.jsp)
         ```html
         <%@ page contentType="text/html;charset=UTF-8" language="java" %>
         <html>
@@ -2301,7 +2307,7 @@ pageContext, request, session, application
         </html>
         ```
 
-    - 生成的jsp文件:`weblearn/src/main/java/com/complied/jsp/include01_jsp.java`
+    - 生成的jsp文件: [/java/mylearn/weblearn/src/main/java/com/complied/jsp/include01_jsp.java](/java/mylearn/weblearn/src/main/java/com/complied/jsp/include01_jsp.java)
         ```java
         public void _jspService(final javax.servlet.http.HttpServletRequest request, final javax.servlet.http.HttpServletResponse response)
             throws java.io.IOException, javax.servlet.ServletException {
@@ -2379,7 +2385,7 @@ pageContext, request, session, application
 
 ### 2.JSP标签-\<jsp:include\>
 [top](#catalog)
-- `<jsp:include>`标签用于把另外一个资源的输出内容插入当前JSP页面的输出内容之中，这种在JSP页面执行是的引入方式称为**动态引入**
+- `<jsp:include>`标签用于把另外一个资源的输出内容插入当前JSP页面的输出内容之中，这种在JSP页面执行时的引入方式称为**动态引入**
     - <label style="color:red">引入的文件必须是一个能独立被Web容器调用和执行的资源，并且该资源只能是当前web应用下的</label>
     - 最终的编译结果是多个Servlet源文件
     - 编译结果中的引入方式
@@ -2396,7 +2402,7 @@ pageContext, request, session, application
     |生成的结果|多个Servlet源文件|一个Servlet源文件|
 - 可以使用`<jsp:param>`子标签向转发页面传入一些参数
 - 示例
-    - `weblearn/src/main/webapp/jsptag/jspinclude01.jsp`
+    - [/java/mylearn/weblearn/src/main/webapp/jsptag/jspinclude01.jsp](/java/mylearn/weblearn/src/main/webapp/jsptag/jspinclude01.jsp)
         ```html
         <%@ page contentType="text/html;charset=UTF-8" language="java" %>
         <html>
@@ -2414,7 +2420,7 @@ pageContext, request, session, application
         </body>
         </html>
         ```
-    - `weblearn/src/main/webapp/jsptag/jspinclude02.jsp`
+    - [/java/mylearn/weblearn/src/main/webapp/jsptag/jspinclude02.jsp](/java/mylearn/weblearn/src/main/webapp/jsptag/jspinclude02.jsp)
         ```html
         <%@ page contentType="text/html;charset=UTF-8" language="java" %>
         <html>
@@ -2476,7 +2482,7 @@ pageContext, request, session, application
 - 可以使用`<jsp:param>`子标签向转发页面传入一些参数，在目标页面可以通过：`request.getParameter("参数名")`
 - 示例
     - 从`jspforward01`跳转到`jspforward02`
-    - `/weblearn/src/main/webapp/jsptag/jspforward01.jsp`
+    - [/java/mylearn/weblearn/src/main/webapp/jsptag/jspforward01.jsp](/java/mylearn/weblearn/src/main/webapp/jsptag/jspforward01.jsp)
         ```html
         <%@ page contentType="text/html;charset=UTF-8" language="java" %>
         <html>
@@ -2497,7 +2503,7 @@ pageContext, request, session, application
         </body>
         </html>
         ```
-    - `/weblearn/src/main/webapp/jsptag/jspforward02.jsp`
+    - [/java/mylearn/weblearn/src/main/webapp/jsptag/jspforward02.jsp](/java/mylearn/weblearn/src/main/webapp/jsptag/jspforward02.jsp)
         ```html
         <%@ page contentType="text/html;charset=UTF-8" language="java" %>
         <html>
@@ -2869,7 +2875,7 @@ pageContext, request, session, application
     - <img src="./imgs/webbase/flow_forward/10.png" width=60% height=60% />
 11. `Servlet1.service()`返回
     - <img src="./imgs/webbase/flow_forward/11.png" width=60% height=60% />
-12. Web容器读取`response`对象中的谢谢
+12. Web容器读取`response`对象中的信息
     - <img src="./imgs/webbase/flow_forward/12.png" width=60% height=60% />
 13. Web容器将`http响应`发送到浏览器
     - <img src="./imgs/webbase/flow_forward/13.png" width=60% height=60% />
@@ -3207,7 +3213,7 @@ pageContext, request, session, application
                 }
             }
             ```
-    - 创建一个初始化Servlet，通过web.xml配置的`load-on-startup`参数在整个服务器启动时读取配置，并设定工厂中Dao对象的真是类型
+    - 创建一个初始化Servlet，通过web.xml配置的`load-on-startup`参数在整个服务器启动时读取配置，并设定工厂中Dao对象的真实类型
         - 参考：[/java/mylearn/weblearn/src/main/java/com/ljs/mvc/controller/InitServlet.java](/java/mylearn/weblearn/src/main/java/com/ljs/mvc/controller/InitServlet.java)
         - 实现
             ```java
@@ -5592,7 +5598,7 @@ pageContext, request, session, application
 ## Filter过滤器简介
 [top](#catalog)
 - Filter是JavaWeb的一个重要组件，可以对发送到Servlet的请求进行拦截，并对响应也进行拦截，从而**在Servlet进行响应处理的前后实现一些特殊的功能**
-- <label style="color:red">ilter对象是单例的。容器将在同一个过滤器实例上运行多个线程，来为多个请求服务，所以开发时需要注意线程安全</label>
+- <label style="color:red">Filter对象是单例的。容器将在同一个过滤器实例上运行多个线程，来为多个请求服务，所以开发时需要注意线程安全</label>
 - Filter的过滤过程
     - ![filter_workflow](./imgs/webbase/filter/introduction/filter_workflow.png)
 - Filter程序本质是一个实现了Filter接口的Java类
@@ -6862,7 +6868,7 @@ pageContext, request, session, application
         - 在Servlet中：`resp.sendRedirect(req.getContextPath() + "/session/shopping/step3.jsp");`
         
 - JavaWeb开发中的`/`
-    - <label style="color:red">若`/`需要由Servlet容器来处理</label>，则表示当前Web应用的根路径
+    - <label style="color:red">若`/`需要由Servlet容器来处理</label>，则表示当前Web应用的根路径，如：locahost:8080/应用名/
         1. 转发的路径
         2. web.xml配置中的`servlet-mapping`
             ```xml
@@ -6873,10 +6879,10 @@ pageContext, request, session, application
             ```
         3. 自定义标签中的`/`
             - 如： `<c:redirect>`
-    - <label style="color:red">若`/`需要由浏览器来处理</label>，表示当前Web站点的根路径
+    - <label style="color:red">若`/`需要由浏览器来处理</label>，表示当前Web站点的根路径，如：locahost:8080/
         1. 重定向的路径
             - 第二次请求相当于由浏览器来处理
-        2. 超链接：<a href="/servlet">
+        2. 超链接：`<a href="/servlet">`
         3. form中action的路径
 
 
@@ -6912,4 +6918,5 @@ pageContext, request, session, application
     - 很多数据在每次响应时，都需要重新并在页面上重新渲染，很浪费时间
     - 当前的mvc框架中存在过多的内部转发与重定向
     - JSP上的解析逻辑还是比较复杂
+
 [top](#catalog)

@@ -1,6 +1,8 @@
 ### 内容整理整理自：https://kaisery.github.io/trpl-zh-cn/
 <span id="catalog"></span>
+
 - [基本使用](#基本使用)
+- [vscode配置](#vscode配置)
 - [常见编程概念](#常见编程概念)
     - [变量和可变性](#变量和可变性)
     - [数据类型](#数据类型)
@@ -88,6 +90,7 @@
     - [高级函数与闭包](#高级函数与闭包)
     - [宏](#宏)
 
+
 # 基本使用
 [top](#catalog)
 * Rust是一种**预编译静态类型**语言
@@ -96,7 +99,7 @@
         * 检测Rust：`rustc --version`
         * 检测Cargo：`cargo --version`
 
-    - 使用国内镜像
+    - 使用国内镜像，修改文件`$HOME/.cargo/config`
         ```
         [source.crates-io]
         registry = "https://github.com/rust-lang/crates.io-index"
@@ -104,7 +107,11 @@
         [source.ustc]
         registry = "git://mirrors.ustc.edu.cn/crates.io-index"
         ```
-
+    - 配置环境变量
+        ```
+        export PATH="$HOME/.cargo/bin:$PATH"
+        export RUST_SRC_PATH="$HOME/.rustup/toolchains/stable-x86_64-apple-darwin/lib/rustlib/src/rust/src"
+        ```
 * Rust的代码以`.rs`为文件后缀
 * Rust的代码包称为**crates**
 * 基本的编译与运行
@@ -177,6 +184,71 @@
     - `rustup self update`，更新rustup的版本
     - `rustup install nightly`，安装nightly版
         - `rustup run nightly rustc --version`，查询版本
+
+# vscode配置
+[top](#catalog)
+- 安装插件：rust（rls），rust-analyzer（并安装语言服务）
+- 安装：rust-analyzer 二进制服务文件
+    - 参考： https://github.com/rust-analyzer/rust-analyzer/releases
+    - 安装node.js
+    - 执行指令
+        ```
+        git clone https://github.com/rust-analyzer/rust-analyzer.git && cd rust-analyzer
+
+        cargo xtask install
+        ```
+    - 添加setting.json配置
+        ```json
+        "rust-analyzer.serverPath": "用户家目录/.cargo/bin/rust-analyzer-windows.exe",
+        ```
+
+- 添加配置
+    - 调试配置：.vscode/launch.json
+        ```json
+        {
+            "version": "0.2.0",
+            "configurations": [
+                {
+                    "name": "(lldb) 启动",
+                    "type": "lldb",
+                    "request": "launch",
+                    "program": "${workspaceFolder}/target/debug/mylean",
+                    // "program": "${workspaceFolder}/src/main",
+                    "args": [],
+                    "stopAtEntry": false,
+                    "cwd": "${workspaceFolder}",
+                    "environment": [],
+                    "externalConsole": false,
+                    "MIMode": "lldb",
+                    "preLaunchTask": "build" //调试期前指定task.json中的编译命令
+                }
+            ]
+        }
+        ```
+    - 任务配置：.vscode/tasks.json
+        ```json
+        {
+            "version": "2.0.0",
+            "tasks": [
+                {
+                    "label": "build",
+                    "type": "shell",
+                    "command":"cargo build",
+                    "problemMatcher":[]
+                }
+
+            ]
+        }
+        ```
+    - .vscode/settings.json
+        ```json
+        {
+            "rust-analyzer.serverPath": "/Users/liujinsuo/.cargo/bin/rust-analyzer",
+            "rust-analyzer.enableCargoWatchOnStartup": true, // 打开项目时自动开启 cargo watch
+            "rust-analyzer.highlightingOn": true, // 覆盖内建语法高亮
+            "rust-analyzer.lruCapacity": 1000, // 分析器最大缓存深度
+        }
+        ```
 # 常见编程概念
 ## 变量和可变性
 [top](#catalog)
@@ -561,7 +633,12 @@
             }
             println!("end");
             ```
-
+        - 如果只是为了循环，不使用循环变量，可以用`_`来替代
+            ```rust
+            for _ in 0..10 {
+                n += 1;
+            }
+            ```
 
 # 所有权
 ## 为什么需要所有权
@@ -2313,7 +2390,8 @@
             }
         }
         ```
-    * 类型如何使用trait的默认实现? 为类型指定一个空的`impl`块：`impl trait名 for 结构体名 {}`
+    * 类型如何使用trait的默认实现? 
+        - 为类型指定一个空的`impl`块：`impl trait名 for 结构体名 {}`
         ```rust
         pub trait Summary {
             fn summarize(&self) -> String {
@@ -3631,7 +3709,6 @@
         * 当`T:Deref<Target=U>`时，从&T到&U
         * 当`T:DerefMut<Target=U>`时，从&mut T到&mut U
         * 当`T:Deref<Target=U>`时，从&mut T到&U
-            * 将不可变引用转换为可变引用则需要数据只能有一个不可变引用？？？？，而借用规则无法保证这一点
 
 ## 使用Drop运行清理代码
 [top](#catalog)
@@ -5089,3 +5166,7 @@
     
 * trait的关联类型:`type Item`,`Self::Item`
 
+
+let a = result.to_string().as_bytes();
+result.to_string()创建了一个String，&str是String的引用，
+但是写在一行时，String是一个临时变量，到这一行结束时，String的生命周期就结束了，所以as_bytes会产生生命周期不足的异常

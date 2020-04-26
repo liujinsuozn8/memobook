@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<!--核心配置内容-->
+<configuration>
+
+    <settings>
+        <!--添加日志-->
+        <!--<setting name="logImpl" value="STDOUT_LOGGING"/>-->
+        <!--<setting name="logImpl" value="LOG4J"/>-->
+
+        <!--开启数据库自动名 与 java属性名 命名规则的自动转换-->
+        <setting name="mapUnderscoreToCamelCase" value="true"/>
+
+        <!--显示开启mybatis二级缓存-->
+        <!--<setting name="cacheEnabled" value="true"/>-->
+    </settings>
+
+    <!--扫描包来添加别名-->
+    <typeAliases>
+        <package name="com.ljs.learn.myssm.bean"/>
+    </typeAliases>
+
+</configuration>

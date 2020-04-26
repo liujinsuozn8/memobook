@@ -84,7 +84,8 @@
         ```
 
 - 通过Spring-Mybatis整合Mybatis，并通过Spring的方式访问数据库
-    1. 编写数据源配置
+    1. 编写数据源/数据库连接池配置
+        - 这里使用Spring默认的数据源，可以根据需要替换
         - spring配置
             ```xml
             <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">

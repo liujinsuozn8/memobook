@@ -505,7 +505,7 @@
     truncate table 表名
     ```
 - 如果表中有`自增长列` 
-    - `delete`删除后，再插入数据，自增长列的值从断电开始
+    - `delete`删除后，再插入数据，自增长列的值从断点开始
     - `truncate`删除后，再插入数据，自增长列的值从1开始
 - `delete`有返回值，`truncate`没有返回值
     - `truncate`执行后，不会返回删了多少行数据，`delete`会返回
@@ -1513,6 +1513,7 @@
         - `mysql --version`
         - `mysql -V`
     - `desc 表名;`，查看表结构
+    - `show create table 表;`，显示建表语句
     - `show index from 表名` 查看索引
     - `show variables like '%auto_increment%'` 查询字段增长设置
     - `show variables like 'autocommit'`，查看`自动提交功能`是否开启

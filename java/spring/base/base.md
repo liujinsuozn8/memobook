@@ -1385,7 +1385,7 @@
             xmlns:context="http://www.springframework.org/schema/context"
             xmlns:aop="http://www.springframework.org/schema/aop"
             xsi:schemaLocation="http://www.springframework.org/schema/beans
-                        https://www.springframework.org/schema/beans/spring-beans.xs
+                        https://www.springframework.org/schema/beans/spring-beans.xsd
                         http://www.springframework.org/schema/context
                         https://www.springframework.org/schema/context/spring-context.xsd">
 
