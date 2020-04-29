@@ -35,8 +35,14 @@
         - [执行上下文](#执行上下文)
         - [执行上下文栈](#执行上下文栈)
         - [与执行上下文相关的问题](#与执行上下文相关的问题)
-    - [作用域与作用域栈](#作用域与作用域栈)
+    - [作用域](#作用域)
+        - [作用域的基本概念](#作用域的基本概念)
+        - [作用域与执行上下文](#作用域与执行上下文)
+        - [作用域链](#作用域链)
+        - [与作用域相关的问题](#与作用域相关的问题)
     - [闭包](#闭包)
+        - [利用闭包的示例-循环变量添加事件监听](#利用闭包的示例-循环变量添加事件监听)
+        - [闭包的基本知识](#闭包的基本知识)
 - [其他](#其他)
     - [代码结尾的分号](#代码结尾的分号)
 - [](#)
@@ -957,6 +963,8 @@
 
 - 执行上下文可以理解为 一种预处理技术。正因为这种预处理才会产生提升的现象
 
+- **执行上下文 不是 this对象，这是两个完全不同的概念**，但是创建上下文时会涉及到this的操作
+
 - 全局执行上下文
     - 如何准备执行上下文
         1. 执行全局代码之前，将 window对象 确定为全局执行上下文
@@ -965,10 +973,10 @@
                 - 如果作用域中有多个同名变量，统一使用一个。并在执行代码时，依照赋值语句一一赋值
             2. 提升使用 `函数声明` 方式创建的函数，并为其创建函数对象，然后添加为 window对象 的方法
                 - 如果作用域中创建了多个同名函数，则后面的会覆盖前面的
-            3. 将 this对象 绑定到 window对象，相当于：`this = window`
+            3. 将 window对象 赋值给 this对象，相当于：`this = window`
         3. 开始执行全局代码
     - 开始执行代码后，使用属性、方法时，会到 全局执行上下文 中搜索
-    - 如下所示的代码，在 debug 模式下不会执行，应为在准备全局上下文时，已经被提升并**执行过了**
+    - 如下所示的代码，在 debug 模式下第二行代码不会执行，因为在准备全局上下文时，已经被提升并**执行过了**
         ```js
         var a = 3
 
@@ -989,13 +997,13 @@
             4. 提升使用 `函数声明` 方式创建的函数，并为其创建函数对象，然后添加为执行上下文的属性
                 - 如果作用域中创建了多个同名函数，则后面的会覆盖前面的
                 - 如果作用域中的<label style="color:red">局部函数与参数同名</label>，无论参数是什么类型，<label style="color:red">参数都会被局部函数覆盖</label>
-            5. 将 this对象 绑定到 **调用函数的对象**
+            5. 将 **调用函数的对象** 赋值给 this对象
         3. 开始执行函数体
     - 不调用函数，不会创建函数执行上下文，并且这是一个一次性的对象
 
 - **上下文中，函数声明与变量的特点**
     - 函数声明无论写在作用域的哪里、同样的声明有几次，都会执行，并且会按顺序执行
-    - 通过 var 声明的变量 无论有多少个，提升后都是：`var 变量名 = undefinde`。然后在执行时按照赋值语句一一赋值
+    - 通过 `var` 声明的变量 无论有多少个，提升后都是：`var 变量名 = undefinde`。然后在执行时按照赋值语句一一赋值
 
 - 执行上下文 数量的计算准则：`n + 1`
     - `n` 表示执行函数的次数，每次执行某个函数都会产生一个执行上下文
@@ -1183,42 +1191,241 @@
 
 ### 作用域与执行上下文
 [top](#catalog)
-- 作用域与执行上下文的区别
-    - 静态与动态
-        - 作用域是静态的，定义之后不会变化
-        - 执行上下文是动态的，执行函数体之前创建，函数执行结束后被销毁
+- 作用域与执行上下文<label style="color:red">完全是两个概念，在搜索属性时，需要进行区分</label>
+- 作用域与执行上下文的区别：静态与动态
+    - 作用域是静态的，定义之后不会变化
+    - 执行上下文是动态的，执行函数体之前创建，函数执行结束后被销毁
 
-- 因为作用域的静态性，它与函数的调用顺序无关
-    - 如下代码，虽然 fn2 内部调用了 fn1，但是fn1的作用域仍然是 全局作用域
-        ```js
-        var x= 12;
-        function fn1(){
-            console.log(x)
-        }
-
-        function fn2(){
-            var x = 13;
-            fn1()
-        }
-
-        fn2() // 输出12
-        ```
+- <label style="color:red">搜索属性时的注意事项</label>
+    1. 如果属性前没有 `this`，先在上下文对象中查找，没有再依照[作用域链](#作用域链)一层一层查找
+    2. 如果属性前有 `this`，先确定 `this`对象 是什么，即调用者是谁，然后在调用者内部进行搜索
 
 - 全局执行上下文的特殊性
     - 函数执行上下文是在函数体执行前创建的
     - 全局执行上下文是在**全局作用域确定之后**，js代码执行之前创建的
 
-### 变量、函数、对象的搜索方式
+### 作用域链
 [top](#catalog)
-- 
+- 什么是作用域链
+    - 多个**在编码上嵌套**的作用域形成的链
+    - 方向 : 从内到外
+    - 搜索变量等内容时，会沿着作用域链搜索
+
+- 变量、函数、对象的搜索方式
+    1. 在当前作用域对应的上下文对象中搜索，如果有则直接使用
+    2. 如果没有，则到上一级作用域对应的上下文对象中搜索，如果有则直接使用
+    3. 如果没有，则重复 2，直到 全局作用域
+    4. 如果 全局作用域 中也没有，则产生异常
+
 
 ### 与作用域相关的问题
 [top](#catalog)
-1. 
+1. 代码输出什么？
+    - 代码内容
+        ```js
+        var x = 10;
+        function fn(){
+            console.log(x)
+        }
 
+        function show(f){
+            var x = 20
+            f()
+        }
+
+        show(fn)
+        ```
+
+    - 输出结果：10
+    - 结果分析
+        - fn的作用域链是：fn-->全局作用域
+        - 虽然 show 与 fn 是调用与被调用的关系，但是在作用域上没有关联
+        - 执行到fn时，先在 fn 内部查找，没有找到 x，则到全局作用域中查找，最终 x=10
+
+2. 代码输出什么?
+    - 代码内容
+        ```js
+        var fn = function(){
+            console.log(fn)
+        }
+
+        fn()
+
+        var obj = {
+            fn2:function(){
+                console.log(fn2)
+                // console.log(this.fn2)
+            }
+        }
+
+        obj.fn2()
+        ```
+
+    - 输出结果
+        ```
+        fn函数自身
+        异常 ReferenceError: fn2 is not defined
+        ```
+    - 结果分析
+        - 执行 `fn()` 时，fn已经存在于全局作用域，fn启动之后，可以在全局作用域找到自身，并输出
+        - 执行 `obj.fn2()` 的分析
+            - 作用域划分
+                ```js
+                ┌─────────── window ─────────┐
+                │var obj = {                 │
+                │    ┌────── function ─────┐ │
+                │    │fn2:function(){      │ │
+                │    │    console.log(fn2) │ │
+                │    │}                    │ │
+                │    └─────────────────────┘ │
+                │}                           │
+                └────────────────────────────┘
+            - 函数执行时，在作用域链：function-->window 中，无法搜索到 fn2 的定义，所以产生了异常
+                ```
+        - 如果 `console.log(fn2)` 修改为 `console.log(this.fn2)`
+            - 输出：`obj.fn2自身`
+            - 通过 `this`对象 调用时，有了确切的调用对象，会到 this 中搜索属性
+
+3. 代码输出什么?
+    - 代码内容
+        ```js
+        var val = 1;
+
+        var obj = {
+            val:2,
+            dbl:function(){
+                console.log(this)
+                this.val*=2
+                console.log(val)
+                console.log(this.val)
+            }
+        }
+
+        var ff = obj.dbl()
+        var fn = obj.dbl
+        fn()
+        ```
+    - 输出结果
+        ```
+        obj
+        1
+        4
+        window
+        2
+        2
+        ```
+    - 结果分析
+        - 执行 `obj.dbl()`
+            - console.log(this)：调用对象是 obj，所以会输出 obj
+            - this.val*=2      ：通过this，使用 obj.val，并设置为4
+            - console.log(val) ：在当前作用域中没有找到val，使用全局作用域的val，输出1
+            - console.log(this.val) ： ：通过this，使用obj.val，输出 4
+        - 执行 `fn()`
+            - console.log(this)：调用对象是 window，所以会输出 window
+            - this.val*=2      ：通过this，使用 window.val，并设置为2
+            - console.log(val) ：在当前作用域中没有找到val，使用全局作用域的val，输出2
+            - console.log(this.val) ： ：通过this，使用 window.val，并设置为2
+            
 
 ## 闭包
+### 利用闭包的示例-循环变量添加事件监听
 [top](#catalog)
+- 示例的功能
+    - 页面上有三个button
+    - 点击一个button后，显示当前button的index
+- 参考代码
+    - [/javascript/underlyingPrinciple/src/closure/sample.html](/javascript/underlyingPrinciple/src/closure/sample.html)
+
+- html
+    ```html
+    <button>btn01</button>
+    <button>btn02</button>
+    <button>btn03</button>
+    ```
+
+- js
+    - 实现方式1：变量时，将索引绑定到元素对象
+        ```js
+        var btns = document.getElementsByTagName("button")
+
+        for(var i=0, length=btns.length; i < length; i++){
+            btns[i].index = i
+            btns[i].onclick = function(){
+                console.log(this.index)
+            }
+        }       
+        ```
+    - 实现方式2：通过IIFE利用闭包来实现
+        ```js
+        var btns = document.getElementsByTagName("button")
+
+        for(var i=0, length=btns.length; i < length; i++){
+            (function(i){
+                btns[i].onclick = function(){
+                    console.log(i)
+                }
+            })(i)
+        }
+        ```
+
+### 闭包的基本知识
+[top](#catalog)
+- 如何产生闭包?
+    - 当一个嵌套的内部子函数引用了外部的父函数的变量/函数时，就产生了闭包
+
+- 如何理解闭包
+    - 理解方式一：嵌套函数的内部函数
+    - 理解方式二：包含被引用变量/函数的对象
+
+- 闭包产生的条件
+    1. 存在函数嵌套
+    2. 内部函数引用了外部函数的变量/函数
+    3. 执行了外部函数
+    4. 外部函数调用后，创建了函数对象
+        - 不需要调用内部函数，只要有函数对象即可
+        - 只有执行外部函数，才能观测到闭包的产生
+            - chrome最新版的degub模式中，如果没有使用闭包(包括`console.log()`)，控制台中没有显示
+
+- 不同的函数创建方式，闭包的生成时间不同
+    - 函数声明：闭包在准备执行上下文时创建
+        - 在外部函数执行之前，准备执行上下文对象时，函数对象就已经创建。所以闭包在准备执行上下文时就已经创建完了
+    - 函数表达式：闭包在执行表达式代码后创建
+        - 在准备外部函数的执行上下文对象时，函数只有一个声明，没有创建函数对象
+        - 只有执行表达式后才创建了函数对象，所以闭包在执行代码表达式后创建
+
+- 示例
+    - js内容
+        ```js
+        function fn1(){
+            var a = 2
+            function fn2 (){
+                console.log(a)
+            }
+            console.log(fn2)
+
+            fn2()
+        }
+
+        fn1()
+        ```
+
+    - `var a = 2` 处 debug时的闭包结果
+        ```
+        Local
+            a: 2
+            fn2: ƒ fn2()
+                length: 0
+                name: "fn2"
+                arguments: null
+                caller: null
+                prototype: {constructor: ƒ}
+                __proto__: ƒ ()
+                [[FunctionLocation]]: base.html:9
+                [[Scopes]]: Scopes[2]         <<------- fn 闭包
+                    0: Closure (fn1)
+                    a: 2
+                    1: Global {parent: Window, opener: global, top: Window, length: 0, frames: Window, …}
+        ```
 
 
 
@@ -1248,3 +1455,27 @@
     - 解决方法
         1. 在前一条语句末尾添加分号
         2. **在当前语句的前面添加分号 (推荐)**
+
+## 类数组对象的for遍历
+[top](#catalog)
+- 示例
+    ```js
+    var list = document.getElementsByName("...")
+    for (var i = 0; i<list.length; i++){
+        ...
+    }
+    ```
+- 遍历时产生的问题
+    - 类数组对象中实际上没有 `lenght` 属性，**每次获取时都要重新计算**
+        - 按照示例的编码方式，会重新计算多次，导致额外的性能消耗
+    - Array实例对象与类数组对象不同，内部真实存在 `length` 属性，并且是定值。
+        - 每次获取时，不需要重新计算
+- 解决方法
+    - 通过 for 来遍历类数组对象之前，将 `length` 保存在变量中
+    - 示例
+        ```js
+        var list = document.getElementsByName("...")
+        for (var i = 0, length = list.length; i<length; i++){
+            ...
+        }
+        ```
