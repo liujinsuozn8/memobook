@@ -1,7 +1,5 @@
 <span id="catalog"></span>
 
-
-面向对象
 线程机制与事件机制
 
 ### 目录
@@ -43,9 +41,24 @@
     - [闭包](#闭包)
         - [利用闭包的示例-循环变量添加事件监听](#利用闭包的示例-循环变量添加事件监听)
         - [闭包的基本知识](#闭包的基本知识)
+        - [常见的闭包](#常见的闭包)
+        - [闭包的作用](#闭包的作用)
+        - [闭包的应用-自定义js模块](#闭包的应用-自定义js模块)
+        - [闭包的应用-自定义js模块](#闭包的应用-自定义js模块)
+        - [闭包的缺点-内存溢出与内存泄露](#闭包的缺点-内存溢出与内存泄露)
+        - [与闭包相关的问题](#与闭包相关的问题)
+- [面向对象](#面向对象)
+    - [对象创建模式](#对象创建模式)
+    - [继承模式](#继承模式)
+        - [原型链继承](#原型链继承)
+        - [借用构造函数继承](#借用构造函数继承)
+        - [组合继承](#组合继承)
+    - [](#)
 - [其他](#其他)
     - [代码结尾的分号](#代码结尾的分号)
+    - [类数组对象的for遍历的性能问题](#类数组对象的for遍历的性能问题)
 - [](#)
+
 
 
 # js基础总结
@@ -1386,12 +1399,15 @@
         - 只有执行外部函数，才能观测到闭包的产生
             - chrome最新版的degub模式中，如果没有使用闭包(包括`console.log()`)，控制台中没有显示
 
+- 闭包何时销毁
+    - 闭包对象没有被任何变量引用时，成为垃圾对象，将会被 gc 回收
+
 - 不同的函数创建方式，闭包的生成时间不同
-    - 函数声明：闭包在准备执行上下文时创建
-        - 在外部函数执行之前，准备执行上下文对象时，函数对象就已经创建。所以闭包在准备执行上下文时就已经创建完了
-    - 函数表达式：闭包在执行表达式代码后创建
-        - 在准备外部函数的执行上下文对象时，函数只有一个声明，没有创建函数对象
-        - 只有执行表达式后才创建了函数对象，所以闭包在执行代码表达式后创建
+
+    |函数创建|闭包生成时间|说明|
+    |-|-|-|
+    |函数声明|闭包在准备执行上下文时创建|在外部函数执行之前，准备执行上下文对象时，函数对象就已经创建。所以闭包在准备执行上下文时就已经创建完了|
+    |函数表达式|闭包在执行表达式代码后创建|<ul><li>在准备外部函数的执行上下文对象时，函数只有一个声明，没有创建函数对象</li><li>只有执行表达式后才创建了函数对象，所以闭包在执行代码表达式后创建</li></ul>|
 
 - 示例
     - js内容
@@ -1401,18 +1417,20 @@
             function fn2 (){
                 console.log(a)
             }
-            console.log(fn2)
+            // console.log(fn2)
 
-            fn2()
+            return fn2
         }
 
-        fn1()
+        var f = fn1()
+        f()
+        f = null
         ```
 
     - `var a = 2` 处 debug时的闭包结果
         ```
         Local
-            a: 2
+            a: undefined
             fn2: ƒ fn2()
                 length: 0
                 name: "fn2"
@@ -1420,12 +1438,344 @@
                 caller: null
                 prototype: {constructor: ƒ}
                 __proto__: ƒ ()
-                [[FunctionLocation]]: base.html:9
-                [[Scopes]]: Scopes[2]         <<------- fn 闭包
-                    0: Closure (fn1)
-                    a: 2
-                    1: Global {parent: Window, opener: global, top: Window, length: 0, frames: Window, …}
+                [[FunctionLocation]]: Script snippet %235:3
+                [[Scopes]]: Scopes[3]
+                    0: Closure (fn1)                        <<------- fn 闭包
+                        a: undefined
+                    1: Script {animations: {…}, customize: {…}, ntpApiHandle: {…}, doodles: {…}, iframesAndVoiceSearchDisabledForTesting: false, …}
+                    2: Global {parent: Window, op
         ```
+    - `f = null`，执行后，闭包 fn2的引用次数为0，成为垃圾对象，将会被 gc 回收
+
+### 常见的闭包
+[top](#catalog)
+- 常见的闭包
+    1. 将函数作为另一个函数的返回值
+    2. 将函数作为实参传递给另一个函数调用
+
+- 将函数作为另一个函数的返回值
+    - 示例
+        ```js
+        function fn1(){
+            var a = 2
+            function fn2 (){
+                a++
+                console.log(a)
+            }
+
+            return fn2
+        }
+
+        var f = fn1()
+        f() // 输出：3
+        f() // 输出：4
+        f() // 输出：5
+        ```
+    - 示例中的输出结果一直处于累加状态，说明局部变量 a 没有消失
+
+- 将函数作为实参传递给另一个函数调用
+    - 示例
+        ```js
+        function fn1(msg, time){
+            setTimeout(
+                function(){console.log(msg)},
+                time
+            )
+        }
+
+        fn1("test closure", 1000)
+        ```
+    - 产生的闭包
+        - 产生原因
+            - 调用了外部函数 fn1
+            - 函数内部使用了外部函数的形参 msg
+
+        ```js
+        function(){console.log(msg)},
+        ```
+
+
+### 闭包的作用
+[top](#catalog)
+- 闭包的作用
+    1. 延长局部变量/函数的生命周期
+        - 使函数内部的 变量/函数 在函数执行完后，仍然保存在内存中
+    2. 在函数外部 读写 函数内部的 变量/函数
+    
+- 示例说明 
+    - 说明代码
+        ```js
+        function fn1(){
+            var a = 2
+            function fn2 (){
+                a++
+                console.log(a)
+            }
+
+            function fn3(){
+                a--
+                console.log(a)
+            }
+
+            return fn3
+        }
+
+        var f = fn1()
+        f() // 输出：3
+        ```
+    - `var f = fn1()`执行后 fn1 内部的情况
+        - 执行 fn1 时，产生了两个闭包 fn2、fn3
+        - fn1 只返回了 fn3，并且fn3被引用，所以只有fn3存活，fn2被销毁
+        - 局部变量 a 被 fn3引用，所以 a 也存活
+        - 如果只执行了 `fn1()`，**没有对返回结果进行引用**，则 fn3也将会被销毁
+
+
+- 与闭包的作用相关的两个问题
+    - 函数执行后，函数内部声明的局部变量/函数是否还存在？
+        - 一般不存在
+        - 存在与闭包中的内容才可能存在
+        - 作为返回值返回的内容，返回后如果被引用了，也保持存在，如：`var 变量 = 函数()`
+    - 函数外部能直接访问函数内部的局部变量/函数吗？
+        - 一般不能
+        - 可以通过闭包来访问
+
+### 闭包的应用-自定义js模块
+[top](#catalog)
+- 什么是js模块
+    - 具有特定功能的js文件
+    - 将所有的数据和功能都封装在一个函数内部（私有的）
+    - 只向外暴露一个包含n个方法的对象或函数
+    - 模块的使用者，只需要通过模块暴露的对象调用方法来实现对应的功能
+
+- 示例
+    - 参考代码
+        - [src/closure/custome.html](src/closure/custome.html)
+        - [src/closure/custome.js](src/closure/custome.js)
+    - js内容
+        ```js
+        // 通过IIFE执行函数，分别在内部方法中引用外部函数的局部变量，来创建闭包
+        (function(window){
+            var msg = "test msg";
+            function showLower(){
+                console.log(msg.toLocaleLowerCase())
+            }
+
+            function showUpper(){
+                console.log(msg.toLocaleUpperCase())
+            }
+
+            window.msgBox = {
+                showLower:showLower,
+                showUpper:showUpper
+            }
+        })(window)
+        // 传入参数window，方便代码压缩
+        ```
+    - html内容
+        ```html
+        <!doctype html>
+        <html>
+            <head>
+                <meta charset="utf-8">
+                <title>custome test</title>
+                <script type="text/javascript" src="custome.js"></script>
+                <script type="text/javascript">
+                    msgBox.showLower()
+                    msgBox.showUpper()
+                </script>
+
+            </head>
+            <body>
+                
+            </body>
+        </html>
+        ```
+
+### 闭包的缺点-内存溢出与内存泄露
+[top](#catalog)
+- 闭包的缺点
+    - 函数执行完后，函数内的局部变量没有释放，占用内存的时间变长
+    - 容易造成内存泄露
+- 内存问题的解决方法
+    - 尽量少用闭包
+    - <label style="color:red">及时释放变量</label>（`闭包引用=null`）
+
+- 内存溢出
+    - 一种程序运行时出现的错误
+    - 当 `运行时需要的内存 > 剩余内存` 时，就会抛出内存溢出的错误
+
+- 内存泄漏
+    - 占用的内存没有及时释放
+    - 内粗泄露积累多了就容易导致内存溢出
+    - 场景的内存泄漏
+        - 意外的全局变量，即没有使用 `var` 来声明变量
+        - 没有及时清理的计时器或回调函数
+        - 闭包
+
+### 与闭包相关的问题
+[top](#catalog)
+1. 代码输出什么?
+    - 代码
+        ```js
+        var name = "the window"
+        var object={
+            name:"my object",
+            getNameFunc:function(){
+                return function(){
+                    return this.name
+                }
+            }
+        }
+
+        console.log(object.getNameFunc()())
+        ```
+    - 输出结果:`the window`
+    - 结果分析
+        - getNameFunc中没有闭包，内部函数中没有任何变量，所以没有产生闭包
+        - getNameFunc执行后返回的就是一个普通函数，内部函数直接执行，this就是window，所以显示 `the window`
+
+2. 代码输出什么
+    - 代码
+        ```js
+        var name = "the window"
+        var object={
+            name:"my object",
+            getNameFunc:function(){
+                var that = this;
+                return function(){
+                    return that.name
+                }
+            }
+        }
+
+        console.log(object.getNameFunc()())
+        ```
+    - 输出结果:`my object`
+    - 结果分析
+        - getNameFunc 的内部函数引用了外部函数的局部变量 that，所以产生了闭包
+        - getNameFunc 执行后，将闭包对象返回，所以执行闭包对象后输出：`my object`
+
+3. 代码输出什么 
+    - 代码
+        ```js
+        function fun(n, o){
+            console.log(o)
+            return {
+                fun:function(m){
+                    return fun(m,n)
+                }
+            }
+        }
+
+        var a = fun(0); a.fun(1); a.fun(2); a.fun(3)
+        var b = fun(0).fun(1).fun(2).fun(3)
+        var c = fun(0).fun(1); c.fun(2); c.fun(3)
+        ```
+    - 输出内容
+        ```
+        undefined    0    0    0
+        undefined    0    1    2
+        undefined    0    1    1
+        ```
+
+# 面向对象
+## 对象创建模式
+[top](#catalog)
+- 三种构造方式
+    - Object 构造函数
+    - 对象字面量
+    - 自定义构造函数 + 原型函数
+
+
+## 继承模式
+### 原型链继承
+[top](#catalog)
+- 使用方法
+    1. 定义父类型的构造函数
+    2. 给父类型的原型添加方法
+    3. 定义子类型的构造函数
+    4. 重新构造子类型的原型关系
+        1. 重新设置子类型的原型对象：创建父类型的对象赋值给子类型的原型对象
+        2. 将子类型原型的`constructor`属性设置为子类型
+    6. 给子类型原型添加方法
+    7. 创建子类型的对象：可以调用父类型的方法
+
+- 重点
+    - 子类型的原型对象指向父对象的实例
+
+- 这种方式的缺点
+    - 如果父类型的构造函数中有参数时，无法通过子类的构造函数来设置
+
+- 示例
+    - 参考代码
+        - [src/oop/prototype_extends.html](src/oop/prototype_extends.html)
+    - js内容
+        ```js
+        // 1. 定义父类型的构造函数
+        function Supper(){
+            this.supproperty = "this is super"
+        }
+        
+        // 2. 给父类型的原型添加方法
+        Supper.prototype.showSupper = function(){
+            console.log(this.supproperty)
+        }
+        
+        var supperObj = new Supper();
+
+
+        // 3. 定义子类型的构造函数
+        function Sub(){
+            this.subproperty = "this is sub"
+        }
+        
+        // 4. 重新构造子类型的原型关系
+        // 4-1. 重新设置子类型的原型对象：创建父类型的对象赋值给子类型的原型对象
+        Sub.prototype = supperObj;
+
+        // 4-2. 将子类型原型的构造属性设置为子类型
+        Sub.prototype.constructor = Sub
+
+        // 5. 给子类型原型添加方法
+        Sub.prototype.showSub = function(){
+            console.log(this.subproperty)
+        }
+
+        // 6. 创建子类型的对象：可以调用父类型的方法
+        var subObj = new Sub();
+        
+        subObj.showSub()
+        subObj.showSupper()
+        ```
+
+
+
+### 借用构造函数继承
+[top](#catalog)
+- 使用方法
+    1. 定义父类型的构造函数
+    2. 定义子类型的构造函数
+    3. 在子类型构造函数中通过 `call` 调用父类型的构造函数
+        - 即：将父类构造函数中的 this对象 替换为 子类型的this
+        - 执行后，无论是在子类型构造函数还是父类型构造函数中，附加的属性、函数就都在 this对象上了
+        - 但是<label style="color:red">父类型在原型上添加的属性与方法，子类型无法共享</label>
+
+- 这种方式的缺点
+    - 无法共享父类型原型对象上的方法
+    - 不是真正的继承，及时借用父类型的构造函数来设置参数
+
+- 示例
+    - 参考代码
+        - [src/oop/constructor_extends.html](src/oop/constructor_extends.html)
+    - js内容
+        ```js
+        ```
+
+
+### 组合继承
+[top](#catalog)
+- 原型链 + 借用构造函数，两种方式的组合继承
+    1. 利用原型链
 
 
 
@@ -1456,7 +1806,7 @@
         1. 在前一条语句末尾添加分号
         2. **在当前语句的前面添加分号 (推荐)**
 
-## 类数组对象的for遍历
+## 类数组对象的for遍历的性能问题
 [top](#catalog)
 - 示例
     ```js
