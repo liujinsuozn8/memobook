@@ -1,0 +1,48 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>extends test</title>
+        <script type="text/javascript">            
+            // 1. 定义父类型的构造函数
+            function Supper(){
+                this.supproperty = "this is super"
+            }
+            
+            // 2. 给父类型的原型添加方法
+            Supper.prototype.showSupper = function(){
+                console.log(this.supproperty)
+            }
+            
+            var supperObj = new Supper();
+
+
+            // 3. 定义子类型的构造函数
+            function Sub(){
+                this.subproperty = "this is sub"
+            }
+            
+            // 4. 重新构造子类型的原型关系
+            // 4-1. 重新设置子类型的原型对象：创建父类型的对象赋值给子类型的原型对象
+            Sub.prototype = supperObj;
+
+            // 4-2. 将子类型原型的构造属性设置为子类型
+            Sub.prototype.constructor = Sub
+
+            // 5. 给子类型原型添加方法
+            Sub.prototype.showSub = function(){
+                console.log(this.subproperty)
+            }
+
+            // 6. 创建子类型的对象：可以调用父类型的方法
+            var subObj = new Sub();
+            
+            subObj.showSub()
+            subObj.showSupper()
+
+        </script>
+    </head>
+    <body>
+        
+    </body>
+</html>
