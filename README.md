@@ -2,13 +2,15 @@
     - [服务器软件的概念与比较](devops/server/base/serverCompare.md)
     - git
         - [基本知识](devops/git/base/base.md)
+        - gitlab
+            - [环境搭建](devops/git/gitLab/base.md)
     - maven
         - [基本知识](devops/maven/base/base.md)
     - docker
         - [基本知识](devops/docker/base/base.md)
         - 详细安装过程
             - [centos7下安装docker](devops/docker/install/centos7/centos7Install.md)
-
+        - [docker-compose](devops/docker/compose/base.md)
 - 框架
     - Spring
         - [基本知识](java/spring/base/base.md)
@@ -18,6 +20,8 @@
         - [基本知识](java/mybatis/base/base.md)
     - SpringMVC
         - [基本知识](java/springMVC/base/base.md)
+    - SpringBoot
+        - [基本知识](java/springBoot/base/base.md)
 
 - 数据库
     - mysql
@@ -74,9 +78,7 @@
         - [基于java的设计模式](designPattern/base/base.md)
             - 配套代码：[designPattern/dplearn](designPattern/dplearn)
 
-- 常用端口号
+- 其他
     - [常用端口号](usedport/usedport.md)
-
-- markdown文档模版
-    - [mdTemplate.md](mdTemplate.md)
-
+    - [markdown文档模版](mdTemplate.md)
+    - [yaml文件语法](yaml/base/base.md)

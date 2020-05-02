@@ -375,6 +375,10 @@
             - `hostPort:containerPort`
             - `containerPort`
         - `-e`，设置环境变量
+    - 常用的comond
+        - `sh -c "容器启动后执行的指令"` 
+            - 执行多个指令时，使用 `&&`，分割
+
     - 常用参数组合
         - `docker run -it --name NewName 镜像名`，交互式模式创建并启动容器
 
@@ -848,7 +852,7 @@
 [top](#catalog)
 - linux命令
     - 检查网络ip：`ip a`
-        - 在centos容器也可以使用:`docekr exec -it 容器ID ip a`
+        - 在centos容器也可以使用:`docker exec -it 容器ID ip a`
     - 网桥检查工具
         - 安装：`sudo yum install bridge-utils`
         - 查询命令：`brctl show`
@@ -857,6 +861,7 @@
     - `docker network inspect networkId/newworkName`：查看某个网络连接的详细信息
     - `docker network create [OPTIONS] NETWORK`：创建相关网络
         - 可用`option` ?????
+
             |选项|说明|
             |-|-|
             |--attachable           |Enable manual container attachment|
@@ -903,7 +908,7 @@
 
 - 示例说明（默认docker0的ip已经切换到了192.168下）
     1. 开启两个centos容器
-        ```
+        ```bash
         [root@myhd001 ljs]# docker ps
         CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
         c3aa0ea7ba3a        centos              "/bin/bash"         7 days ago          Up 52 minutes                           boring_easley
@@ -911,7 +916,7 @@
         [root@myhd001 ljs]# 
         ```
     2. 检查host的网桥信息：`docker0`中有两个`interfaces`:veth1a8ddc4、vethcc09467。即两个容器连接到了docker0，并在此基础上可以进行互联和访问外网
-        ```
+        ```bash
         [root@myhd001 ljs]# brctl show
         bridge name     bridge id               STP enabled     interfaces
         docker0         8000.0242857c73d7       no              veth1a8ddc4
@@ -920,7 +925,7 @@
         [root@myhd001 ljs]# 
         ```
     3. 检查host的ip信息，包含`docker0`及两个`interfaces`的信息
-        ```
+        ```bash
         [root@myhd001 ljs]# ip a
         5: docker0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP group default 
             link/ether 02:42:85:7c:73:d7 brd ff:ff:ff:ff:ff:ff
@@ -940,7 +945,7 @@
         ```
 
     4. 检查docker使用的网络信息，并检查网桥的详细信息。`Containers`中有两个ip分别是：`192.168.0.1/16`和`192.168.0.2/16`
-        ```
+        ```bash
         [root@myhd001 ljs]# docker network ls
         NETWORK ID          NAME                DRIVER              SCOPE
         323ca44f570e        bridge              bridge              local
@@ -1003,7 +1008,7 @@
         [root@myhd001 ljs]# 
         ```
     5. 检查各个容器的ip信息，`eth0`中的ip与`bridge`详细信息中的**ip相同**
-        ```
+        ```bash
         [root@myhd001 ljs]# docker exec -it c3aa0ea7ba3a ip a
         1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
             link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
@@ -1067,7 +1072,7 @@
         }
         ```
     - 修改后的docker0网卡信息
-        ```
+        ```bash
         [root@myhd001 ljs]# ifconfig
         docker0: flags=4099<UP,BROADCAST,MULTICAST>  mtu 1500
                 inet 192.168.200.1  netmask 255.255.0.0  broadcast 192.168.255.255
@@ -1082,7 +1087,7 @@
         - `systemctl daemon-reload`
         - `systemctl restart docker`
     - docker容器中的网卡信息，ip地址也会同时变化
-        ```
+        ```bash
         [root@c3aa0ea7ba3a /]# ifconfig
         eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
                 inet 192.168.0.1  netmask 255.255.0.0  broadcast 192.168.255.255
@@ -1123,7 +1128,7 @@
 
 - 示例
     1. 创建容器`test01`，并检查ip信息
-        ```
+        ```bash
         [root@myhd001 ljs]# docker run -d --name test01 centos/net:1 sleep infinity 
         5329e2c26a4983da703564da3587fcd16e6566afe731d11a28a7f62b8fb3902d
         [root@myhd001 ljs]# docker exec -it test01 ip a
@@ -1138,12 +1143,12 @@
         [root@myhd001 ljs]# 
         ```
     2. 创建`test02`，并使用`--link test01`，连接到`test01`上
-        ```
+        ```bash
         [root@myhd001 ljs]# docker run -d --name test02 --link test01 centos/net:1 sleep infinity  
         40887c5ee46804524fd36bf8ff06ec912fa3947f35aad981e756400836000323
         ```
     3. 在`test02`中执行指令`ping test01`，可以正常发送数据包
-        ```
+        ```bash
         [root@myhd001 ljs]# docker exec -it test02 /bin/bash
         [root@40887c5ee468 /]# ping test01
         PING test01 (192.168.0.3) 56(84) bytes of data.
@@ -1159,7 +1164,7 @@
         ```
 
     4. 在`test01`中执行`ping test02`，无法找到该容器
-        ```
+        ```bash
         [root@myhd001 ljs]# docker exec -it test01 /bin/bash
         [root@5329e2c26a49 /]# ping test02
         ping: test02: Name or service not known
@@ -1170,7 +1175,7 @@
 [top](#catalog)
 - 如果修改了`docker0`，则创建新网桥时，ip默认会使用`172.17.0.1`
 - 默认的网桥：`bridge`即docker0，使用`docker run`启动时默认都会连接到这个网桥中
-    ```
+    ```bash
     [root@myhd001 ljs]# docker network ls
     NETWORK ID          NAME                DRIVER              SCOPE
     323ca44f570e        bridge              bridge              local   <--- 默认网桥
@@ -1200,7 +1205,7 @@
         ```
     2. 检查创建结果
         - `docker network ls`，网桥id为：`b0755ed64c55`
-            ```
+            ```bash
             [root@myhd001 ljs]# docker network ls
             NETWORK ID          NAME                DRIVER              SCOPE
             23af77e2304d        bridge              bridge              local
@@ -1210,7 +1215,7 @@
             ```
         
         - `ifconfig`，标识为：`br-网桥id`，即`br-b0755ed64c55`
-            ```
+            ```bash
             [root@myhd001 ljs]# ifconfig
             [root@myhd001 ljs]# ifconfig
             br-b0755ed64c55: flags=4099<UP,BROADCAST,MULTICAST>  mtu 1500
@@ -1222,7 +1227,7 @@
                     TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
             ```
         - `brctl show`，标识为：`br-网桥id`，即`br-b0755ed64c55`
-            ```
+            ```bash
             [root@myhd001 ljs]# brctl show
             bridge name     bridge id               STP enabled     interfaces
             br-b0755ed64c55         8000.0242c83c4a0a       no
@@ -1230,7 +1235,7 @@
             virbr0          8000.525400fc3625       yes             virbr0-nic
             ```
     3. 创建两个容器：`brtest01`、`brtest02`，并链接到自定义网桥
-        ```
+        ```bash
         [root@myhd001 ljs]# docker run -d --name brtest01 --network newbr centos/net:1 sleep infinity
         5fa3db24c0145f9bf70154c865c1279dac672797b5094d6bd88e9049dbac6ef4
         [root@myhd001 ljs]# docker run -d --name brtest02 --network newbr centos/net:1 sleep infinity 
@@ -1251,11 +1256,10 @@
         docker0         8000.0242857c73d7       no              veth1e07672
                                                                 veth1f24c39
         virbr0          8000.525400fc3625       yes             virbr0-nic
-        [root@myhd001 ljs]# 
         ```
     5. 测试网桥内部容器间的互相访问
         - `brtest01`访问`brtest02`
-            ```
+            ```bash
             [root@myhd001 ljs]# docker exec -it brtest01 /bin/bash
             [root@5fa3db24c014 /]# ping brtest02
             PING brtest02 (172.17.0.3) 56(84) bytes of data.
@@ -1272,7 +1276,7 @@
             exit
             ```
         - `brtest02`访问`brtest01`
-            ```
+            ```bash
             [root@myhd001 ljs]# docker exec -it brtest02 /bin/bash
             [root@37c55e300efb /]# ping brtest01
             PING brtest01 (172.17.0.2) 56(84) bytes of data.
@@ -1288,7 +1292,7 @@
             ```
 
     6. 新建容器`brtest03`，接入`docker0`的容器
-        ```
+        ```bash
         [root@myhd001 ljs]# docker run -d --name brtest03 centos/net:1 sleep infinity
         ec8f868247ab2d3408a2e20b06375315dc22dab5221d5c7f2e0973ca4426bbb0
         
@@ -1302,7 +1306,7 @@
         virbr0          8000.525400fc3625       yes             virbr0-nic
         ```
     7. 将`brtest03`链接到自定义容器中，链接后自定义网桥中的接口数量加1，`docker0`中的网桥数量不变
-        ```
+        ```bash
         [root@myhd001 ljs]# docker network connect newbr brtest03
         [root@myhd001 ljs]# brctl show
         bridge name     bridge id               STP enabled     interfaces
@@ -1316,7 +1320,7 @@
         [root@myhd001 ljs]# 
         ```
     8. 查询容器`brtest03`内部的网卡信息，出现了两个网卡`eth0`、`eth1`分别对应`docker0`和自定义网桥
-        ```
+        ```bash
         [root@myhd001 ljs]# docker exec -it brtest03 ip a
         1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
             link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
@@ -1333,7 +1337,7 @@
         [root@myhd001 ljs]#
         ```
     9. 在`brtest03`中，通过容器名访问自定义网桥下的其他容器
-        ```
+        ```bash
         [root@ec8f868247ab /]# ping brtest01
         PING brtest01 (172.17.0.2) 56(84) bytes of data.
         64 bytes from brtest01.newbr (172.17.0.2): icmp_seq=1 ttl=64 time=0.131 ms
@@ -1354,7 +1358,7 @@
 
 - 示例
     1. 创建一个容器，接入none网络，并查看该容器的网卡信息
-        ```
+        ```bash
         [root@myhd001 ljs]# docker run -it --name nonetest --network none centos/net:1
         [root@a4c82a71cd1e /]# ifconfig
         lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536
@@ -1367,8 +1371,9 @@
 
         [root@a4c82a71cd1e /]# 
         ```
+
     2. 查看`none`网络的详细信息，网络内部的所有容器都没有ip地址
-        ```
+        ```bash
         [root@myhd001 ljs]# docker network inspect none
         [
             {
@@ -1395,6 +1400,11 @@
 - 在该网络中的容器中启动的服务有可能会和本地的服务发生冲突
 - 通过`docker run --network host`，在创建容器是将容器接入`host`网络
 
+## overlay网络和etcd存储实现多机通信
+[top](#catalog)
+- 为什么需要额外的存储？
+    - 通过存储保证，多台机器上的容器的ip没有冲突
+- ?????
 
 # 总结
 [top](#catalog)
