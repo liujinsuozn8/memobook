@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>web workers test</title>
+        <script type="text/javascript">
+            // function feibo(n){
+            //     return n <=2? 1: feibo(n-1) + feibo(n-2)
+            // }
+
+            // window.onload = function(){
+            //     var button = document.querySelector("button")
+            //     button.onclick = function(){
+            //         var numInput = document.getElementById("numInput")
+            //         var value = parseInt(numInput.value)
+            //         if (value === Number.NaN){
+            //             return 
+            //         }
+
+            //         alert(feibo(value))
+            //     }
+            // }
+
+            // 1. 将 feibo 函数移动到feibo.js文件中
+            // 2. 主线程负责获取参数
+            window.onload = function(){
+                var button = document.querySelector("button")
+                button.onclick = function(){
+                    var numInput = document.getElementById("numInput")
+                    var value = parseInt(numInput.value)
+                    if (value === Number.NaN){
+                        return 
+                    }
+                    
+                    console.log("click")
+                    // 3. 创建一个Worker对象，即创建一个分线程
+                    var worker = new Worker("feibo.js")
+                    // 4. 向分线程发送参数
+                    worker.postMessage(value)
+                    // 5. 注册响应处理函数
+                    worker.onmessage = function(event){
+                        console.log(event.data)
+                    }
+                }
+            }
+        </script>
+    </head>
+    <body>
+        <input type="text"  id="numInput">
+        <button>get</button>
+    </body>
+</html>
