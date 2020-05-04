@@ -1,7 +1,5 @@
 <span id="catalog"></span>
 
-线程机制与事件机制
-
 ### 目录
 - [js基础总结](#js基础总结)
     - [基础总结-数据类型](#基础总结-数据类型)
@@ -53,12 +51,22 @@
         - [原型链继承](#原型链继承)
         - [借用构造函数继承](#借用构造函数继承)
         - [组合继承](#组合继承)
-    - [](#)
+- [线程机制与事件机制](#线程机制与事件机制)
+    - [浏览器中的进程与线程](#浏览器中的进程与线程)
+    - [定时器的问题](#定时器的问题)
+    - [JS是单线程执行的](#JS是单线程执行的)
+    - [JS引擎执行代码的流程](#JS引擎执行代码的流程)
+    - [浏览器的事件循环模型](#浏览器的事件循环模型)
+        - [事件循环模型的重要概念](#事件循环模型的重要概念)
+        - [事件循环模型原理图及说明](#事件循环模型原理图及说明)
+        - [与事件循环模型相关的问题](#与事件循环模型相关的问题)
+    - [H5_Web_Workers多线程](#H5_Web_Workers多线程)
 - [其他](#其他)
     - [代码结尾的分号](#代码结尾的分号)
     - [类数组对象的for遍历的性能问题](#类数组对象的for遍历的性能问题)
+    - [alert](#alert)
+    - [变量函数的目标查找方法](#变量函数的目标查找方法)
 - [](#)
-
 
 
 # js基础总结
@@ -841,7 +849,7 @@
 - 只有读取对象属性时，会搜索原型链
 - 设置对象的属性值时，不会查找原型链，只在当前对象内部进行操作
     - 如果对象内部有某个属性，则进行修改；如果没有则添加该属性
-- 由于属性的读写问题，隐身出一个设计的原则
+- 由于属性的读写问题，引申出一个设计的原则
     - <label style="color:red">方法定义在原型中、属性在构造函数中设置</label>
 - 示例
     ```js
@@ -1219,6 +1227,10 @@
 
 ### 作用域链
 [top](#catalog)
+
+- 作用域链产生的条件
+    - 存在函数嵌套
+
 - 什么是作用域链
     - 多个**在编码上嵌套**的作用域形成的链
     - 方向 : 从内到外
@@ -1748,8 +1760,6 @@
         subObj.showSupper()
         ```
 
-
-
 ### 借用构造函数继承
 [top](#catalog)
 - 使用方法
@@ -1769,16 +1779,414 @@
         - [src/oop/constructor_extends.html](src/oop/constructor_extends.html)
     - js内容
         ```js
+        function Person(name, age){
+            this.name = name
+            this.age = age
+        }
+
+        Person.prototype.showSelf = function(){
+            console.log('name ='+ this.name + ', age =' + this.age)
+        }
+
+        function Student(name, age, price){
+            Person.call(this, name, age)
+            this.price = price
+        }
+
+        var student = new Student("abc", 12, 86)
+        console.log(student.name)
+        console.log(student.age)
+        console.log(student.price)
+        student.showSelf() // TypeError: student.showSelf is not a function
         ```
 
 
 ### 组合继承
 [top](#catalog)
 - 原型链 + 借用构造函数，两种方式的组合继承
-    1. 利用原型链
+    1. 利用原型链实现对父类型对象的方法**继承**
+    2. 利用super()借用父类型构造函数**初始化相同属性**
+- 示例
+    - 参考代码
+        - [src/oop/compose_extends.html](src/oop/compose_extends.html)
+    - 代码内容
+        ```js
+        function Person(name, age){
+            this.name = name
+            this.age = age
+        }
+
+        Person.prototype.showSelf = function(){
+            console.log('name ='+ this.name + ', age =' + this.age)
+        }
+
+        function Student(name, age, price){
+            // 2. 通过父类的构造函数，来初始化相同的属性
+            Person.call(this, name, age)
+            this.price = price
+        }
+
+        // 1. 构造继承关系
+        // 创建Person时，不需要传递参数，只需要创建的对象即可
+        Student.prototype = new Person()
+        Student.prototype.constructor = Student
+
+        var student = new Student("aaa", 20, 100)
+        student.showSelf()
+        ```
+        
+# 线程机制与事件机制
+## 浏览器中的进程与线程
+[top](#catalog)
+- JS是单线程执行的，并且<label style="colro:red">只运行在主线程中，并且只有主线程能够操作DOM</label>
+- 通过 H5 中的 `Web Workers` 可以多线程运行
+- 浏览器是多线程运行的
+- 浏览器有多进程的，也有单进程的
+
+## 定时器的问题
+[top](#catalog)
+- 定时器是定时执行的吗?
+    - **定时器不保证定时执行**
+    - 一般会有一点延迟，也有可能延长很长时间
+- 定时器回调函数是在分线程执行的吗?
+    - 在主线程执行，因为js是单线程的
+- 定时器是如何实现的?
+    - 事件循环模型
+
+- 示例：定时器的延迟
+    - 测试方法
+        - 点击按钮触发定时器
+        - 定时器结束时，输出消耗的时间
+        - 启动定时器后，执行一个比较耗时的操作，如循环
+        - 通过控制循环的次数来干扰定时器的执行
+    - 参考代码
+        - [src/thread/settimeout.html](src/thread/settimeout.html)
+    - 代码内容
+        ```js
+        var button = document.querySelector("button")
+        button.onclick = function(){
+            // 按钮按下之后执行一个定时器
+            var start = Date.now()
+            setTimeout(
+                function(){
+                    console.log(Date.now() - start);
+                }
+            )
+
+            // 定时器开始执行后，再执行一个耗时较长的任务来干扰定时器
+            for(var i=i; i<1000000000;i++){}
+        }
+        ```
 
 
+## JS是单线程执行的
+[top](#catalog)
+- 为什么js要单线程执行，而不用多线程?
+    - 与js的用途有关
+    - 作为浏览器脚本语言，js的主要用途是与用户交互，以及dom操作
+    - 这决定了js只能是单线程的，否则**会带来复杂的同步问题**
 
+- 如果js是单线程的会出现什么样的问题?
+    - 如：两个线程A、B同时操作页面的 x 元素
+        - 线程A 负责更新 x 的数据
+        - 线程B 负责删除 x
+    - 假设线程的执行流程
+        1. A 先执行，检查 x 存在，准备开始修改 x
+        2. 在 A 开始修改 x 前，线程切换到 B
+        3. B 检查 x 存在，将 x 直接删除。B 执行结束，切换到 A
+        4. A 继续执行更新操作，但是不会再次检查 x 是否存在，因为之前已经检查过了
+        5. 应为 x 不存在， A的操作异常，导致页面出现问题
+
+- 如何证明js是单线程执行的
+    - 设置 setTimeout，并且添加 alert 操作，来暂停主线程的执行
+    - 关闭 alert 的弹出框，setTimeout开始执行，并在控制台输出相关的内容
+    - 示例
+        - 参考代码
+            - [src/thread/js_single_thread.html](src/thread/js_single_thread.html)
+        - 代码内容
+            ```js
+            setTimeout(
+                function(){console.log("timout 02")},
+                2000
+            )
+            
+            setTimeout(
+                function(){console.log("timout 01")},
+                1000
+            )
+            
+            setTimeout(
+                function(){console.log("timout 00")},
+                0
+            )
+
+            function fn(){
+                console.log("this is fn")
+            }
+
+            fn()
+
+            // 暂停主线程执行和定时器
+            console.log("before alert")
+            alert("   ")
+            console.log("after alert")
+            ```
+        - 输出内容
+            ```
+            this is fn
+            before alert
+            after alert
+            timout 00
+            timout 01
+            timout 02
+            ```
+
+## JS引擎执行代码的流程
+[top](#catalog)
+- 代码分类
+    - 两种类别
+        1. 初始化代码
+        2. 回调代码
+
+    - 代码分类说明
+        ```js
+        // setTimeout是初始化代码
+        setTimeout(
+            // 回调函数
+            function(){console.log("timout 02")},
+            2000
+        )
+        ```
+
+- js引擎执行代码的基本流程
+    1. 先执行初始化代码
+        - 包含一些特殊的代码，如
+            - 设置定时器
+            - 绑定监听
+            - 发送ajax请求
+    2. 初始化代码执行完成之后，**在某个时刻**，开始执行回调函数
+        - 初始化代码执行完成之后，**不能保证立即执行**回调函数
+    3. 事件监听会在事件触发后执行
+
+- 回调函数--异步执行
+    - 开发时，需要某些代码在其他代码执行完成之后再执行，称为异步执行
+
+## 浏览器的事件循环模型
+### 事件循环模型的重要概念
+[top](#catalog)
+- 执行栈：`execution stack`
+    - 所有的代码都是在此空间执行的
+
+- 浏览器内核：`browser core`
+    - js引擎模块，由主线程负责
+    - `WebAPIs` 中的各事件管理模块
+        - 3个主要的模块
+            - DOM模块
+            - ajax模块
+            - 定时器 setTimeout 模块
+
+- 回调队列：callback queue
+    - 包含三种内容
+        - 任务队列，task queue
+        - 消息队列，message queue
+        - 事件队列，event queue
+
+- 事件轮询，event loop
+    - 从任务队列中循环取出函数放到**执行栈**中执行
+
+### 事件循环模型原理图及说明
+[top](#catalog)
+- 模型的运行流程
+    1. **主线程**负责: 执行初始化代码，将事件、回调函数、ajax请求等交给 `WebAPIs` 中相应的事件管理模块
+    2. **分线程**负责: 事件发生时，将处理函数、回调函数等添加到 `callback queue` 中
+    3. **主线程**负责: 
+        - 当初始化代码执行完毕后，（可能需要一定的时间）遍历读取 `callback queue` 中的函数
+        - 将函数放入**执行栈**中执行
+
+- 事件代码执行到触发的分析
+    - 绑定的事件监听如何启动
+        1. 主线程开始执行
+            1. `xxx.onYYY = function(){}`，作为初始化代码执行
+            2. 执行之后将绑定的处理函数交给 `WebAPIs` 中的DOM事件管理模块
+        2. 主线程继续执行其他初始化代码，分线程接管事件
+            1. 等待事件触发
+            2. 事件触发后，将事件处理函数 入队到 `callback queue` 中
+        3. 等待主线程执行结束
+        4. 等待 `event loop` 事件轮询触发
+        5. 由 `callback queue` 接管执行
+            1. 事件处理函数 处于待执行状态，等待队列前面没有其他任务
+            2. 事件处理函数 可以执行，将函数出队并放入执行栈中
+        6. 由主线程接管执行
+            1. 函数放入执行栈，并开始执行
+
+    - 定时器如何启动
+        1. 主线程开始执行
+            1. `setTimeout()` 函数作为初始化代码被执行
+            2. 代码执行之后，将函数参数中的`回调函数`和`时间`交给 `WebAPIs` 中的定时器管理模块
+        2. 主线程继续执行其他初始化代码，分线程接管定时器的触发
+            1. 等待时间
+            2. 时间到了之后，由定时器管理模块将回调函数 入队到 `callback queue` 中
+        3. 等待主线程执行结束
+        4. 等待 `event loop` 事件轮询触发
+        5. 由 `callback queue` 接管执行
+            1. 回调函数 处于待执行状态，等待队列前面没有其他任务
+            2. 回调函数 可以执行，将函数出队并放入执行栈中
+        6. 由主线程接管执行
+            1. 函数放入执行栈，并开始执行
+
+- **模型原理图**
+    ```
+            主线程负责                        分线程：由浏览器负责
+    ┌───────── JS ─────────┐         ┌───────  WebAPIs  ────────┐
+    │            execution │         │                          │
+    │   heap       stack   │         │ ┌──────────────────────┐ │
+    │ ┌───────┐ ┌────────┐ │         │ │    DOM (document)    │ │
+    │ │       │ │ ...... │ │         │ └──────────────────────┘ │
+    │ │       │ ├────────┤ │         │ ┌──────────────────────┐ │
+    │ │       │ │   fn2  │ ├────>>>  │ │ ajax (XMLHttpRequest)│ │
+    │ │ param │ ├────────┤ │         │ └──────────────────────┘ │
+    │ │       │ │   fn1  │ │         │      .........           │
+    │ │       │ ├────────┤ │         │ ┌──────────────────────┐ │
+    │ │       │ │ window │ │         │ │      setTimeout      │ │
+    │ └───────┘ └────────┘ │         │ └─────────┬────────────┘ │
+    └───────────────┬─  ^  ┘         └───────────┼──────────────┘
+                    │   ^                        │
+                    │   │ 函数出队，  　 　　　　　│
+        event loop  │   │ 放入执行栈执行   　　　　│ 
+                    V   │                        V
+                    V   │                        V
+                   ┌────┴──────────────────────────────┐
+        callback   │  ┌─────────┐ ┌────────┐  ┌─────┐  │
+        queue      │  │ onClick │ │ onload │  │ ... │  │
+                   │  └─────────┘ └────────┘  └─────┘  │
+                   └───────────────────────────────────┘
+    ```
+    
+### 与事件循环模型相关的问题
+[top](#catalog)
+- 函数执行后，如何输出?
+    - 代码
+        ```js
+        for(var i=0; i<10; i++){
+            setTimeout(() => {
+                console.log("this is 2")
+            }, 1000);
+        }
+        ```
+    - 输出结果：同时输出10次，并且输出没有之间没有时间间隔
+    - 结果分析
+        - for循环 和 setTimeout 作为初始化代码，在js引擎启动后，立刻执行
+        - 循环10次，将10个定时器交给 定时器管理模块
+        - 初始代码只相当于10次循环并且没有什么延迟，所以10个定时器几乎是同时到达定时器管理模块
+        - 时间到达之后，10个定时器几乎同时触发，无间隔的打印10次
+
+- 如何理解定时器的延迟?
+    - 参考代码
+        - [src/event_model/timer_delay.html](src/event_model/timer_delay.html)
+    - 代码内容
+        ```js
+        var button = document.querySelector("button")
+        button.onclick = function(){
+            // 一个非常耗时的循环操作
+            for(var i=1; i<10000000000; i++){
+
+            }
+            console.log("loop end")
+        }
+        
+        setTimeout(
+            function(){console.log("timer end")},
+            3000
+        )
+        ```
+    - 执行分析
+        1. js引擎启动后，执行初始化代码
+            - 执行事件绑定，并将处理函数交给 事件管理模块，等待事件触发
+            - 执行定时器代码，并将定时器交给 定时器管理模块，等待3s
+        2. 在2s左右点击按钮，触发按钮的`onclick`事件
+        3. 事件管理模块将 处理函数 入队到 `callback queue`
+        4. 主线程中空闲，`event loop` 发现 `callback queue` 中有一个onclick事件处理函数
+        5. onclick事件处理函数被取出，放入执行栈中执行
+            - onclick事件非常耗时
+        6. 3s时间到，定时器管理模块将回调函数 入队到 `callback queue`
+        7. onclick事件非常耗时一直占用执行栈，导致主线程繁忙，定时器回调函数开始等待`event loop` 的发现
+        8. onclick事件执行完毕，`event loop` 的发现 `callback queue` 有一个定时器回调函数，将其出队并放入执行栈中执行
+        9. 定时器回调函数 执行，但是已经超过了3s
+    - 结果分析
+        - 因为所有的回调函数、事件响应函数都要放到 `callback queue` 中，并等待 `event loop` 的发现
+        - 所以如果在定时器处理函数之前，有一个很耗时的操作，那么定时器本身将会产生很大的延迟
+        - 本质上不是定时器管理模块的问题，该模块几乎不会有延迟。是 `callback queue` 中其他任何的耗时操作导致 定时器处理函数 一直在等待执行机会，在外部看来就像定时器产生了延迟
+
+
+## H5_Web_Workers多线程
+[top](#catalog)
+- Web Workers 是 HTML5 提供的一个javascript多线程解决方案
+- 可以将一些耗时的运算交给 Web Workers 运行而不冻结用户界面
+- 产生的子线程仍然完全受主线程控制，并且**不能操作DOM**，所以新的标准并没有改变JS单线程执行的本质
+    - 因为在分线程中无法看到 window对象
+    - 如果分线程可以操作DOM，则说明浏览器支持多线程操作页面，那样又会产生 [JS是单线程执行的](#JS是单线程执行的) 中描述的问题
+
+- Web Workers 的优点
+    - 不会冻结页面
+
+- Web Workers 的缺点
+    - 无法操作 window对象
+    - 无法操作DOM
+    - 无法跨域加载js代码
+    - 速度慢
+
+- 使用方法
+    - 创建在分线程中执行的js文件
+        1. 创建一个 `onmessage` 函数对象
+        2. 在函数内部，通过 `event.data` 获取主线程发送的数据
+        3. 执行相关代码
+        4. 将运行结果通过 `postMessage` 将结果发送给主线程
+    - 在线程中的js中发消息并设置回调函数
+        1. 将需要运算的代码移动到某个js文件中
+        2. 创建 `Worker` 对象：`var worker = new Worker("js文件路径")`
+        3. 向分线程发送消息：`worker.postMessage(参数)`
+        4. 注册分线程的结果响应函数`worker.onmessage = function(event){...}`
+
+- 在主线程和分线程中，都可以通过 `event.data` 属性来获取数据
+
+- 示例
+    - 参考代码
+        - 主线程：[src/web_workers/base.html](src/web_workers/base.html)
+        - 分线程：[src/web_workers/feibo.js](src/web_workers/feibo.js)
+    - 主线程
+        ```js
+        var button = document.querySelector("button")
+        button.onclick = function(){
+            var numInput = document.getElementById("numInput")
+            var value = parseInt(numInput.value)
+            if (value === Number.NaN){
+                return 
+            }
+            
+            console.log("click")
+            // 3. 创建一个Worker对象，即创建一个分线程
+            var worker = new Worker("feibo.js")
+            // 4. 向分线程发送参数
+            worker.postMessage(value)
+            // 5. 注册响应处理函数
+            worker.onmessage = function(event){
+                console.log(event.data)
+            }
+        }
+        ```    
+    - 分线程
+        ```js
+        function feibo(n){
+            return n <=2? 1: feibo(n-1) + feibo(n-2)
+        }
+
+        var onmessage = function (event){
+            var num = event.data
+            console.log("this is onmessage")
+            var result = feibo(num)
+            postMessage(result)
+        }
+        ```
 
 # 其他
 ## 代码结尾的分号
@@ -1829,3 +2237,16 @@
             ...
         }
         ```
+
+## alert
+[top](#catalog)
+- 可以暂停当前主线程的执行
+- 点击弹出框的按钮后，恢复主线程的执行
+
+## 变量函数的目标查找方法
+[top](#catalog)
+- 查找前要分清this、执行
+- 由this，或者对象调用，则在this、对象及其原型链上查找中查找
+- 直接调用
+    1. 先看当前的执行上下文对象中有哪些内容
+    2. 如果没有找到，则根据作用域链向上找，直到window对象
