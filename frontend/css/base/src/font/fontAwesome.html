@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <title>Font Awesome test</title>
-        <link rel="stylesheet" href="./fa/css/all.css">
+        <link rel="stylesheet" href="./font-awesome-4.7.0/css/font-awesome.css">
         <style>
             /* 2. 在css中通过Font Awesome的字符编码code与伪元素来定制图标字体 */
             li{
@@ -11,16 +11,16 @@
             }
 
             .iconlist li::before{
-                content: "\f236";
-                font-family: "Font Awesome 5 Free";
-                font-weight: 900;
-                margin-right:10px;
+                content: "\f0f3";
+                font-family: 'FontAwesome';
+                font-weight: normal;
+                font-style: normal;
             }
         </style>
     </head>
     <body>
         <section>1. 通过类使用图标字体</section>
-        <i class="fas fa-bell" style="color:#47e; font-size:20px;"></i>
+        <i class="fa fa-bell" style="color:#47e; font-size:20px;"></i>
         <br>
         <br>
 
@@ -32,6 +32,6 @@
         </ul>
 
         <section>3. 通过html实体来使用图标字体：fa-bible</section>
-        <i class="fas">&#xf647;</i>
+        <i class="fa">&#xf236;</i>
     </body>
 </html>

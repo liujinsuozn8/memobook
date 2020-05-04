@@ -118,7 +118,7 @@
     ```
 
 - 示例
-    - 参考：[/frontend/css/base/src/usage/usage.html](/frontend/css/base/src/usage/usage.html)
+    - 参考：[src/usage/usage.html](src/usage/usage.html)
     - 代码
         ```html
         <p style="color:red; font-size: 20px;">
@@ -149,7 +149,7 @@
 - **内联样式可以覆盖内部css**
 - 内部css不能跨页面使用
 - 示例
-    - 代码：[/frontend/css/base/src/usage/usage.html](/frontend/css/base/src/usage/usage.html)
+    - 代码：[src/usage/usage.html](src/usage/usage.html)
       
         ```html
         <head>
@@ -193,7 +193,7 @@
     2. 将css写到外部文件中，可以使用浏览器的缓存机制，从而加快页面的加载速度
         - 第一次某个`*.css`文件被加载过之后，会保存到浏览器缓存中，之后再次需要时，直接从缓存中获取
 - 示例
-    - css文件：[/frontend/css/base/src/usage/usage.css](/frontend/css/base/src/usage.css)
+    - css文件：[src/usage/usage.css](src/usage.css)
 
         ```css
         p{
@@ -202,7 +202,7 @@
         }
         ```
 
-    - 页面：[/frontend/css/base/src/usage/usage.html](/frontend/css/base/src/usage/usage.html)
+    - 页面：[src/usage/usage.html](src/usage/usage.html)
 
         ```html
         <!doctype html>
@@ -270,7 +270,7 @@
     - 语法：`*`
 
 - 示例
-    - 代码：[/frontend/css/base/src/selector/base.html](/frontend/css/base/src/selector/base.html)
+    - 代码：[src/selector/base.html](src/selector/base.html)
     - css
         ```css
         /* 4.通配选择器 */
@@ -346,7 +346,7 @@
         ```
 
 - 示例
-    - 参考：[/frontend/css/base/src/selector/complex.html](/frontend/css/base/src/selector/complex.html)
+    - 参考：[src/selector/complex.html](src/selector/complex.html)
     - css 
         ```css
         /* 1.交集选择器 */
@@ -401,7 +401,7 @@
         - 多级：`选择器1 > 选择器2 > ... > 子元素 {声明块}`
     - 子元素选择器可以可复合选择器进行混合
     - 示例
-        - 参考：[/frontend/css/base/src/selector/relation_son.html](/frontend/css/base/src/selector/relation_son.html)
+        - 参考：[src/selector/relation_son.html](src/selector/relation_son.html)
         - css
             ```css
             /* 1. 子元素选择器 */
@@ -460,7 +460,7 @@
     - 使用后，**所有的后代元素**都会应用样式，无论元素之间有多少嵌套关系
     - 子元素选择器可以可复合选择器进行混合
     - 示例
-        - 参考：[/frontend/css/base/src/selector/relation_later.html](/frontend/css/base/src/selector/relation_later.html)
+        - 参考：[src/selector/relation_later.html](src/selector/relation_later.html)
         - css
             ```css
             /* 2. 后代选择器 */
@@ -498,7 +498,7 @@
     - **兄弟选择器只能选择`兄弟元素1`后面的元素，无法选择前面的元素**
     - 可以混合复合选择器
     - 示例
-        - 参考：[/frontend/css/base/src/selector/relation_brother.html](/frontend/css/base/src/selector/relation_brother.html)
+        - 参考：[src/selector/relation_brother.html](src/selector/relation_brother.html)
         - css
             ```css
             /* 3. 兄弟选择器 */
@@ -574,7 +574,7 @@
     - 单引号、双引号都可以
     - <label style="color:red">如果属性值是数字，则必须加引号，否则选择无法选中元素</labe>
 - 示例
-    - 代码：[/frontend/css/base/src/selector/property.html](/frontend/css/base/src/selector/property.html)
+    - 代码：[src/selector/property.html](src/selector/property.html)
     - css
         ```css
         /* 1. 选择含有指定属性的元素 */
@@ -673,7 +673,7 @@
 
 - 示例
     - 参考代码
-        - [/frontend/css/base/src/selector/pseudo_class.html](/frontend/css/base/src/selector/pseudo_class.html)
+        - [src/selector/pseudo_class.html](src/selector/pseudo_class.html)
 
     - 对所有元素排序
         1. 选择 ul下的第一个和最后一个li子元素（与并集选择器混合）
@@ -1041,7 +1041,7 @@
 
 - 示例
     - 参考代码
-        - [/frontend/css/base/src/selector/pseudo_element.html](/frontend/css/base/src/selector/pseudo_element.html)
+        - [src/selector/pseudo_element.html](src/selector/pseudo_element.html)
     - css
         ```css
         /* 1. 设置所有p标签的第一个字符的大小 */
@@ -1153,7 +1153,7 @@
 
 - 示例
     - 参考代码
-        - [/frontend/css/base/src/selector/selector_level.html](/frontend/css/base/src/selector/selector_level.html)
+        - [src/selector/selector_level.html](src/selector/selector_level.html)
     
     - 权重大小测试 id > 类选择 > 元素选择器
         - css
@@ -1289,7 +1289,7 @@
 
 - 示例
     - 参考代码
-        - [/frontend/css/base/src/inherit/inherit.html](/frontend/css/base/src/inherit/inherit.html)
+        - [src/inherit/inherit.html](src/inherit/inherit.html)
 
     - css
         ```css
@@ -1347,7 +1347,7 @@
 
 - 示例
     - 参考代码
-        - [/frontend/css/base/src/sizeunit/sizeunit.html](/frontend/css/base/src/sizeunit/sizeunit.html)
+        - [src/sizeunit/sizeunit.html](src/sizeunit/sizeunit.html)
 
     - 百分比自动变化测试
         - css
@@ -1467,7 +1467,7 @@
 
 - 示例
     - 参考代码
-        - [/frontend/css/base/src/sizeunit/color.html](/frontend/css/base/src/sizeunit/color.html)
+        - [src/sizeunit/color.html](src/sizeunit/color.html)
 
     - 颜色名测试
         - css
@@ -1618,7 +1618,7 @@
     - `height`、`width`对于所有元素都有效
 - 示例
     - 参考代码
-        - [/frontend/css/base/src/float/outNormalFlow.html](/frontend/css/base/src/float/outNormalFlow.html)
+        - [src/float/outNormalFlow.html](src/float/outNormalFlow.html)
 
     - 块元素脱离文档流 测试: 不再独占一行，宽高=元素内容的宽高
         - css
@@ -1727,7 +1727,7 @@
 
 - 示例
     - 参考代码
-        - [/frontend/css/base/src/boxModel/border.html](/frontend/css/base/src/boxModel/border.html)
+        - [src/boxModel/border.html](src/boxModel/border.html)
     - 通过border-width设置边框的宽度
         - css
             ```css
@@ -1943,7 +1943,7 @@
 
 - 示例
     - 参考代码
-        - [/frontend/css/base/src/boxModel/padding.html](/frontend/css/base/src/boxModel/padding.html)
+        - [src/boxModel/padding.html](src/boxModel/padding.html)
       
     - 通过单边属性分别设置4个方向的内边距
         - css
@@ -2038,7 +2038,7 @@
 
 - margin的值可以是正数，也可以是负数。负数表示向相反的方向移动
 - 示例
-    - 参考内容：[/frontend/css/base/src/boxModel/margin.html](/frontend/css/base/src/boxModel/margin.html)
+    - 参考内容：[src/boxModel/margin.html](src/boxModel/margin.html)
     - 测试margin的单边属性
         - css
             ```css
@@ -2166,7 +2166,7 @@
 
 - 示例
     - 参考代码
-        - [/frontend/css/base/src/boxModel/horizontalLayout.html](/frontend/css/base/src/boxModel/horizontalLayout.html)
+        - [src/boxModel/horizontalLayout.html](src/boxModel/horizontalLayout.html)
     - 过度约束测试。子元素的各属性中没有auto
         - css
             ```css
@@ -2322,7 +2322,7 @@
 
 - 示例
     - 参考代码
-        - [/frontend/css/base/src/boxModel/verticalLayout.html](/frontend/css/base/src/boxModel/verticalLayout.html)
+        - [src/boxModel/verticalLayout.html](src/boxModel/verticalLayout.html)
     - 父元素没有设置高度
         - css
             ```css
@@ -2556,7 +2556,7 @@
 
 - 示例
     - 参考代码
-        - [/frontend/css/base/src/boxModel/marginFold.html](/frontend/css/base/src/boxModel/marginFold.html)
+        - [src/boxModel/marginFold.html](src/boxModel/marginFold.html)
     - 兄弟元素之间的外边距折叠，两者都是正数
         - css
             ```css
@@ -2757,7 +2757,7 @@
 
 - 示例
     - 参考代码
-        - [/frontend/css/base/src/boxModel/boxsize.html](/frontend/css/base/src/boxModel/boxsize.html)
+        - [src/boxModel/boxsize.html](src/boxModel/boxsize.html)
     - `content-box`和`border-box`的区别
         - css
             ```css
@@ -2810,7 +2810,7 @@
 - 轮廓属性在实际开发中不太常用
 - 示例
     - 参考代
-        - ：[/frontend/css/base/src/boxModel/outline.html](/frontend/css/base/src/boxModel/outline.html)
+        - ：[src/boxModel/outline.html](src/boxModel/outline.html)
     - `outline`和`border`的比较
         - css
             ```css
@@ -2900,7 +2900,7 @@
 - 阴影默认是在盒子的正下方，即：`box-shadow: 0px 0px`
 - 示例
     - 参考代码
-        - [/frontend/css/base/src/boxModel/boxshadow.html](/frontend/css/base/src/boxModel/boxshadow.html)
+        - [src/boxModel/boxshadow.html](src/boxModel/boxshadow.html)
     - 阴影在盒子的正下方
         - css
             ```css
@@ -3017,7 +3017,7 @@
 
 - 示例
     - 参考代码
-        - [/frontend/css/base/src/boxModel/borderRadius.html](/frontend/css/base/src/boxModel/borderRadius.html)
+        - [src/boxModel/borderRadius.html](src/boxModel/borderRadius.html)
     - 使用单角属性来设置正圆圆角
         - css
             ```css
@@ -3201,7 +3201,7 @@
 - 示例
     - 去除body的默认css
         - 参考代码
-            - [/frontend/css/base/src/browserDefalutCss/defalutCss.html](/frontend/css/base/src/browserDefalutCss/defalutCss.html)
+            - [src/browserDefalutCss/defalutCss.html](src/browserDefalutCss/defalutCss.html)
         - css
             ```css
             body{
@@ -3226,7 +3226,7 @@
 
     - 去除ul的样式
         - 参考代
-            - [/frontend/css/base/src/browserDefalutCss/defalutCss.html](/frontend/css/base/src/browserDefalutCss/defalutCss.html)
+            - [src/browserDefalutCss/defalutCss.html](src/browserDefalutCss/defalutCss.html)
         - css
             ```css
             ul{
@@ -3248,7 +3248,7 @@
 
     - 使用通配符统一去除浏览器的默认样式
         - 参考代码
-            - [/frontend/css/base/src/browserDefalutCss/deleteDefaultCss.html](/frontend/css/base/src/browserDefalutCss/deleteDefaultCss.html)
+            - [src/browserDefalutCss/deleteDefaultCss.html](src/browserDefalutCss/deleteDefaultCss.html)
         - css
             ```css
             *{
@@ -3293,7 +3293,7 @@
 
 - 示例
     - 参考代码
-        - [/frontend/css/base/src/commonProperties/display.html](/frontend/css/base/src/commonProperties/display.html)
+        - [src/commonProperties/display.html](src/commonProperties/display.html)
     - 测试行内元素转化为`display:block`
         - css
             ```css
@@ -3393,7 +3393,7 @@
 
 - 示例
     - 参考代
-        - [/frontend/css/base/src/commonProperties/visibility.html](/frontend/css/base/src/commonProperties/visibility.html)
+        - [src/commonProperties/visibility.html](src/commonProperties/visibility.html)
     - 1. 测试元素隐藏`visibility:hidden`
         - css
             ```css
@@ -3436,7 +3436,7 @@
 - 使用`float:left`或`float:right`之后，<label style="color:red">元素将脱离文档流</label>，使得[块元素盒子模型的水平方向布局](#块元素盒子模型的水平方向布局)中的水平布局等式不再强制成立
     - 如：对一个`div`使用了`float`属性之后，在元素检查器中会发现，盒子模型中不会强制产生用于满足水平布局等式的`margin-right`或`margin-left`
         - 参考代码
-            - [/frontend/css/base/src/float/floatBase.html](/frontend/css/base/src/float/floatBase.html)
+            - [src/float/floatBase.html](src/float/floatBase.html)
         - css
             ```css
             /* 0. 不使用float 的div盒子模型 */
@@ -3481,7 +3481,7 @@
 
 - 示例
     - 参考代码
-        - [/frontend/css/base/src/float/floatBase.html](/frontend/css/base/src/float/floatBase.html)
+        - [src/float/floatBase.html](src/float/floatBase.html)
     - 测试使用float属性后，元素脱离文档流
         - css
             ```css
@@ -3595,7 +3595,7 @@
 ## 元素浮动示例-导航条
 [top](#catalog)
 - 参考代码
-    - [/frontend/css/base/src/exercise/float/w3c_navigationBar.html](/frontend/css/base/src/exercise/float/w3c_navigationBar.html)
+    - [src/float/w3c_navigationBar.html](src/float/w3c_navigationBar.html)
 
 - css
     ```css
@@ -3660,9 +3660,10 @@
 
 - 页面结果
     - 普通显示
-        - ![](???)
+        - ![nothing](imgs/float/w3c_navigationBar/nothing.png)
+
     - 鼠标移入
-        - ![](???)
+        - ![hover](imgs/float/w3c_navigationBar/hover.png)
 
 
 # 解决浮造成的问题-高度塌陷
@@ -3684,7 +3685,7 @@
 
 - 示例
     - 代码路径：
-        - [/frontend/css/base/src/bfc/usageBfc.html](/frontend/css/base/src/bfc/usageBfc.html)
+        - [src/bfc/usageBfc.html](src/bfc/usageBfc.html)
 
     - 外部块元素 跟随内部块元素自动变化
         - css
@@ -3778,7 +3779,7 @@
 
 - 开启bfc的示例
     - 参考代码
-        - [/frontend/css/base/src/bfc/usageBfc.html](/frontend/css/base/src/bfc/usageBfc.html)
+        - [src/bfc/usageBfc.html](src/bfc/usageBfc.html)
     - 开启BFC的特殊方法1：父子元素都设置float
         - css
             ```css
@@ -3957,7 +3958,7 @@
 
 - 示例
     - 参考代码
-        - [/frontend/css/base/src/heightCollapse/clear.html](/frontend/css/base/src/heightCollapse/clear.html)
+        - [src/heightCollapse/clear.html](src/heightCollapse/clear.html)
 
     - 使用`clear:left`清除`float:left`浮动元素的影响
         - css
@@ -4078,7 +4079,7 @@
 
     - 参考示例
         - 参考代码
-            - [/frontend/css/base/src/heightCollapse/improveProblem.html](/frontend/css/base/src/heightCollapse/improveProblem.html)
+            - [src/heightCollapse/improveProblem.html](src/heightCollapse/improveProblem.html)
 
         - css
             ```css
@@ -4130,7 +4131,7 @@
             - 使用`display:table`也可以生效
     - 参考示例
         - 参考代码
-            - [/frontend/css/base/src/heightCollapse/improveProblem.html](/frontend/css/base/src/heightCollapse/improveProblem.html)
+            - [src/heightCollapse/improveProblem.html](src/heightCollapse/improveProblem.html)
 
         - css
             ```css
@@ -4187,7 +4188,7 @@
 
 - 示例
     - 参考代码
-        - [/frontend/css/base/src/heightCollapse/improveProblem.html](/frontend/css/base/src/heightCollapse/improveProblem.html)
+        - [src/heightCollapse/improveProblem.html](src/heightCollapse/improveProblem.html)
     
     - css
         ```css
@@ -4296,7 +4297,7 @@
         - 块元素仍然是块元素，行内元素仍然是行内元素
 - 示例
     - 参考代码
-        - [/frontend/css/base/src/position/relative.html](/frontend/css/base/src/position/relative.html)
+        - [src/position/relative.html](src/position/relative.html)
 
     - css
         ```css
@@ -4349,8 +4350,8 @@
 
 - 示例
     - 参考代码
-        - [/frontend/css/base/src/position/absolute01.html](/frontend/css/base/src/position/absolute01.html)
-        - [/frontend/css/base/src/position/absolute02.html](/frontend/css/base/src/position/absolute02.html)
+        - [src/position/absolute01.html](src/position/absolute01.html)
+        - [src/position/absolute02.html](src/position/absolute02.html)
     
     - 开启绝对定位，设置：偏移量=0
         - css
@@ -4386,7 +4387,7 @@
             <div class="box0103">3</div>
             ```
         - 页面结果
-            - ![](?????)
+            - ![absolute01_01.png](imgs/position/absolute/absolute01_01.png)
     
     - 开启绝对定位，没有设置偏移量，元素的位置不会发生变化
         - css
@@ -4419,7 +4420,7 @@
             <div class="box0203">3</div>
             ```
         - 页面结果
-            - ![](?????)
+            - ![absolute01_02.png](imgs/position/absolute/absolute01_02.png)
     
     - 在多层嵌套的块元素中，开启绝对定位，设置：偏移量=0
         - css
@@ -4456,7 +4457,7 @@
             </div>
             ```
         - 页面结果
-            - ![](?????)
+            - ![absolute02_03.png](imgs/position/absolute/absolute02_03.png)
     
     - 在2层嵌套的块元素中，2层全部开启相对定位，设置：偏移量=0
         - css
@@ -4494,7 +4495,7 @@
             </div>
             ```
         - 页面结果
-            - ![](?????)
+            - ![absolute01_04.png](imgs/position/absolute/absolute01_04.png)
     
     - 在2层嵌套的块元素中，只有第1层开启相对定位，设置：偏移量=0
         - css
@@ -4532,8 +4533,7 @@
             </div>
             ```
         - 页面结果
-            - ![](?????)
-
+            - ![absolute01_05.png](imgs/position/absolute/absolute01_05.png)
 
 ### 启动绝对定位后必须满足的水平垂直等式
 [top](#catalog)
@@ -4555,7 +4555,7 @@
 
 - 示例
     - 参考代码
-        - [/frontend/css/base/src/position/absoluteLayout.html](/frontend/css/base/src/position/absoluteLayout.html)
+        - [src/position/absoluteLayout.html](src/position/absoluteLayout.html)
 
     - auto优先级测试：开启绝对定位，width、margin、偏移量全部设为auto
         - css
@@ -4587,7 +4587,7 @@
             ```
         
         - 页面结果
-            - ![](?????标记控制台内容)
+            - ![absoluteLayout_01.png](imgs/position/absoluteLayout/absoluteLayout_01.png)
 
     - 水平等式：开启绝对定位，通过margin:auto、left:0、right:0来设置水平居中效果
         - css
@@ -4621,7 +4621,7 @@
             ```
         
         - 页面结果
-            - ![](?????)
+            - ![absoluteLayout_02.png](imgs/position/absoluteLayout/absoluteLayout_02.png)
 
     - 垂直等式：开启绝对定位，通过margin:auto、top:0、bottom:0来设置垂直居中效果
         - css
@@ -4656,7 +4656,7 @@
             ```
         
         - 页面结果
-            - ![](?????)
+            - ![absoluteLayout_03.png](imgs/position/absoluteLayout/absoluteLayout_03.png)
 
     - 开启绝对定位，水平垂直居中
         - css
@@ -4690,8 +4690,7 @@
             ```
         
         - 页面结果
-            - ![](?????)
-
+            - ![absoluteLayout_04.png](imgs/position/absoluteLayout/absoluteLayout_04.png)
 
 ## 固定定位
 [top](#catalog)
@@ -4710,7 +4709,7 @@
 
 - 示例
     - 参考代码
-        - [/frontend/css/base/src/position/fixed.html](/frontend/css/base/src/position/fixed.html)
+        - [src/position/fixed.html](src/position/fixed.html)
 
     - 固定定位：居右、居中
         - css
@@ -4734,7 +4733,7 @@
             ```
         
         - 页面结果
-            - ![](?????)
+            - ![fixed_01.png](imgs/position/fixed/fixed_01.png)
 
 ## 粘滞定位
 [top](#catalog)
@@ -4747,7 +4746,7 @@
 
 - 示例：导航条固定
     - 参考代码
-        - [/frontend/css/base/src/position/sticky.html](/frontend/css/base/src/position/sticky.html)
+        - [src/position/sticky.html](src/position/sticky.html)
     - css
         ```css
         /* 导航条样式 */
@@ -4783,9 +4782,10 @@
 
     - 页面结果
         - 页面初始化
-            - ![](?????)
+            - ![sticky_01.png](imgs/position/sticky/sticky_01.png)
+
         - 拖动滚动条，触发粘滞定位
-            - ![](?????)
+            - ![sticky_02.png](imgs/position/sticky/sticky_02.png)
 
 
 ## 元素的层级
@@ -4802,7 +4802,7 @@
 
 - 示例
     - 参考代码
-        - [/frontend/css/base/src/position/zindex.html](/frontend/css/base/src/position/zindex.html)
+        - [src/position/zindex.html](src/position/zindex.html)
 
     - 全部开启绝对定位,优先显示靠下的元素
         - css
@@ -4851,7 +4851,7 @@
             </div>
             ```
         - 页面结果
-            - ![](?????)
+            - ![zindex_01.png](imgs/position/zindex/zindex_01.png)
         
     - 全部开启绝对定位,并分别设置层级,层级越大越优先显示
         - css
@@ -4895,8 +4895,8 @@
             </div>
             ```
         - 页面结果
-            - ![](?????)
-        
+            - ![zindex_01.png](imgs/position/zindex/zindex_01.png)
+
     - 全部开启绝对定位，父元素的层级 > 子元素，但是父元素不会遮盖子元素
         - css
             ```css
@@ -4937,7 +4937,7 @@
             </div>
             ```
         - 页面结果
-            - ![](?????)
+            - ![zindex_03.png](imgs/position/zindex/zindex_03.png)
         
 # 字体font
 ## 字体的格式
@@ -4975,7 +4975,7 @@
 
 - 示例
     - 参考代码
-        - [/frontend/css/base/src/font/font.html](/frontend/css/base/src/font/font.html)
+        - [src/font/font.html](src/font/font.html)
     - css
         ```css
         .pstyle01{
@@ -5050,8 +5050,7 @@
         <p class="pstyle08">zxcvbnm</p>
         ```
     - 页面结果
-        - ![](?????)
-
+        - ![font_01.png](imgs/font/font/font_01.png)
 
 ## 图标字体
 ### 图标字体的基本知识
@@ -5124,7 +5123,7 @@
 - 示例
     - 使用前需要手动导入css与webfont目录
     - 参考代码
-        - [/frontend/css/base/src/font/fontAwesome.html](/frontend/css/base/src/font/fontAwesome.html)
+        - [src/font/fontAwesome.html](src/font/fontAwesome.html)
     - css
         ```css
         /* 2. 在css中通过Font Awesome的字符编码code与伪元素来定制图标字体 */
@@ -5133,22 +5132,21 @@
         }
 
         .iconlist li::before{
-            content: "\f236";
-            font-family: "Font Awesome 5 Free";
-            font-weight: 900;
-            margin-right:10px;
+            content: "\f0f3";
+            font-family: 'FontAwesome';
+            font-weight: normal;
+            font-style: normal;
         }
         ```
         
     - html
         ```html
         <section>1. 通过类使用图标字体</section>
-        <i class="fas fa-bell" style="color:#47e; font-size:20px;"></i>
+        <i class="fa fa-bell" style="color:#47e; font-size:20px;"></i>
         <br>
         <br>
 
-        <section>2. 在css中通过字符Font Awesome的字符编码code与
-            <br>伪元素来定制图标字体：fa-bed</section>
+        <section>2. 在css中通过字符Font Awesome的字符编码code与<br>伪元素来定制图标字体：fa-bed</section>
         <ul class="iconlist">
             <li>aaa</li>
             <li>bbb</li>
@@ -5156,10 +5154,10 @@
         </ul>
 
         <section>3. 通过html实体来使用图标字体：fa-bible</section>
-        <i class="fas">&#xf647;</i>
+        <i class="fa">&#xf236;</i>
         ```
     - 页面结果
-        - ![](?????)
+        - ![fontAwesome_01.png](imgs/font/fontAwesome/fontAwesome_01.png)
 
 ## 行高与字体框
 ### 行高
@@ -5175,7 +5173,7 @@
 
 - 示例
     - 参考代码
-        - [/frontend/css/base/src/font/lineHeight.html](/frontend/css/base/src/font/lineHeight.html)
+        - [src/font/lineHeight.html](src/font/lineHeight.html)
     - 查看默认行高
         - css
             ```css
@@ -5192,7 +5190,7 @@
             <div class="box01">1234556</div>
             ```
         - 页面结果
-            - ![](?????)
+            - ![lineHeight_01.png](imgs/font/lineHeight/lineHeight_01.png)
             
     - 手动设置行高
         - css
@@ -5208,7 +5206,7 @@
             <div class="box02">qwertyyuu</div>
             ```
         - 页面结果
-            - ![](?????)
+            - ![lineHeight_02.png](imgs/font/lineHeight/lineHeight_02.png)
 
     - 使用数字设置行高，即文字大小的倍数
         - css
@@ -5233,7 +5231,7 @@
             <div class="box0302">sdfgdfgf</div>
             ```
         - 页面结果
-            - ![](?????)
+            - ![lineHeight_03.png](imgs/font/lineHeight/lineHeight_03.png)
 
 ### 字体框
 [top](#catalog)
@@ -5253,7 +5251,7 @@
 2. 设置行间距：`行间距=line-height - font-size`
     - 示例
         - 参考代码
-            - [/frontend/css/base/src/font/fontCenter.html](/frontend/css/base/src/font/fontCenter.html)
+            - [src/font/fontCenter.html](src/font/fontCenter.html)
         - 测试行间距
             - css
                 ```css
@@ -5275,7 +5273,7 @@
                 </div>
                 ```
             - 页面结果
-                - ![](????? 标记控制台信息)  
+                - ![fontCenter_04.png](imgs/font/fontCenter/fontCenter_04.png)
 
 ## 字体的简写属性
 [top](#catalog)
@@ -5290,7 +5288,7 @@
 
 - 示例
     - 参考代码
-        - [/frontend/css/base/src/font/simpleProperty.html](/frontend/css/base/src/font/simpleProperty.html)
+        - [src/font/simpleProperty.html](src/font/simpleProperty.html)
     - css
         ```css
         /* 1. 设置公共的字体属性： */
@@ -5343,7 +5341,7 @@
         ```
     
     - 页面结果
-        - ![](?????)
+        - ![simpleProperty_01.png](imgs/font/simpleProperty/simpleProperty_01.png)
 
 ## 文本的样式
 [top](#catalog)
@@ -5390,7 +5388,7 @@
 
 - 示例
     - 参考代码
-        - [/frontend/css/base/src/font/text.html](/frontend/css/base/src/font/text.html)
+        - [src/font/text.html](src/font/text.html)
     - 给字体添加文本修饰
         - css
             ```css
@@ -5434,7 +5432,7 @@
             <p class="box0105">asdfghjkl</p>
             ```
         - 页面结果
-            - ![](?????)
+            - ![text_01.png](imgs/font/text/text_01.png)
 
     - 处理页面空白
         - css
@@ -5460,7 +5458,7 @@
             <section>2. 处理页面空白</section>
             <section>2.1. 正常显示</section>
             <p class="box0201">Lorem ipsum dolor sit amet consectetur adipisicing elit. Delectus debitis dignissimos cum corrupti provident voluptate magni, ipsa laboriosam accusamus.</p>
-            <section>2.2. 文本不换行，会产生滚动条</section>
+            <section>2.2. 文本不换行，不会产生滚动条</section>
             <p class="box0202">Lorem ipsum dolor sit amet consectetur adipisicing elit. Delectus debitis dignissimos cum corrupti provident voluptate magni, ipsa laboriosam accusamus.</p>
             <section>2.3. 保留文本样式，将文本按照html中的书写格式输出</section>
             <div class="box0203">sdfdsfsffsfsfd
@@ -5472,7 +5470,7 @@
             </div>
             ```
         - 页面结果
-            - ![](?????)
+            - ![text_02.png](imgs/font/text/text_02.png)
 
     - 文本过长时，截断文本并且在末尾显示`...`
         - css
@@ -5498,8 +5496,9 @@
             ```
 
         - 页面结果
-            - ![](?????)
-        
+            - ![text_03.png](imgs/font/text/text_03.png)
+
+
 ## 文本的居中与对齐
 [top](#catalog)
 - 文本的水平对齐：`text-align`
@@ -5527,7 +5526,7 @@
 
 - 示例：
     - 参考代码
-        - [/frontend/css/base/src/font/fontCenter.html](/frontend/css/base/src/font/fontCenter.html)
+        - [src/font/fontCenter.html](src/font/fontCenter.html)
     
     - 测试水平对齐
         - css
@@ -5562,7 +5561,7 @@
             }
             ```
         - 页面结果
-            - ![](?????)
+            - ![fontCenter_01.png](imgs/font/fontCenter/fontCenter_01.png)
     
     - 测试垂直对齐
         - css
@@ -5625,7 +5624,7 @@
             </div>
             ```
         - 页面结果
-            - ![](?????)
+            - ![fontCenter_02.png](imgs/font/fontCenter/fontCenter_02.png)
     
     - 测试单行文字垂直居中
         - css
@@ -5643,7 +5642,7 @@
             <div class="box03">asdfdfdfg</div>
             ```
         - 页面结果
-            - ![](?????)
+            - ![fontCenter_03.png](imgs/font/fontCenter/fontCenter_03.png)
     
 # 背景
 ## 背景色
@@ -5668,7 +5667,7 @@
 
 - 示例
     - 参考代码
-        - [/frontend/css/base/src/background/color.html](/frontend/css/base/src/background/color.html)
+        - [src/background/color.html](src/background/color.html)
     - 设置背景色的范围
         - css
             ```css
@@ -5721,7 +5720,7 @@
             <br>
             ```
         - 页面结果
-            - ![](?????)
+            - ![color_01.png](imgs/background/color/color_01.png)
 
 ## 背景图片
 [top](#catalog)
@@ -5795,11 +5794,11 @@
         |属性值|描述|
         |-|-|
         |scroll|默认值，图片会跟随元素移动|
-        |fixed|图片会固定在元素中，不会随元素移动 ???????不显示?????|
+        |fixed|图片会固定在元素中，不会随元素移动|
 
 - 示例
     - 参考代码
-        - [/frontend/css/base/src/background/image.html](/frontend/css/base/src/background/image.html)
+        - [src/background/image.html](src/background/image.html)
 
 
 ## 背景的简写属性
@@ -5811,7 +5810,7 @@
 
 - 示例
     - 参考代码
-        - [/frontend/css/base/src/background/simpleAttribute.html](/frontend/css/base/src/background/simpleAttribute.html)
+        - [src/background/simpleAttribute.html](src/background/simpleAttribute.html)
     - css
         ```css
         .box01{
@@ -5877,7 +5876,7 @@
             - 通过**两个方位词**指定圆心位置，如：`background-image: radial-gradient(100px 50px at left center, #bfa, #47e);`
 - 示例
     - 参考代码
-        - [/frontend/css/base/src/background/gradient.html](/frontend/css/base/src/background/gradient.html)
+        - [src/background/gradient.html](src/background/gradient.html)
     - 线性渐变的方向
         - css
             ```css
@@ -5903,7 +5902,8 @@
             }
             ```
         - 页面结果
-            - ![](?????)
+            - ![gradient_01.png](imgs/background/gradient/gradient_01.png)
+            
     - 线性渐变的多个颜色分布
         - css
             ```css
@@ -5929,7 +5929,7 @@
             }
             ```
         - 页面结果
-            - ![](?????)
+            - ![gradient_02.png](imgs/background/gradient/gradient_02.png)
     
     - 径向渐变的形状
         - css
@@ -5990,7 +5990,9 @@
             }
             ```
         - 页面结果
-            - ![](?????)
+            - ![gradient_0301.png](imgs/background/gradient/gradient_0301.png)
+            - ![gradient_0302.png](imgs/background/gradient/gradient_0302.png)
+
     - 径向渐变的圆心位置
         - css
             ```css
@@ -6009,8 +6011,7 @@
             }
             ```
         - 页面结果
-            - ![](?????)
-
+            - ![gradient_04.png](imgs/background/gradient/gradient_04.png)
 
 ## 背景应用-雪碧图
 ### 雪碧图的引入-链接的点击效果
@@ -6065,7 +6066,7 @@
 
 - 示例
     - 参考代码
-        - [/frontend/css/base/src/table/base.html](/frontend/css/base/src/table/base.html)
+        - [src/table/base.html](src/table/base.html)
     - css
         ```css
         .tbox01{
@@ -6087,8 +6088,7 @@
         }
         ```
     - 页面结果
-        - ![](?????)
-
+        - ![base_01.png](imgs/table/base/base_01.png)
 
 ## 通过单元格化来控制元素水平垂直居中
 [top](#catalog)
@@ -6101,7 +6101,7 @@
 
 - 示例
     - 参考代码
-        - [/frontend/css/base/src/table/table_cell.html](/frontend/css/base/src/table/table_cell.html)
+        - [src/table/table_cell.html](src/table/table_cell.html)
     - css
         ```css
         .outter01{
@@ -6126,9 +6126,7 @@
         </div>
         ```
     - 页面结果
-        - ![](?????)
-
-
+        - ![table_cell_01.png](imgs/table/table_cell/table_cell_01.png)
 
 # 网页布局
 ## 基本的页面布局思路
@@ -6144,7 +6142,7 @@
     - **该示例中的缺点**
         - 在外部的块元素`main`中已经固定了`height`和`width`，不能跟随内容进行变化
     - 参考代码
-        - [/frontend/css/base/src/layout/baseLayout.html](/frontend/css/base/src/layout/baseLayout.html)
+        - [src/layout/baseLayout.html](src/layout/baseLayout.html)
         
     - css
         ```css
@@ -6330,7 +6328,7 @@
         - 03newlist.html
 - 定位练习
     - 轮播图
-        - /frontend/css/base/src/exercise/position/carousels.html
+        - src/exercise/position/carousels.html
 
 - 京东导航条
-    - /frontend/css/base/src/exercise/font/jdnav.html
+    - src/exercise/font/jdnav.html
