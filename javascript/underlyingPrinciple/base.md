@@ -449,6 +449,11 @@
     |`test.apply(obj, [param1, param2])`|临时绑定this对象调用|obj|
     |`test.apply()`|临时绑定this对象调用|window 对象|
 
+- 构造函数中的this
+    - 如果通过 `new 构造函数(...)` 的方式来调用函数并创建对象，this是新创建的对象
+    - 如果直接调用函数：`构造函数(...)`，则 this 是 window对象
+        - 在这种调用方式下，**有可能会更改 window对象 中的重要属性或函数**，需要注意
+
 - 示例
     - 测试：this对象的指向
         ```js
