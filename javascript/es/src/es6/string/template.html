@@ -1,0 +1,34 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>template string test</title>
+        <script type="text/javascript">
+            // 1. 输出变量
+            let obj = {
+                name:"testName",
+                age:20,
+                gender:false
+            }
+
+            console.log(`name=${obj.name}, age=${obj.age}, gender=${obj.gender}`)
+            // 输出：
+            // name=testName, age=20, gender=false
+
+            // 2. 输出函数调用结果
+            let foo = ()=> "abcd"
+            console.log(`result = ${foo()}`)
+            // 输出:
+
+            // 3. 模板字符串保留空格和换行
+            let str = `
+                1111
+                2222
+                3333`
+            console.log(str)
+        </script>
+    </head>
+    <body>
+
+    </body>
+</html>
