@@ -674,12 +674,17 @@
 ### dom增删改的常用方法与属性
 [top](#catalog)
 - 常用方法
-    - `父节点.appendChild()`，向父节点中添加新的子节点
-    - `父节点.removeChild()`，从父节点中删除某个子节点
-    - `父节点.insertBefore(新节点, 目标节点)`，在目标节点之前添加新节点
-    - `父节点.replaceChild(新节点, 旧节点)`，新节点替换就节点
-    - `document.createElement("标签名")`，通过标签名创建元素节点
-    - `document.createTextNode("文本内容")`，创建文本节点
+
+    |增删改方法|功能|
+    |-|-|
+    |`父节点.appendChild()`|向父节点中添加新的子节点|
+    |`父节点.removeChild()`|从父节点中删除某个子节点|
+    |`父节点.insertBefore(新节点, 目标节点)`|在目标节点之前添加新节点|
+    |`父节点.replaceChild(新节点, 旧节点)`|新节点替换就节点|
+    |`当前节点.remove()`|删除节点自身|
+    |`document.createElement("标签名")`|通过标签名创建元素节点|
+    |`document.createTextNode("文本内容")`|创建文本节点|
+
 
 - 通过 `innerHTML` 来进行子元素的增删改
     - 与常用方法的区别
@@ -718,7 +723,7 @@
             </div>
         </div>
         ```
-    
+
     - js内容
         ```js
         function addElemClickById(id, fn){
@@ -798,6 +803,12 @@
                     ul01.appendChild(hh);
                 }
             );
+
+            // 6. 删除当前按钮
+            addElemClickById(
+                "btn06",
+                function(){this.remove()}
+            )
         };
         ```
 
@@ -860,7 +871,7 @@
     }
 
     window.onload = function(){
-        
+
         var a_list = document.querySelectorAll(".showBox a");
 
         // 1. 设置table中每个超链接的事件
@@ -905,7 +916,7 @@
             var addBox = document.querySelector(".showBox>tbody");
             addBox.appendChild(new_tr);
         };
-        
+
         // 3. 添加一行，通过创建HTML来添加
         var addBtn02 = document.getElementById("addBtn02");
         addBtn02.onclick = function(){
@@ -2004,18 +2015,18 @@
         }
         ```
     - 切换元素中的指定类：如果元素中未包含指定类，就添加；如果元素中包含指定类，就删除
-    ```js
-    function toggleClassName(obj, cn){
-        var regExp = new RegExp("\\b" + cn + "\\b");
-        if (regExp.test(obj.className)){
-            // 如果元素中包含指定类，就删除
-            obj.className = obj.className.replace(regExp, "");
-        } else {
-            // 如果元素中未包含指定类，就添加
-            obj.className += " " + cn;
+        ```js
+        function toggleClassName(obj, cn){
+            var regExp = new RegExp("\\b" + cn + "\\b");
+            if (regExp.test(obj.className)){
+                // 如果元素中包含指定类，就删除
+                obj.className = obj.className.replace(regExp, "");
+            } else {
+                // 如果元素中未包含指定类，就添加
+                obj.className += " " + cn;
+            }
         }
-    }
-    ```
+        ```
 
 - 示例
     - 参考代码
@@ -2063,13 +2074,13 @@
         - js内容
             ```js
             var box = document.querySelector("#box");
-                
+
             // 1. 通过class直接替换样式
             var changeBtn01 = document.getElementById("changeBtn01");
             changeBtn01.onclick = function(){
                 box.className = "box02";
             };
-            
+
             // 2. 在原有class的基础上附加其他的样式
             var addBtn = document.getElementById("addBtn");
             addBtn.onclick = function(){
