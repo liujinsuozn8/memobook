@@ -148,8 +148,14 @@
                     ul01.appendChild(hh);
                 }
             );
+
+            // 6. 删除当前按钮
+            addElemClickById(
+                "btn06",
+                function(){this.remove()}
+            )
         };
-        
+
 
     </script>
 </head>
@@ -171,6 +177,7 @@
         <div><button id="btn03">3. 创建子节点 gg 替换 cc</button></div>
         <div><button id="btn04">4. 删除dd节点</button></div>
         <div><button id="btn05">5. 结合 innerHTML 和 常用方法 来添加 hh 节点</button></div>
+        <div><button id="btn06">6. 删除当前按钮</button></div>
 
     </div>
 </body>
