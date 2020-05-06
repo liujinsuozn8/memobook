@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>symbol base test</title>
+    <script type="text/javascript">
+        // 1. 创建Symbol属性
+        let symbol = Symbol();
+        console.log(symbol)
+        // 输出: Symbol()
+
+        // 2. Symbol值做对象属性
+        let obj = {name:"testName", age:22}
+        obj[symbol] = "hello"
+        console.log(obj)
+        // 输出: {name: "testName", age: 22, Symbol(): "hello"}
+
+        for(let p in obj){
+            console.log(p)
+        }
+        // 输出:
+        // name
+        // age
+
+        // 3. Symbol值的比较
+        let a = Symbol()
+        let b = Symbol()
+        console.log(a === b)
+        // 输出: false
+        console.log(a, b)
+        // 输出: Symbol() Symbol()
+
+        // 4. 创建Symbol时，注入标识
+        let c = Symbol("12")
+        let d = Symbol("23")
+        console.log(c === d)
+        // false
+        console.log(c, d)
+        // 输出: Symbol(12) Symbol(23)
+
+        // 5. 定义Symbol常量
+        const key = Symbol("key")
+        console.log(key)
+        // 输出: Symbol(key)
+
+
+    </script>
+</head>
+<body>
+
+</body>
+</html>
