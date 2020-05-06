@@ -1,0 +1,54 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>function extends test</title>
+        <script type="text/javascript">
+            // 1. 只绑定函数的this
+            // 1.1 原始函数
+            function foo(data){
+                console.log(this)
+                console.log(data)
+            }
+
+            // 1.2 创建对象-->绑定this-->执行新的函数
+            var obj = {name:"obj"}
+            var bar = foo.bind(obj)
+            bar(1234)
+            // 输出:
+            // {name: "obj"}
+            // 1234
+
+            // 1.2. 执行原始函数
+            foo(5678)
+            // 输出:
+            // Window {parent: Window, …}
+            // 5678
+
+            // 2. 绑定 this 和函数的其他参数
+            function foo02(a, b){
+                console.log(this)
+                console.log("a =", a)
+                console.log("b =", b)
+            }
+
+            var obj02 = {name:"obj02"}
+            var bar02 = foo02.bind(obj02, 10)
+            bar02(20)
+            // 输出:
+            // {name: "obj02"}
+            // a = 10
+            // b = 20
+
+            // 3. 修改回调函数中的this
+            var obj03 = {name:"obj03"}
+            setTimeout(
+                (function(){console.log(this)}).bind(obj03),
+                300
+            )
+            // 输出: {name: "obj03"}
+        </script>
+    </head>
+    <body>
+    </body>
+</html>
