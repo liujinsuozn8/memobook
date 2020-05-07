@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>deep copy test</title>
+    <script type="text/javascript">
+        // 1. JSON转换
+        let obj0101 = {
+            name:"testName",
+            age:22,
+            show(){
+                console.log(`name = ${this.name}, age = ${this.name}`)
+            }
+        }
+
+        let obj0102 = JSON.parse(JSON.stringify(obj0101))
+        console.log(obj0101)
+        // 输出: {name: "testName", age: 22, show: ƒ}
+        console.log(obj0102)
+        // 输出: {name: "testName", age: 22} <--- 无法复制函数对象
+
+        obj0101.name = "newName"
+        console.log(obj0101)
+        // 输出: {name: "newName", age: 22, show: ƒ}
+        console.log(obj0102)
+        // 输出: {name: "testName", age: 22}
+    </script>
+</head>
+<body>
+</body>
+</html>
