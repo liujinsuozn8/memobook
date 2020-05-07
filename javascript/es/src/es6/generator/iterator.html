@@ -1,0 +1,22 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>iterator by generator</title>
+        <script type="text/javascript">
+            // 遍历对象所有的属性值
+            let obj = {name:"testName", age:22, gender:true}
+            obj[Symbol.iterator] = function*(){
+                for (let k in this){
+                    yield this[k]
+                }
+            }
+
+            for (let v of obj){
+                console.log(v)
+            }
+        </script>
+    </head>
+    <body>
+    </body>
+</html>
