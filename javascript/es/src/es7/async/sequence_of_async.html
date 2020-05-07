@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>sequence of async</title>
+    <script type="text/javascript">
+        // async函数执行顺序测试
+        function foo(){
+            return new Promise((resolve, reject)=>{
+                setTimeout(resolve, 2000);
+            })
+        }
+
+        async function bar(){
+            console.log(new Date().toTimeString())
+            await foo()
+            console.log(new Date().toTimeString())
+        }
+        bar()
+
+        let x = foo()
+        console.log(x)
+
+        // 执行一个非常耗时的操作
+        for(let i=0; i<10000000000; i++){}
+        console.log("for end")
+
+        // 输出顺序：
+        // 11:59:28 GMT+0800
+        // Promise {<pending>}
+        // for end
+        // 11:59:42 GMT+0800   <----执行耗时操作，是定时器产生了大量延迟
+    </script>
+</head>
+<body>
+</body>
+</html>
