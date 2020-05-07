@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>array extends</title>
+</head>
+<body>
+    <button>btn1</button>
+    <button>btn2</button>
+    <button>btn3</button>
+
+    <script type="text/javascript">
+        // 1. 将伪数组对象、可遍历对象转换为真数组
+        let buttons = document.getElementsByTagName("button")
+        let arr01 = Array.from(buttons)
+        console.log(buttons)
+        // 输出: HTMLCollection(3) [button, button, button]
+        console.log(arr01)
+        // 输出: (3) [button, button, button]
+
+        // 报错
+        // buttons.forEach((item)=>console.log(item))
+        arr01.forEach((item)=>console.log(item))
+        // 输出:
+        // <button>btn1</button>
+        // <button>btn2</button>
+        // <button>btn3</button>
+
+        // 2. 将多个值转换为数组
+        let arr02 = Array.of("aa", "bbb","cc")
+        console.log(arr02)
+        // 输出: (3) ["aa", "bbb", "cc"]
+
+        // 3. 找出第一个返回true的元素
+        let arr03 = [2, 4, 6, 8]
+        let result03 = arr03.find(item=>item>5)
+        console.log(result03)
+        // 输出: 6
+
+        // 4. 找出第一个返回true的元素的下标
+        let arr04 = [2, 4, 6, 8]
+        let result04 = arr04.findIndex(item=>item>5)
+        console.log(result04)
+        // 输出: 2
+    </script>
+</body>
+</html>
