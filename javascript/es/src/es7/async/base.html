@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html >
+<head>
+    <meta charset="UTF-8">
+    <title>async base</title>
+    <script type="text/javascript">
+        // 1. 基本使用方法
+        function foo(){
+            return new Promise((resolve, reject)=>{
+                setTimeout(resolve, 2000);
+            })
+        }
+
+        async function bar(){
+            console.log(new Date().toTimeString())
+            await foo()
+            console.log(new Date().toTimeString())
+        }
+        bar()
+
+        // 2. 在 async 中获取 await 的返回值
+        async function awaitPrint(){
+            console.log("awaitPrint running")
+
+            // await 后面是一个普通函数
+            let result01 = await (()=> "testStr")()
+            console.log("result01 =", result01)
+            // result01 = testStr
+
+            // await 后面是一个 Promise对象
+            let result02 = await Promise.resolve();
+            console.log("result02 =", result02)
+            // result02 = undefined
+
+            let result03 = await Promise.resolve("success");
+            console.log("result03 =", result03)
+            // result03 = success
+
+            // 报错
+            // let result04 = await Promise.reject("failure");
+            // console.log("result04 =", result04)
+            // Uncaught (in promise) failure
+        }
+
+        let x = awaitPrint()
+        console.log(x)
+        // Promise {<pending>}
+    </script>
+</head>
+<body>
+
+</body>
+</html>
