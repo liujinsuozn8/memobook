@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>IIFE up model</title>
+    <!-- others.js 和 base.js 有依赖关系，需要按顺序引入js文件-->
+    <script type="text/javascript" src="others.js"></script>
+    <script type="text/javascript" src="base.js"></script>
+    <script type="text/javascript">
+        // 调用 base.js中的方法
+        module4()
+        // 输出:
+        // module4
+        // this is other
+    </script>
+</head>
+<body>
+</body>
+</html>
