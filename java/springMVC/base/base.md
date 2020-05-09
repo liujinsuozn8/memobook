@@ -393,6 +393,7 @@
 [top](#catalog)
 - `@RequestMapping(value="路径", method=RequestMethod.XXX)` 注解用于映射url到 Controller 或某个方法
     - 通过 value 参数指定需要映射的路径
+        - 映射多个路径的写法：`value={"路径1", "路径2",...}`
         - 路径中可以使用占位符，如：`/xxx/{a}/{b}`，表示路径中的参数，但是需要与 `@PathVariable` 注解配合使用
             - 参考：[RestFul风格的实现方法](#RestFul风格的实现方法)
     - 通过 method 参数执行需要捕获的请求方式

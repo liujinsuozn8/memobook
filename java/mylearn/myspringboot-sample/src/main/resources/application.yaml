@@ -1,0 +1,10 @@
+server:
+  servlet:
+    context-path: /ljs
+spring:
+  messages:
+    basename: i18n.login
+
+  mvc:
+    #设置日期格式
+    date-format: yyyy-mm-dd

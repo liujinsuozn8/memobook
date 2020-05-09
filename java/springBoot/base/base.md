@@ -7,7 +7,7 @@
 - [创建helloWorld程序](#创建helloWorld程序)
 - [Maven配置分析](#Maven配置分析)
 - [SpringBoot的自动装配原理](#SpringBoot的自动装配原理)
-    - [自动装配过程分析](#自动装配过程分析)
+    - [主程序分析](#主程序分析)
     - [自动装配过程分析](#自动装配过程分析)
     - [关键类AutoConfigurationImportSelector的分析](#关键类AutoConfigurationImportSelector的分析)
     - [自动配置类与配置文件](#自动配置类与配置文件)
@@ -30,7 +30,19 @@
         - [为什么使用Thymeleaf而不是jsp](#为什么使用Thymeleaf而不是jsp)
         - [Thymeleaf的使用方法](#Thymeleaf的使用方法)
         - [SpringBoot中Thymeleaf的配置原理](#SpringBoot中Thymeleaf的配置原理)
-- [](#)
+    - [扩展SpringMVC配置](#扩展SpringMVC配置)
+    - [国际化](#国际化)
+        - [国际化配置方法](#国际化配置方法)
+        - [执行国际化的原理](#执行国际化的原理)
+        - [自定义国际化处理](#自定义国际化处理)
+    - [自定义拦截器](#自定义拦截器)
+    - [web开发示例](#web开发示例)
+- [数据库整合](#数据库整合)
+    - [创建测试数据库](#创建测试数据库)
+    - [整合JDBC](#整合JDBC)
+    - [整合数据源-Druid](#整合数据源-Druid)
+- [Mybatis整合](Mybatis整合)
+- []()
 - [其他](#其他)
 
 # SpringBoot概述
@@ -1076,6 +1088,592 @@ public final class SpringFactoriesLoader {
         }
     }
     ```
+
+## 扩展SpringMVC配置
+[top](#catalog)
+- 参考：https://docs.spring.io/spring-boot/docs/2.3.0.BUILD-SNAPSHOT/reference/html/spring-boot-features.html#boot-features-spring-mvc
+
+- 扩展mvc的配置
+    - 配置类使用 `@Configuration` 标识
+    - 实现 `WebMvcConfigurer` 接口
+    - 不能使用 `@EnableWebMvc` 注解，否则会用当前配置类接管SpringBoot的默认配置
+    - `ContentNegotiatingViewResolver` 实现了`ViewResolver`视图解析器接口类，可以将其看作视图解析器 
+
+- 示例
+    - 参考代码
+        - [/java/mylearn/myspringboot/src/main/java/com/ljs/learn/myspringboot/config/MyMVCConfig.java](/java/mylearn/myspringboot/src/main/java/com/ljs/learn/myspringboot/config/MyMVCConfig.java)
+    - 代码内容
+        ```java
+        // 定制SpringMVC的方式：
+        // 实现：WebMvcConfigurer
+        // 写相关的组件，然后交给SpringBoot
+        @Configuration
+        public class MyMVCConfig implements WebMvcConfigurer {
+            // 配置自定义视图解析器
+            // 启动后会自动加载到DispatcherServlet的viewResolvers中
+            @Bean
+            public ViewResolver myViewReslover(){
+                return new MyViewReslover();
+            }
+        
+            // 自定义视图解析器
+            public static class MyViewReslover implements ViewResolver{
+                @Override
+                public View resolveViewName(String s, Locale locale) throws Exception {
+                    return null;
+                }
+            }
+        
+            // 自定义视图跳转
+            @Override
+            public void addViewControllers(ViewControllerRegistry registry) {
+                registry.addViewController("/index").setViewName("test");
+            }
+        }
+        ```
+
+## 国际化
+### 国际化配置方法
+[top](#catalog)
+1. 添加国际化配置文件
+    - 添加目录 `/resources/i8n`
+    - 在目录下添加配置配置文件
+        - 自定义文件名.properties 默认
+        - 自定义文件名_en_US.properties 中文
+        - 自定义文件名_zh_CN.properties 英文
+    - 文件名为：默认文件名_国家_地区
+2. 将国际化配置目录添加到spring的配置文件中
+    - application.yaml中添加配置：
+        ```
+        spring:
+          messages
+            basename: i18n.自定义文件名
+        ```
+3. 3各配置文件合成一个绑定资源，配置内容：`login.XXX`
+4. 选择配置，并打开 Resource Bundle，分别编辑各配置下的显示内容
+5. 修改模版中的国际化内容:`th:text/value=@{login.XXX}`
+6. 添加自定义国际化处理器 `LocaleResolver`，并注册到MVC配置类中
+
+### 执行国际化的原理
+[top](#catalog)
+1. 启动时，获取国际化配置
+    ```java
+    public class WebMvcAutoConfiguration {
+        public LocaleResolver localeResolver() {
+            // 如果有自定义配置则返回自定义配置
+            if (this.mvcProperties.getLocaleResolver() == org.springframework.boot.autoconfigure.web.servlet.WebMvcProperties.LocaleResolver.FIXED) {
+                return new FixedLocaleResolver(this.mvcProperties.getLocale());
+            } else {
+            // 如果没有自定义配置则使用springBoot默认的配置
+                AcceptHeaderLocaleResolver localeResolver = new AcceptHeaderLocaleResolver();
+                localeResolver.setDefaultLocale(this.mvcProperties.getLocale());
+                return localeResolver;
+            }
+        }
+    }
+    ```
+2. 通过 `LocaleResolver` 接口来解析请求并获取国际化参数
+    - 接口源码
+        ```java
+        public interface LocaleResolver {
+            // 解析请求
+            Locale resolveLocale(HttpServletRequest var1);
+        
+            void setLocale(HttpServletRequest var1, @Nullable HttpServletResponse var2, @Nullable Locale var3);
+        }
+        ```
+
+    - springBoot提供的默认实现
+        ```java
+        public class AcceptHeaderLocaleResolver implements LocaleResolver {
+            public void setDefaultLocale(@Nullable Locale defaultLocale) {
+                this.defaultLocale = defaultLocale;
+            }
+        
+            public Locale resolveLocale(HttpServletRequest request) {
+                Locale defaultLocale = this.getDefaultLocale();
+                if (defaultLocale != null && request.getHeader("Accept-Language") == null) {
+                    return defaultLocale;
+                } else {
+                    Locale requestLocale = request.getLocale();
+                    List<Locale> supportedLocales = this.getSupportedLocales();
+                    if (!supportedLocales.isEmpty() && !supportedLocales.contains(requestLocale)) {
+                        Locale supportedLocale = this.findSupportedLocale(request, supportedLocales);
+                        if (supportedLocale != null) {
+                            return supportedLocale;
+                        } else {
+                            return defaultLocale != null ? defaultLocale : requestLocale;
+                        }
+                    } else {
+                        return requestLocale;
+                    }
+                }
+            }
+        }
+        ```
+      
+### 自定义国际化处理
+[top](#catalog)
+- 自定义 `LocaleResolver` 接口实现类，并注册到自定义的mvc配置类中
+- `Locale resolveLocale(HttpServletRequest var1);`方法中，常用的解析方式
+    - 从url，或请求头中获取语言设置参数
+    - 解析参数，并用这些参数生成 `java.util.Locale` 对象
+    - 将生成的对象返回
+    
+- 示例
+    - 参考代码
+        - [/java/mylearn/myspringboot-sample/src/main/java/com/ljs/learn/myspringbootsample/config/MyLocaleResolver.java](/java/mylearn/myspringboot-sample/src/main/java/com/ljs/learn/myspringbootsample/config/MyLocaleResolver.java)
+    - 代码内容
+        ```java
+        public class MyLocaleResolver implements LocaleResolver {
+            @Override
+            public Locale resolveLocale(HttpServletRequest req) {
+                // 获取请求参数中的语言参数
+                String lang = req.getParameter("l");
+                Locale locale; //如果没有就使用默认的
+        
+                // 如果请求链接中携带了国际化的参数
+                if (!StringUtils.isEmpty(lang)){
+                    // 将国际化参数分解成：国家、地区
+                    String[] split = lang.split("_");
+                    locale = new Locale(split[0], split[1]);
+                }else{
+                    locale = Locale.getDefault();
+                }
+        
+                return locale;
+            }
+        
+            @Override
+            public void setLocale(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Locale locale) {
+        
+            }
+        }
+        ```
+
+## 自定义拦截器
+[top](#catalog)
+- 开发方法
+    - 自定义HandlerInterceptor接口实现
+    - 注册代码MVC配置类中，并配置拦截哪些资源
+        ```java
+        @Override
+        public void addInterceptors(InterceptorRegistry registry) {
+            registry.addInterceptor(new 自定义接口实现())
+                    .addPathPatterns("/**") // 需要过滤的请求
+                    .excludePathPatterns(
+                        "/index.html", "/", "/user/login",
+                        "/css/**", "/js/**", "/img/**"
+                    );  //排除多余的请求
+        }
+        ```
+- 示例
+    - 参考代码
+        - [/java/mylearn/myspringboot-sample/src/main/java/com/ljs/learn/myspringbootsample/config/LoginHandleInterceptor.java](/java/mylearn/myspringboot-sample/src/main/java/com/ljs/learn/myspringbootsample/config/LoginHandleInterceptor.java)
+        - [/java/mylearn/myspringboot-sample/src/main/java/com/ljs/learn/myspringbootsample/config/MyMvcController.java](/java/mylearn/myspringboot-sample/src/main/java/com/ljs/learn/myspringbootsample/config/MyMvcController.java)
+    - 自定义HandlerInterceptor接口实现
+        ```java
+        public class LoginHandleInterceptor implements HandlerInterceptor {
+            @Override
+            public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+                // 登录成功之后，会有用户session
+                Object loginUser = request.getSession().getAttribute("loginUser");
+        
+                if (loginUser == null){
+                    //未登录
+                    request.setAttribute("msg","未登录");
+                    request.getRequestDispatcher("/index.html").forward(request, response);
+                    // response.sendRedirect("index.html");
+                    return false;
+                } else {
+                    return true;
+                }
+            }
+        }
+        ```
+    - 配置资源拦截
+        ```java
+        @Configuration
+        public class MyMvcController implements WebMvcConfigurer {
+            @Override
+            public void addInterceptors(InterceptorRegistry registry) {
+                // 拦截请求
+                // 首页和登录请求放行
+                // 静态资源放行
+                registry.addInterceptor(new LoginHandleInterceptor())
+                        .addPathPatterns("/**")
+                        .excludePathPatterns(
+                            "/index.html", "/", "/user/login",
+                            "/css/**", "/js/**", "/img/**"
+                        );
+            }
+        }
+        ```
+
+## web开发示例
+[top](#catalog)
+- 示例参考
+    - [/java/mylearn/myspringboot-sample](/java/mylearn/myspringboot-sample)
+
+- 开发步骤
+    1. 创建pojo
+    2. 创建DAO模拟数据
+    3. 导入静态资源 到static，导入后都默认映射到`/`
+    4. 导入模版到templates，导入thymeleaf的maven配置
+        - 模版中的内部资源链全部改成`@{开发的资源目录}`，启动后会自动添加站点和应用名
+        - 国际化内容使用：`#{}`
+        - 显示变量的值使用：`${}`
+        - 请求url：`@{}`
+    5. 自定义mvc配置来控制首页跳转
+    6. 配置当前应用名：`server.servlet.context-path`
+    7. 配置国际化组件
+    8. 配置登录拦截器
+        - 登录控制器将用户信息保存到session中
+        - 拦截器通过session来判断用户是否登录
+    9. 增删改查
+        - 参考代码
+            - [java/mylearn/myspringboot-sample/src/main/java/com/ljs/learn/myspringbootsample/controller/EmployeeController.java](java/mylearn/myspringboot-sample/src/main/java/com/ljs/learn/myspringbootsample/controller/EmployeeController.java)
+        - 抽取公共页面部分
+            - 抽取公共页面部分，设置页面选中标的显示高亮
+                - `th:fragment="sidebar"`
+                - 不传参`<div th:replace="~{commons/commons::topbar}"></div>`
+                - 传参`<div th:replace="~{commons/commons::sidebar(active='main.html')}"></div>`
+                - 解析参数 `th:class="${active=='main.html'?'nav-link active':'nav-link'}"`
+        - 查询
+            - 添加员工查询逻辑
+            - 列表循环展示
+        - 添加
+            - 都使用employ请求，使用RestFul风格，通过请求方式来区分执行添加操作，和跳转添加页面
+            - `department.id`，需要提交一个属性，springBoot自动封装盛一个对象
+        - 修改
+        - 删除
+    10. 处理404页面
+        - 命名为`404.html`
+
+# 数据库整合
+## 创建测试数据库
+[top](#catalog)
+- 使用docker配置一个mysql容器(接入自定义网桥testbr中)
+    ```
+    docker run -d -p 3307:3306 --name mysqllearn --network testbr \
+    -v $HOME/mydocker/myvolumes/mysql/learn/mysql/conf:/etc/mysql/conf.d \
+    -v $HOME/mydocker/myvolumes/mysql/learn/mysql/logs:/logs \
+    -v $HOME/mydocker/myvolumes/mysql/learn/mysql/data:/var/lib/mysql \
+    -e MYSQL_ROOT_PASSWORD=1234 \
+    mysql:latest
+    ```
+
+## 整合JDBC
+[top](#catalog)
+- 整合方式
+    1. maven配置
+        ```xml
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jdbc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        ```
+    2. 在 `applicatio.yaml` 配置文件中添加数据库配置
+        ```yaml
+        spring:    
+        datasource:
+            username: 用户
+            password: 密码
+            url: 数据库连接地址
+            driver-class-name: 驱动类
+        ```
+    3. 在类中装配类 `JdbcTemplate`，然后通过该类对象的方法来操作数据库
+        - JdbcTemplate 简化了数据库操作，只需要提供 sql 和 占位符的赋值参数就可以直接操作数据库
+        - 不需要直接操作事务，JdbcTemplate 内部封装了事务的相关操作
+
+- 示例
+    - spring配置
+        - 参考配置  
+            - [/java/mylearn/myspringboot/src/main/resources/config/application.yaml](/java/mylearn/myspringboot/src/main/resources/config/application.yaml)
+        - 配置内容
+            ```yaml
+            spring:
+              datasource:
+                username: root
+                password: 1234
+                url: jdbc:mysql://127.0.0.1:3307?serverTimezone=UTC&characterEncoding=utf8    useUnicode=true&useSSL=false
+                driver-class-name: com.mysql.cj.jdbc.Driver
+            ```
+    - 使用 `JdbcTemplate` 操作数据库
+        - 参考代码
+            - [/java/mylearn/myspringboot/src/main/java/com/ljs/learn/myspringboot/controller/jdbc/JDBCController.java](/java/mylearn/myspringboot/src/main/java/com/ljs/learn/myspringboot/controller/jdbc/JDBCController.java)
+        - 代码内容
+            ```java
+            @RestController
+            public class JDBCController {
+                @Autowired
+                JdbcTemplate jdbcTemplate;
+
+                // 查询
+                @RequestMapping("/jdbc/userlist")
+                public List<Map<String, Object>> userList(){
+                    String sql = "select * from test01.user";
+                    List<Map<String, Object>> maps = jdbcTemplate.queryForList(sql);
+                    return maps;
+                }
+
+                // 添加
+                @RequestMapping("/jdbc/adduser")
+                public String addUser(){
+                    String sql = "insert into test01.user(id, name, pwd) values(100, 'xxxx', 'xxxpwd')";
+                    // 自动提交事务
+                    jdbcTemplate.update(sql);
+                    return "add end";
+                }
+
+                // 修改
+                @RequestMapping("/jdbc/upuser/{id}")
+                public String updateUser(@PathVariable("id") int id){
+                    String sql = "update test01.user set name=?, pwd=? where id="+id;
+
+                    // 封装对象
+                    Object[] objects = new Object[2];
+                    objects[0] = "yyy";
+                    objects[1] = "yyypwd";
+                    jdbcTemplate.update(sql, objects);
+                    return "update end";
+                }
+                // 删除
+                @RequestMapping("jdbc/deluser/{id}")
+                public String deleteUser(@PathVariable("id") int id){
+                    String sql = "delete from test01.user where id = ?";
+                    jdbcTemplate.update(sql, id);
+                    return "delete end";
+                }
+            }
+            ```
+
+## 整合数据源-Druid
+[top](#catalog)
+- 整合方式
+    - 导入maven配置
+    - 在 `applicatio.yaml` 配置文件中添加数据库配置
+    - 如果配置中包含springBoot默认配置之外的内容，需要手动添加配置类，并与配置文件绑定
+    - 在配置类中添加后台监控功能
+- 示例
+    - spring配置
+        - 参考配置
+            - [/java/mylearn/myspringboot/src/main/resources/config/application.yaml](/java/mylearn/myspringboot/src/main/resources/config/application.yaml)
+        - 配置内容
+            ```yaml
+            spring:
+              # 配置数据库连接
+              datasource:
+                username: root
+                password: 1234
+                url: jdbc:mysql://127.0.0.1:3307?serverTimezone=UTC&characterEncoding=utf8&useUnicode=true&            useSSL=false
+                driver-class-name: com.mysql.cj.jdbc.Driver
+                type: com.alibaba.druid.pool.DruidDataSource
+            
+                # SpringBoot 默认不注入的配置，需要手动绑定
+                # druid专有配置
+                initialSize: 5
+                minIdle: 5
+                maxActive: 20
+                maxWait: 60000
+                timeBetweenEvictionRunsMillis: 60000
+                minEvictableIdleTimeMillis: 300000
+                validationQuery: SELECT 1 FROM DUAL
+                testWhileIdle: true
+                testOnBorrow: false
+                testOnReturn: false
+                poolPreparedStatements: true
+            
+                # 配置监控统计拦截的filters，stat:监控统计，log4j日志记录，wall:防御sql注入
+                # 需要导入log4j的配置
+                filters: stat,wall,log4j
+                maxPoolPreparedStatementPerConncetionSize: 20
+                useGlobalDataSourceStat: true
+                connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=500
+            ```
+    - 配置类
+        - 参考代码
+            - [/java/mylearn/myspringboot/src/main/java/com/ljs/learn/myspringboot/config/druid/DruidConfig.java](/java/mylearn/myspringboot/src/main/java/com/ljs/learn/myspringboot/config/druid/DruidConfig.java)
+        - 代码内容
+            ```java
+            @Configuration
+            public class DruidConfig {
+
+                // 接管配置文件，使当前类与配置文件绑定
+                @ConfigurationProperties(prefix = "spring.datasource")
+                @Bean
+                public DataSource druidDataSource(){
+                    return new DruidDataSource();
+                }
+
+                // 后台监控功能
+                // 以web.xml的方式配置Servlet
+                // 由于SpringBoot 内置了servlet，所以没有web，
+                // 需要使用ServletRegistrationBean来替代
+                @Bean
+                public ServletRegistrationBean statViewBean(){
+                    ServletRegistrationBean<StatViewServlet> bean = new ServletRegistrationBean<>(new StatViewServlet(), "/druid/*");
+                    // 后台登录账号密码，与web.xml中的配置类似
+                    Map<String, String> initParamters = new HashMap<>();
+                    // 1. 账号密码对应的key是固定
+                    initParamters.put("loginUsername", "admin");
+                    initParamters.put("loginPassword", "12345");
+                    // 2. 允许谁可以访问
+                    // 如果value为空字符，则任何人都可以访问
+                    // localhost：只有本机可以访问
+                    initParamters.put("allow", "localhost");
+                    bean.setInitParameters(initParamters);
+                    return bean;
+                }
+
+                @Bean
+                public FilterRegistrationBean filterBean(){
+                    FilterRegistrationBean bean = new FilterRegistrationBean();
+                    // 添加过滤器
+                    bean.setFilter(new WebStatFilter());
+                    // 设置过滤请求
+                    // 可以过滤的内容参考 WebStatFilter 中的关键字
+                    Map<String, String> initParameters = new HashMap<>();
+                    initParameters.put("exclusions", "*.js，*.css,/druid/*");
+                    bean.setInitParameters(initParameters);
+                    return bean;
+                }
+            }
+            ```
+
+# Mybatis整合
+[top](#catalog)
+- 整合方法
+    1. 需要数据库(mysql)和JDBC的maven配置
+    2. 在maven配置中引入mybatis的starter
+        ```xml
+        <!-- https://mvnrepository.com/artifact/org.mybatis.spring.boot/mybatis-spring-boot-starter -->
+        <dependency>
+            <groupId>org.mybatis.spring.boot</groupId>
+            <artifactId>mybatis-spring-boot-starter</artifactId>
+            <version>2.1.2</version>
+        </dependency>
+        ```
+    3. 添加mapper
+        - 方式1：创建mapper接口
+            - 使用@Mapper注解标识当前接口是mybatis的mapper
+            - 使用@Repository注解，让spring接管
+                ```java
+                @Mapper
+                public interface XXXXMapper {
+                }
+                ```
+        - 方式2：使用mapper包扫描注解
+            ```java
+            @MapperScan("包的全路径")
+            ```
+    4. 添加spring-mybatis配置
+    5. 在业务类中自动装配Mapper
+
+- 示例
+    1. 创建Mapper，采用mapper和xml分离的方式
+        - 参考代码
+            - [/java/mylearn/myspringboot/src/main/java/com/ljs/learn/myspringboot/dao/mybatis/UserMapper.java](/java/mylearn/myspringboot/src/main/java/com/ljs/learn/myspringboot/dao/mybatis/UserMapper.java)
+            - [/java/mylearn/myspringboot/src/main/resources/mybatis/mapper/UserMapper.xml](/java/mylearn/myspringboot/src/main/resources/mybatis/mapper/UserMapper.xml)
+        - mapper内容
+            ```java
+            @Mapper
+            @Repository
+            public interface UserMapper {
+                List<User> getUsers();
+                User getUserById(int id);
+                void insertUser(User u);
+                void updateUser(User u);
+                void deleteUserById(int id);
+            }
+            ```
+        - 配置内容
+            ```xml
+            <mapper namespace="com.ljs.learn.myspringboot.dao.mybatis.UserMapper">
+                <select id="getUsers" resultType="user">
+                    select * from test01.user;
+                </select>
+            
+                <select id="getUserById" parameterType="int" resultType="user">
+                    select * from test01.user where id = #{id};
+                </select>
+            
+                <insert id="insertUser" parameterType="user">
+                    insert into test01.user (id, name, pwd) values (#{id}, #{name}, #{pwd});
+                </insert>
+            
+                <update id="updateUser" parameterType="user">
+                    update test01.user set name=#{name} where id = #{id}
+                </update>
+            
+                <delete id="deleteUserById" parameterType="int">
+                    delete from test01.user where id = #{id}
+                </delete>
+            </mapper>
+            ```
+    2. 在spring配置文件中添加 mybatis 的配置
+        - 参考配置
+            - [/java/mylearn/myspringboot/src/main/resources/config/application.yaml](/java/mylearn/myspringboot/src/main/resources/config/application.yaml)
+        - 配置内容
+            ```yaml
+            mybatis:
+              #配置别名
+              type-aliases-package:  com.ljs.learn.myspringboot.bean
+              #指定mapper.xml的保存路径
+              mapper-locations: 'classpath:mybatis/mapper/*.xml'
+            ```      
+    - 在 Controller 中调用 Mapper
+        - 参考代码
+            - [/java/mylearn/myspringboot/src/main/java/com/ljs/learn/myspringboot/controller/mybatis/MybatisController.java](/java/mylearn/myspringboot/src/main/java/com/ljs/learn/myspringboot/controller/mybatis/MybatisController.java)
+        - 代码内容
+            ```java
+            @RestController
+            public class MybatisController {
+                // 自动装配mapper
+                @Autowired
+                UserMapper dao;
+            
+                // 查询所有用户
+                @RequestMapping("/mybatis/user/userlist")
+                public List<User> userList(){
+                    List<User> users = dao.getUsers();
+                    return users;
+                }
+            
+                // 查询
+                @RequestMapping("/mybatis/user/get/{id}")
+                public User userList(@PathVariable("id") int id){
+                    User users = dao.getUserById(id);
+                    return users;
+                }
+            
+                // 添加
+                @RequestMapping("/mybatis/user/adduser")
+                public String addUser(){
+                    String sql = "insert into test01.user(id, name, pwd) values(, )";
+                    dao.insertUser(new User(200, "xxxx", "xxxpwd"));
+                    return "add end";
+                }
+            
+                // 修改
+                @RequestMapping("/mybatis/user/upuser/{id}")
+                public String updateUser(@PathVariable("id") int id){
+                    dao.updateUser(new User(id, "yyy", "yyypwd"));
+                    return "update end";
+                }
+                // 删除
+                @RequestMapping("/mybatis/user/deluser/{id}")
+                public String deleteUser(@PathVariable("id") int id){
+                    dao.deleteUserById(id);
+                    return "delete end";
+                }
+            }
+            ```
 
 
 # 其他

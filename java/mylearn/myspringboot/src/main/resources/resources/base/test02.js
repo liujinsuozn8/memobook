@@ -1,0 +1,1 @@
+console.log("this is my springboot static resource test")
