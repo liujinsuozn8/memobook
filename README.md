@@ -22,6 +22,11 @@
         - [基本知识](java/springMVC/base/base.md)
     - SpringBoot
         - [基本知识](java/springBoot/base/base.md)
+        - [SpringBoot-Maven配置集](java/mylearn/springboot-maven-pomhub/pom.xml)
+    - Spring Security
+        - [基本知识](java/spring_security/base/base.md)
+    - Shiro
+        - [基本知识](java/shiro/base/base.md)
 
 - 数据库
     - mysql
@@ -39,8 +44,8 @@
         - javaweb
             - [idea创建web工程](java/javaweb/createProject.md)
             - [javaweb基础](java/javaweb/webbase.md)
-        - [socket编程]
-        - [并发](java/base/thread.md)
+        - socket编程
+        - [并发?????](java/base/thread.md)
         - rpc框架
             - [基本原理](/java/rpc/base.md)
         - jdk源码分析

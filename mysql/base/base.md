@@ -1655,9 +1655,11 @@
             ```
 
         - 表级修改:`alter table 表名 rename to | add | drop 操作内容`
+        - 
             ```sql
             alter table 表名 rename to 新表名                            -- 表重命名
 
+            alter table 表名 add column 列名 类型                        -- 添加列
             alter table 表名 add 【constraint 主键名】 primary key (列名) -- 添加主键
             alter table 表名 add unique(列名)                            -- 添加唯一
             alter table 表名 add constraint 约束名 foreign key(当前表的外键列) references 主表名(列名)  --添加外键

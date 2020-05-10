@@ -19,6 +19,7 @@
     <module>mylog4j</module>
     <module>myspringMVC</module>
     <module>myssm</module>
+    <module>myshiro</module>
 
   </modules>
 

@@ -28,6 +28,7 @@
         - [首页定制的原理](#首页定制的原理)
     - [模版引擎](#模版引擎)
         - [为什么使用Thymeleaf而不是jsp](#为什么使用Thymeleaf而不是jsp)
+        - [Thymeleaf的maven依赖](#Thymeleaf的maven依赖)
         - [Thymeleaf的使用方法](#Thymeleaf的使用方法)
         - [SpringBoot中Thymeleaf的配置原理](#SpringBoot中Thymeleaf的配置原理)
     - [扩展SpringMVC配置](#扩展SpringMVC配置)
@@ -41,8 +42,8 @@
     - [创建测试数据库](#创建测试数据库)
     - [整合JDBC](#整合JDBC)
     - [整合数据源-Druid](#整合数据源-Druid)
-- [Mybatis整合](Mybatis整合)
-- []()
+- [Mybatis整合](#Mybatis整合)
+- [](#)
 - [其他](#其他)
 
 # SpringBoot概述
@@ -979,22 +980,25 @@ public final class SpringFactoriesLoader {
     - SpringBoot使用的是嵌入式的tomcat，默认不支持jsp
 - SpringBoot推荐使用 `Thymeleaf` 模版引擎
 
+### Thymeleaf的maven依赖
+[top](#catalog)
+```xml
+<!-- https://mvnrepository.com/artifact/org.thymeleaf/thymeleaf-spring5 -->
+<dependency>
+    <groupId>org.thymeleaf</groupId>
+    <artifactId>thymeleaf-spring5</artifactId>
+</dependency>
+<!-- https://mvnrepository.com/artifact/org.thymeleaf.extras/thymeleaf-extras-java8time -->
+<dependency>
+    <groupId>org.thymeleaf.extras</groupId>
+    <artifactId>thymeleaf-extras-java8time</artifactId>
+</dependency>
+```
+
 ### Thymeleaf的使用方法
 [top](#catalog)
 - 参考：https://www.thymeleaf.org/doc/tutorials/3.0/usingthymeleaf.html#a-multi-language-welcome
-- maven依赖
-    ```xml
-    <!-- https://mvnrepository.com/artifact/org.thymeleaf/thymeleaf-spring5 -->
-    <dependency>
-        <groupId>org.thymeleaf</groupId>
-        <artifactId>thymeleaf-spring5</artifactId>
-    </dependency>
-    <!-- https://mvnrepository.com/artifact/org.thymeleaf.extras/thymeleaf-extras-java8time -->
-    <dependency>
-        <groupId>org.thymeleaf.extras</groupId>
-        <artifactId>thymeleaf-extras-java8time</artifactId>
-    </dependency>
-    ```
+
 - 基本的语法
     - 表达式
         - `${}`，变量
