@@ -24,9 +24,11 @@
         - [基本知识](java/springBoot/base/base.md)
         - [SpringBoot-Maven配置集](java/mylearn/springboot-maven-pomhub/pom.xml)
     - Spring Security
-        - [基本知识](java/spring_security/base/base.md)
+        - [基本使用](java/spring_security/base/base.md)
     - Shiro
-        - [基本知识](java/shiro/base/base.md)
+        - [基本使用](java/shiro/base/base.md)
+    - Swagger-API框架
+        - [基本使用](java/swagger/base/base.md)
 
 - 数据库
     - mysql
