@@ -5,7 +5,7 @@
     - [SpringBoot概述的基本知识](#SpringBoot概述的基本知识)
     - [SpringBoot与微服务架构](#SpringBoot与微服务架构)
 - [创建helloWorld程序](#创建helloWorld程序)
-- [Maven配置分析](#Maven配置分析)
+- [maven依赖分析](#maven依赖分析)
 - [SpringBoot的自动装配原理](#SpringBoot的自动装配原理)
     - [主程序分析](#主程序分析)
     - [自动装配过程分析](#自动装配过程分析)
@@ -18,7 +18,15 @@
     - [使用properties配置文件](#使用properties配置文件)
     - [多环境配置及配置文件位置](#多环境配置及配置文件位置)
 - [JSP303校验](#JSP303校验)
-- [web开发](#web开发)
+- [持久层整合](#持久层整合)
+    - [创建测试数据库](#创建测试数据库)
+    - [整合JDBC](#整合JDBC)
+    - [整合数据源-Druid](#整合数据源-Druid)
+    - [Mybatis整合](#Mybatis整合)
+- [任务](#任务)
+    - [异步任务](#异步任务)
+    - [定时任务](#定时任务)
+- [web开发示例](#web开发示例)
     - [导入静态资源](#导入静态资源)
         - [静态资源的导入位置](#静态资源的导入位置)
         - [静态资源导入原理](#静态资源导入原理)
@@ -38,12 +46,8 @@
         - [自定义国际化处理](#自定义国际化处理)
     - [自定义拦截器](#自定义拦截器)
     - [web开发示例](#web开发示例)
-- [数据库整合](#数据库整合)
-    - [创建测试数据库](#创建测试数据库)
-    - [整合JDBC](#整合JDBC)
-    - [整合数据源-Druid](#整合数据源-Druid)
-- [Mybatis整合](#Mybatis整合)
 - [](#)
+[top](#catalog)
 - [其他](#其他)
 
 # SpringBoot概述
@@ -139,7 +143,7 @@
     ```
 
 
-# Maven配置分析
+# maven依赖分析
 [top](#catalog)
 - pom.xml文件分析
     - 默认继承 `spring-boot-starter-parent` 的依赖管理，控制版本与打包等任务
@@ -758,6 +762,400 @@ public final class SpringFactoriesLoader {
             }
             ```
 
+# 持久层整合
+## 创建测试数据库
+[top](#catalog)
+- 使用docker配置一个mysql容器(接入自定义网桥testbr中)
+    ```
+    docker run -d -p 3307:3306 --name mysqllearn --network testbr \
+    -v $HOME/mydocker/myvolumes/mysql/learn/mysql/conf:/etc/mysql/conf.d \
+    -v $HOME/mydocker/myvolumes/mysql/learn/mysql/logs:/logs \
+    -v $HOME/mydocker/myvolumes/mysql/learn/mysql/data:/var/lib/mysql \
+    -e MYSQL_ROOT_PASSWORD=1234 \
+    mysql:latest
+    ```
+
+## 整合JDBC
+[top](#catalog)
+- 整合方式
+    1. maven依赖
+        ```xml
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jdbc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        ```
+    2. 在 `applicatio.yaml` 配置文件中添加数据库配置
+        ```yaml
+        spring:    
+        datasource:
+            username: 用户
+            password: 密码
+            url: 数据库连接地址
+            driver-class-name: 驱动类
+        ```
+    3. 在类中装配类 `JdbcTemplate`，然后通过该类对象的方法来操作数据库
+        - JdbcTemplate 简化了数据库操作，只需要提供 sql 和 占位符的赋值参数就可以直接操作数据库
+        - 不需要直接操作事务，JdbcTemplate 内部封装了事务的相关操作
+
+- 示例
+    - spring配置
+        - 参考配置  
+            - [/java/mylearn/myspringboot/src/main/resources/config/application.yaml](/java/mylearn/myspringboot/src/main/resources/config/application.yaml)
+        - 配置内容
+            ```yaml
+            spring:
+              datasource:
+                username: root
+                password: 1234
+                url: jdbc:mysql://127.0.0.1:3307?serverTimezone=UTC&characterEncoding=utf8    useUnicode=true&useSSL=false
+                driver-class-name: com.mysql.cj.jdbc.Driver
+            ```
+    - 使用 `JdbcTemplate` 操作数据库
+        - 参考代码
+            - [/java/mylearn/myspringboot/src/main/java/com/ljs/learn/myspringboot/controller/jdbc/JDBCController.java](/java/mylearn/myspringboot/src/main/java/com/ljs/learn/myspringboot/controller/jdbc/JDBCController.java)
+        - 代码内容
+            ```java
+            @RestController
+            public class JDBCController {
+                @Autowired
+                JdbcTemplate jdbcTemplate;
+
+                // 查询
+                @RequestMapping("/jdbc/userlist")
+                public List<Map<String, Object>> userList(){
+                    String sql = "select * from test01.user";
+                    List<Map<String, Object>> maps = jdbcTemplate.queryForList(sql);
+                    return maps;
+                }
+
+                // 添加
+                @RequestMapping("/jdbc/adduser")
+                public String addUser(){
+                    String sql = "insert into test01.user(id, name, pwd) values(100, 'xxxx', 'xxxpwd')";
+                    // 自动提交事务
+                    jdbcTemplate.update(sql);
+                    return "add end";
+                }
+
+                // 修改
+                @RequestMapping("/jdbc/upuser/{id}")
+                public String updateUser(@PathVariable("id") int id){
+                    String sql = "update test01.user set name=?, pwd=? where id="+id;
+
+                    // 封装对象
+                    Object[] objects = new Object[2];
+                    objects[0] = "yyy";
+                    objects[1] = "yyypwd";
+                    jdbcTemplate.update(sql, objects);
+                    return "update end";
+                }
+                // 删除
+                @RequestMapping("jdbc/deluser/{id}")
+                public String deleteUser(@PathVariable("id") int id){
+                    String sql = "delete from test01.user where id = ?";
+                    jdbcTemplate.update(sql, id);
+                    return "delete end";
+                }
+            }
+            ```
+
+## 整合数据源-Druid
+[top](#catalog)
+- 整合方式
+    - 导入maven依赖
+    - 在 `applicatio.yaml` 配置文件中添加数据库配置
+    - 如果配置中包含springBoot默认配置之外的内容，需要手动添加配置类，并与配置文件绑定
+    - 在配置类中添加后台监控功能
+- 示例
+    - spring配置
+        - 参考配置
+            - [/java/mylearn/myspringboot/src/main/resources/config/application.yaml](/java/mylearn/myspringboot/src/main/resources/config/application.yaml)
+        - 配置内容
+            ```yaml
+            spring:
+              # 配置数据库连接
+              datasource:
+                username: root
+                password: 1234
+                url: jdbc:mysql://127.0.0.1:3307?serverTimezone=UTC&characterEncoding=utf8&useUnicode=true&            useSSL=false
+                driver-class-name: com.mysql.cj.jdbc.Driver
+                type: com.alibaba.druid.pool.DruidDataSource
+            
+                # SpringBoot 默认不注入的配置，需要手动绑定
+                # druid专有配置
+                initialSize: 5
+                minIdle: 5
+                maxActive: 20
+                maxWait: 60000
+                timeBetweenEvictionRunsMillis: 60000
+                minEvictableIdleTimeMillis: 300000
+                validationQuery: SELECT 1 FROM DUAL
+                testWhileIdle: true
+                testOnBorrow: false
+                testOnReturn: false
+                poolPreparedStatements: true
+            
+                # 配置监控统计拦截的filters，stat:监控统计，log4j日志记录，wall:防御sql注入
+                # 需要导入log4j的配置
+                filters: stat,wall,log4j
+                maxPoolPreparedStatementPerConncetionSize: 20
+                useGlobalDataSourceStat: true
+                connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=500
+            ```
+    - 配置类
+        - 参考代码
+            - [/java/mylearn/myspringboot/src/main/java/com/ljs/learn/myspringboot/config/druid/DruidConfig.java](/java/mylearn/myspringboot/src/main/java/com/ljs/learn/myspringboot/config/druid/DruidConfig.java)
+        - 代码内容
+            ```java
+            @Configuration
+            public class DruidConfig {
+
+                // 接管配置文件，使当前类与配置文件绑定
+                @ConfigurationProperties(prefix = "spring.datasource")
+                @Bean
+                public DataSource druidDataSource(){
+                    return new DruidDataSource();
+                }
+
+                // 后台监控功能
+                // 以web.xml的方式配置Servlet
+                // 由于SpringBoot 内置了servlet，所以没有web，
+                // 需要使用ServletRegistrationBean来替代
+                @Bean
+                public ServletRegistrationBean statViewBean(){
+                    ServletRegistrationBean<StatViewServlet> bean = new ServletRegistrationBean<>(new StatViewServlet(), "/druid/*");
+                    // 后台登录账号密码，与web.xml中的配置类似
+                    Map<String, String> initParamters = new HashMap<>();
+                    // 1. 账号密码对应的key是固定
+                    initParamters.put("loginUsername", "admin");
+                    initParamters.put("loginPassword", "12345");
+                    // 2. 允许谁可以访问
+                    // 如果value为空字符，则任何人都可以访问
+                    // localhost：只有本机可以访问
+                    initParamters.put("allow", "localhost");
+                    bean.setInitParameters(initParamters);
+                    return bean;
+                }
+
+                @Bean
+                public FilterRegistrationBean filterBean(){
+                    FilterRegistrationBean bean = new FilterRegistrationBean();
+                    // 添加过滤器
+                    bean.setFilter(new WebStatFilter());
+                    // 设置过滤请求
+                    // 可以过滤的内容参考 WebStatFilter 中的关键字
+                    Map<String, String> initParameters = new HashMap<>();
+                    initParameters.put("exclusions", "*.js，*.css,/druid/*");
+                    bean.setInitParameters(initParameters);
+                    return bean;
+                }
+            }
+            ```
+
+## Mybatis整合
+[top](#catalog)
+- 整合方法
+    1. 需要数据库(mysql)和JDBC的maven依赖
+    2. 在maven依赖中引入mybatis的starter
+        ```xml
+        <!-- https://mvnrepository.com/artifact/org.mybatis.spring.boot/mybatis-spring-boot-starter -->
+        <dependency>
+            <groupId>org.mybatis.spring.boot</groupId>
+            <artifactId>mybatis-spring-boot-starter</artifactId>
+            <version>2.1.2</version>
+        </dependency>
+        ```
+    3. 添加mapper
+        - 方式1：创建mapper接口
+            - 使用@Mapper注解标识当前接口是mybatis的mapper
+            - 使用@Repository注解，让spring接管
+                ```java
+                @Mapper
+                public interface XXXXMapper {
+                }
+                ```
+        - 方式2：使用mapper包扫描注解
+            ```java
+            @MapperScan("包的全路径")
+            ```
+    4. 添加spring-mybatis配置
+    5. 在业务类中自动装配Mapper
+
+- 示例
+    1. 创建Mapper，采用mapper和xml分离的方式
+        - 参考代码
+            - [/java/mylearn/myspringboot/src/main/java/com/ljs/learn/myspringboot/dao/mybatis/UserMapper.java](/java/mylearn/myspringboot/src/main/java/com/ljs/learn/myspringboot/dao/mybatis/UserMapper.java)
+            - [/java/mylearn/myspringboot/src/main/resources/mybatis/mapper/UserMapper.xml](/java/mylearn/myspringboot/src/main/resources/mybatis/mapper/UserMapper.xml)
+        - mapper内容
+            ```java
+            @Mapper
+            @Repository
+            public interface UserMapper {
+                List<User> getUsers();
+                User getUserById(int id);
+                void insertUser(User u);
+                void updateUser(User u);
+                void deleteUserById(int id);
+            }
+            ```
+        - 配置内容
+            ```xml
+            <mapper namespace="com.ljs.learn.myspringboot.dao.mybatis.UserMapper">
+                <select id="getUsers" resultType="user">
+                    select * from test01.user;
+                </select>
+            
+                <select id="getUserById" parameterType="int" resultType="user">
+                    select * from test01.user where id = #{id};
+                </select>
+            
+                <insert id="insertUser" parameterType="user">
+                    insert into test01.user (id, name, pwd) values (#{id}, #{name}, #{pwd});
+                </insert>
+            
+                <update id="updateUser" parameterType="user">
+                    update test01.user set name=#{name} where id = #{id}
+                </update>
+            
+                <delete id="deleteUserById" parameterType="int">
+                    delete from test01.user where id = #{id}
+                </delete>
+            </mapper>
+            ```
+    2. 在spring配置文件中添加 mybatis 的配置
+        - 参考配置
+            - [/java/mylearn/myspringboot/src/main/resources/config/application.yaml](/java/mylearn/myspringboot/src/main/resources/config/application.yaml)
+        - 配置内容
+            ```yaml
+            mybatis:
+              #配置别名
+              type-aliases-package:  com.ljs.learn.myspringboot.bean
+              #指定mapper.xml的保存路径
+              mapper-locations: 'classpath:mybatis/mapper/*.xml'
+            ```      
+    - 在 Controller 中调用 Mapper
+        - 参考代码
+            - [/java/mylearn/myspringboot/src/main/java/com/ljs/learn/myspringboot/controller/mybatis/MybatisController.java](/java/mylearn/myspringboot/src/main/java/com/ljs/learn/myspringboot/controller/mybatis/MybatisController.java)
+        - 代码内容
+            ```java
+            @RestController
+            public class MybatisController {
+                // 自动装配mapper
+                @Autowired
+                UserMapper dao;
+            
+                // 查询所有用户
+                @RequestMapping("/mybatis/user/userlist")
+                public List<User> userList(){
+                    List<User> users = dao.getUsers();
+                    return users;
+                }
+            
+                // 查询
+                @RequestMapping("/mybatis/user/get/{id}")
+                public User userList(@PathVariable("id") int id){
+                    User users = dao.getUserById(id);
+                    return users;
+                }
+            
+                // 添加
+                @RequestMapping("/mybatis/user/adduser")
+                public String addUser(){
+                    String sql = "insert into test01.user(id, name, pwd) values(, )";
+                    dao.insertUser(new User(200, "xxxx", "xxxpwd"));
+                    return "add end";
+                }
+            
+                // 修改
+                @RequestMapping("/mybatis/user/upuser/{id}")
+                public String updateUser(@PathVariable("id") int id){
+                    dao.updateUser(new User(id, "yyy", "yyypwd"));
+                    return "update end";
+                }
+                // 删除
+                @RequestMapping("/mybatis/user/deluser/{id}")
+                public String deleteUser(@PathVariable("id") int id){
+                    dao.deleteUserById(id);
+                    return "delete end";
+                }
+            }
+            ```
+
+# 任务
+## 异步任务
+[top](#catalog)
+-　设置异步任务的方法
+    - 使用 `@Async` 注解标识一个异步方法
+    - 使用 `@EnableAsync` 开启异步Controller
+- 示例
+    - 标识Service中的一个异步方法
+        - 参考代码
+            - [/java/mylearn/myspringboot/src/main/java/com/ljs/learn/myspringboot/service/mission/AsyncService.java](/java/mylearn/myspringboot/src/main/java/com/ljs/learn/myspringboot/service/mission/AsyncService.java)
+        - 代码内容
+            ```java
+            @Service
+            public class AsyncService {
+                // 使用注解标识一个异步方法
+                @Async
+                public void hello(){
+                    try {
+                        Thread.sleep(3000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    System.out.println("running");
+                }
+            }
+            ```
+    - 在Controler中异步调用Service中的方法    
+        - 参考代码
+            - [/java/mylearn/myspringboot/src/main/java/com/ljs/learn/myspringboot/controller/mission/AsyncController.java](/java/mylearn/myspringboot/src/main/java/com/ljs/learn/myspringboot/controller/mission/AsyncController.java)    
+        - 代码内容
+            ```java
+            @EnableAsync
+            @RestController
+            public class AsyncController {
+                @Autowired
+                private AsyncService service;
+            
+                @GetMapping("/async/hello")
+                public String hello(){
+                    service.hello();
+                    return "end";
+                }
+            }
+            ```
+
+## 定时任务
+[top](#catalog)
+- 两个注解
+    - `@EnableScheduling`
+        - 开启定时功能的注解
+        - 标识SpringBoot启动类类
+    - `@Scheduled(cron="cron表达式")`
+        - 标识方法，定义一个定时任务
+        - 使用cron表达式定义定时任务
+- 示例
+    - 参考代码
+        - [/java/mylearn/myspringboot/src/main/java/com/ljs/learn/myspringboot/service/mission/SchedulerService.java](/java/mylearn/myspringboot/src/main/java/com/ljs/learn/myspringboot/service/mission/SchedulerService.java)
+    - 代码内容
+        ```java
+        @Service
+        public class SchedulerService {
+            // 设置定时任务
+            @Scheduled(cron="2 * * * * 0-7")
+            public void hello(){
+                System.out.println("hello running");
+            }
+        }
+        ```
+
 # web开发
 ## 导入静态资源
 ### 静态资源的导入位置
@@ -906,7 +1304,7 @@ public final class SpringFactoriesLoader {
 ### 静态资源导入示例
 [top](#catalog)
 - 导入 `webjars`
-    - maven配置
+    - maven依赖
         - 参考配置
             - [/java/mylearn/myspringboot/pom.xml](/java/mylearn/myspringboot/pom.xml) 
         - 配置内容
@@ -1314,7 +1712,7 @@ public final class SpringFactoriesLoader {
         }
         ```
 
-## web开发示例
+## web开发流程
 [top](#catalog)
 - 示例参考
     - [/java/mylearn/myspringboot-sample](/java/mylearn/myspringboot-sample)
@@ -1323,7 +1721,7 @@ public final class SpringFactoriesLoader {
     1. 创建pojo
     2. 创建DAO模拟数据
     3. 导入静态资源 到static，导入后都默认映射到`/`
-    4. 导入模版到templates，导入thymeleaf的maven配置
+    4. 导入模版到templates，导入thymeleaf的maven依赖
         - 模版中的内部资源链全部改成`@{开发的资源目录}`，启动后会自动添加站点和应用名
         - 国际化内容使用：`#{}`
         - 显示变量的值使用：`${}`
@@ -1353,331 +1751,6 @@ public final class SpringFactoriesLoader {
         - 删除
     10. 处理404页面
         - 命名为`404.html`
-
-# 数据库整合
-## 创建测试数据库
-[top](#catalog)
-- 使用docker配置一个mysql容器(接入自定义网桥testbr中)
-    ```
-    docker run -d -p 3307:3306 --name mysqllearn --network testbr \
-    -v $HOME/mydocker/myvolumes/mysql/learn/mysql/conf:/etc/mysql/conf.d \
-    -v $HOME/mydocker/myvolumes/mysql/learn/mysql/logs:/logs \
-    -v $HOME/mydocker/myvolumes/mysql/learn/mysql/data:/var/lib/mysql \
-    -e MYSQL_ROOT_PASSWORD=1234 \
-    mysql:latest
-    ```
-
-## 整合JDBC
-[top](#catalog)
-- 整合方式
-    1. maven配置
-        ```xml
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-jdbc</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        ```
-    2. 在 `applicatio.yaml` 配置文件中添加数据库配置
-        ```yaml
-        spring:    
-        datasource:
-            username: 用户
-            password: 密码
-            url: 数据库连接地址
-            driver-class-name: 驱动类
-        ```
-    3. 在类中装配类 `JdbcTemplate`，然后通过该类对象的方法来操作数据库
-        - JdbcTemplate 简化了数据库操作，只需要提供 sql 和 占位符的赋值参数就可以直接操作数据库
-        - 不需要直接操作事务，JdbcTemplate 内部封装了事务的相关操作
-
-- 示例
-    - spring配置
-        - 参考配置  
-            - [/java/mylearn/myspringboot/src/main/resources/config/application.yaml](/java/mylearn/myspringboot/src/main/resources/config/application.yaml)
-        - 配置内容
-            ```yaml
-            spring:
-              datasource:
-                username: root
-                password: 1234
-                url: jdbc:mysql://127.0.0.1:3307?serverTimezone=UTC&characterEncoding=utf8    useUnicode=true&useSSL=false
-                driver-class-name: com.mysql.cj.jdbc.Driver
-            ```
-    - 使用 `JdbcTemplate` 操作数据库
-        - 参考代码
-            - [/java/mylearn/myspringboot/src/main/java/com/ljs/learn/myspringboot/controller/jdbc/JDBCController.java](/java/mylearn/myspringboot/src/main/java/com/ljs/learn/myspringboot/controller/jdbc/JDBCController.java)
-        - 代码内容
-            ```java
-            @RestController
-            public class JDBCController {
-                @Autowired
-                JdbcTemplate jdbcTemplate;
-
-                // 查询
-                @RequestMapping("/jdbc/userlist")
-                public List<Map<String, Object>> userList(){
-                    String sql = "select * from test01.user";
-                    List<Map<String, Object>> maps = jdbcTemplate.queryForList(sql);
-                    return maps;
-                }
-
-                // 添加
-                @RequestMapping("/jdbc/adduser")
-                public String addUser(){
-                    String sql = "insert into test01.user(id, name, pwd) values(100, 'xxxx', 'xxxpwd')";
-                    // 自动提交事务
-                    jdbcTemplate.update(sql);
-                    return "add end";
-                }
-
-                // 修改
-                @RequestMapping("/jdbc/upuser/{id}")
-                public String updateUser(@PathVariable("id") int id){
-                    String sql = "update test01.user set name=?, pwd=? where id="+id;
-
-                    // 封装对象
-                    Object[] objects = new Object[2];
-                    objects[0] = "yyy";
-                    objects[1] = "yyypwd";
-                    jdbcTemplate.update(sql, objects);
-                    return "update end";
-                }
-                // 删除
-                @RequestMapping("jdbc/deluser/{id}")
-                public String deleteUser(@PathVariable("id") int id){
-                    String sql = "delete from test01.user where id = ?";
-                    jdbcTemplate.update(sql, id);
-                    return "delete end";
-                }
-            }
-            ```
-
-## 整合数据源-Druid
-[top](#catalog)
-- 整合方式
-    - 导入maven配置
-    - 在 `applicatio.yaml` 配置文件中添加数据库配置
-    - 如果配置中包含springBoot默认配置之外的内容，需要手动添加配置类，并与配置文件绑定
-    - 在配置类中添加后台监控功能
-- 示例
-    - spring配置
-        - 参考配置
-            - [/java/mylearn/myspringboot/src/main/resources/config/application.yaml](/java/mylearn/myspringboot/src/main/resources/config/application.yaml)
-        - 配置内容
-            ```yaml
-            spring:
-              # 配置数据库连接
-              datasource:
-                username: root
-                password: 1234
-                url: jdbc:mysql://127.0.0.1:3307?serverTimezone=UTC&characterEncoding=utf8&useUnicode=true&            useSSL=false
-                driver-class-name: com.mysql.cj.jdbc.Driver
-                type: com.alibaba.druid.pool.DruidDataSource
-            
-                # SpringBoot 默认不注入的配置，需要手动绑定
-                # druid专有配置
-                initialSize: 5
-                minIdle: 5
-                maxActive: 20
-                maxWait: 60000
-                timeBetweenEvictionRunsMillis: 60000
-                minEvictableIdleTimeMillis: 300000
-                validationQuery: SELECT 1 FROM DUAL
-                testWhileIdle: true
-                testOnBorrow: false
-                testOnReturn: false
-                poolPreparedStatements: true
-            
-                # 配置监控统计拦截的filters，stat:监控统计，log4j日志记录，wall:防御sql注入
-                # 需要导入log4j的配置
-                filters: stat,wall,log4j
-                maxPoolPreparedStatementPerConncetionSize: 20
-                useGlobalDataSourceStat: true
-                connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=500
-            ```
-    - 配置类
-        - 参考代码
-            - [/java/mylearn/myspringboot/src/main/java/com/ljs/learn/myspringboot/config/druid/DruidConfig.java](/java/mylearn/myspringboot/src/main/java/com/ljs/learn/myspringboot/config/druid/DruidConfig.java)
-        - 代码内容
-            ```java
-            @Configuration
-            public class DruidConfig {
-
-                // 接管配置文件，使当前类与配置文件绑定
-                @ConfigurationProperties(prefix = "spring.datasource")
-                @Bean
-                public DataSource druidDataSource(){
-                    return new DruidDataSource();
-                }
-
-                // 后台监控功能
-                // 以web.xml的方式配置Servlet
-                // 由于SpringBoot 内置了servlet，所以没有web，
-                // 需要使用ServletRegistrationBean来替代
-                @Bean
-                public ServletRegistrationBean statViewBean(){
-                    ServletRegistrationBean<StatViewServlet> bean = new ServletRegistrationBean<>(new StatViewServlet(), "/druid/*");
-                    // 后台登录账号密码，与web.xml中的配置类似
-                    Map<String, String> initParamters = new HashMap<>();
-                    // 1. 账号密码对应的key是固定
-                    initParamters.put("loginUsername", "admin");
-                    initParamters.put("loginPassword", "12345");
-                    // 2. 允许谁可以访问
-                    // 如果value为空字符，则任何人都可以访问
-                    // localhost：只有本机可以访问
-                    initParamters.put("allow", "localhost");
-                    bean.setInitParameters(initParamters);
-                    return bean;
-                }
-
-                @Bean
-                public FilterRegistrationBean filterBean(){
-                    FilterRegistrationBean bean = new FilterRegistrationBean();
-                    // 添加过滤器
-                    bean.setFilter(new WebStatFilter());
-                    // 设置过滤请求
-                    // 可以过滤的内容参考 WebStatFilter 中的关键字
-                    Map<String, String> initParameters = new HashMap<>();
-                    initParameters.put("exclusions", "*.js，*.css,/druid/*");
-                    bean.setInitParameters(initParameters);
-                    return bean;
-                }
-            }
-            ```
-
-# Mybatis整合
-[top](#catalog)
-- 整合方法
-    1. 需要数据库(mysql)和JDBC的maven配置
-    2. 在maven配置中引入mybatis的starter
-        ```xml
-        <!-- https://mvnrepository.com/artifact/org.mybatis.spring.boot/mybatis-spring-boot-starter -->
-        <dependency>
-            <groupId>org.mybatis.spring.boot</groupId>
-            <artifactId>mybatis-spring-boot-starter</artifactId>
-            <version>2.1.2</version>
-        </dependency>
-        ```
-    3. 添加mapper
-        - 方式1：创建mapper接口
-            - 使用@Mapper注解标识当前接口是mybatis的mapper
-            - 使用@Repository注解，让spring接管
-                ```java
-                @Mapper
-                public interface XXXXMapper {
-                }
-                ```
-        - 方式2：使用mapper包扫描注解
-            ```java
-            @MapperScan("包的全路径")
-            ```
-    4. 添加spring-mybatis配置
-    5. 在业务类中自动装配Mapper
-
-- 示例
-    1. 创建Mapper，采用mapper和xml分离的方式
-        - 参考代码
-            - [/java/mylearn/myspringboot/src/main/java/com/ljs/learn/myspringboot/dao/mybatis/UserMapper.java](/java/mylearn/myspringboot/src/main/java/com/ljs/learn/myspringboot/dao/mybatis/UserMapper.java)
-            - [/java/mylearn/myspringboot/src/main/resources/mybatis/mapper/UserMapper.xml](/java/mylearn/myspringboot/src/main/resources/mybatis/mapper/UserMapper.xml)
-        - mapper内容
-            ```java
-            @Mapper
-            @Repository
-            public interface UserMapper {
-                List<User> getUsers();
-                User getUserById(int id);
-                void insertUser(User u);
-                void updateUser(User u);
-                void deleteUserById(int id);
-            }
-            ```
-        - 配置内容
-            ```xml
-            <mapper namespace="com.ljs.learn.myspringboot.dao.mybatis.UserMapper">
-                <select id="getUsers" resultType="user">
-                    select * from test01.user;
-                </select>
-            
-                <select id="getUserById" parameterType="int" resultType="user">
-                    select * from test01.user where id = #{id};
-                </select>
-            
-                <insert id="insertUser" parameterType="user">
-                    insert into test01.user (id, name, pwd) values (#{id}, #{name}, #{pwd});
-                </insert>
-            
-                <update id="updateUser" parameterType="user">
-                    update test01.user set name=#{name} where id = #{id}
-                </update>
-            
-                <delete id="deleteUserById" parameterType="int">
-                    delete from test01.user where id = #{id}
-                </delete>
-            </mapper>
-            ```
-    2. 在spring配置文件中添加 mybatis 的配置
-        - 参考配置
-            - [/java/mylearn/myspringboot/src/main/resources/config/application.yaml](/java/mylearn/myspringboot/src/main/resources/config/application.yaml)
-        - 配置内容
-            ```yaml
-            mybatis:
-              #配置别名
-              type-aliases-package:  com.ljs.learn.myspringboot.bean
-              #指定mapper.xml的保存路径
-              mapper-locations: 'classpath:mybatis/mapper/*.xml'
-            ```      
-    - 在 Controller 中调用 Mapper
-        - 参考代码
-            - [/java/mylearn/myspringboot/src/main/java/com/ljs/learn/myspringboot/controller/mybatis/MybatisController.java](/java/mylearn/myspringboot/src/main/java/com/ljs/learn/myspringboot/controller/mybatis/MybatisController.java)
-        - 代码内容
-            ```java
-            @RestController
-            public class MybatisController {
-                // 自动装配mapper
-                @Autowired
-                UserMapper dao;
-            
-                // 查询所有用户
-                @RequestMapping("/mybatis/user/userlist")
-                public List<User> userList(){
-                    List<User> users = dao.getUsers();
-                    return users;
-                }
-            
-                // 查询
-                @RequestMapping("/mybatis/user/get/{id}")
-                public User userList(@PathVariable("id") int id){
-                    User users = dao.getUserById(id);
-                    return users;
-                }
-            
-                // 添加
-                @RequestMapping("/mybatis/user/adduser")
-                public String addUser(){
-                    String sql = "insert into test01.user(id, name, pwd) values(, )";
-                    dao.insertUser(new User(200, "xxxx", "xxxpwd"));
-                    return "add end";
-                }
-            
-                // 修改
-                @RequestMapping("/mybatis/user/upuser/{id}")
-                public String updateUser(@PathVariable("id") int id){
-                    dao.updateUser(new User(id, "yyy", "yyypwd"));
-                    return "update end";
-                }
-                // 删除
-                @RequestMapping("/mybatis/user/deluser/{id}")
-                public String deleteUser(@PathVariable("id") int id){
-                    dao.deleteUserById(id);
-                    return "delete end";
-                }
-            }
-            ```
 
 
 # 其他
