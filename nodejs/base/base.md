@@ -8,7 +8,8 @@
     - [包的基本知识](#包的基本知识)
     - [包管理工具npm](#包管理工具npm)
     - [包管理工具cnpm](#包管理工具cnpm)
-    - [执行时包的搜索流程](#执行时包的搜索流程)
+    - [包的搜索与导入流程](#包的搜索与导入流程)
+    - [package.json](#package.json)
 - [Node中的模块化](#Node中的模块化)
     - [Node的模块化特性](#Node的模块化特性)
     - [模块的标识与分类](#模块的标识与分类)
@@ -24,9 +25,22 @@
     - [流式文件读取](#流式文件读取)
     - [通过管道进行流式读写](#通过管道进行流式读写)
     - [fs中的其他方法](#fs中的其他方法)
+- [supervisor--nodejs的自启动工具](#supervisor--nodejs的自启动工具)
+- [服务器应用开发](#服务器应用开发)
+    - [HTTP模块](#HTTP模块)
+    - [url模块](#url模块)
+- [搭建简单的静态web服务](#搭建简单的静态web服务)
+    - [静态web服务的搭建方法](#静态web服务的搭建方法)
+    - [将静态资源访问封装为路由操作](#将静态资源访问封装为路由操作)
+    - [封装静态与非静态资源的路由](#封装静态与非静态资源的路由)
+    - [使用EJS模板引擎](#使用EJS模板引擎)
+    - [](#)
+    - [](#)
+    - [](#)
 - [其他](#其他)
     - [全局对象global](#全局对象global)
     - [事件绑定方法](#事件绑定方法)
+- [](#)
 - [](#)
 
 # Nodejs安装
@@ -85,7 +99,6 @@
     - 即时通讯
 
 
-
 # CommonJS规范
 [top](#catalog)
 - ECMAScript标准的缺陷
@@ -109,17 +122,16 @@
     2. 包描述文件
         - 描述包的相关信息，以供外部读取分析
 
-- 包结构
-    - 包的本质：一个压缩文件，解压后能还原为目录
-    - 符合规范的包结构
+- 包的本质：一个压缩文件，解压后能还原为目录
+- CommonJS对包结构的规定
 
-        |文件|描述|
-        |-|-|
-        |**package.json**|描述文件，该文件中不能写注释|
-        |bin|可执行的二进制文件|
-        |lib|js代码|
-        |doc|文档|
-        |test|单元测试|
+    |文件|描述|
+    |-|-|
+    |**package.json**|描述文件，该文件中不能写注释|
+    |bin|可执行的二进制文件|
+    |lib|js代码|
+    |doc|文档|
+    |test|单元测试|
 
 
 ## 包管理工具npm
@@ -135,16 +147,20 @@
     |指令|描述|备注|
     |-|-|-|
     |`npm -v`|查看版本||
-    |`npm search 包名`|搜索包||
-    |`npm install 包名`|在当前目录中安装包|简写：`npm i 包名`|
-    |`npm install 包名 本地文件路径`|从本地安装||
-    |`npm install 包名 -registry=地址`|从镜像源安装||
-    |`npm install 包名 -g`|全局模式安装包|一般都用来安装一些工具|
-    |`npm install 包名 --save`|安装包，并添加到依赖中||
+    |`npm search <包名>`|搜索包||
+    |`npm install <包名>`|下载包，并保存在当前工程的node_module目录|简写：`npm i 包名`|
+    |`npm install <包名>@<版本号>`|下载指定版本的包||
+    |`npm install <包名> 本地文件路径`|从本地安装某个包||
+    |`npm install <包名> -registry=地址`|从镜像源安装||
+    |`npm install <包名> -g`|全局模式安装包|一般都用来安装一些工具|
+    |`npm install <包名> --save`|安装包，依赖添加到：`dependencies`||
+    |`npm install <包名> --save-dev`|安装包，依赖添加到：`devDependencies`||
     |`npm install`|下载当前项目的依赖包||
-    |`npm remove 包名`|删除包|简写：`npm r 包名`|
+    |`npm uninstall <包名>`|卸载当前工程下的某个包||
+    |`npm remove <包名>`|删除包|简写：`npm r 包名`|
     |`npm init`|初始化nodejs的开发环境||
-    |`npm config set registry 地址`|设置镜像源||
+    |`npm list`|查看当前工程下已安装的包||
+    |`npm config set registry <地址>`|设置镜像源||
 
 - `npm install` 指令的注意事项
     - 执行时为了保证正确安装，需要在执行指令的目录下存在 `package.json` 文件
@@ -169,7 +185,7 @@
     - `npm install -g cnpm --registry=https://registry.npm.taobao.org`
 
 
-## 执行时包的搜索流程
+## 包的搜索与导入流程
 [top](#catalog)
 - 通过包名引入模块时，包的搜索流程
     - 首先在当前工作目录的`node_modules`目录下中寻找
@@ -177,6 +193,44 @@
     - 如果有则直接使用，没有再向上一级目录搜索
     - 一直到搜索到磁盘根目录，如果依然没有，则报错
 
+- nodejs是如何导入 node_module 目录下的包？
+    - nodejs通过各包下的`index.js`文件来导入包
+    - 如果没有 `index.js` 文件，会根据 `package.json` 文件中 `main` 属性指定的文件作为入口来导入包
+
+## package.json
+[top](#catalog)
+- 通过 `npm init` 来生成该文件
+- package.json 定义了当前项目需要的包信息，以及项目的配置信息
+- 文件说明
+    ```json
+    {
+        "name": "abcd",         // 项目名
+        "version": "1.0.0",     // 项目版本
+        "description": "",      // 项目描述
+        "main": "demo01.js",    // 当前项目的导入入口
+        "scripts": {
+            "test": "echo \"Error: no test specified\" && exit 1"
+        },
+        "author": "",           // 作者信息
+        "license": "ISC",       // 版权信息
+        "dependencies": {
+            "模块": "0.0.3"     // 正式依赖
+        },
+        "devDependencies": {    // 开发依赖
+
+        }
+    }
+    ```
+
+- 依赖中**版本号**的标识符
+    - 每次执行 `npm install <包名>`时，都会安装最新版本，可以通过版本标识符来规定版本的范围
+    - 标识符说明
+        |标识符|说明|
+        |-|-|
+        |`^a.b.c`|第一位版本号不变，后面两位取最新|
+        |`~a.b.c`|前两位版本号不变，最后一位取最新|
+        |`*a.b.c`|每次安装都安装最新的版本|
+        |`a.b.c`|版本固定，即指定版本安装|
 
 # Node中的模块化
 ## Node的模块化特性
@@ -668,13 +722,503 @@
         - curr 当前文件状态，fs.Stat对象
         - prev 修改前文件状态，fs.Stat对象
 
-# HTTP模块
+# upervisor--nodejs的自启动工具
 [top](#catalog)
-- 对于其他服务器端语言，编写后端的代码时需要配合HTTP服务器软件才能处理客户端请求
-    - 如Apache、Nginx等等
-- 对于Node.js，创建一个应用时，就已经实现了整个HTTP服务器软件
-- 
+- 自启动工具: upervisor 是什么？
+    - upervisor 会一直watch应用下的所有文件，当发现文件被修改时，就重新载入文件，进行自动部署
+    - 使用 upervisor 后，每次修改后不需要手动重启，便于服务器应用的开发与调试
+- 安装 supervisor
+    ```shell
+    npm install -g supervisor
+    ```
+- 使用 `supervisor` 代替 `npm` 来执行js文件
 
+# 服务器应用开发
+## HTTP模块
+[top](#catalog)
+- Nodejs开发与其他语言开发服务器应用的区别
+    - 对于其他服务器端语言，编写后端的代码时需要配合HTTP服务器软件才能处理客户端请求
+        - 如Apache、Nginx等等
+    - 对于Node.js，创建一个应用时，就已经实现了整个HTTP服务器
+
+- 创建一个http服务
+    1. 引入http模块。使用const声明，使外部无法修改
+        ```js
+        const http = require("http")
+        ```
+    2. 创建一个http服务，并监听端口
+        ```js
+        // 创建一个http服务，监听8081端口
+        http.createServer((request, response)=>{
+            // ...
+        }).listen(8081)
+        ```
+    3. 通过 `request`, `response` 来操作请求与响应
+
+- `request` 的操作
+    - `request.url`，获取请求中的url
+    - `request.method`，获取请求中的方式（GET、POST等方式）
+
+- `response` 的操作
+    - `res.writeHead(ResultCode, 响应头)` 设置响应头与状态码
+    - `res.write("...")` 向页面中输出一段内容
+        - 输出内容可以是html片段，也可以是一段字符串
+        - 如何输出内容中包含中文，需要先写入一条`<meta>`片段，来标识页面的字符集
+            ```js
+            res.write("<meta charset='utf-8'>")
+            ```
+    - `res.end( ["str"] )` 结束响应
+        - 向客户端发送请求时，必须有该代码，否则客户端将一直处于等待的状态
+        - 可以向页面写入一段字符串
+
+- 示例
+    - 参考代码
+        - [src/server/http/demo01.js](src/server/http/demo01.js)
+    - 代码内容及说明
+        ```js
+        // 使用const声明，使外部无法修改
+        const http = require("http")
+
+        /*
+            创建web服务
+            (request, response)=>{}
+                request：浏览器发送的请求数据
+                response：发送给浏览器的响应
+        */
+        http.createServer((req, res)=>{
+            console.log(req.url) // 获取url
+            // 设置响应头
+            // 200表示成功，文件类型是html，字符集是utf-8
+            res.writeHead(200, {"Content-type":"text/html;charset='utf-8"})
+
+            // 向页面写入html头，标识html的字符编码，来防止中文乱码
+            res.write("<meta charset='utf-8'>")
+            // 向页面输出一段内容
+            res.write("this is nodejs\n")
+            // 输出包含中文字符的内容
+            res.write("this is 中\n")
+
+            // 结束响应，这行代码必须写
+            // 结束的同时，可以向页面输出一段内容
+            res.end("this is end")
+        }).listen(8081)// 监听端口
+
+        console.log("server run as http://127.0.0.1:8081")
+        ```
+    - 启动后，在浏览器输入地址向服务器发送请求
+        - localhost:8081
+        - 127.0.0.1:8081
+    - 当请求时，`console.log(req.url)`会将url输出到控制台
+        - localhost:8081，输出 `/`
+        - localhost:8081/abc，输出 `/abc`
+        - localhost:8081/abc?a=111&b=qqq，输出 `/abc?a=111&b=qqq`
+
+## url模块
+[top](#catalog)
+- 使用方法
+
+    |方法|功能|备注|
+    |-|-|-|
+    |`url.parse(url [,queryToObj])`|解析url|<ul><li>`queryToObj`<ul><li>默认为false</li><li>`queryToObj = false`，请求参数被截取为字符串</li><li>`queryToObj = true`，请求参数被转换为一个js对象</li></ul></li> </ul>|
+    |`url.format(urlObject)`|将对象转换为url||
+    |`url.resolve(from, to)`|添加或者替换地址||
+
+- 使用方法说明
+    - `url.parse(url, false)`
+        - 代码内容
+            ```js
+            const url = require("url")
+            const result = url.parse("localhost:8081/abc?a=111&b=qqq", false)
+            console.log(result)
+            ```
+        - 输出结果
+            ```js
+            Url {
+            protocol: 'localhost:',
+            slashes: null,
+            auth: null,
+            host: '8081',
+            port: null,
+            hostname: '8081',
+            hash: null,
+            search: '?a=111&b=qqq',
+            // 请求参数被截取为字符串
+            query: 'a=111&b=qqq',
+            pathname: '/abc',
+            path: '/abc?a=111&b=qqq',
+            href: 'localhost:8081/abc?a=111&b=qqq'
+            }
+            ```
+    - `url.parse(url, true)`
+        - 代码内容
+            ```js
+            const url = require("url")
+            const result = url.parse("localhost:8081/abc?a=111&b=qqq", true)
+            console.log(result)
+            ```
+        - 输出结果
+            ```js
+            Url {
+            protocol: 'localhost:',
+            slashes: null,
+            auth: null,
+            host: '8081',
+            port: null,
+            hostname: '8081',
+            hash: null,
+            search: '?a=111&b=qqq',
+            // 请求参数被转换为对象
+            query: [Object: null prototype] { a: '111', b: 'qqq' },
+            pathname: '/abc',
+            path: '/abc?a=111&b=qqq',
+            href: 'localhost:8081/abc?a=111&b=qqq'
+            }
+            ```
+    - 输出请求内容
+        - 示例代码
+            ```js
+            const query = url.parse("localhost:8081/abc?a=111&b=qqq", true).query
+            console.log(`a=${query.a}, b=${query.b}`)
+            ```
+        - 输出结果
+            ```
+            a=111, b=qqq
+            ```
+
+- 示例：结合 http 模块，解析客户端请求
+    - 参考代码
+        - [src/server/url/demo01.js](src/server/url/demo01.js)
+    - 代码内容
+        ```js
+        // 使用const声明，使外部无法修改
+        const http = require("http")
+        const url = require("url")
+
+        // 创建一个http服务
+        http.createServer((req, res)=>{
+            res.writeHead(200, {"Content-type":"text/html;charset='utf-8'"})
+
+            // 解析url
+            // 去除 chrome的默认请求：/favicon.ico
+            if (req.url != '/favicon.ico'){
+                const query = url.parse(req.url, true).query
+                // 输出请求内容
+                let queryStr = ''
+                for (let p in query){
+                    queryStr += `${p} = ${query[p]},`
+                }
+
+                queryStr = queryStr.replace(/,*$/, '')
+                console.log(queryStr)
+            }
+
+            res.end("this is end")
+        }).listen(8081)// 监听端口
+        ```
+
+# 搭建简单的静态web服务
+## 静态web服务的搭建方法
+[top](#catalog)
+- 工程参考： [src/server/web_server_demo01](src/server/web_server_demo01)
+- 工程结构
+    ```
+    ├─ app.js
+    ├─ common
+    │    └─ common.js
+    └─ static
+         ├─ hello.html
+         ├─ index.html
+         ├─ test.html
+         ├─ css
+         │    └─ index.css
+         └─js
+            └─ index.js
+    ```
+- 通过 `app.js` 启动服务，通过地址来访问static下的静态资源
+    - 参考代码
+        - [src/server/web_server_demo01/app.js](src/server/web_server_demo01/app.js)
+    - 代码内容
+        ```js
+        const http = require("http")
+        const fs = require("fs")
+        const url = require("url")
+        const commons = require('./common/common')
+
+        http.createServer(serverHandle).listen(8081)
+
+        function serverHandle(req, res){
+            // 获取并过滤请求
+            if (req.url === '/favicon.ico'){
+                res.writeHead(200, {"Content-type":"text/html;charset='utf-8"})
+                res.end()
+                return
+            }
+
+            // 1. 整理路径
+            let pathname = url.parse(req.url).pathname
+            let srcPath = "./static" + (pathname === '/' ? '/index.html' : pathname)
+            console.log(srcPath)
+
+            // 2. 读取资源
+            fs.readFile(srcPath, (err, data)=>{
+                // 3. 如果无法读取文件，返回404
+                if(err){
+                    res.writeHead(404, {"Content-type":"text/html;charset='utf-8'"})
+                    console.log("read err")
+                    res.end('404')
+                    return
+                }
+
+                // 4. 返回资源
+                res.writeHead(200, {"Content-type": commons.getSrcType(srcPath) + ";charset='utf-8'"})
+                res.end(data)
+            })
+        }
+        ```
+
+- `commons/common.js` 提供资源类型检查，遇到css、js等资源时，修改响应头的信息，使页面正常显示
+    - [src/server/web_server_demo01/common/common.js](src/server/web_server_demo01/common/common.js)
+    - 代码内容
+        ```js
+        const path = require("path")
+        exports.getSrcType = (p) =>{
+            switch (path.extname(p)){
+                case '.html':
+                    return 'text/html'
+                case '.css':
+                    return 'text/css'
+                case '.js':
+                    return 'text/javascript'
+                default:
+                    return 'text/html'
+            }
+        }
+        ```
+
+## 将静态资源访问封装为路由操作
+[top](#catalog)
+- 什么是路由?
+    - 路由（Routing）=  URI + 请求方式（GET、POST等）
+    - 通过路由可以确定如何响应客户端对服务器资源的访问
+
+- 工程参考： [src/server/web_server_route](src/server/web_server_route)
+- 工程结构
+    ```
+    ├─ app.js
+    ├─ common
+    │    └─ routes.js
+    └─ static
+         ├─ hello.html
+         ├─ index.html
+         ├─ test.html
+         ├─ css
+         │    └─ index.css
+         └─js
+            └─ index.js
+    ```
+
+- 将静态资源的访问封装为路由
+    - 参考代码
+        - [src/server/web_server_route/module/routes.js](src/server/web_server_route/module/routes.js)
+    - 封装路由操作。由主逻辑进行调用，并将需要访问的资源根目录作为参数传入
+        ```js
+        exports.static = (req, res, root) => {
+            // 获取并过滤请求
+            if (req.url === '/favicon.ico'){
+                res.writeHead(200, {"Content-type":"text/html;charset='utf-8"})
+                res.end()
+                return
+            }
+
+            // 1. 整理路径
+            let pathname = url.parse(req.url).pathname
+            let srcPath = "./" + root + (pathname === '/' ? '/index.html' : pathname)
+            console.log(srcPath)
+
+            // 2. 读取资源
+            fs.readFile(srcPath, (err, data)=>{
+                // 3. 如果无法读取文件，返回404
+                if(err){
+                    res.writeHead(404, {"Content-type":"text/html;charset='utf-8'"})
+                    console.log("read err")
+                    res.end('404')
+                    return
+                }
+
+                // 4. 返回资源
+                res.writeHead(200, {"Content-type": getSrcType(srcPath) + ";charset='utf-8'"})
+                res.end(data)
+            })
+        }
+        ```
+
+- 通过调用路由操作，来简化主处理
+    - 参考代码
+        - [src/server/web_server_route/app.js](src/server/web_server_route/app.js)
+    - 代码内容
+        ```js
+        const http = require("http")
+        const routes = require("./module/routes")
+
+        http.createServer((req, res) => {
+            routes.static(req, res, 'static')
+        }).listen(8081)
+        ```
+
+## 封装静态与非静态资源的路由
+[top](#catalog)
+- 进一步封装路由的问题
+    - 已经封装了对静态资源的请求，当静态资源中无法搜索到指定资源时，就直接返回了404
+    - 对静态资源的封装阻止了对其他请求的捕获
+- 完整路由操作的思路
+    - 将请求的捕获分为两类
+        - 静态资源
+        - 非静态资源
+    - 捕获流程
+        1. 先在静态资源中搜索资源，有则返回，没有则继续
+        2. 在非静态资源的处理中搜索响应的处理方法，有则使用
+        3. 如果没有找到响应方法，就返回404
+    - 注意事项
+        - 读取文件需要使用**同步方法**，否则在读取资源之前，异步方法会进入事件队列，导致静态与非静态资源都搜索不到响应方法，而产生异常
+
+- 封装 静态路由操作。使用同步方式读取静态资源
+    - 参考代码
+        - [src/server/web_server_route02/module/routes.js](src/server/web_server_route02/module/routes.js)
+    - 代码内容
+        ```js
+        exports.static = (req, res, root) => {
+            // 获取并过滤请求
+            if (req.url === '/favicon.ico'){
+                res.writeHead(200, {"Content-type":"text/html;charset='utf-8"})
+                res.end()
+                return
+            }
+
+            // 1. 整理路径
+            let pathname = url.parse(req.url).pathname
+            let srcPath = "./" + root + (pathname === '/' ? '/index.html' : pathname)
+            console.log(srcPath)
+
+            // 2. 同步 读取资源
+            try {
+                let data = fs.readFileSync(srcPath)
+                console.log(data.toString())
+
+                // 4. 返回资源
+                if(data){
+                    res.writeHead(200, {"Content-type": getSrcType(srcPath) + ";charset='utf-8'"})
+                    res.end(data)
+                }
+
+                // 3. 如果无法读取文件，则返回，继续执行非静态资源的处理
+            } catch (error) {
+            }
+        }
+        ```
+
+- 在主逻辑中执行静态与非静态资源的搜索
+    - 参考代码
+        - [src/server/web_server_route02/app.js](src/server/web_server_route02/app.js)
+    - 代码内容
+        ```js
+        http.createServer((req, res) => {
+            // 1. 处理静态资源
+            routes.static(req, res, 'static')
+
+            // 2. 处理非静态资源，如果已经在静态资源中搜索到资源了，则这部分不执行
+            // 解析url
+            let pathname = url.parse(req.url).pathname
+
+            // 根据不同的url执行不同的逻辑
+            if (pathname === '/login'){
+                res.writeHead(200, {'Content-type':"text/html;charset='utf-8'"})
+                res.end("this is login")
+            } else if (pathname === '/register') {
+                res.writeHead(200, {'Content-type':"text/html;charset='utf-8'"})
+                res.end("this is register")
+            } else if (pathname === '/admin') {
+                res.writeHead(200, {'Content-type':"text/html;charset='utf-8'"})
+                res.end("this is admin")
+            } else {
+                res.writeHead(404, {'Content-type':"text/html;charset='utf-8'"})
+                res.end("404:no handler")
+            }
+
+        }).listen(8081)
+        ```
+
+## 使用EJS模板引擎
+[top](#catalog)
+- 安装EJS
+    - npm i ejs --save
+- ejs模板默认以 `.ejs` 结尾
+- 渲染模板的方法
+    - 语法
+        ```js
+        ejs.renderFile('动态资源的路径', 绑定资源对象 [, options], callback(err,data))
+        ```
+    - 通过callback可以获取到渲染后的数据
+- 在页面绑定数据的方式
+    - `<%=变量名%>`
+    - `<%js代码%>`
+
+- 示例
+    - 模板页面
+        - 参考代码
+            - [src/server/web_server_ejs/views/ejsdemo.ejs](src/server/web_server_ejs/views/ejsdemo.ejs)
+        - 页面内容
+            ```html
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <title>ejsdemo</title>
+            </head>
+            <body>
+                <p>ejsdemo</p>
+                <!-- 绑定变量 -->
+                <span><%=msg%></span>
+                <ul>
+                    <!-- 通过js的方式循环赋值 -->
+                    <%for(let n of groups){%>
+                    <li><%=n.title %></li>
+                    <%}%>
+                </ul>
+            </body>
+            </html>
+            ```
+    - 在后端渲染模板
+        - 参考代码
+            - [src/server/web_server_ejs/app.js](src/server/web_server_ejs/app.js)
+        - 代码内容
+            ```js
+            http.createServer((req, res) => {
+                // ...
+                // ...
+                // 根据不同的url执行不同的逻辑
+                if (pathname === '/ejsdemo'){
+                    let groups = [
+                        {title:'group01'},
+                        {title:'group02'},
+                        {title:'group03'},
+                        {title:'group04'},
+                        {title:'group05'}
+                    ]
+
+                    // 渲染模板
+                    ejs.renderFile('./views/ejsdemo.ejs', {msg:"test msg", groups:groups}, (err, data)=>{
+                        res.writeHead(200, {'Content-type':"text/html;charset='utf-8'"})
+                        res.end(data)
+                    })
+                }
+                //...
+                //...
+            }).listen(8081)
+            ```
+
+## 处理GET与POST请求
+[top](#catalog)
+- 与处理POST请求
 
 # 其他
 ## 全局对象global
@@ -686,3 +1230,4 @@
 [top](#catalog)
 - on: 绑定的事件一直有效
 - once: 绑定一次性事件
+ 
