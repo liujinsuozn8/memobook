@@ -686,17 +686,17 @@
     3. 创建开发目录
         ```
         babel_browserify
-          └─ js
-              ├─ .babelrc           babel配置文件
-              ├─ dist               保存browserify的编译打包结果
-              ├─ lib                保存babel编译的结果
-              ├─ src
-              │   ├─ main.js        聚合模块
-              │   ├─ module1.js     自定义模块
-              │   ├─ module2.js
-              │   └─ module3.js
-              ├─ index.html         页面
-              └─ package.json
+          ├─ js
+          │   ├─ dist               保存browserify的编译打包结果
+          │   ├─ lib                保存babel编译的结果
+          │   └─ src
+          │       ├─ main.js        聚合模块
+          │       ├─ module1.js     自定义模块
+          │       ├─ module2.js
+          │       └─ module3.js
+          ├─ .babelrc               babel配置文件
+          ├─ index.html             页面
+          └─ package.json
         ```
 
     4. 编写模块
