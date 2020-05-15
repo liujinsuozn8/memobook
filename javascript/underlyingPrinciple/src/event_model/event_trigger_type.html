@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>test2</title>
+    <script type='text/javascript'>
+        window.onload = function(){
+            let btn1 = document.getElementById('btn1')
+            btn1.addEventListener('click', ()=>{
+                Promise.resolve().then(()=>{console.log(2)})
+                console.log(1)
+            })
+            btn1.addEventListener('click', ()=>{
+                Promise.resolve().then(()=>{console.log(4)})
+                console.log(3)
+            })
+
+            let btn2 = document.getElementById('btn2')
+            btn2.addEventListener('click', ()=>{
+                // 1. 通过js代码触发点击事件
+                btn1.click()
+            })
+        }
+    </script>
+</head>
+<body>
+    <button id='btn1'>btn1</button>
+    <button id='btn2'>btn2</button>
+</body>
+</html>
