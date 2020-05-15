@@ -7,29 +7,64 @@
         // async函数执行顺序测试
         function foo(){
             return new Promise((resolve, reject)=>{
-                setTimeout(resolve, 2000);
-            })
+                setTimeout(()=>{
+                    console.log("time=3000ms, now=" + new Date().toTimeString())
+                }, 3000);
+                console.log("foo Promise step1")
+                setTimeout(()=>{
+                    console.log("time=2000ms, now=" + new Date().toTimeString())
+                    resolve()
+                }, 2000);
+                console.log("foo Promise step2")
+            }).then(()=>{console.log("foo then")})
         }
+
+        function foo2(){
+            return new Promise((resolve, reject)=>{
+                console.log("foo2 Promise step1")
+                setTimeout(()=>{
+                    console.log("time2=2000ms, now=" + new Date().toTimeString())
+                    resolve()
+                }, 2000);
+            }).then(()=>{console.log("foo2 then")})
+        }
+
 
         async function bar(){
             console.log(new Date().toTimeString())
             await foo()
-            console.log(new Date().toTimeString())
+            console.log("async step2")
+            await foo2()
+            console.log("async end")
         }
-        bar()
 
-        let x = foo()
+        let x = bar() // 执行异步函数
         console.log(x)
 
+        // 证明: 消息队列不会在回到调用点之前执行
+        setTimeout(()=>{console.log("outter timer = 1000ms")}, 1000)
+        setTimeout(()=>{console.log("outter timer = 2000ms")}, 2000)
+
         // 执行一个非常耗时的操作
-        for(let i=0; i<10000000000; i++){}
+        for(let i=0; i<1000000000; i++){}
         console.log("for end")
 
         // 输出顺序：
-        // 11:59:28 GMT+0800
+        // 17:26:51 GMT+0800
+        // foo Promise step1
+        // foo Promise step2
         // Promise {<pending>}
         // for end
-        // 11:59:42 GMT+0800   <----执行耗时操作，是定时器产生了大量延迟
+        // outter timer = 1000ms
+        // time=2000ms, now=17:26:53 GMT+0800
+        // foo then
+        // async step2
+        // foo2 Promise step1
+        // outter timer = 2000ms
+        // time=3000ms, now=17:26:54 GMT+0800
+        // time2=2000ms, now=17:26:55 GMT+0800
+        // foo2 then
+        // async end
     </script>
 </head>
 <body>
