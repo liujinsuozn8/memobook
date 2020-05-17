@@ -34,7 +34,7 @@
 - [表单](#表单)
     - [form概述](#form概述)
     - [表单项](#表单项)
-- [](#)
+- [设置网站图标](#设置网站图标)
 - [](#)
 - [](#)
 - [浏览器对不规范内容的自动调整](#浏览器对不规范内容的自动调整)
@@ -64,7 +64,7 @@
         1. 结构：HTML用于描述页面的结构
         2. 表现：CSS用于控制页面中元素的样式
         3. 行为：JavaScript用于响应用户操作
-    - ![page_structure](./imgs/introduction/page_structure.png)
+    - ![page_structure](imgs/introduction/page_structure.png)
 
 - 网页加载的过程
     1. 第一次向服务器请求当前网页自身的代码（HTML）
@@ -225,7 +225,7 @@
 - `<title>...</title>`
 - `<title>`中的内容会作为浏览器标签中的显示内容
 - 使用搜索引擎时，`title`会作为搜索结果中超链接的显示内容
-    - ![title_seo](./imgs/title/title_seo.png)
+    - ![title_seo](imgs/title/title_seo.png)
 
 # 语义标签
 ## 块元素、行内元素、替换元素
@@ -371,7 +371,7 @@
             </ul>
             ```
         - 页面显示
-            - ![ul_result](./imgs/list/ul_result.png)
+            - ![ul_result](imgs/list/ul_result.png)
 
 - `<ol>...</ol>`：有序列表<span id="html-list-ol"></span>
     - `<li>...</li>`：表示列表的每一项，即`list item`
@@ -389,7 +389,7 @@
             </ol>
             ```
         - 页面显示
-            - ![ol_result](./imgs/list/ol_result.png)
+            - ![ol_result](imgs/list/ol_result.png)
 
 - `<dl>...</dl>`：定义列表 <span id="html-list-dl"></span>
     - `<dl>`的整体类似于一个多级列表
@@ -414,7 +414,7 @@
             </dl>
             ```
         - 页面显示
-            - ![dl_result](./imgs/list/dl_result.png)
+            - ![dl_result](imgs/list/dl_result.png)
 
 
 - 列表间的多级嵌套
@@ -465,7 +465,7 @@
             </ul>
             ```
         - 页面结果
-            - ![list_nest_result](./imgs/list/list_nest_result.png)
+            - ![list_nest_result](imgs/list/list_nest_result.png)
 
 ## 超链接a
 [top](#catalog)
@@ -993,7 +993,13 @@
     - 页面结果
         - ![](?????)
 
-
+# 设置网站图标
+[top](#catalog)
+- 在head部分引入标签
+    ```html
+    <link rel='icon' href='图片路径'>
+    ```
+- 网站图标的图片一般都存储在网站的**根目录下**，名字一般为：`favicon.icon`
 
 # 浏览器对不规范内容的自动调整
 [top](#catalog)

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html >
+<head>
+    <meta charset="UTF-8">
+    <title>transition test</title>
+    <style>
+        /* 动画效果 */
+        .box1{
+            /* width: 528px; */
+            width: 132px;
+            height: 271px;
+            margin: 0 auto;
+            background-image: url("./demo01_img.png");
+            transition: background-position 0.4s steps(3);
+        }
+
+        .box1:hover{
+            background-position: -396px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="box1">
+        
+    </div>
+</body>
+</html>

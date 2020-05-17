@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>flex element</title>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+            list-style:none;
+        }
+
+        li{
+            width: 50px;
+            height: 50px;
+            border: 2px solid black;
+            background-color: #bfa;
+            font-size: 30px;
+            text-align: center;
+        }
+
+        ul{
+            width: 300px;
+            border: 5px red solid;
+        }
+        
+        /* 设置弹性盒子和弹性容器 */
+        /* 1. 开启弹性盒子，默认不伸缩 */
+        .box01{
+            display: flex;
+        }
+
+        /* 2. 设置 flex-grow */
+        /* 2.1 设置 flex-grow，等比例填充空白 */
+        .box0201{
+            display: flex;
+        }
+        .box0201 li{
+            flex-grow: 1;
+        }
+        
+        /* 2.2 设置 flex-grow，分别设置填充比例 */
+        .box0202{
+            display: flex;
+        }
+        .box0202 li:nth-child(1){
+            flex-grow: 1;
+        }
+        .box0202 li:nth-child(2){
+            flex-grow: 2;
+        }
+        .box0202 li:nth-child(3){
+            flex-grow: 3;
+        }
+        
+        /* 3. 设置 flex-shrink */
+        /* 3.1 设置 flex-shrink:1，当容器过小时，按比例收缩 */
+        .box0301{
+            width: 100px;
+            display: flex;
+        }
+        .box0301 li{
+            flex-shrink: 1;
+        }
+        
+        /* 3.2 设置 flex-shrink:1，当容器过小时，按比例收缩 */
+        .box0302{
+            width: 100px;
+            display: flex;
+        }
+        .box0302 li:nth-child(1){
+            flex-shrink: 1;
+        }
+        .box0302 li:nth-child(2){
+            flex-shrink: 2;
+        }
+        .box0302 li:nth-child(3){
+            flex-shrink: 3;
+        }
+
+        /* 3.3 设置 flex-shrink:0，关闭收缩 */
+        .box0303{
+            width: 100px;
+            display: flex;
+        }
+
+        .box0303 li{
+            flex-shrink: 0;
+        }
+
+        /* 4.1 使用 align-self 属性来覆盖弹性容器中的 align-items */
+        .box0401{
+            width: 170px;
+            height: 300px;
+            display: flex;
+            flex-flow: row wrap;
+            align-items:stretch;
+        }
+        /* 取消 li 的高度 */
+        .box0401 li{
+            height: auto;
+        }
+        
+        /* 覆盖弹性容器中的 align-items 属性 */
+        .box0401 li:nth-child(1){
+            align-self: center;
+        }
+    </style>
+</head>
+<body>
+    <section>1. 开启弹性盒子，默认不伸缩</section>
+    <ul class="box01">
+        <li>1</li>
+        <li>2</li>
+        <li>3</li>
+    </ul>
+    <br>
+
+    <section>2. 设置 flex-grow</section>
+    <section>2.1 设置 flex-grow，等比例填充空白</section>
+    <ul class="box0201">
+        <li>1</li>
+        <li>2</li>
+        <li>3</li>
+    </ul>
+    <br>
+
+    <section>2.2 设置 flex-grow，分别设置填充比例</section>
+    <ul class="box0202">
+        <li>1</li>
+        <li>2</li>
+        <li>3</li>
+    </ul>
+    <br>
+
+    <section>3. 设置 flex-shrink</section>
+    <section>3.1 设置 flex-shrink:1，当容器过小时，按比例收缩</section>
+    <ul class="box0301">
+        <li>1</li>
+        <li>2</li>
+        <li>3</li>
+    </ul>
+    <br>
+    
+    <section>3.2 设置 flex-shrink:1，当容器过小时，按比例收缩</section>
+    <ul class="box0302">
+        <li>1</li>
+        <li>2</li>
+        <li>3</li>
+    </ul>
+    <br>
+
+    <section>3.3 设置 flex-shrink:0，关闭收缩</section>
+    <ul class="box0303">
+        <li>1</li>
+        <li>2</li>
+        <li>3</li>
+    </ul>
+    <br>
+    
+    <section>4.1 使用 align-self 属性来覆盖弹性容器中的 align-items</section>
+    <ul class="box0401">
+        <li>1</li>
+        <li>
+            2
+            <div>2</div>
+        </li>
+        <li>
+            3
+            <div>3</div>
+            <div>3</div>
+        </li>
+        <li>1</li>
+        <li>
+            3
+            <div>3</div>
+            <div>3</div>
+        </li>
+    </ul>
+    <br>
+
+    <!-- <section></section>
+    <ul class="box06">
+        <li>1</li>
+        <li>2</li>
+        <li>3</li>
+    </ul>
+    <br> -->
+    
+</body>
+</html>

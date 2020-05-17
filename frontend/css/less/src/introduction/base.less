@@ -1,0 +1,88 @@
+@a:100px;
+@b:div;
+body{
+    width: @a;
+    height: $width;
+    
+    @{b} {
+        color:#bfa;
+    }    
+}
+
+// $ 引用当前选择器内部的其他属性
+.box{
+    width: 200px;
+    height: $width;
+}
+
+// & 使用当前选择器自身
+.box1{
+    // 在前面使用
+    &:hover{
+        background-color: #bfa;
+    }
+    
+    // 在后面使用
+    div &{
+        width: 200px;
+    }
+    
+    // 直接作为连接字符使用
+    &-wrapper{
+        height: 200px;
+    }
+}
+
+//扩展
+.p1{
+    width: 200px;
+    height: 200px;
+}
+
+.p2:extend(.p1){
+    color:red;
+}
+
+.p4{
+    &:extend(.p1);
+    color:#bfa
+}
+
+// 引用
+.p3{
+   .p1();
+   color:red; 
+}
+
+// 无参混合函数
+.block(){
+    width: 200px;
+    height: 200px;
+}
+
+.box02{
+    .block();
+    color:red;
+}
+
+// 有参混合函数
+.test(@w, @h){
+    width: @w;
+    height: @h;
+}
+
+.box03{
+    .test(200px, 300px);
+    color:red;
+}
+
+// 元素符自动运算
+.box04{
+    width: 100px - 40px;
+    height: 100px - 50;
+    margin: 100px-30;
+    padding: 100-20px;
+    // 无法解析的属性值
+    // font-size: 100px -20px;
+    line-height: 100em - 10px;
+}

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>zindex</title>
+    <style>
+        /* 开启视距 */
+        html{
+            perspective: 800px;
+        }
+
+        .box1{
+            width: 200px;
+            height: 200px;
+            background-color: #bfa;
+            margin: 200px auto;
+            transition: transform 2s;
+        }
+        
+        /* 鼠标移入时设置z轴平移 */
+        .box1:hover{
+            transform: translateZ(100px);
+        }
+    </style>
+</head>
+<body>
+    <div class="box1"></div>
+</body>
+</html>

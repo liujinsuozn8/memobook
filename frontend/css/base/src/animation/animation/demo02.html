@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>demo02</title>
+    <style>
+        /* 设置底部边框 */
+        .outter{
+            height: 500px;
+            border-bottom: 10px black solid;
+            overflow: hidden;
+        }
+
+        .box1{
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background-color: #bfa;
+
+            /* 使用 ease-in 模拟下落的加速效果 */
+            animation: ball 3s forwards ease-in;
+        }
+
+        /* 创建效果，使小球碰到下边框 */
+        @keyframes ball{
+            from{
+                margin-top: 0;
+            }
+
+            /* 20% = 第一次落下
+               60% = 第二次落下 
+               to/100% = 第三次落下 
+            */
+            20%, 60%, to{
+                margin-top: 400px;
+                animation-timing-function: ease-in;
+            }
+
+            /* 第一次弹起 */
+            40%{
+                margin-top: 100px;
+            }
+            
+            /* 第二次弹起 */
+            80%{
+                margin-top: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="outter">
+        <div class="box1"></div>
+    </div>
+</body>
+</html>

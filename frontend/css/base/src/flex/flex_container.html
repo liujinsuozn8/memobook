@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>flex container</title>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+            list-style:none;
+        }
+
+        li{
+            width: 50px;
+            height: 50px;
+            border: 2px solid black;
+            background-color: #bfa;
+            font-size: 30px;
+            text-align: center;
+        }
+
+        ul{
+            width: 300px;
+            border: 5px red solid;
+        }
+
+        ul div{
+            background-color: #bfa;
+        }
+        
+        /* 设置弹性盒子和弹性容器 */
+
+        /* 1. flex-direction，指定容器中弹性元素的排列方式 */
+
+        /* 1.1 row，从左向右，水平方向排列 */
+        .box0101{
+            display: flex;
+            flex-direction: row;
+        }
+
+        /* 1.2 row-reverse，从右向左，水平方向排列 */
+        .box0102{
+            display: flex;
+            flex-direction: row-reverse;
+        }
+        
+        /* 1.3 column，从上向下，垂直方向排列 */
+        .box0103{
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 1.4 column-reverse，从下向上，垂直方向排列 */
+        .box0104{
+            display: flex;
+            flex-direction: column-reverse;
+        }
+        
+        /* 2. flex-wrap，设置元素在弹性容器中是否自动换行 */
+        /* 2.1. nowrap，默认值，不会换行，子元素自动收缩 */
+        .box0201{
+            width: 100px;
+            display: flex;
+            flex-direction: row;
+            flex-wrap: nowrap;
+        }
+        
+        /* 2.2. nowrap，默认值，不会换行，并关闭所有子元素的自动收缩  */
+        .box0202{
+            width: 100px;
+            display: flex;
+            flex-direction: row;
+            flex-wrap: nowrap;
+        }
+
+        .box0202 li:nth-child(1){
+            flex-shrink: 0;
+        }
+        .box0202 li:nth-child(2){
+            flex-shrink: 0;
+        }
+        .box0202 li:nth-child(3){
+            flex-shrink: 0;
+        }
+
+        /* 2.3. wrap，元素沿着辅轴方向自动换行 */
+        .box0203{
+            width: 120px;
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+        }
+
+        /* 2.4. wrap-reverse，元素沿着辅轴反方向换行 */
+        .box0204{
+            width: 120px;
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap-reverse;
+        }
+
+        /* 3. flex-flow: 同时设置 flex-direction 和 flex-wrap */
+        .box0301{
+            width:120px;
+            display: flex;
+            flex-flow: row wrap;
+        }
+
+        /* 4. justify-contect，设置主轴上的元素如何排列 */        
+        /* 4.1 flex-start，默认值，元素顺序不变，从主轴的起始边开始排列 */
+        .box0401{
+            width: 300px;
+            display: flex;
+            flex-flow: row;
+            justify-content: flex-start;
+        }
+
+        /* 4.2 flex-end，元素顺序不变，从主轴的终止边开始排列 */
+        .box0402{
+            width: 300px;
+            display: flex;
+            flex-flow: row;
+            justify-content: flex-end;
+        }
+
+        /* 4.3 center，元素居中排列，空白会分布在两侧 */
+        .box0403{
+            width: 300px;
+            display: flex;
+            flex-flow: row;
+            justify-content: center;
+        }
+
+        /* 4.4 space-around，空白分布到元素两侧 */
+        .box0404{
+            width: 300px;
+            display: flex;
+            flex-flow: row;
+            justify-content: space-around;
+        }
+
+        /* 4.5 space-evenly，空白分布到元素一侧 */
+        .box0405{
+            width: 300px;
+            display: flex;
+            flex-flow: row;
+            justify-content: space-evenly;
+        }
+
+        /* 4.6 space-between，空白分布到所有元素的中间 */
+        .box0406{
+            width: 300px;
+            display: flex;
+            flex-flow: row;
+            justify-content: space-between;
+        }
+
+        /* 5. align-items，元素在辅轴上如何对齐 */
+        /* 5.1 stretch，默认值，将元素的长度设置为相同的值 */
+        .box0501{
+            width: 170px;
+            height: 300px;
+            display: flex;
+            flex-flow: row wrap;
+            align-items:stretch;
+        }
+        /* 取消 li 的高度 */
+        .box0501 li{
+            height: auto;
+        }
+
+        /* 5.2 flex-start，元素不会被拉伸，会沿着辅轴的起始边对齐 */
+        .box0502{
+            width: 170px;
+            height: 300px;
+            display: flex;
+            flex-flow: row wrap;
+            align-items:flex-start;
+        }
+        /* 取消 li 的高度 */
+        .box0502 li{
+            height: auto;
+        }
+
+        /* 5.3 flex-end，元素不会被拉伸，会沿着辅轴的终止边对齐 */
+        .box0503{
+            width: 170px;
+            height: 300px;
+            display: flex;
+            flex-flow: row wrap;
+            align-items:flex-end;
+        }
+        /* 取消 li 的高度 */
+        .box0503 li{
+            height: auto;
+        }
+
+        /* 5.4 center，居中对齐 */
+        .box0504{
+            width: 170px;
+            height: 300px;
+            display: flex;
+            flex-flow: row wrap;
+            align-items:center;
+        }
+        /* 取消 li 的高度 */
+        .box0504 li{
+            height: auto;
+        }
+        
+        /* 6. align-content，设置辅轴上空白区域的分布 */
+        /* 6.1 center，元素居中，空白在辅轴的两端 */
+        .box0601{
+            width: 170px;
+            height: 300px;
+            display: flex;
+            flex-flow: row wrap;
+            align-content: center;
+        }
+        /* 取消 li 的高度 */
+        .box0601 li{
+            height: auto;
+        }
+        
+        /* 6.2 flex-start，元素从辅轴的起始边开始排列，空白在全部在辅轴的终止边 */        
+        .box0602{
+            width: 170px;
+            height: 300px;
+            display: flex;
+            flex-flow: row wrap;
+            align-content: flex-start;
+        }
+        /* 取消 li 的高度 */
+        .box0602 li{
+            height: auto;
+        }
+
+        /* 6.3 flex-end，元素从辅轴的终止边开始排列，空白在全部在辅轴的起始边 */
+        .box0603{
+            width: 170px;
+            height: 300px;
+            display: flex;
+            flex-flow: row wrap;
+            align-content: flex-end;
+        }
+        /* 取消 li 的高度 */
+        .box0603 li{
+            height: auto;
+        }
+
+        /* 6.4 space-between，元素分布在辅轴的两端，空白在辅轴的中间 */
+        .box0604{
+            width: 170px;
+            height: 300px;
+            display: flex;
+            flex-flow: row wrap;
+            align-content: space-between;
+        }
+        /* 取消 li 的高度 */
+        .box0604 li{
+            height: auto;
+        }
+
+
+        </style>
+</head>
+<body>
+    <section>1. flex-direction，指定容器中弹性元素的排列方式</section>
+    <section>1.1 row，从左向右，水平方向排列</section>
+    <ul class="box0101">
+        <li>1</li>
+        <li>2</li>
+        <li>3</li>
+    </ul>
+    <br>
+    
+    <section>1.2 row-reverse，从右向左，水平方向排列</section>
+    <ul class="box0102">
+        <li>1</li>
+        <li>2</li>
+        <li>3</li>
+    </ul>
+    <br>
+    
+    <section>1.3 column，从上向下，垂直方向排列</section>
+    <ul class="box0103">
+        <li>1</li>
+        <li>2</li>
+        <li>3</li>
+    </ul>
+    <br>
+
+    <section>1.4 column-reverse，从下向上，垂直方向排列</section>
+    <ul class="box0104">
+        <li>1</li>
+        <li>2</li>
+        <li>3</li>
+    </ul>
+    <br>
+
+    <section>2. flex-wrap，设置元素在弹性容器中是否自动换行</section>
+    <section>2.1. nowrap，默认值，不会换行，子元素自动收缩</section>
+    <ul class="box0201">
+        <li>1</li>
+        <li>2</li>
+        <li>3</li>
+    </ul>
+    <br>
+
+    <section>2.2. nowrap，默认值，不会换行，并关闭所有子元素的自动收缩</section>
+    <ul class="box0202">
+        <li>1</li>
+        <li>2</li>
+        <li>3</li>
+    </ul>
+    <br>
+
+    <section>2.3. wrap，元素沿着辅轴方向自动换行</section>
+    <ul class="box0203">
+        <li>1</li>
+        <li>2</li>
+        <li>3</li>
+    </ul>
+    <br>
+
+    <section>2.4. wrap-reverse，元素沿着辅轴反方向换行</section>
+    <ul class="box0204">
+        <li>1</li>
+        <li>2</li>
+        <li>3</li>
+    </ul>
+    <br>
+
+    <section>3. flex-flow: 同时设置 flex-direction 和 flex-wrap</section>
+    <ul class="box0301">
+        <li>1</li>
+        <li>2</li>
+        <li>3</li>
+    </ul>
+    <br>
+    
+    <section>4. justify-contect，设置主轴上的元素如何排列</section>
+    <section>4.1 flex-start，默认值，元素顺序不变，从主轴的起始边开始排列</section>
+    <ul class="box0401">
+        <li>1</li>
+        <li>2</li>
+        <li>3</li>
+    </ul>
+    <br>
+
+    <section>4.2 flex-end，元素顺序不变，从主轴的终止边开始排列</section>
+    <ul class="box0402">
+        <li>1</li>
+        <li>2</li>
+        <li>3</li>
+    </ul>
+    <br>
+
+    <section>4.3 center，元素居中排列，空白会分布在两侧</section>
+    <ul class="box0403">
+        <li>1</li>
+        <li>2</li>
+        <li>3</li>
+    </ul>
+    <br>
+
+    <section>4.4 space-around，空白分布到元素两侧</section>
+    <ul class="box0404">
+        <li>1</li>
+        <li>2</li>
+        <li>3</li>
+    </ul>
+    <br>
+
+    <section>4.5 space-evenly，空白分布到元素一侧</section>
+    <ul class="box0405">
+        <li>1</li>
+        <li>2</li>
+        <li>3</li>
+    </ul>
+    <br>
+
+    <section>4.6 space-between，空白分布到所有元素的中间</section>
+    <ul class="box0406">
+        <li>1</li>
+        <li>2</li>
+        <li>3</li>
+    </ul>
+    <br>
+
+    <section>5. align-items，元素在辅轴上如何对齐</section>
+    <section>5.1 stretch，默认值，将元素的长度设置为相同的值</section>
+    <ul class="box0501">
+        <li>1</li>
+        <li>
+            2
+            <div>2</div>
+        </li>
+        <li>
+            3
+            <div>3</div>
+            <div>3</div>
+        </li>
+        <li>1</li>
+        <li>
+            3
+            <div>3</div>
+            <div>3</div>
+        </li>
+    </ul>
+    <br>
+
+    <section>5.2 flex-start，元素不会被拉伸，会沿着辅轴的起始边对齐</section>
+    <ul class="box0502">
+        <li>1</li>
+        <li>
+            2
+            <div>2</div>
+        </li>
+        <li>
+            3
+            <div>3</div>
+            <div>3</div>
+        </li>
+        <li>1</li>
+        <li>
+            3
+            <div>3</div>
+            <div>3</div>
+        </li>
+    </ul>
+    <br>
+
+    <section>5.3 flex-end，元素不会被拉伸，会沿着辅轴的终止边对齐</section>
+    <ul class="box0503">
+        <li>1</li>
+        <li>
+            2
+            <div>2</div>
+        </li>
+        <li>
+            3
+            <div>3</div>
+            <div>3</div>
+        </li>
+        <li>1</li>
+        <li>
+            3
+            <div>3</div>
+            <div>3</div>
+        </li>
+    </ul>
+    <br>
+
+    <section>5.4 center，居中对齐</section>
+    <ul class="box0504">
+        <li>1</li>
+        <li>
+            2
+            <div>2</div>
+        </li>
+        <li>
+            3
+            <div>3</div>
+            <div>3</div>
+        </li>
+        <li>1</li>
+        <li>
+            3
+            <div>3</div>
+            <div>3</div>
+        </li>
+    </ul>
+    <br>
+    
+    <section>6. align-content，设置辅轴上空白区域的分布</section>
+    <section>6.1 center，元素居中，空白在辅轴的两端</section>
+    <ul class="box0601">
+        <li>1</li>
+        <li>
+            2
+            <div>2</div>
+        </li>
+        <li>
+            3
+            <div>3</div>
+            <div>3</div>
+        </li>
+        <li>1</li>
+        <li>
+            3
+            <div>3</div>
+            <div>3</div>
+        </li>
+    </ul>
+    <br>
+
+    <section>6.2 flex-start，元素从辅轴的起始边开始排列，空白在全部在辅轴的终止边</section>
+    <ul class="box0602">
+        <li>1</li>
+        <li>
+            2
+            <div>2</div>
+        </li>
+        <li>
+            3
+            <div>3</div>
+            <div>3</div>
+        </li>
+        <li>1</li>
+        <li>
+            3
+            <div>3</div>
+            <div>3</div>
+        </li>
+    </ul>
+    <br>
+
+    <section>6.3 flex-end，元素从辅轴的终止边开始排列，空白在全部在辅轴的起始边</section>
+    <ul class="box0603">
+        <li>1</li>
+        <li>
+            2
+            <div>2</div>
+        </li>
+        <li>
+            3
+            <div>3</div>
+            <div>3</div>
+        </li>
+        <li>1</li>
+        <li>
+            3
+            <div>3</div>
+            <div>3</div>
+        </li>
+    </ul>
+    <br>
+
+    <section>6.4 space-between，元素分布在辅轴的两端，空白在辅轴的中间</section>
+    <ul class="box0604">
+        <li>1</li>
+        <li>
+            2
+            <div>2</div>
+        </li>
+        <li>
+            3
+            <div>3</div>
+            <div>3</div>
+        </li>
+        <li>1</li>
+        <li>
+            3
+            <div>3</div>
+            <div>3</div>
+        </li>
+    </ul>
+    <br>
+
+    <!-- <section></section>
+    <ul class="box0601">
+        <li>1</li>
+        <li>
+            2
+            <div>2</div>
+        </li>
+        <li>
+            3
+            <div>3</div>
+            <div>3</div>
+        </li>
+        <li>1</li>
+        <li>
+            3
+            <div>3</div>
+            <div>3</div>
+        </li>
+    </ul>
+    <br>
+
+
+    <section></section>
+    <ul class="">
+        <li>1</li>
+        <li>2</li>
+        <li>3</li>
+    </ul>
+    <br> -->
+</body>
+</html>

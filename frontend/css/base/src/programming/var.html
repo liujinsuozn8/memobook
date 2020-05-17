@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title><var></var></title>
+    <style>
+        /* 设置变量 */
+        html{
+            --color: #bfa;
+        }
+        .box1{
+            width:calc(100px*3);
+            height: 100px;
+            /* 引用变量 */
+            background-color: var(--color);
+        }
+
+        .box2{
+            width: 100px;
+            height: 100px;
+            /* 引用变量 */
+            color: var(--color);
+        }
+        .box3{
+            width: 100px;
+            height: 100px;
+            /* 引用变量 */
+            border:10px solid var(--color);
+        }
+    </style>
+</head>
+<body>
+    <div class="box1">aaa</div>
+    <div class="box2">bbb</div>
+    <div class="box3">ccc</div>
+</body>
+</html>

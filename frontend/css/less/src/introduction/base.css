@@ -1,0 +1,55 @@
+body {
+  width: 100px;
+  height: 100px;
+}
+body div {
+  color: #bfa;
+}
+.box {
+  width: 200px;
+  height: 200px;
+}
+.box1:hover {
+  background-color: #bfa;
+}
+div .box1 {
+  width: 200px;
+}
+.box1-wrapper {
+  height: 200px;
+}
+.p1,
+.p2,
+.p4 {
+  width: 200px;
+  height: 200px;
+}
+.p2 {
+  color: red;
+}
+.p4 {
+  color: #bfa;
+}
+.p3 {
+  width: 200px;
+  height: 200px;
+  color: red;
+}
+.box02 {
+  width: 200px;
+  height: 200px;
+  color: red;
+}
+.box03 {
+  width: 200px;
+  height: 300px;
+  color: red;
+}
+.box04 {
+  width: 60px;
+  height: 50px;
+  margin: 70px;
+  padding: 80px;
+  line-height: 90em;
+}
+/*# sourceMappingURL=./base.css.map */

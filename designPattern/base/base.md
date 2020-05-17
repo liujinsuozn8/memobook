@@ -2854,7 +2854,7 @@
             }
             ```
     - `HightBuildingBuilder`
-        - 参考代码：[/Users/liujinsuo/myGit/memobook/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/builder/base/HightBuildingBuilder.java](/Users/liujinsuo/myGit/memobook/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/builder/base/HightBuildingBuilder.java)
+        - 参考代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/builder/base/HightBuildingBuilder.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/builder/base/HightBuildingBuilder.java)
         - 代码内容
             ```java
             public class HightBuildingBuilder extends HouseBuilder {
@@ -2877,6 +2877,40 @@
                 }
             }
             ```
+
+- 指挥者 `HouseDirector`
+    - 参考代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/builder/base/HouseDirector.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/builder/base/HouseDirector.java)
+    - 代码内容
+        ```java
+        public class HouseDirector {
+            private HouseBuilder houseBuilder;
+
+            // 使用构造器聚合Builder
+            public HouseDirector(HouseBuilder houseBuilder) {
+                this.houseBuilder = houseBuilder;
+            }
+
+            // 使用getter、setter聚合Builder
+            public HouseBuilder getHouseBuilder() {
+                return houseBuilder;
+            }
+
+            public void setHouseBuilder(HouseBuilder houseBuilder) {
+                this.houseBuilder = houseBuilder;
+            }
+
+            // 由指挥者负责处理建造房子的流程
+            public House constructHouse(){
+                houseBuilder.buildBasic();
+                houseBuilder.buildWalls();
+                houseBuilder.roofed();
+
+                return houseBuilder.getHouse();
+            }
+
+        }
+        ```
 
 ## 建造者模式的注意事项和细节
 [top](#catalog)

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>cube</title>
+    <style>
+        html{
+            perspective: 800px;
+        }
+        .cube{
+            width: 200px;
+            height: 200px;
+            /* background-color: #bfa; */
+            margin:100px auto;
+            /* 在父元素中设置3d变换效果 */
+            transform-style: preserve-3d;
+
+            /* transform: rotateX(45deg) rotateZ(45deg); */
+            animation: run 2s linear infinite;
+        }
+        
+        .cube > div{
+            /* 使用绝对定位去除垂直排列 */
+            opacity: 0.7;
+            position: absolute;
+        }
+
+        /* 去除图片之间的空白 */
+        img{
+            vertical-align: top;
+        }
+
+        /* 设置立方体效果 */
+        .box1{
+            transform: rotateY(90deg) translateZ(100px);
+        }
+        .box2{
+            transform: rotateY(-90deg) translateZ(100px);
+        }
+        .box3{
+            transform: rotateX(90deg) translateZ(-100px);
+        }
+        .box4{
+            transform: rotateX(-90deg) translateZ(-100px);
+        }
+        .box5{
+            /* 转到背面再平移 */
+            transform: rotateY(180deg) translateZ(100px);
+        }
+        .box6{
+            transform: translateZ(100px);
+        }
+
+        @keyframes run {
+            from{
+                transform: rotateX(0) rotateZ(0);
+            }
+            to{
+                transform: rotateX(1turn) rotateZ(1turn);
+            }
+        }
+    </style>
+</head>
+<body>
+   <div class="cube">
+       <div class='box1'><img src="./cube/1.jpg"></div>
+       <div class='box2'><img src="./cube/2.jpg"></div>
+       <div class='box3'><img src="./cube/3.jpg"></div>
+       <div class='box4'><img src="./cube/4.jpg"></div>
+       <div class='box5'><img src="./cube/5.jpg"></div>
+       <div class='box6'><img src="./cube/6.jpg"></div>
+   </div> 
+</body>
+</html>

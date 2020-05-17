@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>transform :elem_float</title>
+    <style>
+        .box1{
+            width: 200px;
+            height: 200px;
+            background-color: #bfa;
+            margin: 0 auto;
+            margin-top: 200px;
+            transition: transform 1s ,box-shadow 1s;
+        }
+        /* 鼠标移入之后，在y轴向上平移，并添加阴影 */
+        .box1:hover{
+            transform: translateY(-5px);
+            box-shadow: 0 0 10px black;
+        }
+    </style>
+</head>
+<body>
+    <div class="box1"></div>
+</body>
+</html>

@@ -90,15 +90,16 @@
 - [表格样式](#表格样式)
     - [表格样式的基本用法](#表格样式的基本用法)
     - [通过单元格化来控制元素水平垂直居中](#通过单元格化来控制元素水平垂直居中)
-- [](#)
-- [](#)
-- [](#)
-- [](#)
-- [](#)
+- [图片](#图片)
+- [颜色](#颜色)
 - [网页布局](#网页布局)
     - [基本的页面布局思路](#基本的页面布局思路)
+- [编程化css开发](#编程化css开发)
+    - [变量设置](#变量设置)
+    - [运算函数](#运算函数)
 - [总结](#总结)
 - [练习](#练习)
+- [](#)
 
 
 # CSS简介
@@ -2349,7 +2350,7 @@
             </div>
             ```
         - 页面结果
-            - [html_result_01](imgs/boxModel/verticalLayout/html_result_01.png)
+            - ![html_result_01](imgs/boxModel/verticalLayout/html_result_01.png)
 
     - 父元素设置高度
         - css
@@ -2379,7 +2380,7 @@
             </div>
             ```
         - 页面结果
-            - [html_result_02](imgs/boxModel/verticalLayout/html_result_02.png)
+            - ![html_result_02](imgs/boxModel/verticalLayout/html_result_02.png)
 
     - 子元素没有设置高度
         - css
@@ -2405,7 +2406,7 @@
             </div>
             ```
         - 页面结果
-            - [html_result_03](imgs/boxModel/verticalLayout/html_result_03.png)
+            - ![html_result_03](imgs/boxModel/verticalLayout/html_result_03.png)
 
     - 子元素的高度 > 父元素的高度
         - css
@@ -2432,9 +2433,9 @@
             </div>
             ```
         - 页面结果
-            - [html_result_04](imgs/boxModel/verticalLayout/html_result_04.png)
+            - ![html_result_04](imgs/boxModel/verticalLayout/html_result_04.png)
 
-    - 处理子元素溢出，`overflow=hidden`
+    - 处理子元素溢出，`overflow:hidden`
         - css
             ```css
             .outer5{
@@ -2459,7 +2460,7 @@
             </div>
             ```
         - 页面结果
-            - [html_result_05](imgs/boxModel/verticalLayout/html_result_05.png)
+            - ![html_result_05](imgs/boxModel/verticalLayout/html_result_05.png)
 
     - 处理子元素溢出，`overflow=scroll`
         - css
@@ -2486,7 +2487,7 @@
             </div>
             ```
         - 页面结果
-            - [html_result_06](imgs/boxModel/verticalLayout/html_result_06.png)
+            - ![html_result_06](imgs/boxModel/verticalLayout/html_result_06.png)
 
     - 处理子元素溢出，`overflow=auto`
         - css
@@ -2513,7 +2514,7 @@
             </div>
             ```
         - 页面结果
-            - [html_result_07](imgs/boxModel/verticalLayout/html_result_07.png)
+            - ![html_result_07](imgs/boxModel/verticalLayout/html_result_07.png)
 
 
 
@@ -2551,7 +2552,10 @@
                 - `height`减去`1px`，维持整体的布局不变
             - 子元素：
                 - `margin-top`减去`1px`，抵消父元素增加`1px`边框导致的子元素布局下移
-        - 方式3：
+        - 方式3：开启BFC
+            - 为父元素设置 `overflow:hidden`，相当于处理元素溢出
+            - 参考：[解决方式1-BFC块级格式化环境](#解决方式1-BFC块级格式化环境)
+        - 方式4：
             - 参考： [自定义类选择器解决高度塌陷和父子元素间的外边距折叠（强烈推荐使用）](#解决方式3-自定义类选择器解决高度塌陷和父子元素间的外边距折叠)
 
 - 示例
@@ -2795,7 +2799,7 @@
             <br>
             ```
         - 页面结果
-            - [html_result_01](imgs/boxModel/boxsize/html_result_01.png)
+            - ![html_result_01](imgs/boxModel/boxsize/html_result_01.png)
 
 
 
@@ -2809,8 +2813,8 @@
     - 鼠标移入某个元素时，给元素添加边框
 - 轮廓属性在实际开发中不太常用
 - 示例
-    - 参考代
-        - ：[src/boxModel/outline.html](src/boxModel/outline.html)
+    - 参考代码
+        - [src/boxModel/outline.html](src/boxModel/outline.html)
     - `outline`和`border`的比较
         - css
             ```css
@@ -2859,7 +2863,7 @@
             <span>test string2</span>
             ```
         - 页面结果
-            - [html_result_01](imgs/boxModel/outline/html_result_01.png)
+            - ![html_result_01](imgs/boxModel/outline/html_result_01.png)
 
 
     - outline的使用场景：当鼠标移入时，为元素添加边框
@@ -2883,10 +2887,10 @@
             ```
         - 测试结果
             - 正常显示
-                - [html_result_02](imgs/boxModel/outline/html_result_02.png)
+                - ![html_result_02](imgs/boxModel/outline/html_result_02.png)
 
             - 鼠标移入
-                - [html_result_02_mousein](imgs/boxModel/outline/html_result_02_mousein.png)
+                - ![html_result_02_mousein](imgs/boxModel/outline/html_result_02_mousein.png)
 
 ## 盒子的阴影
 [top](#catalog)
@@ -3419,7 +3423,7 @@
             ```
         
         - 页面结果
-            - [html_result_01](imgs/commonProperties/visibility/html_result_01.png)
+            - ![html_result_01](imgs/commonProperties/visibility/html_result_01.png)
 
 
 # 元素浮动
@@ -3770,7 +3774,7 @@
         - 副作用
             - 行内块元素本身的特性不适合于页面布局 ??????
             - 父元素元素的宽度没有了
-    3. 子元素设置浮动，父元素使用`overflow`并设置一个非`visible`的属性值（[处理子元素的溢出](#处理子元素的溢出)）（**推荐**）
+    3. 父元素使用`overflow`并设置一个非`visible`的属性值（[处理子元素的溢出](#处理子元素的溢出)）（**推荐**）
 
     4. 其他方式： ??????????????????????????????
 
@@ -4701,8 +4705,8 @@
     - 与`<html>`定位位置不同，产生滚动条时，元素只会在原有的结构位置上
 
 - 固定定位的特点，**与绝对定位相同**
-    - 绝对定位会**使元素脱离文档流**
-    - 开启绝对定位后，如果没有设置偏移量，则元素的位置不会发生任何变化
+    - 固定定位会**使元素脱离文档流**
+    - 开启固定定位后，如果没有设置偏移量，则元素的位置不会发生任何变化
     - 绝对定位会改变元素的性质（因为脱离了文档流）
         - 块元素的宽高消失
     - 绝对定位会提升元素的层级
@@ -5506,7 +5510,7 @@
 
         |属性/修饰内容|说明|
         |-|-|
-        |left|左对齐|
+        |left|左对齐，默认值|
         |right|右对齐|
         |center|居中对齐|
         |justify|两端对齐|
@@ -6128,6 +6132,18 @@
     - 页面结果
         - ![table_cell_01.png](imgs/table/table_cell/table_cell_01.png)
 
+# 图片
+[top](#catalog)
+- 图片之间默认会出现空白，可以使用 `vertical-align: top;` 来去除
+
+
+# 颜色
+[top](#catalog)
+- 背景颜色: `background`
+- 文字颜色: `color`
+- 透明颜色: `transparent`
+- 元素的透明度: `opacity: 0~1之间的数;`
+
 # 网页布局
 ## 基本的页面布局思路
 [top](#catalog)
@@ -6213,6 +6229,68 @@
     
     - 页面结果
         - ![html_result_01](imgs/layout/baseLayout/html_result_01.png)
+
+# 编程化css开发
+## 变量设置
+[top](#catalog)
+- 原生css的变量设置有兼容性问题，在ie中的兼容性很差
+- 原生css的变量设置方法：一般设置在html选择器中
+    ```css
+    html{
+        --变量名: 变量值;
+    }
+    ```
+- 如何使用变量
+    ```css
+    .xxx{
+        xxx: var(--变量名)
+    }
+    ```
+- 示例
+    - 参考代码
+        - [src/programming/var.html](src/programming/var.html)
+    - html内容
+        ```html
+        <div class="box1">aaa</div>
+        <div class="box2">bbb</div>
+        <div class="box3">ccc</div>
+        ```
+    - css内容
+        ```css
+        /* 设置变量 */
+        html{
+            --color: #bfa;
+        }
+        .box1{
+            width: 100px;
+            height: 100px;
+            /* 引用变量 */
+            background-color: var(--color);
+        }
+
+        .box2{
+            width: 100px;
+            height: 100px;
+            /* 引用变量 */
+            color: var(--color);
+        }
+
+        .box3{
+            width: 100px;
+            height: 100px;
+            /* 引用变量 */
+            border:10px solid var(--color);
+        }
+        ```
+
+## 运算函数
+[top](#catalog)
+- 运算函数有兼容性问题，在ie中的兼容性很差
+- `calc(计算公式)`，执行计算
+    - 如长度的计算
+        ```css
+        width:calc(100px*3);
+        ```
 
 
 # 总结
@@ -6332,3 +6410,5 @@
 
 - 京东导航条
     - src/exercise/font/jdnav.html
+- 小米官网
+    - src/xiaomi

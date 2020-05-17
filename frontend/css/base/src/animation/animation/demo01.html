@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>animation demo</title>
+    <style>
+        .box1{
+            height: 256px;
+            width: 256px;
+            margin: 0 auto;
+            background-image: url("demo01_img.png");
+
+            /* 设置动画效果 */
+            /* animation: name duration timing-function delay iteration-count direction fill-mode; */
+            animation: run .5s infinite steps(6) ;
+            /* animation-name: run;
+            animation-duration: .5s;
+            animation-iteration-count: infinite;
+            animation-timing-function: steps(5); */
+        }
+
+        @keyframes run{
+            from{
+                background-position: 0 0;
+            }
+            to{
+                /* 不做计算，直接使用图片长度，图片会自动平铺 */
+                /* background-position: -1280px; */
+                background-position: -1536px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="box1"></div>
+</body>
+</html>
