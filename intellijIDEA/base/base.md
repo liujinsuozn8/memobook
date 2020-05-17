@@ -195,7 +195,4 @@
 - 显示设定![uml_setting.png](./imgs/uml_setting.png)
 - 显示uml图![show_diagram.png](./imgs/show_diagram.png)
 
-
-
 [top](#catalog)
-┌ └ ┐ ┘ ─ │ ├ ┤ ┬ ┴ ┼

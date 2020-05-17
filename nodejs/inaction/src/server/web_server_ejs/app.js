@@ -41,7 +41,23 @@ http.createServer((req, res) => {
         })
     }
     else if (pathname === '/dologin'){
-        sendResponse(res, "this is register")
+        // 执行登录
+        // 捕获post请求
+        let postData = ''
+
+        req.on('data', chunk=>{
+            console.log(`chunk = ${chunk}`)
+
+            postData += chunk
+        })
+        req.on('end', () => {
+            try {
+                //  console.log(JSON.parse(postData))
+                 sendResponse(res, postData)
+            } catch (error) {
+                sendResponse(res, postData, 404)
+            }
+        })
     }
     else if (pathname === '/register') {
         sendResponse(res, "this is register")
@@ -50,7 +66,9 @@ http.createServer((req, res) => {
         sendResponse(res, "this is admin")
     }
     else {
-        sendResponse(res, "404:no handler", 404)
+        // sendResponse(res, "404:no handler", 404)
+        res.writeHead(404, {'Content-type':"text/html;charset='utf-8'"})
+        res.end("404:no handler")
     }
 
 }).listen(8081)
@@ -63,7 +81,7 @@ function sendResponse(res, data, resultCode=200, srcType='text/html'){
         res.end()
         return
     }
-    
+
     // 设置响应数据
     if (data instanceof Array){
         for(let n in data){

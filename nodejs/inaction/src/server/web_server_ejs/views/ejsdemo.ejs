@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ejsdemo</title>
+</head>
+<body>
+    <p>ejsdemo</p>
+    <!-- 绑定变量 -->
+    <span><%=msg%></span>
+    <ul>
+        <!-- 通过js的方式循环赋值 -->
+        <%for(let n of groups){%>
+        <li><%=n.title %></li>
+        <%}%>
+    </ul>
+</body>
+</html>
