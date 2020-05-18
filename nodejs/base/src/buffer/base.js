@@ -34,3 +34,7 @@ var buf0301 = Buffer.alloc(10)
 var buf0302 = Buffer.allocUnsafe(10)
 console.log(buf0301)
 console.log(buf0302)
+
+// 4. 不同编码的字符转换
+console.log(Buffer.from('中', 'utf-8').toString('base64'))
+console.log(Buffer.from('5Lit', 'base64').toString())
