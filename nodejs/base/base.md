@@ -6,7 +6,7 @@
 - [CommonJS规范](#CommonJS规范)
 - [包package](#包package)
     - [包的基本知识](#包的基本知识)
-    - [包管理工具npm](#包管理工具npm)
+    - [包管理工具npm及其指令](#包管理工具npm及其指令)
     - [包管理工具cnpm](#包管理工具cnpm)
     - [包的搜索与导入流程](#包的搜索与导入流程)
     - [package.json](#package.json)
@@ -15,6 +15,7 @@
     - [Node的模块化特性](#Node的模块化特性)
     - [模块的标识与分类](#模块的标识与分类)
     - [Node模块的使用方法](#Node模块的使用方法)
+- [Nodejs变量](#Nodejs变量)
 - [Buffer缓冲区](#Buffer缓冲区)
     - [Buffer的基本知识](#Buffer的基本知识)
     - [Buffer的使用方法](#Buffer的使用方法)
@@ -31,7 +32,6 @@
     - [HTTP模块](#HTTP模块)
     - [url模块](#url模块)
 - [其他](#其他)
-    - [全局对象global](#全局对象global)
     - [事件绑定方法](#事件绑定方法)
 - [](#)
 - [](#)
@@ -127,7 +127,7 @@
     |test|单元测试|
 
 
-## 包管理工具npm
+## 包管理工具npm及其指令
 [top](#catalog)
 - Node Packge Manager
 - CommonJS包规范是理论，npm是其中一种实践
@@ -148,6 +148,7 @@
     |`npm install <包名> -g`|全局模式安装包|一般都用来安装一些工具|
     |`npm install <包名> --save`|安装包，依赖添加到：`dependencies`||
     |`npm install <包名> --save-dev`|安装包，依赖添加到：`devDependencies`||
+    |`npm install <包名> -D`|安装包，依赖添加到：`devDependencies`||
     |`npm install`|下载当前项目的依赖包||
     |`npm uninstall <包名>`|卸载当前工程下的某个包||
     |`npm remove <包名>`|删除包|简写：`npm r 包名`|
@@ -293,6 +294,16 @@
             module.exports = {a:"...", b:"xxxx", c:xxx}
             ```
         - 无法直接通过个 exports 来设置，因为设置后只是改变了 export对象指向，但是没有修改 module.exports 的对象指向
+
+## Nodejs变量
+[top](#catalog)
+- 全局对象 `global`
+    - node中的全局变量是`global`，并且没有 window对象，
+    - 在全局作用域中创建的变量/函数都会作为 `global` 的属性保存
+
+- `__dirname`
+    - 代表当前文件所在的目录的路径
+
 
 # Buffer缓冲区
 ## Buffer的基本知识
@@ -915,12 +926,8 @@
         ```
 
 # 其他
-## 全局对象global
-[top](#catalog)
-- node中的全局变量是`global`，并且没有 window对象，
-- 在全局作用域中创建的变量/函数都会作为 `global`的属性保存
-
 ## 事件绑定方法
 [top](#catalog)
 - on: 绑定的事件一直有效
 - once: 绑定一次性事件
+
