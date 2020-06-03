@@ -26,6 +26,13 @@
             console.log("second =", second)     // second = secondtr
             console.log("third =", third)       // third = undefined
 
+            // 1.5 结构时，设置别名
+            let {aaa:alias01, bbb:alias02} = {"aaa":1111, "bbb":222, "third":33333};
+            console.log("alias01 =", alias01)   // alias01 = 1111
+            console.log("alias02 =", alias02)   // alias02 = 222
+            // console.log("aaa =", aaa)        // aaa无法使用
+            // console.log("bbb =", bbb)        // bbb无法使用
+
             // 2. 数组的解构
             // 2.1 完全匹配
             let [a, b] = [1, 2]
@@ -51,19 +58,22 @@
 
             // 3. 解构赋值的应用
             // 使用解构的格式作为形参
-            function show({name, age}){
+            function show({name, age, address: addr}){
                 console.log("name =", name)
                 console.log("age =", age)
+                console.log('address=', addr)
             }
 
-            var obj = {name: "objName", age:30}
-            show(obj)       // 不需要依次调用对象的属性，直接将对象作为实参传递
+            var obj = {name: "objName", age:30, address:'asdfghhjk'}
+            // 不需要依次调用对象的属性，直接将对象作为实参传递
+            show(obj)
             // 输出:
             // name = objName
             // age = 30
+            // address= asdfghhjk
 
             var obj = {name: "objName02", age:40}
-            show(obj.name, obj.age)
+            show(obj.name, obj.age, obj.address)
         </script>
     </head>
     <body>
