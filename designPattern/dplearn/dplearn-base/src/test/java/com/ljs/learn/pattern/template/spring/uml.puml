@@ -1,0 +1,73 @@
+@startuml
+
+interface ConfigurableApplicationContext {
+    refresh():void
+}
+
+note right of ConfigurableApplicationContext
+模版方法
+end note
+
+abstract class AbstractApplicationContext {
+    refresh(): void
+
+    obtainFreshBeanFactory(): ConfigurableListableBeanFactory
+    refreshBeanFactory(): void
+    getBeanFactory(): ConfigurableListableBeanFactory
+
+    postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory): void
+    onRefresh(): void
+}
+
+note right of AbstractApplicationContext
+- refresh: 模版方法实现
+- 抽象方法
+    - refreshBeanFactory
+    - getBeanFactory
+- 钩子函数：
+    - postProcessBeanFactory
+    - onRefresh
+end note
+
+class GenericApplicationContext{
+    refreshBeanFactory(): void
+    getBeanFactory(): ConfigurableListableBeanFactory
+}
+
+abstract class AbstractRefreshableApplicationContext{
+    refreshBeanFactory(): void
+    getBeanFactory(): ConfigurableListableBeanFactory
+}
+note right of AbstractRefreshableApplicationContext
+提供抽象方法实现
+end note
+
+abstract class AbstractRefreshableConfigApplicationContext{
+}
+
+abstract class AbstractXmlApplicationContext{
+}
+
+class ClassPathXmlApplicationContext{
+}
+note right of ClassPathXmlApplicationContext
+到达非抽象类时，
+很多方法已经被实现了，
+可以直接使用
+end note
+
+class Client
+
+ConfigurableApplicationContext <|... AbstractApplicationContext
+
+AbstractApplicationContext <|-- GenericApplicationContext
+AbstractApplicationContext <|-- AbstractRefreshableApplicationContext
+AbstractRefreshableApplicationContext <|-- AbstractRefreshableConfigApplicationContext
+AbstractRefreshableConfigApplicationContext <|-- AbstractXmlApplicationContext
+AbstractXmlApplicationContext <|-- ClassPathXmlApplicationContext
+
+Client *---right- ConfigurableApplicationContext
+Client --right-> GenericApplicationContext
+Client ---right-> ClassPathXmlApplicationContext
+@enduml
+

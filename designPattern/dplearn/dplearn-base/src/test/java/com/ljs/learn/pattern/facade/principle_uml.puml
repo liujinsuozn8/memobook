@@ -1,0 +1,17 @@
+@startuml
+
+class Client
+class 外观类
+
+class 子系统1
+class 子系统2
+class 子系统3
+
+外观类 o-- 子系统1
+外观类 o-- 子系统2
+外观类 o-- 子系统3
+
+Client -right-> 外观类
+
+
+@enduml

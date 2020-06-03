@@ -1,0 +1,29 @@
+@startuml
+
+abstract class AbstractClass{
+    final template():void
+    operation2():void
+    operation3():void
+    operation4():void
+}
+
+class ConcreterClass{
+    operation2():void
+    operation3():void
+    operation4():void
+}
+
+class ConcreterClassB {
+    operation2():void
+    operation3():void
+    operation4():void
+}
+
+class Client
+
+AbstractClass <|-- ConcreterClass
+AbstractClass <|-- ConcreterClassB
+
+ConcreterClass <-- Client
+ConcreterClassB <-- Client
+@enduml

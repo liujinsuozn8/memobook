@@ -1,0 +1,31 @@
+@startuml
+
+abstract class WebSite{
+    + use(User): void
+}
+
+class ConcrateWebSite{
+    + use(User): void
+}
+
+class WebSiteFactory{
+    + getWebSiteCategory(type):void
+}
+
+class Client
+
+class User
+
+WebSite <|-- ConcrateWebSite
+WebSiteFactory o-right-WebSite
+
+
+WebSiteFactory <-- Client
+ConcrateWebSite <-right- Client
+User <-down- Client
+
+User <-right- ConcrateWebSite
+
+
+
+@enduml

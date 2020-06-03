@@ -1,0 +1,33 @@
+@startuml
+
+abstract class SoyaMilk {
+    final make():void
+    select():void
+    add():void
+    soak():void
+    beat():void
+}
+
+note right of SoyaMilk
+    - make()，模版方法
+    - 制作流程
+        1. select()，选材料
+        2. add()，添加配料
+            - 不同类型的豆浆有不同的配料，所以是抽象方法
+        3. soak()，浸泡
+        4. beat()，打磨
+end note
+
+class RedBeanSoyaMilk
+
+class PeanutSoyaMilk
+
+class Client
+
+SoyaMilk <|-- RedBeanSoyaMilk
+SoyaMilk <|-- PeanutSoyaMilk
+
+
+RedBeanSoyaMilk <-- Client
+PeanutSoyaMilk <-- Client
+@enduml
