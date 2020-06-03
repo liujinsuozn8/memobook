@@ -4192,14 +4192,16 @@ public @interface SuppressWarnings {
 public interface MyInterface {
     void info();
 }
-
+```
+```java
 //MyAnnotation.java 自定义注解
 @Target({TYPE, FIELD,METHOD, PARAMETER, CONSTRUCTOR, LOCAL_VARIABLE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface MyAnnotation {
     String value() default "hello";
 }
-
+```
+```java
 //Creature.java 父类
 public class Creature<T> implements Serializable {
     private char gender;
@@ -4213,7 +4215,8 @@ public class Creature<T> implements Serializable {
         System.out.println("creature is eatting");
     }
 }
-
+```
+```java
 //@MyAnnotation(value="personclass")
 public class Person extends Creature<String> implements Comparable<String>, MyInterface{
     public static int X=10;

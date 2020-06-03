@@ -39,11 +39,10 @@
     - [使用use关键字将名称引入作用域](#使用use关键字将名称引入作用域)
     - [分割模块](#分割模块)
     - [采用发布配置来自定义构建](#采用发布配置来自定义构建)
-    - [cargo工作空间](#cargo工作空间)
+    - [cargo工作空间--拆包](#cargo工作空间--拆包)
 - [常见集合](#常见集合)
     - [Vector](#vector)
     - [字符串](#字符串)
-        * dev
     - [hashmap](#hashmap)
 - [错误处理](#错误处理)
     - [painc和不可恢复错误](#painc和不可恢复错误)
@@ -184,6 +183,8 @@
     - `rustup self update`，更新rustup的版本
     - `rustup install nightly`，安装nightly版
         - `rustup run nightly rustc --version`，查询版本
+- rust 语法检查
+    - `cargo check`
 
 # vscode配置
 [top](#catalog)
@@ -341,8 +342,9 @@
             ```
         4. 字符类型
             * `char`表示字符型
-            * 字符类型表示**语言中最原生的字母类型**
-            * 大小为4byte
+            * 大小为**4byte，32位**，与其他语言不同
+                - 所以字符可以是一个英文字母，也可以是一个中文字符
+                - 表示**语言中最原生的字母类型**
             * 代表了一个Unicode标量值
             * Rust中，中文、日文、韩文、emoji字符、0长度的空字符 等，都是有效char值
             * 表示的范围：`U+0000~U+D7FF` 和 `U+E000`
@@ -390,55 +392,69 @@
 #### String类型
 [top](#catalog)
 * 该类型被分配到堆上，能够存储在编译时未知大小的文本
-* 使用`from()`函数基于字符串字面量来创建String：`let s = String::from("test");`
-    * `::`允许将`from`置于`String`类型的命名空间 TODO
-* 向**可变**字符串变量的末尾添加新字符串
-    ```rust
-    let mut s = String::from("this");
-    s.push_str(" is test");
-    println!("{}", s); // this is test
-    ```
-* 字符串字面量不可变，如`let s = "test";`；**可变的字符串变量**可变
-    * 字符串字面量的内存分配
-        * 字符串字面量是**编译时就知道的内容**,所以字面量会**被直接硬编码到最终的可执行文件中**，这使得字符串字面量快速、高效
-    * 可变字符串变量
-        * 为了支持一个可变、可增长的文本片段，需要**分配一块在编译时未知大小的内存来存放内容**，包含两点
-            1. 必须在运行时向操作系统请求内存
-                * 由`String::from`的实现来申请内存
-            2. 需要有一个方法，在String使用完之后，将内存释放回操作系统
-                * 一般GC系统的策略：自动记录并清除不再使用的内存
-                * 没有GC系统的编程策略：精确的为每一个`allocate`配对一个`free`
-                    * free早了，会浪费内存
-                    * free晚了，会出现无效变量
-                    * 如果重复回收，会产生异常
-                * Rust的策略
-                    * **在变量离开作用域后自动释放**
-                        ```rust
-                        {
-                            let s = String::from("hello");  // 从此处起，s 是有效的
-
-                            // 使用 s
-                        }  // 此作用域已结束，
-                        // s 不再有效(内存已被释放)
-                        ```
-                    * 当s离开作用域时，即末尾的`}`处，Rust会自动调用特殊函数`drop`
-* String的底层
-    * 基本结构，这部分存储在栈上
+* 字符串字面量不可变，如`let s = "test";`
+- String的底层
+    - 基本结构，这部分存储在栈上
     
-    |name|value|
-    |-|-|
-    |ptr|指针，指向存储字符串内容的数据|
-    |len|长度，String当前使用了多少字节的内存|
-    |capacity|容量，String从操作系统获取了多少字节的内存|
+        |name|value|
+        |-|-|
+        |ptr|指针，指向存储字符串内容的数据|
+        |len|长度，String当前使用了多少字节的内存|
+        |capacity|容量，String从操作系统获取了多少字节的内存|
 
-    * 存储字符串内容的数据，这部分存储在堆上
+    - 存储字符串内容的数据，这部分存储在堆上
 
-    |index|val|
-    |-|-|
-    |0|t|
-    |1|e|
-    |2|s|
-    |3|t|
+        |index|val|
+        |-|-|
+        |0|t|
+        |1|e|
+        |2|s|
+        |3|t|
+
+- 字符串操作
+    - 创建字符串
+        ```rust
+        let mut a = String::new();
+        a.push_str("xxxx");
+
+        let b = String::from("xxxx");
+
+        let c = "xxxx".to_string();
+        ```
+    - 更新字符串
+        ```rust
+        let mut a = String::from("xxxx");
+        let b = "xxxx";
+        a.push_str(b); //b仍然可以使用，具有所有权
+
+        a.push('xxx'); //添加一个字符
+        ```
+    - 拼接
+        ```rust
+        let a = "aaa".to_string();
+        let b = String::new("bbb")
+        let c = a + &b; // a不能再使用，b可以继续使用
+        ```
+    - `format!` 宏，不获取所有权
+    - 索引
+        ```rust
+        let a = String::from("中文");
+        // let b = a[0]，无法索引
+        let b = &a[0..3];//end需要注意文字边界
+        ```
+    - 遍历
+        ```rust
+        //字符形式遍历
+        let a = String:from("中文")；
+        for c in a.chars(){
+            println!("c = {}", c)
+        }
+
+        //字节形式
+        for b in a.bytes(){
+            println!("b = {}", b)
+        }
+        ```
 
 #### Slice类型
 [top](#catalog)
@@ -464,18 +480,18 @@
     * slice的结构示例：![slice_struct.png](./imgs/slice_struct.png)
     * **字符串slice的索引必须位于有效的UTF-8字符边界内，如果尝试从一个多字节字符的中间位置创建字符串slice，程序会因错误而退出**
     * 通过字符串slice来返回第一个单词
-    ```rust
-    fn first_word(s: &String) -> &str {
-        let bytes = s.as_bytes();
-        for (i,&item) in bytes.iter().enumerate(){
-            if item == b' ' {
-                return &s[0..i];
+        ```rust
+        fn first_word(s: &String) -> &str {
+            let bytes = s.as_bytes();
+            for (i,&item) in bytes.iter().enumerate(){
+                if item == b' ' {
+                    return &s[0..i];
+                }
             }
-        }
 
-        return &s[..];
-    }
-    ```
+            return &s[..];
+        }
+        ```
     * 字符串字面值就是slice，类型就是`&str`，所以字符串字面值是不可变的，他是一个指向二进制程序特定位置的slice
         * **因为字面量本身就是字符串slice，所以可以直接作为字符串slice类型的函数参数**
     * 字符串slice作为函数参数
@@ -1668,11 +1684,36 @@
             }
             ```
 
-## cargo工作空间
+## cargo工作空间--拆包
 [top](#catalog)
-* 工作空间是一系列共享同样的`Cargo.lock`和输出目录的包
-* 工作空间中的crate之间相互依赖
-* 共享target目录，避免其他crate多余的重复构建
+- 什么是工作空间
+    * 工作空间是一系列共享同样的`Cargo.lock`和输出目录的包
+    * 工作空间中的crate之间相互依赖
+    * 共享target目录，避免其他crate多余的重复构建
+- 创建工作空间的方式
+    1. 创建工作空间：`cargo new --bin <工作空间名>`
+    2. 清除src目录
+    3. 修改`Cargo.toml`
+        ```
+        [workspace]
+        members = [
+            子crate1,
+            子crate2,
+            ....
+        ]
+        ```
+    4. 创建子crate：
+        - 创建库crate：`cargo new --lib <子crate名>`
+        - 创建可执行crate：`cargo new --new <子crate名>`
+    5. 在`Cargo.toml` 的 members中添加zicreate名
+    6. 在某个子crate中引用其他子crate，需要在子crate的 `Cargo.toml` 中添加依赖
+        ```
+        [dependencies]
+        子create名 = { path = "当前工作空间的其他子create名" }
+        ```
+    7. 指定某个子crate执行：`cargo run -p <子crate名>`
+    7. 指定某个子crate进行测试：`cargo test -p <子crate名>`
+
 # 常见集合
 [top](#catalog)
 * 集合指向的数据是存储在堆上的
@@ -4112,7 +4153,7 @@
     }
     ```
 * 静态分发
-    * 在便器期，为每一个泛型类型参数代替的具体类型生成非范型的函数和方法实现
+    * 在编译期，为每一个泛型类型参数代替的具体类型生成非范型的函数和方法实现
 * 动态分发：trait对象
 * trait对象要求对象安全
     * 只有对象安全的trait才可以组成trait对象
