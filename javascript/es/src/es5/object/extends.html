@@ -1,0 +1,139 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>object extends test</title>
+        <script type="text/javascript">
+            // 1. 指定某个对象为原型创建新的对象
+            var obj0101 = {name:'aaa', age:14}
+            var obj0102 = Object.create(obj0101)
+            console.log("obj0102.name =", obj0102.name)
+            // 输出: obj0102.name = aaa
+            console.log(obj0102)
+
+            // 2. 在原型的基础上，通过 descriptors 参数，为新对象扩展属性
+            var obj0201 = {name:'bbb', age:15}
+            var obj0202 = Object.create(
+                obj0201,
+                {
+                    gender:{
+                        value:false,
+                        writable:true,
+                        configurable:true,
+                        enumerable:true
+                    },
+
+                    address:{
+                        value:"test address",
+                        writable:false,
+                        configurable:false,
+                        enumerable:false
+                    }
+                }
+            )
+
+            // 2.1 修改可修改属性
+            console.log("obj0202.gender =", obj0202.gender)
+            // 输出: obj0202.gender = false
+
+            obj0202.gender = true
+            console.log("obj0202.gender =", obj0202.gender)
+            // 输出: obj0202.gender = true
+
+            // 2.2 修改不可修改属性
+            console.log("obj0202.address) =", obj0202.address)
+            // 输出: obj0202.address) = test address
+            obj0202.address = "new address"
+            console.log("obj0202.address) =", obj0202.address)
+            // 输出: obj0202.address) = test address
+
+            // 2.3 遍历所有属性
+            for(var p in obj0202){
+                console.log("p =", p)
+            }
+
+            // 遍历输出:
+            // p = gender
+            // p = name
+            // p = age
+
+            // 2.4 删除属性
+            delete obj0202.gender //可删除
+            delete obj0202.address //不可删除
+            console.log("obj0202 =", obj0202)
+            // 输出: obj0202 = {address: "test address"}
+
+            // 3. 为指定对象定义扩展多个属性
+            var obj03 = {firstName:"aaa", lastName:"ccc"}
+            Object.defineProperties(
+                obj03,
+                {
+                    fullName:{
+                        get: function(){
+                            return this.firstName + " " + this.lastName
+                        },
+                        set: function(data){
+                            var result = data.split(" ");
+                            this.firstName = result[0]
+                            this.lastName = result[1]
+                        }
+                    }
+                }
+            )
+
+            console.log("obj03.fullName =", obj03.fullName)
+            // 输出: obj03.fullName = aaa ccc
+            obj03.fullName = "xxx yyy"
+            console.log("obj03.fullName =", obj03.fullName)
+            // 输出: obj03.fullName = xxx yyy
+
+            // 4. 设置对象自身的getter和setter
+            var obj04 = {
+                firstName:"object",
+                lastName:'04',
+                get fullName(){
+                    return this.firstName + " " + this.lastName
+                },
+                set fullName(data){
+                    var result = data.split(" ")
+                    this.firstName = result[0]
+                    this.lastName = result[1]
+                }
+            }
+
+            console.log("obj04.fullName =", obj04.fullName)
+            // 输出: obj04.fullName = object 04
+            obj04.fullName = "new name"
+            console.log("obj04.fullName =", obj04.fullName)
+            // 输出: obj04.fullName = new name
+
+            // 5. 检查两种添加 getter、setter 方式的对象结构
+            console.log(obj03)
+            console.log(obj04)
+
+            // obj03:
+            // {firstName: "xxx", lastName: "yyy"}
+            // firstName: "xxx"
+            // lastName: "yyy"
+            // fullName: (...)
+            // get fullName: ƒ ()        <----getter函数名不同
+            // set fullName: ƒ (data)    <----setter函数名不同
+            // __proto__: Object
+
+            // obj04
+            // {firstName: "new", lastName: "name"}
+            // firstName: "new"
+            // fullName: (...)
+            // lastName: "name"
+            // get fullName: ƒ fullName()      <----getter函数名不同
+            // set fullName: ƒ fullName(data)  <----setter函数名不同
+            // __proto__: Object
+
+
+
+
+        </script>
+    </head>
+    <body>
+    </body>
+</html>

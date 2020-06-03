@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>let test</title>
+        <script type="text/javascript">
+            // 1. 在作用域内，不能重复声明同名变量
+            let a = 100
+            // SyntaxError: Identifier 'a' has already been declared
+            // let a = 200
+            console.log(a)
+
+            // 2. 使变量在创建执行上下文时，不参与预处理，不被提升
+            // 在变量声明之前，访问使用let声明的变量
+            // ReferenceError: Cannot access 'b' before initialization
+            // console.log(b)
+            let b = 300
+
+            // 3. 循环遍历加监听--- let 使变量只在块级作用域内有效
+            window.onload = function(){
+                // 为每个按钮绑定点击事件。点击时输出自身的index
+                var buttons = document.getElementsByTagName("button")
+                var buttons_length = buttons.length
+                for(let i=0; i<buttons_length; i++){
+                    // 每一次循环都会创建let对应的作用域，事件处理函数中只会使用当前作用域中的值
+                    buttons[i].onclick = function(){
+                        console.log("i =", i)
+                    }
+                }
+            }
+        </script>
+    </head>
+    <body>
+        <button>btn01</button><br>
+        <button>btn02</button><br>
+        <button>btn03</button><br>
+    </body>
+</html>

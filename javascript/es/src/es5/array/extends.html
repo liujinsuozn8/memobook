@@ -1,0 +1,51 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>array extends test</title>
+        <script type="text/javascript">
+            // 1. 输出第一个6的下标
+            // 2. 输出最后一个6的下标
+            // 3. 输出所有元素的值和下标
+            // 4. 根据原始数组产生一个新数组，将数组的所有元素加10
+            // 5. 根据原始数组产生一个新数组，返回大于4的元素
+
+            var arr = [2,3,4,5,6,7,8,9,6,0]
+            // 1. 输出第一个6的下标
+            var result01 = arr.indexOf(6)
+            console.log("result01 =", result01)
+            // 输出: result01 = 4
+
+
+            // 2. 输出最后一个6的下标
+            var result02 = arr.lastIndexOf(6)
+            console.log("result02 =", result02)
+            // 输出: result02 = 8
+
+
+            // 3. 输出所有元素的值和下标
+            arr.forEach(function(item, index){
+                console.log("result03: index = " + index + ", arr[" + index + "] = " + arr[index])
+            })
+
+
+            // 4. 根据原始数组产生一个新数组，将数组的所有元素加10
+            var result04 = arr.map(function(item){
+                return item + 10
+            })
+            console.log("result04 =", result04)
+            // 输出: result04 = (10) [12, 13, 14, 15, 16, 17, 18, 19, 16, 10]
+
+
+            // 5. 根据原始数组产生一个新数组，返回大于4的元素
+            var result05 = arr.filter(function(item){
+                return item > 4
+            })
+            console.log("result05 =", result05)
+            // 输出: result05 = (6) [5, 6, 7, 8, 9, 6]
+        </script>
+    </head>
+    <body>
+
+    </body>
+</html>

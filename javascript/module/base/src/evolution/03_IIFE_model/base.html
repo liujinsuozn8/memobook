@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>IIFE model</title>
+        <script type="text/javascript" src="base.js"></script>
+        <script type="text/javascript">
+            // 调用模块中的方法
+            module3.foo()
+            // 输出: asdfgh
+
+            // 无法修改变量
+            module3.msg = 'zxcvbn'
+            module3.foo()
+            // 输出: asdfgh
+        </script>
+    </head>
+    <body>
+    </body>
+</html>

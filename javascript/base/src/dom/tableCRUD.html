@@ -1,0 +1,152 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>table crud test</title>
+        <style>
+            body{
+                width:300px;
+                margin:10px auto;
+            }
+            .showBox{
+                /* border-spacing: 2px; */
+                border: black 1px solid;
+                border-collapse:collapse;
+                vertical-align: middle;
+                text-align: center;
+                margin: 5px auto;
+            }
+
+            .showBox td,
+            .showBox th{
+                border: black 1px solid;
+            }
+
+            .addBox{
+                border:black 1px solid;
+                
+            }
+        </style>
+        <script type="text/javascript">
+            function hypelinkOnclick() {
+                // 确认是否删除
+                var tr = this.parentNode.parentNode;
+                if (confirm("delete user :" + tr.children[0].innerHTML + " ?")){
+                    tr.parentNode.removeChild(tr);
+                }
+            }
+
+            window.onload = function(){
+                
+                var a_list = document.querySelectorAll(".showBox a");
+
+                // 1. 设置table中每个超链接的事件
+                for(var i=0; i<a_list.length; i++){
+                    a_list[i].onclick = hypelinkOnclick;
+                };
+
+                // 2. 添加一行，通过创建元素来添加
+                var addBtn01 = document.getElementById("addBtn01");
+                addBtn01.onclick = function(){
+                    // 读取输入信息
+                    var name = document.querySelector(".addBox input[name='name']");
+                    var email = document.querySelector(".addBox input[name='email']");
+                    var salary = document.querySelector(".addBox input[name='salary']");
+                    
+                    // 创建 tr
+                    var td_name = document.createElement("td");
+                    td_name.innerHTML = name.value;
+
+                    var td_email = document.createElement("td");
+                    td_email.innerHTML = email.value;
+                    
+                    var td_salary = document.createElement("td");
+                    td_salary.innerHTML = salary.value;
+
+                    var td_delete = document.createElement("td");
+                    var td_delete_a = document.createElement("a")
+                    td_delete_a.href = "javascript:;";
+                    td_delete_a.innerHTML = "delete";
+                    // td_delete.innerHTML = '<a href="javascript:;">delete</a>';
+                    // 设置 超链接的 onclick 事件
+                    td_delete_a.onclick = hypelinkOnclick;
+                    td_delete.appendChild(td_delete_a);
+
+                    var new_tr = document.createElement("tr");
+                    new_tr.appendChild(td_name);
+                    new_tr.appendChild(td_email);
+                    new_tr.appendChild(td_salary);
+                    new_tr.appendChild(td_delete);
+
+                    // 将 tr 节点添加到 tobody下，与html自动生成的内容保持一致
+                    var addBox = document.querySelector(".showBox>tbody");
+                    addBox.appendChild(new_tr);
+                };
+                
+                // 3. 添加一行，通过创建HTML来添加
+                var addBtn02 = document.getElementById("addBtn02");
+                addBtn02.onclick = function(){
+                    // 获取输入信息
+                    var name = document.querySelector(".addBox>input[name='name']");
+                    var email = document.querySelector(".addBox>input[name='email']");
+                    var salary = document.querySelector(".addBox>input[name='salary']");
+
+                    // 创建tr节点
+                    var tr = document.createElement("tr");
+                    // 创建子节点的html
+                    var td_html = "<td>" + name.value + "</td>" +
+                                "<td>" + email.value + "</td>" +
+                                "<td>" + salary.value + "</td>" +
+                                "<td><a href='javascript:;'>delete</a></td>";
+                    tr.innerHTML = td_html;
+
+                    // 绑定超链接的点击事件
+                    tr.querySelector("a").onclick = hypelinkOnclick;
+
+                    // 添加td 到tbody下
+                    var showBox = document.querySelector(".showBox>tbody");
+                    showBox.appendChild(tr);
+
+                };
+            };
+        </script>
+    </head>
+    <body>
+        <table class="showBox">
+            <tr>
+                <th>name</th>
+                <th>email</th>
+                <th>salary</th>
+                <th></th>
+            </tr>
+            <tr>
+                <td>aaa</td>
+                <td>aaa@email</td>
+                <td>111</td>
+                <td><a href="javascript:;">delete</a></td>
+            </tr>
+            <tr>
+                <td>bbb</td>
+                <td>bbb@email</td>
+                <td>222</td>
+                <td><a href="javascript:;">delete</a></td>
+            </tr>
+            <tr>
+                <td>ccc</td>
+                <td>ccc@email</td>
+                <td>333</td>
+                <td><a href="javascript:;">delete</a></td>
+            </tr>
+        </table>
+
+        <form action="" class="addBox" autocomplete="off">
+            <p>add:</p>
+            name: <input type="text" name="name"><br>
+            email: <input type="text" name="email"><br>
+            salary: <input type="text" name="salary"><br>
+            <input type="button" value="submitByElem" id="addBtn01">
+            <input type="button" value="submitByHTML" id="addBtn02">
+
+        </form>
+    </body>
+</html>

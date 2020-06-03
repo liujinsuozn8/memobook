@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <script type="text/javascript">
+        // 1 遍历内置的已部署Iterator的数据类型
+        // 1.1 String
+        let str = "asdfg"
+        for(let n of str){
+            console.log(n)
+        }
+        // 输出：
+        // a
+        // s
+        // d
+        // f
+        // g
+
+        // 1.2. Array
+        let arr = ["aaa", "bbb", "ccc", "ddd"]
+        for(let n of arr){
+            console.log(n)
+        }
+        // 输出：
+        // aaa
+        // bbb
+        // ccc
+        // ddd
+
+        // 1.3. arguments
+        function foo(){
+            for(let n of arguments){
+                console.log(n)
+            }
+        }
+        foo(1, 2, 3, 4, "dd", "ff")
+        // 输出：
+        // 1
+        // 2
+        // 3
+        // 4
+        // dd
+        // ff
+
+        // 1.4 无法遍历对象
+        let obj = {name:"testName", age:22}
+        // TypeError: obj is not iterable
+        // for(let n of obj){
+        //     console.log(n)
+        // }
+    </script>
+</head>
+<body>
+</body>
+</html>

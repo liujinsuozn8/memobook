@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>deep custome test</title>
+    <script type="text/javascript">
+        // 自定义深拷贝
+        // 检查数据类型
+        function checkType(data){
+            // [object xxxx] -->xxxx
+            return Object.prototype.toString.call(data).slice(8, -1)
+        }
+
+        // 深拷贝
+        function clone(data){
+            let result, type = checkType(data)
+
+            // 如果是 对象或数组，则进行深拷贝，其他类型直接返回
+            if (type === "Object"){
+                result = {}
+            } else if (type === "Array"){
+                result = []
+            } else {
+                return data
+            }
+
+            // 遍历对象或数组，通过key/index取值
+            // 如果值仍然是对象或数组，则进行递归克隆
+            for(let k in data){
+                result[k] = clone(data[k])
+            }
+
+            return result
+        }
+
+        let obj = {
+            name:"testName",
+            age:22,
+            price:{a:60, b:70, c:80 },
+            address:null
+        }
+
+        let obj2 = clone(obj)
+
+        console.log(obj)
+        // {name: "testName", age: 22, price: {a: 60, b: 70, c: 80}, address: null}
+        console.log(obj2)
+        // {name: "testName", age: 22, price: {a: 60, b: 70, c: 80}, address: null}
+
+        // 修改数据
+        obj2.name = "newName"
+        obj2.price.b = 100
+
+        console.log(obj)
+        // {name: "testName", age: 22, price: {a: 60, b: 70, c: 80}, address: null}
+        console.log(obj2)
+        // {name: "newName", age: 22, price: {a: 60, b: 100, c: 80}, address: null}
+    </script>
+</head>
+<body>
+</body>
+</html>

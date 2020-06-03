@@ -1,0 +1,56 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>change color test</title>
+        <style>
+            .outter{
+                width: 200px;
+                border:black 1px solid;
+                margin: 10px auto;
+                text-align: center;
+            }
+            .colorBox{
+                width: 100px;
+                height:100px;
+                margin: 0px auto;
+                background: #bfa;
+            }
+        </style>
+        <script type="text/javascript">
+            window.onload = function(){
+                var colorBox = document.querySelector(".colorBox");
+
+                // 设置颜色信息
+                var colorList = ["#bfa", "#47e","#fff", "#aaa"];
+                var colorIndex= 0;
+
+                // 设置前后按钮的事件
+                var prev = document.getElementById("prev");
+                var next = document.getElementById("next");
+                
+                prev.onclick = function(){
+                    if (colorIndex <= 0){
+                        return;
+                    }
+
+                    colorBox.style.background = colorList[--colorIndex];
+                };
+
+                next.onclick = function(){
+                    if (colorIndex < colorList.length ){
+                        colorBox.style.background = colorList[++colorIndex];
+                    }
+
+                };
+            }
+        </script>
+    </head>
+    <body>
+        <div class="outter">
+            <div class="colorBox"></div>
+            <button id="prev">prev</button>
+            <button id="next">next</button>
+        </div>
+    </body>
+</html>

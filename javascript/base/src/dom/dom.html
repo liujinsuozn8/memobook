@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>dom base</title>
+    <style>
+        /* 清除默认css */
+        ul, li{
+            margin: 0;
+            padding: 0;
+            border: 0;
+            font-size: 100%;
+            font: inherit;
+            vertical-align: baseline;
+        }
+
+        ol, ul {
+            list-style: none;
+        }
+
+        /* 页面css */
+        body{
+            width: 800px;
+            margin:0 auto;
+        }
+
+        .select{
+            height: 350px;
+            border:black 1px solid;
+        }
+
+        .select p {
+            margin-left: 10px;
+        }
+
+        .showList{
+            margin:10px auto;
+        }
+        .showList li{
+            width:50px;
+            height:50px;
+            margin:0px 10px;
+            border:black 1px solid;
+            /* background-color: #bfa; */
+            float:left;
+            text-align: center;
+            vertical-align: bottom;
+        }
+
+        .clearfixed::before,
+        .clearfixed::after{
+            clear: both;
+            content: "";
+            display: table;
+        }
+
+        .inputs{
+            height: 50px;
+            border:black 1px solid;
+            margin-top: 10px;
+        }
+
+        .leftbox{
+            float:left;
+            margin-right:20px;
+            width:300px;
+            
+            
+        }
+        .rightbox{
+            float:left;
+        }
+    </style>
+    <script type="text/javascript">
+
+        // 通过id查找元素，并设置onclick事件的处理函数
+        function addElemClickById(id, fn){
+            var elem = document.getElementById(id);
+            elem.onclick = fn;
+        }
+
+        window.onload = function(){
+            // 1. 通过id获取元素，并输出元素的文本内容
+            var btn01 = document.getElementById("btn01");
+            btn01.onclick = function(){
+                var aa = document.getElementById("aa");
+                output(aa); // 输出当前元素
+                output(aa.innerHTML);
+            };
+
+            // 2. 通过li标签获取一组元素，并遍历输出各元素的文本内容
+            var btn02 = document.getElementById("btn02");
+            btn02.onclick = function(){
+                var lis = document.getElementsByTagName("li");
+                for (var i=0; i< lis.length; i++){
+                    output(lis[i].innerHTML);
+                }
+            }
+            
+            // 3. 获取name=gender的对象，并遍历输出各元素的文本内容
+            var btn03 = document.getElementById("btn03");
+            btn03.onclick = function(){
+                var gender = document.getElementsByName("gender");
+                for(var i=0; i<gender.length; i++){
+                    output(
+                        "type = " + gender[i].type +
+                        ", class = " + gender[i].className + 
+                        ", id = " + gender[i].id + 
+                        ", value = " + gender[i].value
+                    );
+                }
+            };
+
+            // 4. 获取ul01元素节点下的所有li子节点: getElementsByTagName
+            addElemClickById(
+                "btn04",
+                function(){
+                    // 获取ul01元素节点
+                    var ul01 = document.getElementById("ul01");
+                    // 获取该节点下的所有li子节点
+                    var ul01_lis = ul01.getElementsByTagName("li");
+                    // 输出数组的长度
+                    output("1. ul01_lis.length = " + ul01_lis.length);
+                    for (var i=0; i<ul01_lis.length; i++){
+                        output(ul01_lis[i].innerHTML);
+                    }
+                }
+            );
+
+            // 5. 获取ul01元素节点下的所有 子节点:childNodes
+            addElemClickById(
+                "btn05",
+                function(){
+                    // 获取ul01元素节点
+                    var ul01 = document.getElementById("ul01");
+                    // 获取该节点下的所有子节点
+                    var ul01_lis = ul01.childNodes;
+                    // 输出数组的长度
+                    output("2. ul01_lis.length = " + ul01_lis.length);
+                    for (var i=0; i<ul01_lis.length; i++){
+                        output(ul01_lis[i].innerHTML);
+                    }
+                }
+            );
+
+            // 6. 获取ul01元素节点下的所有 子元素:children
+            addElemClickById(
+                "btn06",
+                function(){
+                    // 获取ul01元素节点
+                    var ul01 = document.getElementById("ul01");
+                    // 获取该节点下的所有子元素
+                    var ul01_lis = ul01.children;
+                    // 输出数组的长度
+                    output("2. ul01_lis.length = " + ul01_lis.length);
+                    for (var i=0; i<ul01_lis.length; i++){
+                        output(ul01_lis[i].innerHTML);
+                    }
+                }
+            );
+            
+            // 7. 获取ul01元素节点下的第一个 子元素:firstElementChild
+            addElemClickById(
+                "btn07",
+                function(){
+                    // 获取ul01元素节点
+                    var ul01 = document.getElementById("ul01");
+                    // 获取该节点下的所有子元素
+                    var li01 = ul01.firstElementChild;
+                    // 输出数组的长度
+                    output(li01.innerHTML);
+                }
+            )
+
+            // 8. 获取 aa 元素的父对象
+            addElemClickById(
+                "btn08",
+                function(){
+                    var aa = document.getElementById("aa");
+                    output(aa.parentNode);
+                }
+            )
+            
+            // 9. 获取 ff 元素的前一个兄弟节点和前一个兄弟元素
+            addElemClickById(
+                "btn09",
+                function(){
+                    var aa = document.getElementById("ff");
+                    // 返回文本
+                    var prevNode = aa.previousSibling;
+                    output(prevNode);
+                    // 返回元素
+                    var prevElem = aa.previousElementSibling;
+                    output(prevElem);
+                }
+            )
+            
+            // z. 读取ff节点下的文本节点中的文本内容
+            addElemClickById(
+                "btnz",
+                function(){
+                    // 获取ff元素对象
+                    var ff = document.getElementById("ff");
+                    // 获取ff下的文本节点、
+                    var ff_text_node = ff.firstChild;
+                    
+                    output(ff_text_node);
+                    output(ff_text_node.nodeValue);
+                    output(ff_text_node.value); // undefined
+                }
+            );
+
+            // y. 读写 text01 元素的value属性
+            addElemClickById(
+                "btny",
+                function(){
+                    var text01 = document.getElementById("text01");
+                    output(text01.value);
+                    text01.value = "newValue";
+                }
+            );
+
+            // x. 获取元素节点中的文本内容:innerText
+            addElemClickById(
+                "btnx",
+                function(){
+                    var ul01 = document.getElementById("ul01");
+                    output(ul01.innerText);
+                }
+            );
+        };
+
+        function output(param){
+            console.log(param);
+        }
+        
+
+    </script>
+</head>
+<body>
+    <div class="leftbox">
+        <div class="select">
+            <p>1. problem01</p>
+            <ul class="showList clearfixed" id="ul01">
+                <li id="aa">aa</li>
+                <li>bb</li>
+                <li>cc</li>
+                <li>dd</li>
+            </ul>
+            
+            <p>2. problem02</p>
+            <ul class="showList clearfixed">
+                <li>ee</li>
+                <li id="ff">ff</li>
+                <li>gg</li>
+                <li>hh</li>
+            </ul>
+            
+            <p>3. problem03</p>
+            <ul class="showList clearfixed">
+                <li>ii</li>
+                <li>jj</li>
+                <li>kk</li>
+                <li>ll</li>
+            </ul>
+        </div>
+
+        <div class="inputs">
+            <span>gender: </span>
+            <input type="radio" class="rc0101 rc0102" name="gender" id="radio01" value="1">
+            <span>r01</span>
+            <input type="radio" class="rc02" name="gender" id="radio01" value="2" >
+            <span>r02</span>
+            <input type="radio" class="rc03" name="gender" id="radio01" value="3" >
+            <span>r03</span>
+            <br>
+            <span>text01：</span>
+            <input type="text" name="text01" id="text01" value='default'>
+        </div>
+    </div>
+    <div class="rightbox">
+        <div><button id="btn01">1. 通过id获取元素，并输出元素的文本内容</button></div>
+        <div><button id="btn02">2. 通过li标签获取一组元素，并遍历输出各元素的文本内容</button></div>
+        <div><button id="btn03">3. 获取name=gender的对象，并遍历输出各元素的文本内容</button></div>
+        <div><button id="btn04">4. 获取ul01元素节点下的所有li子节点: getElementsByTagName</button></div>
+        <div><button id="btn05">5. 获取ul01元素节点下的所有 子节点:childNodes</button></div>
+        <div><button id="btn06">6. 获取ul01元素节点下的所有 子元素:children</button></div>
+        <div><button id="btn07">7. 获取ul01元素节点下的第一个 子元素:firstElementChild</button></div>
+        <div><button id="btn08">8. 获取 aa 元素的父对象</button></div>
+        <div><button id="btn09">9. 获取 ff 元素的前一个兄弟节点和前一个兄弟元素</button></div>
+        <div><button id="btnz">z. 读取ff节点下的文本节点中的文本内容</button></div>
+        <div><button id="btny">y. 读写 text01 元素的value属性</button></div>
+        <div><button id="btnx">获取元素节点中的文本内容:innerText</button></div>
+
+    </div>
+</body>
+</html>

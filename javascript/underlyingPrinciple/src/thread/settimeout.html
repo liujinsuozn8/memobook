@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>settimeout test</title>
+        <script type="text/javascript">
+            window.onload = function(){
+                var button = document.querySelector("button")
+                button.onclick = function(){
+                    // 按钮按下之后执行一个定时器
+                    var start = Date.now()
+                    setTimeout(
+                        function(){
+                            console.log(Date.now() - start);
+                        }
+                    )
+
+                    // 定时器开始执行后，再执行一个耗时较长的任务来干扰定时器
+                    for(var i=i; i<1000000000;i++){}
+                }
+            }
+        </script>
+    </head>
+    <body>
+        <button>test</button>
+    </body>
+</html>

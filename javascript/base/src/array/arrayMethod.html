@@ -1,0 +1,216 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>array method test</title>
+        <script type="text/javascript">
+            // 1. 尾部元素操作
+            var a1 = [1,2,3];
+
+            // 1.1. push
+            var a1_length01 = a1.push("abc", "def", true);
+            console.log("a1 = ", a1);
+            // 输出：a1 =  (6) [1, 2, 3, "abc", "def", true]
+            console.log("a1_length01 = ", a1_length01);
+            // 输出：a1_length01 =  6
+
+            // 1.2. pop
+            var node = a1.pop();
+            console.log("a1 = ", a1);
+            // 输出：a1 =  (5) [1, 2, 3, "abc", "def"]
+            console.log("node = ", node);
+            // 输出：node =  true
+
+            // 2. 头部元素操作
+            var a2 = [1,2,3];
+            // 2.1. unshift()
+            var a2_length02 = a2.unshift("adsdg", 345);
+            console.log("a2 = ", a2);
+            // 输出：a2 =  (5) ["adsdg", 345, 1, 2, 3]
+            console.log("a2_length02 = ", a2_length02);
+            // 输出：a2_length02 =  5
+
+            // 2.2. shift()
+            var node02 = a2.shift();
+            console.log("a2 = ", a2);
+            // 输出：a2 =  (4) [345, 1, 2, 3]
+            console.log("node02 = ", node02);
+            // 输出：node02 =  adsdg
+
+            // 3. slice 切片操作
+            var a3 = ['a','b','c','d','e','f'];
+
+            // 3.1 不指定end
+            var slice0301 = a3.slice(1);
+            console.log("slice0301 = ", slice0301);
+            // 输出：slice0301 =  (5) ["b", "c", "d", "e", "f"]
+
+            // 3.2 end是正数
+            var slice0302 = a3.slice(1,3);
+            console.log("slice0302 = ", slice0302);
+            // 输出：slice0302 =  (2) ["b", "c"]
+
+            // 3.3 start 小于 end
+            var slice0303 = a3.slice(3, 1);
+            console.log("slice0303 = ", slice0303);
+            // 输出：slice0303 =  []
+
+            // 3.4 start 等于 end
+            var slice0304 = a3.slice(1, 1);
+            console.log("slice0304 = ", slice0304);
+            // 输出：slice0304 =  []
+
+            // 3.5 end是负数
+            var slice0305 = a3.slice(1,-1);
+            console.log("slice0305 = ", slice0305);
+            // 输出：slice0305 =  (4) ["b", "c", "d", "e"]
+
+            // 3.6 end是负数，并且在start的前面
+            var slice0306 = a3.slice(3, -5);
+            console.log("slice0306 = ", slice0306);
+            // 输出：slice0306 =  []
+
+            console.log("a3 = ", a3);
+            // 输出：a3 =  (6) ["a", "b", "c", "d", "e", "f"]
+
+
+            // 4. splice
+            var a4 = ['a','b','c','d','e','f'];
+
+            // 4.1 不删除元素
+            var deleted_nodes01 = a4.splice(2,0);
+            console.log("deleted_nodes01 = ", deleted_nodes01);
+            // 输出：deleted_nodes01 =  []
+
+            // 4.2 删除多个元素
+            var deleted_nodes02 = a4.splice(2,3);
+            console.log("deleted_nodes02 = ", deleted_nodes02);
+            // 输出：deleted_nodes02 =  (3) ["c", "d", "e"]
+            console.log("a4 = ", a4);
+            // 输出：a4 =  ["a", "b", "f"]
+
+            // 4.3 删除并添加多个元素
+            var a402 = ['a','b','c','d','e','f'];
+            var deleted_nodes03 = a402.splice(2, 3, "xcvcbv", "rty", 567);
+            console.log("deleted_nodes03 = ", deleted_nodes03);
+            // 输出：deleted_nodes03 =  (3) ["c", "d", "e"]
+            console.log("a402 = ", a402);
+            // 输出：a402 =  (6) ["a", "b", "xcvcbv", "rty", 567, "f"]
+
+            // 4.4. 不删除元素，只添加元素
+            var a403 = ['a','b','c','d','e','f'];
+            var deleted_nodes04 = a403.splice(2, 0, "zzzzz", "yyyyy");
+            console.log("deleted_nodes04 = ", deleted_nodes04);
+            // 输出：deleted_nodes04 =  []
+            console.log("a403 = ", a403);
+            // 输出：a403 =  (8) ["a", "b", "zzzzz", "yyyyy", "c", "d", "e", "f"]
+
+            // 5. concate连接两个或更多的数组，并返回一个新的数组
+            var a0501 = [1,2,3,4,5];
+            var a0502 = [6,7,89];
+            var a0503 = ["sdf","xv"];
+            var a0504 = a0501.concat(a0502, a0503);
+            console.log("a0501 = ", a0501);
+            // 输出：a0501 =  (5) [1, 2, 3, 4, 5]
+            console.log("a0502 = ", a0502);
+            // 输出：a0501 =  (5) [1, 2, 3, 4, 5]
+            console.log("a0503 = ", a0503);
+            // 输出：a0501 =  (5) [1, 2, 3, 4, 5]
+            console.log("a0504 = ", a0504);
+            // 输出：a0504 =  (10) [1, 2, 3, 4, 5, 6, 7, 89, "sdf", "xv"]
+
+            // 6. join 将数组中的所有元素连接成一个字符串
+            // 6.1. 连接基本数据类型，指定连接符
+            var a0601 = [1, true, "aaaa", 65];
+            var a0601_str = a0601.join("--");
+            console.log("a0601_str = ", a0601_str);
+            // 输出：a0601_str =  1--true--aaaa--65
+
+            // 6.2. 连接基本数据类型，不指定连接符
+            var a0602 = [1, true, "aaaa", 65];
+            var a0602_str = a0602.join();
+            console.log("a0602_str = ", a0602_str);
+            // 输出：a0602_str =  1,true,aaaa,65
+
+            // 6.3. 连接Object类型，类没有toString方法
+            function Persion01(name, age){
+                this.name = name;
+                this.age = age;
+            }
+
+            var p0601 = new Persion01("aaa",10);
+            var p0602 = new Persion01("aaa",11);
+            var p0603 = new Persion01("aaa",12);
+
+            var a0603 = [p0601, p0602, p0603];
+            var a0603_str = a0603.join();
+            console.log("a0603_str = ", a0603_str);
+            // 输出：a0603_str =  [object Object],[object Object],[object Object]
+
+            // 6.4. 连接Object类型，类有toString方法
+            function Persion02(name, age){
+                this.name = name;
+                this.age = age;
+            }
+
+            Persion02.prototype.toString = function(){
+                return 'Persion02[ name = ' + this.name + ', age = ' + this.age + ']';
+            }
+
+            var p0604 = new Persion02("zxcv",11);
+            var p0605 = new Persion02("qwer",22);
+            var p0606 = new Persion02("yhnm",33);
+
+            var a0604 = [p0604, p0605, p0606];
+            var a0604_str = a0604.join();
+            console.log("a0604_str = ", a0604_str);
+            // 输出：a0604_str =  Persion02[ name = zxcv, age = 11],Persion02[ name = qwer, age = 22],Persion02[ name = yhnm, age = 33]
+
+
+            // 7. reverse 反转数组
+            var a0701 = [1,2,3,4,5,6,7];
+            a0701.reverse();
+            console.log("a0701 = ", a0701);
+            // 输出：a0701 =  (7) [7, 6, 5, 4, 3, 2, 1]
+
+            // 8. sort 对数组进行排序
+            // 8.1. 默认排序
+            var a0801 = [11,1,4,3,5,2,5,3];
+            a0801.sort();
+            console.log("a0801 = ", a0801);
+            // 输出：a0801 =  (8) [1, 11, 2, 3, 3, 4, 5, 5]
+
+            // 8.2 定制排序:升序排序
+            var a0802 = [11,1,4,3,5,2,5,3];
+            a0802.sort(function(a, b){
+            //     if (a > b){
+            //         return 1;
+            //     }else {
+            //         return -1;
+            //     }
+                return a-b;
+            });
+            console.log("a0802 = ", a0802);
+            // 输出：a0802 =  (8) [1, 2, 3, 3, 4, 5, 5, 11]
+
+            // 8.2 定制排序:降序排序
+            var a0803 = [11,1,4,3,5,2,5,3];
+            a0803.sort(function(a, b){
+            //     if (a > b){
+            //         return -1;
+            //     }else if (a < b) {
+            //         return 1;
+            //     }else {
+            //         return 0;
+            //     }
+                return b-a;
+            });
+            console.log("a0803 = ", a0803);
+            // 输出：a0803 =  (8) [11, 5, 5, 4, 3, 3, 2, 1]
+
+        </script>
+    </head>
+    <body>
+        
+    </body>
+</html>

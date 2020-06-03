@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>shallow test</title>
+    <script type="text/javascript">
+        // 1. Object.assign(source)
+        let obj0101 = {name:"testName", age:22, o:{price:99, address:"qwerty"}}
+        obj0101.show = function(){
+            console.log(`name = ${this.name}, age = ${this.age}, o.price = ${this.o.price}, o.price = ${this.o.address}`)
+        }
+        let obj0102 = Object.assign(obj0101)
+        obj0101.show()
+        // 输出: name = testName, age = 22, o.price = 99, o.price = qwerty
+        obj0102.show()
+        // 输出: name = testName, age = 22, o.price = 99, o.price = qwerty
+
+        obj0101.name = "newName"
+        obj0102.o.price = 60
+
+        obj0101.show()
+        // 输出: name = newName, age = 22, o.price = 60, o.price = qwerty
+        obj0102.show()
+        // 输出: name = newName, age = 22, o.price = 60, o.price = qwerty
+
+        // 2. Object.assign({}, source)
+        let obj0201 = {name:"testName", age:22, o:{price:99, address:"qwerty"}}
+        obj0201.show = function(){
+            console.log(`name = ${this.name}, age = ${this.age}, o.price = ${this.o.price}, o.price = ${this.o.address}`)
+        }
+        let obj0202 = {}
+        Object.assign(obj0202, obj0201)
+        obj0201.show()
+        // 输出: name = testName, age = 22, o.price = 99, o.price = qwerty
+        obj0202.show()
+        // 输出: name = testName, age = 22, o.price = 99, o.price = qwerty
+
+        obj0201.name = "newName"
+        obj0202.o.price = 60
+
+        // 修改基本数据类型属性不会影响原始对象，修改对象类型属性会影响原始对象
+        obj0201.show()
+        // 输出: name = newName, age = 22, o.price = 60, o.price = qwerty
+        obj0202.show()
+        // 输出: name = testName, age = 22, o.price = 60, o.price = qwerty
+
+        // 3. Array.prototype.concat()
+        let arr0301 = [1, 2, 3, 4, {name:"arrName", age:60}]
+        let arr0302 = arr0301.concat()
+        console.log(arr0301)
+        // 输出: (5) [1, 2, 3, 4, {name: "arrName", age: 60}]
+        console.log(arr0302)
+        // 输出: (5) [1, 2, 3, 4, {name: "arrName", age: 60}]
+
+        // 修改基本数据类型属性不会影响原始数组，修改对象类型属性会影响原始数组
+        arr0302[2] = "xxx"
+        arr0302[4].name = "newName"
+        console.log(arr0301)
+        // 输出: (5) [1, 2, 3, 4, {name: "newName", age: 60}]
+        console.log(arr0302)
+        // 输出: (5) [1, 2, "xxx", 4, {name: "newName", age: 60}]
+
+        // 4. Array.prototype.slice()
+        let arr0401 = [1, 2, 3, 4, {name:"arrName", age:60}]
+        let arr0402 = arr0401.slice()
+        console.log(arr0401)
+        // 输出: (5) [1, 2, 3, 4, {name: "arrName", age: 60}]
+        console.log(arr0402)
+        // 输出: (5) [1, 2, 3, 4, {name: "arrName", age: 60}]
+
+        // 修改基本数据类型属性不会影响原始数组，修改对象类型属性会影响原始数组
+        arr0402[2] = "xxx"
+        arr0402[4].name = "newName"
+        console.log(arr0401)
+        // 输出: (5) [1, 2, 3, 4, {name: "newName", age: 60}]
+        console.log(arr0402)
+        // 输出: (5) [1, 2, "xxx", 4, {name: "newName", age: 60}]
+
+    </script>
+</head>
+<body>
+</body>
+</html>

@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>closure sample test</title>
+
+        <script type="text/javascript">
+            window.onload = function(){
+                var btns = document.getElementsByTagName("button")
+
+                // 方法1：遍历时，将索引绑定到元素对象上，避免使用的是循环结束时的i
+                // for(var i=0, length=btns.length; i < length; i++){
+                //     btns[i].index = i
+                //     btns[i].onclick = function(){
+                //         console.log(this.index)
+                //     }
+                // }
+
+                // 方法2：IIFE
+                for(var i=0, length=btns.length; i < length; i++){
+                    (function(i){
+                        btns[i].onclick = function(){
+                            console.log(i)
+                        }
+                    })(i)
+                }
+            }
+        </script>
+    </head>
+    <body>
+        <button>btn01</button>
+        <button>btn02</button>
+        <button>btn03</button>
+    </body>
+</html>

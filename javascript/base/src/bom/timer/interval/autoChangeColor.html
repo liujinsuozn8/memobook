@@ -1,0 +1,59 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>auto change color test</title>
+        <style>
+            #box01{
+                width: 100px;
+                height:100px;
+                background-color: #bfa;
+            }
+        </style>
+        <script type="text/javascript">
+            window.onload = function(){
+                // 使用全局变量来保存定时器
+                var colorList = ["#bfa", "#47e", "#ccc", "#eda"]
+                var colorIndex = 0;
+                var box01 = document.getElementById("box01");
+                
+                // 每次点击都会创建一个定时器，多次点击按钮后，就会创建多个定时器，
+                // 导致图片切换加速
+                // 但是timer只会保存最新的定时器，所以点击关闭按钮时，也只能关闭最新的定时器，
+                // 无法关闭其他的定时器
+                // var startBtn = document.getElementById("startBtn");
+                // startBtn.onclick = function(){
+                //     // 点击开始按钮后，创建定时器
+                //     timer = setInterval(function(){
+                //         colorIndex = (colorIndex + 1)%colorList.length;
+                //         box01.style.backgroundColor = colorList[colorIndex];
+                //     }, 500);
+                // };
+
+                
+                var startBtn = document.getElementById("startBtn");
+                startBtn.onclick = function(){
+                    // 点击开始按钮后，先关闭当前元素中的上一个定时器
+                    clearInterval(box01.timer);
+
+                    // 创建定时器
+                    box01.timer = setInterval(function(){
+                        colorIndex = (colorIndex + 1) % colorList.length;
+                        box01.style.backgroundColor = colorList[colorIndex];
+                    }, 500);
+                };
+
+                var endBtn = document.getElementById("endBtn");
+                endBtn.onclick = function(){
+                    clearInterval(box01.timer);
+                };
+            };
+            
+        </script>
+    </head>
+    <body>
+        <div id="box01"></div>
+        <button id="startBtn">start</button>
+        <button id="endBtn">end</button>
+    </body>
+</html>

@@ -1,0 +1,123 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>dom select test</title>
+        <style>
+        </style>
+        <script type="text/javascript">
+            function addElemClickById(id, fn){
+                var elem = document.getElementById(id);
+                elem.onclick = fn;
+            }
+
+            window.onload = function(){
+                var selectBox = document.getElementsByName("selectBox");
+                var selectControl = document.getElementById("selectControl");
+
+                // 1. 全选
+                addElemClickById(
+                    "selectAll",
+                    function(){
+                        for (var i=0; i<selectBox.length; i++){
+                            selectBox[i].checked = true;
+                        }
+
+                        // selectControl 与 selectBox 同步
+                        selectControl.checked = true;
+                    }
+                );
+
+                // 2. 全不选
+                addElemClickById(
+                    "unSelectAll",
+                    function(){
+                        for (var i=0; i<selectBox.length; i++){
+                            selectBox[i].checked = false;
+                        }
+
+                        // selectControl 与 selectBox 同步
+                        selectControl.checked = false;
+                    }
+                );
+
+                // 3. 反选
+                addElemClickById(
+                    "selectOther",
+                    function(){
+                        var control = true;
+                        for (var i=0; i<selectBox.length; i++){
+                            selectBox[i].checked = !selectBox[i].checked;
+
+                            // selectControl 与 selectBox 同步
+                            if (!selectBox[i].checked){
+                                control=false;
+                            }
+                        }
+
+                        selectControl.checked = control;
+                    }
+                );
+
+                // 3. submit，显示所有被选中选项的value信息
+                addElemClickById(
+                    "submit",
+                    function(){
+                        var result = "";
+                        for(var i=0; i<selectBox.length; i++){
+                            if (selectBox[i].checked){
+                                result += selectBox[i].value + ", ";
+                            }
+                        }
+
+                        result = result.replace(/,\s$/g, "");
+                        alert(result);
+                    }
+                );
+
+                // 4. 全选/全不选checkbox
+                addElemClickById(
+                    "selectControl",
+                    function(){
+                        for(var i=0; i<selectBox.length; i++){
+                            selectBox[i].checked = this.checked;
+                        }
+                    }
+                );
+                
+                // 5. selectControl 与 selectBox 同步
+                for (var i=0; i<selectBox.length; i++){
+                    selectBox[i].onclick = function(){
+                        for (var i=0; i<selectBox.length; i++){
+                            if (!selectBox[i].checked){
+                                selectControl.checked = false;
+                                return;
+                            }
+                        }
+
+                        selectControl.checked = true;
+                    }
+                }
+            };
+        </script>
+    </head>
+    <body>
+        <form action="" >
+            please select : 
+            <input type="checkbox" id="selectControl">全选/全不选
+            <br>
+
+            <input type="checkbox" name="selectBox" value="aa">aa
+            <input type="checkbox" name="selectBox" value="bb">bb
+            <input type="checkbox" name="selectBox" value="cc">cc
+            <input type="checkbox" name="selectBox" value="dd">dd
+            <br>
+
+            <input type="button" id="selectAll" value="全选">
+            <input type="button" id="unSelectAll" value="全不选">
+            <input type="button" id="selectOther" value="反选">
+            <input type="button" id="submit" value="提交">
+
+        </form>
+    </body>
+</html>

@@ -1,0 +1,66 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title></title>
+        <script type="text/javascript">
+            // 方案1：初始化时，为所有的a元素绑定 onclick 事件；添加一个a元素时，也绑定同样的事件
+            // window.onload = function(){
+            //     var ul01 = document.getElementById("ul01");
+            //     var a_list = document.querySelectorAll("#ul01 a");
+            //     for (var i=0; i<a_list.length; i++){
+            //         a_list[i].onclick = function(){
+            //             alert(this.innerText);
+            //         };
+            //     }
+
+            //     // 点击按钮后向 ul01 中添加节点，并绑定相同的事件
+            //     var btn01 = document.getElementById("btn01");
+            //     btn01.onclick = function(){
+            //         var new_li = document.createElement("li");
+            //         new_li.innerHTML = "<a href='javascript:;'> hype " +
+            //             (ul01.children.length + 1 ) +
+            //             "</a>";
+                        
+            //         new_li.querySelector("a").onclick = function(){
+            //             alert(this.innerText);
+            //         };
+            //         ul01.appendChild(new_li);
+            //     };
+            // };
+
+            // 方案2：使用事件委派
+            window.onload = function(){
+                var ul01 = document.getElementById("ul01");
+
+                // 添加事件委派
+                ul01.onclick = function(event){
+                    // 过滤事件触发对象
+                    if (event.target.tagName.toLowerCase() == "a") {      
+                        alert(event.target.innerText + "x");
+                    }
+                };
+
+                // 点击按钮后向 ul01 中添加节点
+                var btn01 = document.getElementById("btn01");
+                btn01.onclick = function(){
+                    var new_li = document.createElement("li");
+                    new_li.innerHTML = "<a href='javascript:;'> hype " +
+                                        (ul01.children.length + 1 ) +
+                                        "</a>";
+                    ul01.appendChild(new_li);
+                };
+            };
+        </script>
+    </head>
+    <body>
+        <button id="btn01">add btn</button>
+
+        <ul id="ul01">
+            <li><a href="javascript:;">hype 1</a></li>
+            <li><a href="javascript:;">hype 2</a></li>
+            <li><a href="javascript:;">hype 3</a></li>
+        </ul>
+        
+    </body>
+</html>

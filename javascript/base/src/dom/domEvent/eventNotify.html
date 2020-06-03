@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html >
+    <head>
+        <meta charset="UTF-8">
+        <title>event notify test</title>
+        <style>
+            #box01{
+                width:200px;
+                height: 200px;
+                background-color: #bfa;
+            }
+
+            #box02{
+                width:100px;
+                height: 100px;
+                background-color: #47e;
+            }
+
+            #box03{
+                width:50px;
+                height: 50px;
+                background-color: #aaa;
+            }
+        </style>
+        <script type="text/javascript">
+            window.onload = function(){
+                var box01 = document.getElementById("box01");
+                var box02 = document.getElementById("box02");
+                var box03 = document.getElementById("box03");
+
+                // 设置事件都在捕获阶段被触发
+                box01.addEventListener(
+                    "click",
+                    function(){alert("this is box01")},
+                    true    
+                )
+
+                box02.addEventListener(
+                    "click",
+                    function(){alert("this is box02")},
+                    true    
+                )
+
+                box03.addEventListener(
+                    "click",
+                    function(){alert("this is box03")},
+                    true    
+                )
+            };
+        </script>
+    </head>
+    <body>
+        <div id="box01">
+            <div id="box02">
+                <div id="box03"></div>
+            </div>
+        </div>
+
+    </body>
+</html>

@@ -1,0 +1,43 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>cancel bubble test</title>
+        <style>
+            #box01{
+                width: 300px;
+                height: 300px;
+                background-color: #bfa;
+            }
+
+            #box02{
+                width: 50px;
+                height: 50px;
+                background-color: #47e;
+                position: absolute;
+            }
+
+        </style>
+        <script type="text/javascript">
+            window.onload = function(){
+                var box01 = document.getElementById("box01");
+                var box02 = document.getElementById("box02");
+
+                // 在box01中通过阻止事件冒泡来组织元素跟随鼠标移动
+                box01.onmousemove = function(event){
+                    event.cancelBubble = true;
+                };
+
+                // 元素box02跟随鼠标移动
+                document.onmousemove = function(event){
+                    box02.style.left = event.clientX + document.documentElement.scrollLeft + "px";
+                    box02.style.top = event.clientY + document.documentElement.scrollTop + "px";
+                };
+            };
+        </script>
+    </head>
+    <body>
+        <div id="box01"></div>
+        <div id="box02"></div>
+    </body>
+</html>

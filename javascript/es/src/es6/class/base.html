@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html >
+<head>
+    <meta charset="UTF-8">
+    <title>class base</title>
+    <script type="text/javascript">
+        // 1. class 定义类，与函数定义类 生成的实例对象的区别
+        class Person{
+            constructor(name, age){
+                this.name = name
+                this.age = age
+            }
+        }
+
+        function Person02(name, age){
+            this.name = name
+            this.age = age
+        }
+
+        let p = new Person("testName", 22)
+        let p02 = new Person02("name02", 23)
+
+        console.log(p)
+        console.log(p02)
+
+        // 输出内容：
+        // Person {name: "testName", age: 22}
+        //     age: 22
+        //     name: "testName"
+        //     __proto__:
+        //         constructor: class Person  <---原型对象的构造器不同
+        //         __proto__: Object
+
+
+        // Person02 {name: "name02", age: 23}
+        //     age: 23
+        //     name: "name02"
+        //     __proto__:
+        //         constructor: ƒ Person02(name, age) <---原型对象的构造器不同
+        //         __proto__: Object
+
+        // 2. 函数的一般方法
+        class Person03{
+            constructor(name, age){
+                this.name = name
+                this.age = age
+            }
+
+            showSelf(){
+                console.log(`name = ${this.name}, age = ${this.age}`)
+            }
+        }
+
+        let p03 = new Person03("testName03", 24)
+        // console.log(p03)
+        p03.showSelf()
+        // 输出: name = testName03, age = 24
+
+        // 3. 类的继承
+        class Student extends Person03{
+            constructor(name, age, price){
+                // 调用父类的构造函数
+                super(name, age)
+                // 添加子类的内容
+                this.price = price
+            }
+            // 重写父类的方法
+            showSelf(){
+                super.showSelf()
+                console.log(`name = ${this.name}, age = ${this.age}, price = ${this.price}`)
+            }
+        }
+
+        let student = new Student("aaa", 11, 90)
+        student.showSelf()
+        // 输出
+        // name = aaa, age = 11
+        // name = aaa, age = 11, price = 90
+
+        // 检查类的结构
+        console.log(student)
+        // Student {name: "aaa", age: 11, price: 90}
+        //     age: 11
+        //     name: "aaa"
+        //     price: 90
+        //     __proto__: Person03
+        //         constructor: class Student
+        //         showSelf: ƒ showSelf()
+        //         __proto__:
+        //             constructor: class Person03
+        //             showSelf: ƒ showSelf()
+        //             __proto__: Object
+    </script>
+</head>
+<body>
+</body>
+</html>

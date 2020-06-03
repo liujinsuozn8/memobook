@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>constructor extends test</title>
+    <script type="text/javascript">
+        function Person(name, age){
+            this.name = name
+            this.age = age
+        }
+
+        Person.prototype.showSelf = function(){
+            console.log('name ='+ this.name + ', age =' + this.age)
+        }
+
+        function Student(name, age, price){
+            Person.call(this, name, age)
+            this.price = price
+        }
+
+        var student = new Student("abc", 12, 86)
+        console.log(student.name)
+        console.log(student.age)
+        console.log(student.price)
+        student.showSelf()
+    </script>
+</head>
+<body>
+    
+</body>
+</html>

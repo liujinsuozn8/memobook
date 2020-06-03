@@ -1,0 +1,66 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>regEpx method test</title>
+        <script type="text/javascript">
+            // 1. split 拆分数组
+            // 1.1 根据分割字符串，将字符串拆分为数组
+            var a01 = "asdf,etr,xb";
+            var resultA01 = a01.split(',');
+            console.log("typeof resultA01 =", typeof resultA01);
+            // 输出：
+            console.log("resultA01 =", resultA01);
+            // 输出：
+            
+            // 1.2 根据正则表达式，将字符串拆分为数组
+            var a02 = "sdf2bvn4gth6";
+            // 用数字来拆分字符串
+            var resultA02 = a02.split(/\d/g);
+            console.log("resultA02 =", resultA02);
+            // 输出：
+            
+            // 2. search 
+            // 2.1 search 字符串搜索
+            var b01 = "abcdefg";
+            var resultB01 = b01.search("de");
+            console.log("resultB01 =", resultB01);
+            // 输出：
+            
+            // 2.2 search 正则表达式匹配
+            var b02 = "et gh abcd afc aecdfg";
+            var resultB02 = b02.search(/a.c/);
+            console.log("resultB02 =", resultB02);
+            // 输出：
+            
+            // 3. match
+            // 3.1 默认的匹配模式
+            var c01 = "et gh abcd afc aecdfg";
+            var resultC01 = c01.match(/a.c/);
+            console.log("resultC01 =", resultC01);
+            // 输出：resultC01 = ["abc", index: 6, input: "et gh abcd afc aecdfg", groups: undefined]
+            
+            // 3.2 全局匹配，并且忽略大小写
+            var c02 = "et gh aBcd afc aecdfg s4avc3r ";
+            var resultC02 = c02.match(/a.c/ig);
+            console.log("resultC02 =", resultC02);
+            // 输出：resultC02 = (4) ["aBc", "afc", "aec", "avc"]
+            
+            // 4. replace
+            // 4.1 替换字符串
+            var d01 = "abcdeadfgawax";
+            var resultD01 = d01.replace("a","@");
+            console.log("resultD01 =", resultD01);
+            // 输出：resultD01 = @bcdeadfgawax
+            
+            // 4.2 使用正则表达式进行全局替换
+            var d02 = "abcdeadfgawax";
+            var resultD02 = d02.replace(/a/g,"@");
+            console.log("resultD02 =", resultD02);
+            // 输出：resultD02 = @bcde@dfg@w@x
+
+        </script>
+    </head>
+    <body>
+    </body>
+</html>

@@ -1,0 +1,67 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>function arrow test</title>
+        <script type="text/javascript">
+            // 1. 参数的数量
+            // 1.1 无参函数
+            let fn0101 = () => console.log("this is fn0101")
+            fn0101()
+            // 输出: this is fn0101
+
+            // 1.2 一个参数
+            let fn0102 = a => console.log(`a = ${a}`)
+            fn0102("testStr")
+            // 输出: a = testStr
+
+            // 1.3 多个参数
+            let fn0103 = (a, b) => a + b
+            let result0103 = fn0103(3,6)
+            console.log(`result0103 = ${result0103}`)
+            // 输出: result0103 = 9
+
+            // 2. 箭头函数的this
+            // 2.1 在全局作用域中定义箭头函数
+            let fn0201 = () => console.log(this)
+            fn0201()
+            // 输出: Window {parent: Window, …}
+
+            // 2.2 在全局作用域的函数内部定义箭头函数
+            function fn0202(){
+                // 外层函数属于 window，所以箭头函数的this仍然是 window
+                let f = ()=>console.log(this)
+                f()
+            }
+            fn0202()
+            // 输出: Window {parent: Window, …}
+
+            // 2.3 在对象函数的内部定义箭头函数
+            let obj = {
+                name:'objName',
+                age:23,
+                show(){
+                    let f = () => console.log(this)
+                    f()
+                }
+            }
+            obj.show()
+            // 输出: {name: "objName", age: 23, show: ƒ}
+
+            // 2.4 箭头函数的外层函数还是箭头函数
+            let obj0201 = {
+                name:'obj2Name',
+                age:26,
+                show: ()=>{ // 外层函数仍然是箭头函数
+                    let f = () => console.log(this)
+                    f()
+                }
+            }
+            obj0201.show()
+            // 输出: Window {parent: Window, …}
+        </script>
+    </head>
+    <body>
+
+    </body>
+</html>

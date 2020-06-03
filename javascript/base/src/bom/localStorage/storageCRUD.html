@@ -1,0 +1,113 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title></title>
+        <script type="text/javascript">
+            // 1. localStorage对象的读写操作
+            localStorage['a'] = "this is a";
+            localStorage.b = 1234;
+            localStorage.setItem("c", 23456);
+
+            console.log("localStorage.getItem('a') =", localStorage.getItem('a'));
+            // localStorage.getItem('a') = this is a
+
+            console.log("localStorage['b'] =", localStorage['b']);
+            // localStorage['b'] = 1234
+
+            console.log("localStorage.c =", localStorage.c);
+            // localStorage.c = 23456
+
+            // 2. 查看内置属性
+            console.log("localStorage.length =", localStorage.length);
+            // localStorage.length = 3
+
+            // 3. 遍历所有的key 和 value
+            for(var i=0; i<localStorage.length; i++){
+                var k = localStorage.key(i);
+                var v = localStorage.getItem(k);
+                console.log("localStorage.key("+ i + ") = " + k, ", localStorage.getItem(" + k + ") = " + v);
+                
+                // localStorage.key(0) = b , localStorage.getItem(b) = 1234
+                // localStorage.key(1) = c , localStorage.getItem(c) = 23456
+                // localStorage.key(2) = a , localStorage.getItem(a) = this is a
+            }
+
+
+            // 4. 删除操作
+            // 4.1 删除指定的键值对 （没有返回值）
+            var c_del = localStorage.removeItem("c");
+            console.log('localStorage.getItem("c") =', localStorage.getItem("c"));
+            // localStorage.getItem("c") = null
+            console.log("c_del =", c_del);
+            // c_del = undefined
+            console.log("typeof c_del =", typeof c_del);
+            // typeof c_del = undefined
+
+            // 4.2 删除所有键值对
+            console.log(localStorage);
+            localStorage.clear();
+            console.log(localStorage);
+            console.log("localStorage.length =", localStorage.length);
+            // Storage {b: "1234", a: "this is a", length: 2}
+            // Storage {length: 0}
+            // localStorage.length = 0
+
+            // 5. js的基本数据类型存储测试
+            localStorage.setItem("myString", "this is my string");
+            localStorage.setItem("myNumber", 123456);
+            localStorage.setItem("myFalse", false);
+            localStorage.setItem("myTrue", true);
+            localStorage.setItem("myNull", null);
+            localStorage.setItem("myUndefined", undefined);
+
+            console.log('localStorage.getItem("myString") =', localStorage.getItem("myString"));
+            console.log("typeof localStorage.getItem('myString') =", typeof localStorage.getItem('myString'));
+            // localStorage.getItem("myString") = this is my string
+            // typeof localStorage.getItem('myString') = string
+
+            console.log('localStorage.getItem("myNumber") =', localStorage.getItem("myNumber"));
+            console.log("typeof localStorage.getItem('myNumber') =", typeof localStorage.getItem('myNumber'));
+            // localStorage.getItem("myNumber") = 123456
+            // typeof localStorage.getItem('myNumber') = string
+
+            console.log('localStorage.getItem("myFalse") =', localStorage.getItem("myFalse"));
+            console.log("typeof localStorage.getItem('myFalse') =", typeof localStorage.getItem('myFalse'));
+            // localStorage.getItem("myFalse") = false
+            // typeof localStorage.getItem('myFalse') = string
+
+            console.log('localStorage.getItem("myTrue") =', localStorage.getItem("myTrue"));
+            console.log("typeof localStorage.getItem('myTrue') =", typeof localStorage.getItem('myTrue'));
+            // localStorage.getItem("myTrue") = true
+            // typeof localStorage.getItem('myTrue') = string
+
+            console.log('localStorage.getItem("myNull") =', localStorage.getItem("myNull"));
+            console.log("typeof localStorage.getItem('myNull') =", typeof localStorage.getItem('myNull'));
+            // localStorage.getItem("myNull") = null
+            // typeof localStorage.getItem('myNull') = string
+
+            console.log('localStorage.getItem("myUndefined") =', localStorage.getItem("myUndefined"));
+            console.log("typeof localStorage.getItem('myUndefined') =", typeof localStorage.getItem('myUndefined'));
+            // localStorage.getItem("myUndefined") = undefined
+            // typeof localStorage.getItem('myUndefined') = string
+
+            // 6. js对象类型的对写
+            var person = {
+                name:"tom",
+                age:18,
+                address:"xxxyyyzzz",
+            };
+            // 转换为JSON并保存
+            localStorage.setItem("person", JSON.stringify(person));
+            // 读取，并将JSON转换为js对象
+            var person_json = localStorage.getItem("person");
+            var new_person = JSON.parse(person_json);
+            console.log("new_person.name =", new_person.name, ", new_person.age =", new_person.age);
+            // new_person.name = tom , new_person.age = 18
+
+        </script>
+    </head>
+    <body>
+        
+    </body>
+</html>

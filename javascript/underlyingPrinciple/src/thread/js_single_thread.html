@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>js single thread test</title>
+        <script type="text/javascript">
+            setTimeout(
+                function(){console.log("timout 02")},
+                2000
+            )
+            
+            setTimeout(
+                function(){console.log("timout 01")},
+                1000
+            )
+            
+            setTimeout(
+                function(){console.log("timout 00")},
+                0
+            )
+
+            function fn(){
+                console.log("this is fn")
+            }
+
+            fn()
+
+            // 暂停主线程执行和定时器
+            console.log("before alert")
+            alert("   ")
+            console.log("after alert")
+        </script>
+    </head>
+    <body>
+        
+    </body>
+</html>

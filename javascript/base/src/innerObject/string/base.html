@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>String test</title>
+    <script type="text/javascript">
+        // 1. 字符串对象的属性
+        // 1.1 获取字符串的长度
+        var a0101 = "abcdefg";
+        console.log("a0101.length =", a0101.length);
+        // 输出：a0101.length = 7
+
+        // 2. 字符串对象的方法
+        // 2.1 通过索引获取字符--数组方式
+        var b0101 = "abcdefg";
+        console.log("b0101[2] =", b0101[2]);
+        // 输出：b0101[2] = c
+
+        // 2.2 通过索引获取字符
+        var b0201 = "abcdefg";
+        console.log("b0201.charAt(3) = ", b0201.charAt(3));
+        // 输出：b0201.charAt(3) =  d
+
+        // 2.3 通过索引获取字符的Unicode值
+        var b0301 = "abcdefg";
+        console.log("b0301.charCodeAt(0) =", b0301.charCodeAt(0));
+        // 输出：b0301.charCodeAt(0) = 97
+
+        // 2.4 通过字符编码创建字符
+        var b0401 = String.fromCharCode(97);
+        console.log("b0401 =", b0401);
+        // 输出：b0401 = a
+        var b0105 = String.fromCharCode(0x1112);
+        console.log("b0105 =", b0105);
+
+        // 2.5 连接字符串
+        var b0501 = "qwer";
+        var b0502 = b0501.concat(1234, "vcbcn", true);
+        console.log("b0501 =", b0501);
+        // 输出：b0501 = qwer
+        console.log("b0502 =", b0502);
+        // 输出：b0502 = qwer1234vcbcntrue
+
+        // 2.6 搜索字符串
+        // 未搜索到指定字符串
+        var b0601 = "asff";
+        var result0601 = b0601.indexOf("cd");
+        console.log("result0601 =", result0601);
+        // 输出：result0601 = -1
+
+        // 从左向右，不指定开始位置
+        var b0602 = "abcdefg";
+        var result0602 = b0602.indexOf("cd");
+        console.log("result0602 =", result0602);
+        // 输出：result0602 = 2
+
+        // 从左向右，指定开始位置
+        var b0603 = "abcdefg sdfcdwqw";
+        var result0603 = b0603.indexOf("cd", 7);
+        console.log("result0603 =", result0603);
+        // 输出：result0603 = 11
+
+        // 从右向左，不指定开始位置
+        var b0604 = "abcdefg sdfcdwqw";
+        var result0604 = b0604.lastIndexOf("cd");
+        console.log("result0604 =", result0604);
+        // 输出：result0604 = 11
+
+        // 从右向左，指定开始位置
+        var b0605 = "abcdefg sdfcdwqw";
+        var result0605 = b0605.lastIndexOf("cd", 10);
+        console.log("result0605 =", result0605);
+        // 输出：result0605 = 2
+
+        // 2.7 字符串截取
+        // 2.7.1 slice 截取字符串: start_index ~ 末尾
+        var b0701 = "abcdefghijk";
+        var result0701 = b0701.slice(2);
+        console.log("result0701 =", result0701);
+        // 输出：result0701 = cdefghijk
+
+        // 2.7.2 slice 截取字符串: start_index < end_index
+        var b0702 = "abcdefghijk";
+        var result0702 = b0702.slice(2,6);
+        console.log("result0702 =", result0702);
+        // 输出：result0702 = cdef
+
+        // 2.7.3 slice 截取字符串: start_index >= end_index
+        var b0703 = "abcdefghijk";
+        var result0703 = b0703.slice(6,2);
+        console.log("result0703 =", result0703);
+        // 输出：result0703 = 
+
+        // 2.7.4 slice 截取字符串: end_index 指定为负数
+        var b0704 = "abcdefghijk";
+        var result0704 = b0704.slice(2, -3);  //(2, 8)
+        console.log("result0704 =", result0704);
+        // 输出：result0704 = cdefgh
+
+        // 2.7.5 slice 截取字符串: start_index, end_index 指定为负数
+        var b0705 = "abcdefghijk";
+        var result0705 = b0705.slice(-5, -3);  //(6, 8)
+        console.log("result0705 =", result0705);
+        // 输出：result0705 = gh
+
+        // 2.7.6 substring 截取字符串：start_index < 0
+        // start_index 将会被调整为 0 
+        var b0706 = "abcdefghijk";
+        var result0706 = b0706.substring(-5, 8);
+        console.log("result0706 =", result0706);
+        // 输出：result0706 = abcdefgh
+
+        // 2.7.7 substring 截取字符串：start_index > end_index
+        var b0707 = "abcdefghijk";
+        var result0707 = b0707.substring(5, 2); // (2, 5)
+        console.log("result0707 =", result0707);
+        // 输出：result0707 = cde
+
+        // 2.7.8 substr 截取字符串
+        var b0708 = "abcdefghijk";
+        var result0708 = b0708.substr(5, 2);
+        console.log("result0708 =", result0708);
+        // 输出：result0708 = fg
+
+        // 2.8 大小写转换
+        var b0801 = "abcDeFghiJ";
+        var resutl0801 = b0801.toUpperCase();
+        console.log("resutl0801 =", resutl0801);
+        // 输出：resutl0801 = ABCDEFGHIJ
+
+        var b0802 = "abcDeFghiJ";
+        var resutl0802 = b0802.toLowerCase();
+        console.log("resutl0802 =", resutl0802);
+        // 输出：resutl0802 = abcdefghij
+    </script>
+</head>
+<body>
+</body>
+</html>

@@ -1,0 +1,7 @@
+{
+  "name": "browserify",
+  "version": "1.0.0",
+  "devDependencies": {
+    "browserify": "^16.5.1"
+  }
+}

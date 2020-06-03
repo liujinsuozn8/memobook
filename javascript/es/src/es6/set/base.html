@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>set test</title>
+    <script type="text/javascript">
+        let set = new Set([1,2,3,4,3,2,1])
+        set.add(10)
+        set.add(1)
+
+        console.log(set)
+        // 输出: Set(5) {1, 2, 3, 4, 10}
+
+        console.log(set.size)
+        // 输出: 5
+
+        console.log(set.has(7))
+        // 输出: false
+        console.log(set.has(1))
+        // 输出: true
+
+        set.delete(1)
+        console.log(set)
+        // 输出: Set(4) {2, 3, 4, 10}
+
+        // 遍历
+        for(let n of set){
+            console.log(n)
+        }
+        // 输出: 2
+        // 输出: 3
+        // 输出: 4
+        // 输出: 10
+
+        set.clear()
+        console.log(set)
+        // 输出: Set(0) {}
+    </script>
+</head>
+<body>
+</body>
+</html>
