@@ -50,12 +50,12 @@
     - [原型模式的注意事项和细节](#原型模式的注意事项和细节)
 - 创建型-建造者模式
     - [引入问题-盖房子](#引入问题-盖房子)
-    - [建造者模式的概念](#建造者模式的概念)
+    - [建造者模式简介](#建造者模式简介)
     - [使用建造者模式改造引入问题](#使用建造者模式改造引入问题)
     - [建造者模式的注意事项和细节](#建造者模式的注意事项和细节)
     - [建造者模式在JDK中的使用-StringBuilder](#建造者模式在JDK中的使用-StringBuilder)
 - 结构型-适配器模式
-    - [适配器模式的基本介绍](#适配器模式的基本介绍)
+    - [适配器模式简介](#适配器模式简介)
     - [类适配器模式](#类适配器模式)
         - [类适配器模式的使用方法](#类适配器模式的使用方法)
         - [类适配器模式的注意事项和细节](#类适配器模式的注意事项和细节)
@@ -67,7 +67,7 @@
     - [适配器模式在SpringMVC中的应用](#适配器模式在SpringMVC中的应用)
 - 结构型-桥接模式
     - [引入问题-不同品牌的手机编程](#引入问题-不同品牌的手机编程)
-    - [桥接模式的基本介绍](#桥接模式的基本介绍)
+    - [桥接模式简介](#桥接模式简介)
     - [使用桥接模式改进引入问题](#使用桥接模式改进引入问题)
     - [桥接模式的注意事项和细节](#桥接模式的注意事项和细节)
     - [JDBC中的桥接模式](#JDBC中的桥接模式)
@@ -81,14 +81,38 @@
     - [组合模式简介](#组合模式简介)
     - [使用组合模式改进引入问题](#使用组合模式改进引入问题)
     - [组合模式在JDK源码中的应用-HashMap](#组合模式在JDK源码中的应用-HashMap)
-- [](#)
 - 结构型-代理模式
     - [代理模式简介](#代理模式简介)
     - [静态代理](#静态代理)
     - [动态代理](#动态代理)
     - [Cglib代理](#Cglib代理)
     - [代理模式的变体](#代理模式的变体)
+- 结构型-外观模式
+    - [引入问题-组件家庭影院](#引入问题-组件家庭影院)
+    - [外观模式简介](#外观模式简介)
+    - [外观模式的注意事项和细节](#外观模式的注意事项和细节)
+    - [外观模式解决引入问题](#外观模式解决引入问题)
+- 结构型-享元模式
+    - [引入问题-展示网站](#引入问题-展示网站)
+    - [享元模式简介](#享元模式简介)
+    - [享元模式的原理](#享元模式的原理)
+    - [享元模式的注意事项和细节](#享元模式的注意事项和细节)
+    - [使用享元模式改进引入问题](#使用享元模式改进引入问题)
+    - [享元模式在JDK中的使用-Integer的源码分析](#享元模式在JDK中的使用-Integer的源码分析)
+- 行为型-模版方法模式
+    - [引入问题-制作豆浆](#引入问题-制作豆浆)
+    - [版方法模式简介](#模版方法模式简介)
+    - [版方法模式原理](#模版方法模式原理)
+    - [版方法模式实现引入问题](#模版方法模式实现引入问题)
+    - [版方法模式的钩子方法](#模版方法模式的钩子方法)
+    - [版方法模式在Spring中的应用-IOC源码解析](#模版方法模式在Spring中的应用-IOC源码解析)
 - [](#)
+- [](#)
+
+
+
+[top](#catalog)
+
 
 
 # 设计模式简介
@@ -257,7 +281,7 @@
         - ![dependency_origian](imgs/principle/Interface_Segregation_Principle/dependency_origian.png)
     - 示例代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/principle/interfaceSegregation/origian/Segregation1.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/principle/interfaceSegregation/origian/Segregation1.java)
     - 依赖关系
-        1. B、D是接口Interface1的接口
+        1. B、D是接口Interface1的实现
         2. A通过Interface1依赖B，但是A只会使用到接口中的1、2、3方法；4、5方法没有使用，导致B中产生了多余的实现
         3. C通过Interface1依赖D，但是C只会使用到接口中的1、4、5方法；2、3方法没有使用，导致D中产生了多余的实现
     - 接口冗余的问题
@@ -384,7 +408,7 @@
             ```
     - 改进后的优点
         - Person依赖于接口IReceive，每次增加新的信息源时，不需要修改Person，只需要添加IReceive的实现类
-        - 由由于Person依赖于接口IReceive，自需要一个方法来处理接口的实例对象，减少了不必要的重载方法
+        - 由于Person依赖于接口IReceive，自需要一个方法来处理接口的实例对象，减少了不必要的重载方法
         
 ### 依赖关系传递的三种方式和应用案例
 [top](#catalog)
@@ -565,7 +589,7 @@
 ### OO中的继承性思考和说明
 [top](#catalog)
 - 继承包含的另一层含义
-    - 父类中已经实现的方法，实际上是在设定一直规范和契约。但是不强制子类必须遵守这些规范
+    - 父类中已经实现的方法，实际上是在设定一些规范和契约。但是不强制子类必须遵守这些规范
     - 如果子类对已经实现的方法进行**任意修改，将会破坏整个继承体系**
 - 继承带来的弊端
     - 使用继承会给程序带来侵入性，导致程序的可移植性降低、增加对象间的耦合度
@@ -1034,8 +1058,8 @@
 
 
 # UML类图
-[top](#catalog)
 ## UML图简介
+[top](#catalog)
 - UML，Unified modeling language，统一建模语言
 - UML是一种用于软件系统分析和设计的语言工具。UML本身是一套符号的规定，这些符号用于描述软件模型中的各个元素和他们之间的关系 
 - UML图分类
@@ -1219,8 +1243,8 @@
 ## 单例模式形式1-饿汉式-静态常量
 [top](#catalog)
 - 创建步骤
-    1. 构造器私有化，防止调用方通过`new`来创建实例对象
-    2. 在类的内部实例化一个**私有的、静态的(不可变的)**对象`instance`
+    1. **构造器私有化**，防止调用方通过`new`来创建实例对象
+    2. 在类的内部实例化一个**私有的、静态的**(不可变的)对象`instance`
         - 私有：防止外部的直接访问
         - 静态：使得该对象可以通过静态方法访问
         - 不可变：防止外部对该对象的直接替换
@@ -1276,7 +1300,7 @@
 [top](#catalog)
 - 创建步骤
     1. 构造器私有化，防止调用方通过`new`来创建实例对象
-    2. 添加一个**私有的、静态的(不可变的)**成员属性`instance`
+    2. 添加一个**私有的、静态的**(不可变的)成员属性`instance`
         - 私有：防止外部的直接访问
         - 静态：使得该对象可以通过静态方法访问
         - 不可变：防止外部对该对象的直接替换
@@ -2730,7 +2754,7 @@
 - 解决的方法
     - 使用建造者模式，将产品和产品的创建过程解耦
     
-## 建造者模式的概念
+## 建造者模式简介
 [top](#catalog)
 - 建造者模式相对与传统方式的优点
     1. 产品与创建过程的解耦
@@ -2912,12 +2936,37 @@
         }
         ```
 
+- 测试内容
+    - 参考代码
+        - [designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/builder/base/ClientTest.java](designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/builder/base/ClientTest.java)
+    - 代码内容
+        ```java
+        @Test
+        public void test01(){
+            // 创建普通房子
+            CommonHouseBuilder commonBuilder = new CommonHouseBuilder();
+            // 准备创建房子的指挥者
+            HouseDirector houseDirector = new HouseDirector(commonBuilder);
+            // 创建并返回产品对象
+            House house01 = houseDirector.constructHouse();
+
+            System.out.println(house01);
+
+            // 创建高楼
+            HightBuildingBuilder hightBuilder = new HightBuildingBuilder();
+            // 重置指挥者
+            houseDirector.setHouseBuilder(hightBuilder);
+            House house02 = houseDirector.constructHouse();
+            System.out.println(house02);
+        }
+        ```
+
 ## 建造者模式的注意事项和细节
 [top](#catalog)
 - 客户端不必知道产品内部的组成细节，将产品本身与产品的创建过程解耦，使相同的创建过程可以创建不同的产品对象
 - 每一个具体建造者都相对独立，且与其他的建造者无关，因此可以很方便的替换或增加具体建造者。客户端使用不同的具体建造者即可得到不同的产品对象
 - 可以更加精细的控制产品的创建过程，将复杂产品的创建步骤分解在不同的方法中，使创建过程更加清晰、更方便使用程序来控制创建过程
-- 新增具体建造者无需修改原有代码，指挥这针对抽象建造者编程，系统扩展方便，符合开闭原则
+- 新增具体建造者无需修改原有代码，指挥者针对抽象建造者编程，系统扩展方便，符合开闭原则
 - 建造者模式所创建的<label style="color:red">产品一般具有较多的共同点，其组成部分相似，如果产品之间的差异性很大，则不适合使用建造者模式</label>，因此使用范围受限
 - 如果产品的**内部变化复杂**，可能会导致需要**定义很多具体建造者类**来实现这种变化，导致系统变得很庞大。这种情况下，需要考虑是否选择建造者模式
 - 抽象工厂 与 建造者
@@ -2975,20 +3024,20 @@
                       }
                       return this;
                   }
-            }
           
-            @Override
-            public AbstractStringBuilder append(char c) {
-                ensureCapacityInternal(count + 1);
-                if (isLatin1() && StringLatin1.canEncode(c)) {
-                    value[count++] = (byte)c;
-                } else {
-                    if (isLatin1()) {
-                        inflate();
+                @Override
+                public AbstractStringBuilder append(char c) {
+                    ensureCapacityInternal(count + 1);
+                    if (isLatin1() && StringLatin1.canEncode(c)) {
+                        value[count++] = (byte)c;
+                    } else {
+                        if (isLatin1()) {
+                            inflate();
+                        }
+                        StringUTF16.putCharSB(value, count++, c);
                     }
-                    StringUTF16.putCharSB(value, count++, c);
+                    return this;
                 }
-                return this;
             }
             ```
           
@@ -3024,8 +3073,7 @@
 
 
 # 结构型-适配器模式
-
-## 适配器模式的基本介绍
+## 适配器模式简介
 [top](#catalog)
 - 适配器模式也被称为包装器(Wrapper)
 - 适配器模式（Adapter Pattern）的作用
@@ -3034,7 +3082,7 @@
     - 被适配者：src
     - 适配器：adapter
     - 目标类接口：dst
-- 适配器模式的3中经典分类，是根据src是如何交给Adapter来区分的，**但是实际开发中不只限于这3中方式**
+- 适配器模式的3种经典分类，是根据src是如何交给Adapter来区分的，**但是实际开发中不只限于这3中方式**
     1. 类适配器模式
     2. 对象适配器模式
     3. 接口适配器模式
@@ -3047,8 +3095,8 @@
     - 用收到反馈结果，感觉只是和目标接口交互
     
 ## 类适配器模式
-[top](#catalog)
 ### 类适配器模式的使用方法
+[top](#catalog)
 - 使用方法
     - Adapter类，通过继承src类，实现dst类接口，完成src-->dst的适配
 - 示例：手机充电器
@@ -3277,7 +3325,7 @@ P64
     - 违反单一职责原则
         - 当增加手机样式时，需要同时增加所有品牌的手机，增加了代码维护的成本
            
-## 桥接模式的基本介绍
+## 桥接模式简介
 [top](#catalog)
 - 桥接模式的目的
     - 分离抽象与实现，并放在不同的层次中，保持两个层次的独立性和扩展性
@@ -3532,15 +3580,15 @@ P64
     - 在对象功能扩展方面，比继承更有弹性。装饰者模式体现了开闭原则
 - 装饰者模式的原理
     - 装饰者模式中的角色
-        - Component：抽象主体
-        - ConcreteComponent：具体的主体
-        - Decorator：装饰者
-        - ConcreteDecorator：具体的装饰者
+        - `Component`: 抽象主体
+        - `ConcreteComponent`: 具体的主体
+        - `Decorator`: 装饰者
+        - `ConcreteDecorator`: 具体的装饰者
     - 原理UML图
         - ![principle_uml](imgs/pattern/decorator/base/principle_uml.png)
     - Decorator是装饰类，含有一个被装饰的对象，即Component类对象
     - 通过在装饰者中聚合一个主体，可以直接为主体添加新的功能
-        - 每次实例化一个装饰者，并传入被装饰者，即可获取新的功能
+        - **每次实例化一个装饰者，并传入被装饰者，即可获取新的功能**
     
     - Decorotar的`cost()`方法进行费用计算。使用时会递归的计算价格
 
@@ -3601,7 +3649,8 @@ P64
             // 计算费用的抽象方法
             public abstract float cost();
         }
-      
+        ```
+        ```java
         public class Coffee extends Drink {
             // 金额默认是父类的单价
             @Override
@@ -3609,21 +3658,24 @@ P64
                 return super.getPrice();
             }
         }
-
+        ```
+        ```java
         public class Espresso extends Coffee {
             public Espresso() {
                 setDes("Espresso");
                 setPrice(10.0f);
             }
         }
-      
+        ```
+        ```java
         public class LongBlack extends Coffee {
             public LongBlack() {
                 setDes("LongBlack");
                 setPrice(30.0f);
             }
         }
-
+        ```
+        ```java
         public class ShortBlack extends Coffee {
             public ShortBlack() {
                 setDes("ShortBlack");
@@ -3657,7 +3709,8 @@ P64
                 return this.des +getPrice() + "&&" + obj.getDes();
             }
         }
-
+        ```
+        ```java
         public class Milk extends Decorator {
             public Milk(Drink obj) {
                 super(obj);
@@ -3665,7 +3718,8 @@ P64
                 setPrice(2.0f);
             }
         }
-
+        ```
+        ```java
         public class Soy extends Decorator {
             public Soy(Drink obj) {
                 super(obj);
@@ -3673,7 +3727,8 @@ P64
                 setPrice(3.0f);
             }
         }
-
+        ```
+        ```java
         public class Chocolate extends Decorator {
             public Chocolate(Drink obj) {
                 super(obj);
@@ -3752,7 +3807,7 @@ P64
     
 - 传统解决方式
     - UML图
-        - [problem_uml](imgs/pattern/composite/problem/problem_uml.png)
+        - ![problem_uml](imgs/pattern/composite/problem/problem_uml.png)
     - 学校、学院、系之间是继承的关系
     
 - 传统方式的问题
@@ -3765,7 +3820,7 @@ P64
 ## 组合模式简介
 [top](#catalog)
 - 组合模式的概念
-    - 组合模式又叫部分整体模式
+    - 组合模式又叫**部分整体模式**
     - 组合模式会创建对象组的树形结构，将对象组合成树状结构以表示整体/部分的层次关系
     - 组合模式能让客户以一致的方式处理个别对象以及组合对象
 - 组合模式可以解决的问题
@@ -3805,7 +3860,7 @@ P64
     - 学校、学院分别有各自的下一级的管理对象，所以在打印方法中需要循环打印内部的管理对象
 
 - UML图
-    - [problem_improve](imgs/pattern/composite/base/problem_improve.png)
+    - ![problem_improve](imgs/pattern/composite/base/problem_improve.png)
 
 - 抽象类`OrganizationComponent`
     - 参考代码
@@ -3979,8 +4034,7 @@ P64
 - `HashMap`相当于`Composite`，实现了`put`、`putAll`方法，统一的添加叶子
 - `HashMap.Node`是静态内部类，相当于`Left`叶子节点，内部没有`put`、`putAll`方法
 - UML图
-    - [HashMapUML](imgs/pattern/composite/jdktest/HashMapUML.png)
-
+    - ![HashMapUML](imgs/pattern/composite/jdktest/HashMapUML.png)
 
 # 结构型-代理模式
 ## 代理模式简介
@@ -4022,11 +4076,8 @@ P64
                   
         - 代码内容
             ```java
-            public class TeacherDao implements ITeacherDao{
-                @Override
-                public void teach() {
-                    System.out.println("teacher is teaching");
-                }
+            public interface ITeacherDao {
+                public void teach();
             }
             ```
     - 被代理类
@@ -4296,4 +4347,877 @@ P64
     - 远程对象的本地代表，通过它**可以把远程对象当本地对象**来调用，远程代理通过网络和真正的远程对象沟通信息
 - 同步代理
     - 主要使用在多线程编程中，完成多线程间同步工作
-   
+
+# 结构型-外观模式
+## 引入问题-组件家庭影院
+[top](#catalog)
+- 所需内容
+    - DVD播放器、投影仪、自动屏幕、环绕立体声、爆米花机
+- 要求完成使用家庭影院的功能，使用的过程为：
+    1. 使用各设备遥控器来启动
+    2. 开爆米花机
+    3. 放下屏幕
+    4. 开投影仪
+    5. 开音响
+    6. 开DVD、选DVD
+    7. 去拿爆米花
+    8. 调暗灯光
+    9. 播放DVD
+    10. 观影结束后，关闭各种设备
+
+- 传统方式解决影院管理
+    ```java
+    class ClientTest{
+        public static void main(){
+            //1. 创建相关对象
+            //2. 调用创建的各个对象(子系统)的一系列方法
+            //3. 调用DVDplayer对象的play方法
+        }
+    }
+    ```
+
+- 传统方法的问题
+    1. 调用过程混乱
+        - 在 `ClientTest` 的 main 方法中，创建各个子系统的对象，并直接调用子系统的相关方法
+    2. 不利于在 `ClientTest` 中，维护子系统的操作
+
+- 解决方法
+    - 定义一个高层接口，给子系统中的一组接口提供一个**一致的界面**，访问子系统中的一群接口
+        - 如，在高层接口中创建4个方法作为**界面**
+            1. ready
+            2. play
+            3. pause
+            4. end
+- 修改后的特点（外观模式的特点）
+    - 通过一致的界面，屏蔽子系统内部的细节
+    - 调用端只通过界面进行调用，无需关系子系统内部的细节
+    
+## 外观模式简介
+[top](#catalog)
+- 外观模式，Facade
+    - 也称为：过程模式
+    - 外观模式为子系统中的**一组接口**提供一个**一致的界面**
+    - 该模式定义了一个高层接口，这个接口使得子系统更容易使用
+    - 子系统内部实现被界面屏蔽，调用直通界面进行调用，无需关系子系统的内部细节
+
+- 原理类图
+    - ![facade_principle_uml.png](imgs/pattern/facade/facade_principle_uml.png)
+
+- 外观模式角色分析
+    1. 外观类（Facade） 
+        - 为调用端提供统一的调用接口
+        - 将调用端的请求代理给适当的子系统对象进行处理
+            - 只负责请求分发，不提供实际功能。实际功能仍然有各个子系统负责
+    2. 调用者（Client）
+        - 外观接口的调用者
+    3. 子系统的集合
+        - 指模块或者子系统
+        - 用于处理Facade对象指派的任务，是**功能的实际提供者**
+
+## 外观模式的注意事项和细节
+[top](#catalog)
+- 外观模式屏蔽了子系统的细节，降低了客户端对子系统使用的复杂性
+- 外观模式对客户端与子系统的耦合关系，让子系统内部的模块更易维护和扩展
+- 通过合理的外观模式，<label style="color:red">可以更好的划分访问的层次</label>
+- 当系统需要进程分层设计时，可以考虑使用 Facade 模式
+- 在维护一个遗留的大系统时，可能系统已经变得非常难以维护和扩展，此时可以考虑为新系统开发一个Facade类，让新系统与Facade类交互，提高复用性
+- 需要合理使用外观模式
+    - 如果子系统比较少，并且调用简单，则不必创建一个外观类，直接使用即可
+- **外观模式的目的是让系统有层次，利于维护**
+
+## 外观模式解决引入问题
+[top](#catalog)
+- 改进后的url图
+    - ![improve_uml](imgs/pattern/facade/improve/improve_uml.png)
+
+- 测试类
+    - 参考代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/facade/improve/Client.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/facade/improve/Client.java)
+    - 代码内容
+        ```java
+        @Test
+        public void test01(){
+            HomeFacade homeFacade = new HomeFacade();
+            homeFacade.ready();
+            homeFacade.play();
+            homeFacade.end();
+        }
+        ```
+
+- 外观类
+    - 参考代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/facade/improve/HomeFacade.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/facade/improve/HomeFacade.java)
+
+    - 代码内容
+        ```java
+        public class HomeFacade {
+            // 定义各个子系统对象
+            private TheaterLight theaterLight;
+            private Popcorn popcorn;
+            private Stereo stereo;
+            private Projector projector;
+            private Screen screen;
+            private DVDPlayer dvd;
+        
+            public HomeFacade() {
+                this.theaterLight = TheaterLight.getInstance();
+                this.popcorn = Popcorn.getInstance();
+                this.stereo = Stereo.getInstance();
+                this.projector = Projector.getInstance();
+                this.screen = Screen.getInstance();
+                this.dvd = DVDPlayer.getInstance();
+            }
+        
+            // 操作分成4步
+            public void ready(){
+                // 2. 开爆米花机
+                popcorn.on();
+                popcorn.pop();
+                // 3. 放下屏幕
+                screen.down();
+                // 4. 开投影仪
+                projector.on();
+                // 5. 开音响
+                stereo.on();
+                // 6. 开DVD、选DVD
+                dvd.on();
+                // 7. 去拿爆米花
+                // 8. 调暗灯光
+                theaterLight.dim();
+                // 9. 播放DVD
+            }
+        
+            public void play(){
+                dvd.play();
+            }
+        
+            public void pause(){
+                dvd.pause();
+            }
+        
+            public void end(){
+                // 关闭爆米花机
+                popcorn.off();
+                // 调亮灯光
+                theaterLight.bright();
+                // 升起屏幕
+                screen.down();
+                // 关闭影仪
+                projector.off();
+                // 关闭音响
+                stereo.off();
+                // 关闭dvd
+                dvd.off();
+            }
+        }
+        ```
+- 各子系统
+    - 参考代码
+        - [designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/facade/improve/Projector.java](designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/facade/improve/Projector.java)
+        - [designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/facade/improve/DVDPlayer.java](designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/facade/improve/DVDPlayer.java)
+        - [designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/facade/improve/Screen.java](designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/facade/improve/Screen.java)
+        - [designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/facade/improve/Stereo.java](designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/facade/improve/Stereo.java)
+        - [designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/facade/improve/TheaterLight.java](designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/facade/improve/TheaterLight.java)
+        - [designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/facade/improve/Popcorn.java](designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/facade/improve/Popcorn.java)
+    - 代码内容
+        ```java
+        // DVD播放器
+        public class DVDPlayer {
+            //...
+            // 单例模式获取实例对象
+        
+            public void on() { System.out.println("dvd on"); }
+            public void off() { System.out.println("dvd off"); }
+            public void play() { System.out.println("dvd is playing"); }
+            public void pause() { System.out.println("dvd pause"); }
+        }
+        ```
+        ```java
+        // 爆米花机
+        public class Popcorn {
+            //...
+            // 单例模式获取实例对象
+            public void on() { System.out.println("popcorn on"); }
+            public void off() { System.out.println("popcorn off"); }
+            public void pop() { System.out.println("popcorn is poping"); }
+        }
+        ```
+        ```java
+        // 投影仪
+        public class Projector {
+            //...
+            // 单例模式获取实例对象
+            public void on() { System.out.println("Projector on"); }
+            public void off() { System.out.println("Projector off"); }
+            public void focus() { System.out.println("Projector focus"); }
+        }
+        ```
+        ```java
+        // 显示器
+        public class Screen {
+            //...
+            // 单例模式获取实例对象
+            public void up() { System.out.println("Screen up"); }
+            public void down() { System.out.println("Screen down"); }
+        }
+        ```
+        ```java
+        // 音响
+        public class Stereo {
+            //...
+            // 单例模式获取实例对象
+            public void on() { System.out.println("Stereo on"); }
+            public void off() { System.out.println("Stereo off"); }
+        }
+        ```
+        ```java
+        // 灯光
+        public class TheaterLight {
+            //...
+            // 单例模式获取实例对象
+            public void on() { System.out.println("TheaterLight on"); }
+            public void off() { System.out.println("TheaterLight off"); }
+            public void dim() { System.out.println("TheaterLight dim"); }
+            public void bright() { System.out.println("TheaterLight bright"); }
+        }
+        ```
+
+# 结构型-享元模式
+## 引入问题-展示网站
+[top](#catalog)
+- 同样的一套展示网站架构，不同用户有不同的需求，包括
+    - 以新闻的形式发布展示内容
+    - 以博客的形式发布展示内容
+    - 以微信公众号的形式发布展示内容
+- 传统的解决需求的方式
+    1. 复制项目，根据不同的需求进行定制
+    2. 在服务器上进行划分空间，不同需求的用户访问不同空间中的资源
+
+- 传统方式的问题: 服务器资源浪费
+    - 网站的**相似度很高**，并且都不是高访问量的网站
+    - 如果在服务器上分出多个虚拟空间来处理，相当于一个相同网站的多个实例
+
+- 问题的解决方法
+    - 整合到一个网站中，**即只有一个实例**，共享相关的代码和数据，减少资源浪费
+        - 硬盘、内存、cpu等资源都可以共享
+    - 只有一个网站实例后，维护和扩展都更加容易
+    - 即通过**享元模式**解决 
+
+## 享元模式简介
+[top](#catalog)
+- 享元模式 Flyweight Pattern
+    - 也称为蝇量模式
+    - 享元模式可以运用共享技术有效的支持大量细粒度的对象
+    - 在享元模式中，享表示共享，元表示对象
+
+- 享元模式的应用
+    - 系统中有大量对象，这些对象会消耗大量内存，并且对象的状态大部分可以外部化
+    - 解决重复对象的内存浪费问题
+    - 当系统中有大量相似对象，并需要缓冲池时，不需要总是创建新对象，可以从缓冲池中获取，降低系统内存，同时提高效率
+
+- 享元模式的经典应用场景
+    - **池技术**，**享元模式是池技术的重要实现方式**
+        - 数据库连接池
+        - String常量池
+        - 缓冲池
+        
+    - 如数据库连接池
+        - 连接池中都是创建好的连接对象
+        - 如果有需要的连接对象，拿来直接使用
+        - 如果没有需要的连接对象，则创建一个
+
+## 享元模式的原理
+[top](#catalog)
+- 原理类图
+    - ![facade_principle_uml.png](imgs/pattern/flyweight/flyweight_principle_uml.png)
+
+- 享元模式的两个要求：细粒度、共享对象
+    - 需要将对象的信息分为两部分
+        - 内部状态
+        - 外部状态
+
+- 外部状态与内部状态
+    - 内部状态
+        - 对象共享出来的信息，**存储在享元对象内部**，不会随环境而改变
+    - 外部状态
+        - 对象依赖的一个标记，随环境而改变，不可共享的状态
+        
+- 类图中的角色与职责
+    - Flyweight
+        - 抽象享元角色，是产品的抽象类
+        - 它会同时定义出对象的**外部状态**和**内部状态**的接口或实现
+    - ConcreteFlyweight
+        - 具体的享元角色，是具体的产品类
+            - 对于引入问题，即不同的需求，有不同的产品类
+        - Flyweight 的实现类，实现抽象角色定义的相关任务 
+    - UnSharedConcreteFlyweight
+        - 不可共享的角色
+        - 一般不会出现在享元工厂中
+    - FlyweightFactory
+        - 享元工厂类
+        - 用于构建一个池容器（集合），并提供获取对象的相关方法
+        - 在工厂中会有一个保存实例对象的集合，充当<label style="color:red">缓冲池</label>
+        - 获取实例对象时，先访问工厂内的集合，如果有就使用；如果没有就创建一个，完成资源共享的效果
+
+- 示例分析：下棋
+    - 棋子的颜色是固定的，但是位置/坐标不固定
+        - 位置=外部状态
+        - 颜色=内部状态
+    - 如果为一盘棋的每个棋子都创建一个对象，则一台服务器很难支持更多的玩家玩游戏
+        - 使用享元模式处理棋子，则棋子对象可以减少为2个实例对象，简写的对象的内存开销
+
+## 享元模式的注意事项和细节
+[top](#catalog)
+- 共享内容的存储方式
+    - HashMap/HashTable存储
+- 优点
+    - 享元模式减少了对象的创建，降低了程序内存的占用，提高效率
+- 缺点
+    - 提高了系统的复杂度
+    - 需要分离出内部状态和外部状态
+- 享元模式的注意事项
+    - 使用享元模式时，需要划分内部状态和外部状态，并用一个工厂类来控制
+    - 如果内部状态和外部状态容易划分可以使用享元模式；如果不容易划分，最好不要使用享元模式
+    - 外部状态具有固化特性，不应该随着内部状态的改变而改变
+
+        
+## 使用享元模式改进引入问题 
+[top](#catalog)
+- 改进后的UML图
+    - ![improve_uml](imgs/pattern/flyweight/improve/improve_uml.png)
+- 状态划分
+    - 内部状态  
+        - 网站类型: ConcreteWebSite.type
+    - 外部状态
+        - 不同的用户: User
+
+- 享元模式的构成
+    - 参考代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/flyweight/improve/WebSite.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/flyweight/improve/WebSite.java)
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/flyweight/improve/ConcreteWebSite.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/flyweight/improve/ConcreteWebSite.java)
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/flyweight/improve/WebSiteFactory.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/flyweight/improve/WebSiteFactory.java)
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/flyweight/improve/User.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/flyweight/improve/User.java)
+
+    - User，外部状态
+        ```java
+        public class User {
+            private String name;
+        
+            public User(String name) {
+                this.name = name;
+            }
+        
+            public String getName() {
+                return name;
+            }
+        
+            public void setName(String name) {
+                this.name = name;
+            }
+        }
+        ```
+
+    - WebSite，网站抽象类
+        ```java
+        public abstract class WebSite {
+            // 表示哪个用户在使用什么类型的网站
+            public abstract void use(User user);
+        }
+        ```
+        
+    - ConcreteWebSite，具体享元角色
+        ```java
+        public class ConcreteWebSite extends WebSite {
+            // 共享的部分，内部状态
+            private String type=""; // 网站发布的形式
+        
+            public ConcreteWebSite(String type) {
+                this.type = type;
+            }
+        
+            @Override
+            public void use(User user) {
+                System.out.println("site type=" + type + ", user=" + user.getName());
+            }
+        }
+        ```
+      
+    - WebSiteFactory，享元工厂类
+        ```java
+        // 网站工厂类，根据需要返回一个网站实例
+        public class WebSiteFactory {
+            // 集合，充当池
+            private Map<String, ConcreteWebSite> pool = new HashMap<>();
+        
+            // 根据网站类型，返回一个网站实例
+            // 如果池中有，则直接返回；如果池中没有，则创建一个实例，并保存到pool
+            public WebSite getWebSiteCategory(String type){
+                if (!pool.containsKey(type)){
+                    pool.put(type, new ConcreteWebSite(type));
+                }
+        
+                return pool.get(type);
+            }
+        
+            public int getWebSiteCount(){
+                return pool.size();
+            }
+        }
+        ```
+
+- 测试类
+    - 参考代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/flyweight/improve/Client.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/flyweight/improve/Client.java)
+
+    - 测试内容
+        ```java
+        @Test
+        public void test01(){
+            // 创建一个工厂类
+            WebSiteFactory factory = new WebSiteFactory();
+    
+            // 用户需要一个以新闻形式发布的网站
+            WebSite ws1 = factory.getWebSiteCategory("News");
+            ws1.use(new User("aaaa"));
+    
+            // 用户需要一个以博客形式发布的网站
+            WebSite ws2 = factory.getWebSiteCategory("Blogs");
+            ws2.use(new User("bbb"));
+    
+            // 用户需要一个以博客形式发布的网站
+            WebSite ws3 = factory.getWebSiteCategory("Blogs");
+            ws3.use(new User("cccc"));
+    
+            // factory获取了三次，但是实际对象只有两个
+            System.out.println(factory.getWebSiteCount());
+        }
+        ```
+
+## 享元模式在JDK中的使用-Integer的源码分析
+[top](#catalog)
+- 测试代码
+    - 参考代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/flyweight/jdk/IntegerTest.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/flyweight/jdk/IntegerTest.java)
+    - 测试内容
+        ```java
+        @Test
+        public void test01(){
+            Integer x = Integer.valueOf(127);
+            Integer y = new Integer(127);
+            Integer z = Integer.valueOf(127);
+            Integer w = new Integer(127);
+            System.out.println(x.equals(y));    // true
+            System.out.println(x == y);         // false
+            // [-128,127]范围内使用valueOf创建的实例使用享元模式
+            System.out.println(x == z);         // true
+            System.out.println(w == x);         // false
+            System.out.println(w == y);         // false
+    
+            // [-128,127]范围外，使用new创建新的实例并返回
+            Integer x1 = Integer.valueOf(200);
+            Integer x2= Integer.valueOf(200);
+            System.out.println(x1 == x2);       // false, 在 -127～128的范围外
+        }
+        ```
+
+- 源码分析
+    - 在valueOf方法中，先判断值是否在IntegerCache中，如果不在就创建新的Integer对象，否则就从缓存池中返回
+        ```java
+        @HotSpotIntrinsicCandidate
+        public static Integer valueOf(int i) {
+            // 如果数值是在 -128～127范围内，则使用享元模式返回结果
+            // 如果超出范围，则使用new实例化对象并返回
+            if (i >= IntegerCache.low && i <= IntegerCache.high)
+                return IntegerCache.cache[i + (-IntegerCache.low)];
+            return new Integer(i);
+        }
+        ```
+    - 在静态类中，创建缓存池，并固定缓存池的范围
+        ```java
+        private static class IntegerCache {
+            static final int low = -128;
+            static final int high;
+            static final Integer[] cache;
+            static Integer[] archivedCache;
+        
+            static {
+                // high value may be configured by property
+                int h = 127;
+                String integerCacheHighPropValue =
+                    VM.getSavedProperty("java.lang.Integer.IntegerCache.high");
+                if (integerCacheHighPropValue != null) {
+                    try {
+                        h = Math.max(parseInt(integerCacheHighPropValue), 127);
+                        // Maximum array size is Integer.MAX_VALUE
+                        h = Math.min(h, Integer.MAX_VALUE - (-low) -1);
+                    } catch( NumberFormatException nfe) {
+                        // If the property cannot be parsed into an int, ignore it.
+                    }
+                }
+                high = h; // 初始化时，将 high 设置为127
+        
+                // Load IntegerCache.archivedCache from archive, if possible
+                VM.initializeFromArchive(IntegerCache.class);
+                int size = (high - low) + 1; //创建数组，容量为 -128 ～ 127
+        
+                // Use the archived cache if it exists and is large enough
+                if (archivedCache == null || size > archivedCache.length) {
+                    Integer[] c = new Integer[size];
+                    int j = low;
+                    for(int i = 0; i < c.length; i++) {
+                        c[i] = new Integer(j++);
+                    }
+                    archivedCache = c;
+                }
+                cache = archivedCache;
+                // range [-128, 127] must be interned (JLS7 5.1.7)
+                assert IntegerCache.high >= 127;
+            }
+        
+            private IntegerCache() {}
+        }
+        ```
+
+# 行为型-模版方法模式
+## 引入问题-制作豆浆
+[top](#catalog)
+- 编写制作豆浆的程序
+    1. 制作流程：选材 --> 添加配料 --> 浸泡 --> 放入豆浆机打磨
+    2. 通过添加配料，可以制作出不同口味的豆浆，如红豆豆浆、花生豆浆
+    3. 选材、浸泡、放入豆浆机打磨，这三个步骤对于每种口味的豆浆都是相同的
+    
+## 模版方法模式简介
+[top](#catalog)
+- 模版方法模式（Template Method Pattern），也叫模版模式（Template Pattern）
+
+- 实现方式
+    1. 在抽象类中定义模版方法，保存算法骨架，子类可以按需重写方法实现
+    2. 调用时，通过抽象类中定义的方法来调用
+ 
+- 模版方法模式的本质
+    - 抽象类中定义一个操作中的算法骨架
+    - 将一些步骤的实现延迟到子类中，使得子类可以不改变算法结构，就可以重新定义某些特定的步骤
+
+- 模版方法的优点与缺点
+    - 优点
+        1. 实现最大化代码复用
+            - 父类的模版方法和已经实现的某些步骤会被子类继承，子类可以直接使用
+        2. 统一了算法，也提供了很大的灵活性
+            - 父类确保算法算法结果不变
+            - 子类可以提供部分实现
+    - 缺点
+        - 要求每一个不同的实现都需要一个子类实现，导致类数量增加，是系统更加庞大
+
+## 模版方法模式原理
+[top](#catalog)
+- 基本思想
+    - 算法只存在于一个地方，即父类中，更容易修改
+    - 发生修改时，只修改父类的模版方法或者已经实现的某些步骤，子类就会继承这些修改
+
+- 原理类图
+    - ![imgs/pattern/template/template_principle_uml.png](imgs/pattern/template/template_principle_uml.png)
+
+- 角色划分
+    - AbstractClass 抽象类
+        - 类中实现了模版方法template，定义了算法的骨架
+            - **一般会将模版方法做成final，不让子类覆盖**
+        - 抽象方法: operation2、3、4，需要由子类提供具体的实现
+    - ConcreterClass
+        - 实现抽象方法operation2、3、4
+
+## 模版方法模式实现引入问题
+[top](#catalog)
+- UML图
+    - ![base_uml](imgs/pattern/template/base/base_uml.png)
+- 实现代码
+    - 参考代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/template/base/SoyaMilk.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/template/base/SoyaMilk.java)
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/template/base/PeanutSoyaMilk.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/template/base/PeanutSoyaMilk.java)
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/template/base/RedBeanSoyaMilk.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/template/base/RedBeanSoyaMilk.java)
+    - 代码内容
+        ```java
+        // 抽象类，表示豆浆
+        public abstract class SoyaMilk {
+            // 模版方法
+            public final void make(){
+                select();
+                add();
+                soak();
+                beat();
+            }
+        
+            // 选材料
+            public void select(){
+                System.out.println("SoyaMilk select");
+            }
+        
+            // 添加配料
+            public abstract void add();
+        
+            // 浸泡
+            public void soak(){
+                System.out.println("SoyaMilk soak");
+            }
+        
+            // 打磨
+            public void beat(){
+                System.out.println("SoyaMilk beat");
+            }
+        }
+        ```
+        ```java
+        // 花生豆浆
+        public class PeanutSoyaMilk extends SoyaMilk {
+            @Override
+            public void add() {
+                System.out.println("add Peanut");
+            }
+        }
+        ```
+        ```java
+        // 红豆豆浆
+        public class RedBeanSoyaMilk extends SoyaMilk {
+            @Override
+            public void add() {
+                System.out.println("add RedBean");
+            }
+        }    
+        ```
+- 测试代码
+    - 参考代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/template/base/Client.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/template/base/Client.java)
+    - 测试内容
+        ```java
+        @Test
+        public void test01(){
+            // 制作红豆豆浆
+            System.out.println("-----redBeanSoyaMilk-----");
+            SoyaMilk redBeanSoyaMilk = new RedBeanSoyaMilk();
+            redBeanSoyaMilk.make();
+    
+            // 制作花生豆浆
+            System.out.println("-----peanutSoyaMilk-----");
+            SoyaMilk peanutSoyaMilk = new PeanutSoyaMilk();
+            peanutSoyaMilk.make();
+        }
+        ```
+    - 测试结果
+        ```
+        -----redBeanSoyaMilk-----
+        SoyaMilk select
+        add RedBean
+        SoyaMilk soak
+        SoyaMilk beat
+        -----peanutSoyaMilk-----
+        SoyaMilk select
+        add Peanut
+        SoyaMilk soak
+        SoyaMilk beat
+        ```
+    
+## 模版方法模式的钩子方法
+[top](#catalog)
+- 钩子方法的特征
+    1. 在模版方法模式的父类中，一个默认不做任何实际操作的方法
+        - 不一定是空方法，可以是控制某部分流程的方法
+    2. 子类可以视情况决定是否覆盖该方法
+- 在引入问题中实现钩子方法
+    - 添加需求
+        - 不加配料时，获取纯豆浆
+    - 实现代码
+        - 参考代码
+            - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/template/hook/SoyaMilk.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/template/hook/SoyaMilk.java)
+            - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/template/hook/PureSoyaMilk.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/template/hook/PureSoyaMilk.java)
+        - 在抽象类中添加钩子函数
+            ```java
+            public abstract class SoyaMilk {
+                // 模版方法
+                public final void make(){
+                    select();
+                    // 通过钩子函数的返回值，控制算法流程
+                    if (wantAdd()){
+                        add();
+                    }
+                    soak();
+                    beat();
+                }
+            
+                // ...
+                // 钩子方法，决定是否需要添加配料
+                boolean wantAdd(){
+                    return true;
+                }
+            }
+            ```
+        - 纯豆浆类
+            ```java
+            public class PureSoyaMilk extends SoyaMilk {
+                // 使用空方法完成继承
+                @Override
+                public void add() { }
+            
+                @Override
+                boolean wantAdd() {
+                    return false;
+                }
+            }
+            ```
+    - 测试代码
+        - 参考代码
+            - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/template/hook/Client.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/template/hook/Client.java)
+        - 测试内容
+            ```java
+            @Test
+            public void test01(){
+                // 制作红豆豆浆
+                System.out.println("-----redBeanSoyaMilk-----");
+                SoyaMilk redBeanSoyaMilk = new RedBeanSoyaMilk();
+                redBeanSoyaMilk.make();
+        
+                // 制作纯豆浆
+                System.out.println("-----pureSoyaMilk-----");
+                SoyaMilk pureSoyaMilk = new PureSoyaMilk();
+                pureSoyaMilk.make();
+            }
+            ```
+        - 测试结果
+            ```
+            -----redBeanSoyaMilk-----
+            SoyaMilk select
+            add RedBean
+            SoyaMilk soak
+            SoyaMilk beat
+            -----pureSoyaMilk-----
+            SoyaMilk select
+            SoyaMilk soak
+            SoyaMilk beat
+            ```
+          
+## 模版方法模式在Spring中的应用-IOC源码解析
+[top](#catalog)
+- UML图
+    - ![/designPattern/base/imgs/pattern/template/spring_ioc/ico_template_uml.png](/designPattern/base/imgs/pattern/template/spring_ioc/ico_template_uml.png)
+- 代码说明
+    - 接口定义模版方法
+        ```java
+        public interface ConfigurableApplicationContext extends ApplicationContext, Lifecycle, Closeable {
+            void refresh() throws BeansException, IllegalStateException;
+        }
+        ```
+    - 实现接口的抽象类，提供抽象方法和钩子函数，并实现模版方法
+        ```java
+        public abstract class AbstractApplicationContext extends DefaultResourceLoader implements ConfigurableApplicationContext {
+            // 内部调用两个抽象方法，需要由子类提供实现
+            protected ConfigurableListableBeanFactory obtainFreshBeanFactory() {
+                this.refreshBeanFactory();
+                return this.getBeanFactory();
+            }
+        
+            protected abstract void refreshBeanFactory() throws BeansException, IllegalStateException;
+            
+            public abstract ConfigurableListableBeanFactory getBeanFactory() throws IllegalStateException;
+            
+            // 钩子方法
+            protected void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) {
+            }
+            
+            // 钩子方法
+            protected void onRefresh() throws BeansException {
+                // For subclasses: do nothing by default.
+            }
+                
+            // 模版方法
+            public void refresh() throws BeansException, IllegalStateException {
+                synchronized(this.startupShutdownMonitor) {
+                    this.prepareRefresh();
+                    ConfigurableListableBeanFactory beanFactory = this.obtainFreshBeanFactory();
+                    this.prepareBeanFactory(beanFactory);
+        
+                    try {
+                        // 调用钩子方法
+                        this.postProcessBeanFactory(beanFactory);
+                        this.invokeBeanFactoryPostProcessors(beanFactory);
+                        this.registerBeanPostProcessors(beanFactory);
+                        this.initMessageSource();
+                        this.initApplicationEventMulticaster();
+                        // 调用钩子方法
+                        this.onRefresh();
+                        this.registerListeners();
+                        this.finishBeanFactoryInitialization(beanFactory);
+                        this.finishRefresh();
+                    } catch (BeansException var9) {
+                        if (this.logger.isWarnEnabled()) {
+                            this.logger.warn("Exception encountered during context initialization - cancelling refresh attempt: " + var9);
+                        }
+        
+                        this.destroyBeans();
+                        this.cancelRefresh(var9);
+                        throw var9;
+                    } finally {
+                        this.resetCommonCaches();
+                    }
+        
+                }
+            }
+        }
+        ```
+    - 实现类
+        ```java
+        public class GenericApplicationContext extends AbstractApplicationContext implements BeanDefinitionRegistry {
+            // 实现抽象方法
+            @Override
+            public final ConfigurableListableBeanFactory getBeanFactory() {
+                return this.beanFactory;
+            }
+            
+            // 实现抽象方法
+            @Override
+            protected final void refreshBeanFactory() throws IllegalStateException {
+                if (!this.refreshed.compareAndSet(false, true)) {
+                    throw new IllegalStateException(
+                            "GenericApplicationContext does not support multiple refresh attempts: just call 'refresh' once");
+                }
+                this.beanFactory.setSerializationId(getId());
+            }
+        }
+        ```
+    - 抽象实现类
+        ```java
+        public abstract class AbstractRefreshableApplicationContext extends AbstractApplicationContext {
+            // 实现抽象方法
+            @Override
+            protected final void refreshBeanFactory() throws BeansException {
+                if (hasBeanFactory()) {
+                    destroyBeans();
+                    closeBeanFactory();
+                }
+                try {
+                    DefaultListableBeanFactory beanFactory = createBeanFactory();
+                    beanFactory.setSerializationId(getId());
+                    customizeBeanFactory(beanFactory);
+                    loadBeanDefinitions(beanFactory);
+                    synchronized (this.beanFactoryMonitor) {
+                        this.beanFactory = beanFactory;
+                    }
+                }
+                catch (IOException ex) {
+                    throw new ApplicationContextException("I/O error parsing bean definition source for " + getDisplayName(), ex);
+                }
+            }
+            
+            // 实现抽象方法 
+            @Override
+            public final ConfigurableListableBeanFactory getBeanFactory() {
+                synchronized (this.beanFactoryMonitor) {
+                    if (this.beanFactory == null) {
+                        throw new IllegalStateException("BeanFactory not initialized or already closed - " +
+                                "call 'refresh' before accessing beans via the ApplicationContext");
+                    }
+                    return this.beanFactory;
+                }
+            }
+        }
+        ```
+
+
+[top](#catalog)
