@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ejs test</title>
+</head>
+<body>
+
+    <!-- 设置通用数据 -->
+    user: <%=user%>
+    <br>
+    address: <%=address%>
+    <br>
+    <br>
+
+    ejs news page:
+    <br>
+    msg: <%=msg%>
+
+    <br>
+    <br>
+    array:
+    <ul>
+        <% for(let n of newList){ %>
+            <li><%=n%></li>
+        <% } %>
+    </ul>
+
+    <%if (flg) {%>
+        <span>flg = true</span>
+    <% } else{ %>
+        <span>flg = false</span>
+    <% } %>
+</body>
+</html>

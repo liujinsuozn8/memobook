@@ -1,3 +1,8 @@
+- 编程基础
+    - 设计模式
+        - [基于java的设计模式](designPattern/base/base.md)
+            - 配套代码：[designPattern/dplearn](designPattern/dplearn)
+
 - DevOps
     - [服务器软件的概念与比较](devops/server/base/serverCompare.md)
     - git
@@ -74,6 +79,8 @@
     - nodejs
         - [基本知识](nodejs/base/base.md)
         - [nodejs应用](nodejs/inaction/base.md)
+        - [koa](nodejs/koa/base.md)
+
 - http
     - [基本知识](http/memo.md)
 
@@ -86,11 +93,6 @@
     - [通配符、正则表达式、转义字符](linux/cmd/regular.md)
     - [文件处理指令](linux/cmd/cmd.md)
     - [压缩、解压缩、归档工具](#linux/cmd/zip.md)
-
-- 软能力
-    - 设计模式
-        - [基于java的设计模式](designPattern/base/base.md)
-            - 配套代码：[designPattern/dplearn](designPattern/dplearn)
 
 - 其他
     - [常用端口号](usedport/usedport.md)
