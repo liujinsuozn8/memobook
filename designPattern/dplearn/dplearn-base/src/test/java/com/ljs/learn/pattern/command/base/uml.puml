@@ -1,0 +1,81 @@
+@startuml
+
+interface Command{
+    + execute(): void
+    + undo(): void
+}
+
+'与电灯相关的命令
+class LightOnCommand{
+    + receiver: LightReceiver
+    + execute():void
+    + undo():void
+}
+
+'与电灯相关的命令
+class LightOffCommand{
+    + receiver: LightReceiver
+    + execute():void
+    + undo():void
+}
+
+
+class NoCommand{
+}
+
+class LightReceiver{
+    on(): void
+    off(): void
+}
+
+'遥控器
+class RemoteController{
+    + command:Command
+    + onCommands: Command[]
+    + offCommands: Command[]
+}
+
+
+class NoCommand{
+}
+
+note right of NoCommand
+表示空命令，不执行任何操作
+用于简化操作
+可以省略对空的判断
+end note
+
+note right of LightReceiver
+电灯，即命令的执行者
+end note
+
+note right of LightOnCommand
+开关打开
+聚合LightReceiver，
+来执行命令
+end note
+
+note right of LightOffCommand
+开关关闭
+聚合LightReceiver，
+来执行命令
+end note
+
+
+RemoteController o-- Command
+
+Command <|--- LightOnCommand
+Command <|--- LightOffCommand
+Command <|--right- NoCommand
+
+LightOnCommand o--- LightReceiver
+LightOffCommand o--- LightReceiver
+
+@enduml
+
+@startuml
+Client .up.> LightOnCommand
+Client .up.> LightOffCommand
+Client .up.> LightReceiver
+Client .up.> RemoteController
+@enduml

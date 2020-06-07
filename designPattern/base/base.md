@@ -98,21 +98,21 @@
     - [享元模式的原理](#享元模式的原理)
     - [享元模式的注意事项和细节](#享元模式的注意事项和细节)
     - [使用享元模式改进引入问题](#使用享元模式改进引入问题)
-    - [享元模式在JDK中的使用-Integer的源码分析](#享元模式在JDK中的使用-Integer的源码分析)
+    - [享元模式在JDK中的使用-Integer源码解析](#享元模式在JDK中的使用-Integer源码解析)
 - 行为型-模版方法模式
     - [引入问题-制作豆浆](#引入问题-制作豆浆)
-    - [版方法模式简介](#模版方法模式简介)
-    - [版方法模式原理](#模版方法模式原理)
-    - [版方法模式实现引入问题](#模版方法模式实现引入问题)
-    - [版方法模式的钩子方法](#模版方法模式的钩子方法)
-    - [版方法模式在Spring中的应用-IOC源码解析](#模版方法模式在Spring中的应用-IOC源码解析)
+    - [模版方法模式简介](#模版方法模式简介)
+    - [模版方法模式原理](#模版方法模式原理)
+    - [模版方法模式实现引入问题](#模版方法模式实现引入问题)
+    - [模版方法模式的钩子方法](#模版方法模式的钩子方法)
+    - [模版方法模式在Spring中的应用-IOC源码解析](#模版方法模式在Spring中的应用-IOC源码解析)
+- 行为型-命令模式
+    - [引入问题-智能生活项目需求](#引入问题-智能生活项目需求)
+    - [命令模式简介](#命令模式简介)
+    - [命令模式原理](#命令模式原理)
+    - [命令模式在Spring中的应用-JdbcTempate源码解析](#命令模式在Spring中的应用-JdbcTempate源码解析)
 - [](#)
 - [](#)
-
-
-
-[top](#catalog)
-
 
 
 # 设计模式简介
@@ -4400,8 +4400,13 @@ P64
     - 该模式定义了一个高层接口，这个接口使得子系统更容易使用
     - 子系统内部实现被界面屏蔽，调用直通界面进行调用，无需关系子系统的内部细节
 
+## 外观模式原理
+[top](#catalog)
 - 原理类图
-    - ![facade_principle_uml.png](imgs/pattern/facade/facade_principle_uml.png)
+    - uml代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/facade/principle_uml.puml](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/facade/principle_uml.puml)
+    - 图
+        - ![facade_principle_uml.png](imgs/pattern/facade/facade_principle_uml.png)
 
 - 外观模式角色分析
     1. 外观类（Facade） 
@@ -4629,7 +4634,10 @@ P64
 ## 享元模式的原理
 [top](#catalog)
 - 原理类图
-    - ![facade_principle_uml.png](imgs/pattern/flyweight/flyweight_principle_uml.png)
+    - uml代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/flyweight/principle_uml.puml](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/flyweight/principle_uml.puml)
+    - 图
+        - ![facade_principle_uml.png](imgs/pattern/flyweight/flyweight_principle_uml.png)
 
 - 享元模式的两个要求：细粒度、共享对象
     - 需要将对象的信息分为两部分
@@ -4684,7 +4692,10 @@ P64
 ## 使用享元模式改进引入问题 
 [top](#catalog)
 - 改进后的UML图
-    - ![improve_uml](imgs/pattern/flyweight/improve/improve_uml.png)
+    - uml代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/flyweight/improve/improve_uml.puml](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/flyweight/improve/improve_uml.puml)
+    - 图
+        - ![improve_uml](imgs/pattern/flyweight/improve/improve_uml.png)
 - 状态划分
     - 内部状态  
         - 网站类型: ConcreteWebSite.type
@@ -4793,7 +4804,7 @@ P64
         }
         ```
 
-## 享元模式在JDK中的使用-Integer的源码分析
+## 享元模式在JDK中的使用-Integer源码解析
 [top](#catalog)
 - 测试代码
     - 参考代码
@@ -4911,24 +4922,30 @@ P64
 ## 模版方法模式原理
 [top](#catalog)
 - 基本思想
-    - 算法只存在于一个地方，即父类中，更容易修改
+    - 算法只存在于一个地方，即父类的模版方法中，更容易修改
     - 发生修改时，只修改父类的模版方法或者已经实现的某些步骤，子类就会继承这些修改
 
 - 原理类图
-    - ![imgs/pattern/template/template_principle_uml.png](imgs/pattern/template/template_principle_uml.png)
+    - uml代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/template/principle_uml.puml](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/template/principle_uml.puml)
+    - 图
+        - ![imgs/pattern/template/template_principle_uml.png](imgs/pattern/template/template_principle_uml.png)
 
 - 角色划分
-    - AbstractClass 抽象类
+    - AbstractClass，抽象类
         - 类中实现了模版方法template，定义了算法的骨架
             - **一般会将模版方法做成final，不让子类覆盖**
         - 抽象方法: operation2、3、4，需要由子类提供具体的实现
-    - ConcreterClass
+    - ConcreterClas，实现类
         - 实现抽象方法operation2、3、4
 
 ## 模版方法模式实现引入问题
 [top](#catalog)
 - UML图
-    - ![base_uml](imgs/pattern/template/base/base_uml.png)
+    - uml代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/template/base/improve_uml.puml](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/template/base/improve_uml.puml)
+    - 图
+        - ![base_uml](imgs/pattern/template/base/base_uml.png)
 - 实现代码
     - 参考代码
         - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/template/base/SoyaMilk.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/template/base/SoyaMilk.java)
@@ -5096,7 +5113,11 @@ P64
 ## 模版方法模式在Spring中的应用-IOC源码解析
 [top](#catalog)
 - UML图
-    - ![/designPattern/base/imgs/pattern/template/spring_ioc/ico_template_uml.png](/designPattern/base/imgs/pattern/template/spring_ioc/ico_template_uml.png)
+    - uml代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/template/spring/uml.puml](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/template/spring/uml.puml)
+
+    - 图
+        - ![/designPattern/base/imgs/pattern/template/spring_ioc/ico_template_uml.png](/designPattern/base/imgs/pattern/template/spring_ioc/ico_template_uml.png)
 - 代码说明
     - 接口定义模版方法
         ```java
@@ -5218,6 +5239,339 @@ P64
             }
         }
         ```
+
+# 行为型-命令模式
+## 引入问题-智能生活项目需求
+[top](#catalog)
+- 需求
+    - 购买一套智能家电，包括照明灯、风扇、冰箱、洗衣机，只要在手机上安装app就能控制智能家电工作
+    - 智能家电来自不同的厂家，希望**只用一个app就可以控制全部智能家电**
+- 实现一个app控制所有智能家电，需要每个智能家电厂家都提供一个统一的接口给app调用，这种情况就可以使用**命令模式**
+- 角色划分
+    - 请求发送者：手机app
+    - 请求执行者：每个厂商的家电产品
+
+## 命令模式简介
+[top](#catalog)
+- 命令模式 Command Pattern
+
+- <label style="color:red">命令模式的一种通俗理解</label>
+    - 将军发布命令，士兵执行命令
+    - 角色划分
+        - 请求发送者: 将军
+        - 请求执行者: 士兵
+        - 连接发送者与执行者: **命令**
+ 
+- 命令模式的适用条件
+    1. 经常需要向某些对象发送请求
+    2. 不知道请求的接受者和请求的操作是什么
+    3. 需要在程序运行时指定具体的请求接受者
+        
+- 相关概念
+    - 什么是命令
+        - 一个请求被封装为一个对象。通过使用不同的参数来表示不同的请求，即命令
+    - 空命令模式
+        - 本质：类内部的方法什么都不执行，是一个空方法
+        - 可以在初始化时使用空命令为对象赋值
+        - 使用空命令对象，可以避免判空
+        - 如果没有空命令，每次执行都要判空，会给影响编码
+    - 命令队列
+        - 可以通过命令队列保存多个命令，以便多线程执行命令
+    - **撤销操作**
+    - 一个严格的命令模式需要**支持可撤销的操作**
+
+- 命令模式的作用
+    - 将**请求发送者**和**请求接受者**解耦
+    - 使对象之间的调用关系更加灵活
+
+- 命令模式的缺点
+    - 系统可能会有过多的具体命令类，增加了系统的负责度
+    
+- 命令模式的经典应用场景
+    - 界面，界面中的每一个按钮都是一条命令
+    - 模拟CMD（DOS命令）    
+    - 订单的撤销/恢复
+    - 触发-反馈机制
+  
+## 命令模式原理
+[top](#catalog)
+- 原理类图
+    - uml代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/command/principle_uml.puml](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/command/principle_uml.puml)
+    - 图
+        - ![principle_uml](imgs/pattern/command/principle_uml.png)
+
+- 角色划分
+    - Invoker: 请求发送者/调用者 
+    - Receiver: 请求执行者/请求接受者/被调用者
+        - 包含如何执行一个命令的相关操作 
+    - Command: 抽象命令
+        - 可以是接口或抽象类
+        - 包含需要执行的所有命令
+        - 用于连接 Invoker、Receiver
+    - ConcreteCommand: 命令实现
+        - 将一个接受者对象与某个命令绑定，调用接受者的相关操作，实现`execute`方法
+        - 在类内部，聚合请求执行者
+        
+- 调用过程
+    1. 请求调用者调用命令对象的execute()方法
+    2. 命令对象会负责让接受者执行请求的动作
+- 在调用过程中，请求发送者不需要知道请求执行者是谁，通过命令对象来进行解耦
+- 命令对象在发送者和执行者之间起到了桥梁的作用
+
+## 命令模式实现引入问题
+[top](#catalog)
+- UML图
+    - uml代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/command/base/uml.puml](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/command/base/uml.puml)
+    - 角色图
+        - ![main_uml](imgs/pattern/command/base/main_uml.png)
+    - client调用图
+        - ![client_uml](imgs/pattern/command/base/client_uml.png)
+
+- 请求的接受者/执行者:
+    - 参考代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/command/base/LightReceiver.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/command/base/LightReceiver.java)
+    - 代码内容   
+        ```java
+        public class LightReceiver {
+            public void on(){
+                System.out.println(" light on ");
+            }
+            public void off(){
+                System.out.println(" light off ");
+            }
+        }
+        ```
+- 命令
+    - 参考代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/command/base/command/Command.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/command/base/command/Command.java)
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/command/base/command/LightOffCommand.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/command/base/command/LightOffCommand.java)
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/command/base/command/LightOnCommand.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/command/base/command/LightOnCommand.java)
+    - 代码内容
+        ```java
+        // 命令接口
+        public interface Command {
+            // 执行某个操作
+            void execute();
+            // 撤销操作
+            void undo();
+        }
+        ```
+        ```java
+        // 开按钮命令
+        public class LightOnCommand implements Command {
+            LightReceiver receiver;
+        
+            public LightOnCommand(LightReceiver receiver) {
+                this.receiver = receiver;
+            }
+        
+            @Override
+            public void execute() {
+                // 由命令调用接收者的方法
+                receiver.on();
+            }
+        
+            @Override
+            public void undo() {
+                // 由命令调用接收者的方法
+                receiver.off();
+            }
+        }
+        ```
+        ```java
+        // 关按钮命令
+        public class LightOffCommand implements Command {
+            LightReceiver receiver;
+        
+            public LightOffCommand(LightReceiver receiver) {
+                this.receiver = receiver;
+            }
+        
+            @Override
+            public void execute() {
+                // 由命令调用接收者的方法
+                receiver.off();
+            }
+        
+            @Override
+            public void undo() {
+                // 由命令调用接收者的方法
+                receiver.on();
+            }
+        }
+        ```
+- 请求的发送者
+    - 参考代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/command/base/RemoteController.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/command/base/RemoteController.java)
+    - 代码内容
+        ```java
+        // 请求发送者：手机app
+        public class RemoteController {
+            // 保存按钮的命令
+            private Command[] onCommand;
+            private Command[] offCommand;
+        
+            // 保存最近一次的命令，以便执行撤销操作
+            private Command undoCommand;
+        
+            public RemoteController() {
+                onCommand = new Command[5];
+                offCommand = new Command[5];
+        
+                for (int i = 0; i < 5; i++) {
+                    onCommand[i] = new NoCommand();
+                    offCommand[i] = new NoCommand();
+                }
+            }
+        
+            // 给按钮设置需要的命令
+            // 同时设置开、关的命令
+            public void setCommand(int no, Command onCommand, Command offCommand){
+                this.onCommand[no] = onCommand;
+                this.offCommand[no] = offCommand;
+            }
+        
+            // 开按钮操作
+            public void onButtonWasPushed(int no){
+                onCommand[no].execute();
+                // 记录按钮，以便执行撤销
+                undoCommand = onCommand[no];
+            }
+        
+            // 关按钮操作
+            public void offButtonWasPushed(int no){
+                offCommand[no].execute();
+                // 记录按钮，以便执行撤销
+                undoCommand = offCommand[no];
+            }
+        
+            // 撤销操作
+            public void undo(){
+                undoCommand.undo();
+            }
+        }
+        ```     
+- 测试代码
+    - 参考代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/command/base/Client.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/command/base/Client.java)
+    - 代码内容
+        ```java
+        @Test
+        public void test01(){
+            // 1. 创建一个app，即创建一个请求发送者
+            RemoteController app = new RemoteController();
+    
+            // 2. 创建命令
+            // 2.1 创建与light相关的命令
+            // 创建请求接受者
+            LightReceiver lightReceiver = new LightReceiver();
+    
+            // 创建命令
+            LightOnCommand lightOnCommand = new LightOnCommand(lightReceiver);
+            LightOffCommand lightOffCommand = new LightOffCommand(lightReceiver);
+    
+            // 2.2 创建与TV相关的命令
+            TVReceiver tvReceiver = new TVReceiver();
+            TVOnCommand tvOnCommand = new TVOnCommand(tvReceiver);
+            TVOffCommand tvOffCommand = new TVOffCommand(tvReceiver);
+    
+            // 3. 为app设置命令
+            app.setCommand(0, lightOnCommand, lightOffCommand);
+            app.setCommand(1, tvOnCommand, tvOffCommand);
+    
+            // 4. 通过app的安装来执行操作
+            // light 操作
+            app.onButtonWasPushed(0);
+            app.offButtonWasPushed(0);
+            app.undo();
+    
+            // tv 操作
+            app.onButtonWasPushed(1);
+            app.offButtonWasPushed(1);
+            app.undo();
+        }
+        ```
+
+## 命令模式在Spring中的应用-JdbcTempate源码解析
+[top](#catalog)
+- 角色划分
+    - command接口类：StatementCallback
+    - 调用者：JdbcTemplate
+    - 命令对象: ExecuteStatementCallback
+    - 执行者：ExecuteStatementCallback
+- Command接口
+    ```java
+    @FunctionalInterface
+    public interface StatementCallback<T> {
+        @Nullable
+        T doInStatement(Statement var1) throws SQLException, DataAccessException;
+    }
+    ```
+
+- 其他对象分析
+    ```java
+    class JdbcTemplate{
+        // 调用者：JdbcTemplate对象下的 `execute`方法，相当于请求调用者：Invoker
+        public void execute(final String sql) throws DataAccessException {
+            if (this.logger.isDebugEnabled()) {
+                this.logger.debug("Executing SQL statement [" + sql + "]");
+            }
+    
+            // 内部定义了实现Command接口的局部类：ExecuteStatementCallback
+            // 相当于 ConcreteCommand + Reveicer
+            // 同时是命令对象，并在内部自动继承 Reveicer
+            class ExecuteStatementCallback implements StatementCallback<Object>, SqlProvider {
+                ExecuteStatementCallback() {
+                }
+    
+                @Nullable
+                public Object doInStatement(Statement stmt) throws SQLException {
+                    stmt.execute(sql);
+                    return null;
+                }
+    
+                public String getSql() {
+                    return sql;
+                }
+            }
+    
+            // 创建命令对象并执行命令，
+            // 相当于  Invoker
+            this.execute((StatementCallback)(new ExecuteStatementCallback()));
+        }
+        
+            @Nullable
+            public <T> T execute(StatementCallback<T> action) throws DataAccessException {
+                Assert.notNull(action, "Callback object must not be null");
+                Connection con = DataSourceUtils.getConnection(this.obtainDataSource());
+                Statement stmt = null;
+        
+                Object var11;
+                try {
+                    stmt = con.createStatement();
+                    this.applyStatementSettings(stmt);
+                    // 相当于 Invoker，执行了指令中的方法，然后递归给棋坛资源使用
+                    T result = action.doInStatement(stmt);
+                    this.handleWarnings(stmt);
+                    var11 = result;
+                } catch (SQLException var9) {
+                    String sql = getSql(action);
+                    JdbcUtils.closeStatement(stmt);
+                    stmt = null;
+                    DataSourceUtils.releaseConnection(con, this.getDataSource());
+                    con = null;
+                    throw this.translateException("StatementCallback", sql, var9);
+                } finally {
+                    JdbcUtils.closeStatement(stmt);
+                    DataSourceUtils.releaseConnection(con, this.getDataSource());
+                }
+        
+                return var11;
+            }
+    }
+    ```
 
 
 [top](#catalog)
