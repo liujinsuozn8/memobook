@@ -6,6 +6,8 @@ const HtmlWebpackPlugin = require('html-webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 // 7.3 css压缩
 const OptimizeCssAssetsWebpackPlugin = require('optimize-css-assets-webpack-plugin')
+// 15.1 PWA
+const WorkboxWebpackPlugin = require('workbox-webpack-plugin')
 
 // 设置nodejs的环境变量。可影响:
 // 7.2 css兼容性配置，postcss: 读取哪种 browserslist 配置
@@ -36,7 +38,11 @@ const commonCssLoader = [
 
 module.exports={
     // 1. 入口
-    entry:'./src/js/index.js',
+    // entry:'./src/js/index.js',
+    // 14.1 文件分割配置
+    entry:{
+        main: './src/js/index.js'
+    },
 
     // 2. 输出
     output:{
@@ -44,7 +50,8 @@ module.exports={
         path: resolve( __dirname, 'build'),
         // 指定输出子目录和输出文件名
         // 12. 缓存穿透策略，在文件名中添加一个 hash值
-        filename: 'js/built.[contenthash:10].js'
+        // 14.2 文件分割配置：[name]
+        filename: 'js/[name].[contenthash:10].js'
     },
 
     // 3. loader
@@ -189,11 +196,28 @@ module.exports={
         }),
         // 7.3 css压缩
         new OptimizeCssAssetsWebpackPlugin(),
+
+        // 15.2 开启PWA
+        new WorkboxWebpackPlugin.GenerateSW({
+            // 删除旧的 serviceworker，使用最新的
+            clientsClaim:true,
+            // 帮助 serviceworker 快速启动
+            skipWaiting:true,
+        })
     ],
 
     // 5. mode
     // mode: 'development',
     mode: 'production',
 
-    devtool:'cheap-module-source-map'
+    // 13. source-map 策略
+    // devtool:'cheap-module-source-map',
+    devtool:'source-map',
+
+    // 14.3 公共引用打包
+    optimization:{
+        splitChunks:{
+            chunks: 'all'
+        }
+    },
 }

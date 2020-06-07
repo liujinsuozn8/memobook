@@ -55,9 +55,14 @@
         - [多进程打包](#多进程打包)
         - [externals--配置不参与打包的依赖](#externals--配置不参与打包的依赖)
         - [dll--单独编译某些依赖](#dll--单独编译某些依赖)
+        - [optimization优化配置](#optimization优化配置)
 - [webpack配置文件内容说明](#webpack配置文件内容说明)
+    - [webpack的基本配置](#webpack的基本配置)
     - [entry](#entry)
     - [output](#output)
+    - [resolve](#resolve)
+    - [devServer](#devServer)
+    - [optimization](#optimization)
 - [](#)
 
 
@@ -177,7 +182,7 @@
 |开发/生产配置|img打包|`npm i url-loader -D`|
 |开发/生产配置|img打包，其他资源|`npm i file-loader -D`|
 |开发/生产配置|img打包|`npm i html-loader -D`|
-|开发配置|devServer|`npm i webpack-dev-server -D`|
+|开发配置|开发服务器，devServer|`npm i webpack-dev-server -D`|
 |生产配置|提取css|`npm i mini-css-extract-plugin -D`|
 |生产配置|css兼容性处理loader|`npm i postcss-loader -D`|
 |生产配置|css兼容性处理，postcss-loader 辅助插件|`npm i postcss-preset-env -D`|
@@ -193,7 +198,8 @@
 |生产配置|js兼容性处理、babel全部兼容|`npm i @babel/polyfill -D`|
 |生产配置|PWA（离线访问）支持|`npm i workbox-webpack-plugin -D`|
 |生产配置|多进程打包|`npm i thread-loader -D`|
-|生产配置|将指定文件输出到打包结果中|`npm i add-asset-html-webpack-plugin -D`|
+|生产配置|将指定文件输出到打包结果中<br>用途dll打包|`npm i add-asset-html-webpack-plugin -D`|
+|生产配置|terser 压缩方案支持|`npm i terser-webpack-plugin -D`|
 ||||
 
 
@@ -2478,83 +2484,28 @@
             ```
         3. 执行打包
 
+### optimization优化配置
+[top](#catalog)
+- 参考: webpack配置文件内容说明--[optimization](#optimization)
+- 优化内容
+    1. 页面性能优化
+        - hash值打包，防止页面缓存失效
+        - 第三方公共引用提取
+    2. 打包优化
+        - 配置 js、css 的压缩策略
+
 # webpack配置文件内容说明
+## webpack的基本配置
 [top](#catalog)
 - 配置文件名: `webpack.config.js`
-- 保存路径
-- 基本配置内容
-    ```js
-    const { resolve } = require("path");
-
-    module.exports={
-        // 1. 入口
-        entry:'./src/index.js',
-
-        // 2. 输出
-        output:{
-            // 输出文件名
-            filename: 'built.js',
-            // 输出目录，最好使用绝对路径
-            path: resolve( __dirname, 'build')
-        },
-
-        // 3. loader
-        module: {
-            rules: [
-                // 详细的loader配置
-
-                // 处理css的loader
-                {
-                    // 表示匹配哪些文件
-                    test: /正则表达式/,
-                    // 排除某些资源
-                    exclude: /正则表达式/,
-                    // 使用多个loader进行处理
-                    // 使用哪些loader进行处理
-                    // use数组中loader的执行顺序:从后往前
-                    use: [ 'loader1', 'loader2',.... ],
-
-                    // 设置处理参数
-                    options:{
-                        // 设置文件的命名方式
-                        name: '',
-                        // 编译规范，true：ES6、false：CommonJS
-                        esModule: true/false,
-                        // 定义保存生成结果的子目录
-                        // 默认生成到output中定义的目录: __dirname/build/ 下
-                        // 添加该属性后会生成到: __dirname/build/xxxx/ 下
-                        outputPath: 'xxxx'
-                    }
-                },
-                {
-                    test: /正则表达式/,
-                    // 使用一个loader进行处理
-                    loader: "load",
-
-                    // 设置处理参数
-                    options:{}
-                },
-                ...
-            ]
-        },
-
-        // 4. plugin
-        plugins: [],
-
-        // 5. mode
-        mode: 'development',
-        // mode: 'production',
-    }
-    ```
-
-- loader的使用方法:
-    1. 下载loader的包
-    2. 添加配置
-
-- plugin的使用方法
-    1. 下载plugin的包
-    2. 引入
-    3. 添加配置
+- 基本配置内容参考:
+    - [开发环境基本配置参考](#开发环境基本配置参考)
+    - [生产环境基本配置参考](#生产环境基本配置参考)
+- 参考配置文件路径
+    - 开发环境
+        - [configs/devconfig_base/webpack_with_comment.config.js](configs/devconfig_base/webpack_with_comment.config.js)
+    - 生产环境
+        - [configs/productconfig_base/webpack_with_comment.config.js](configs/productconfig_base/webpack_with_comment.config.js)
 
 ## entry
 [top](#catalog)
@@ -2703,10 +2654,11 @@
 - `chunkFilename`
     - 功能: 设置打包时**非入口chunk**文件的命名规则
         - entry中**未指定**的都是非入口chunk
-
-    - 示例: `chunkFilename: '[name]_chunk.js'`
+    - 如果**没有配置** `chunkFilename`, 则**默认使用 `filename` 属性中的规则**
     - 生效的场景
         - 使用 `import` 在js文件内部动态导入其他 js 模块时，会使用 chunkFilename 规则命名打包结果
+            - 动态导入的文件的`[name]`，默认是从 0 开始的数字
+            - 在 `import` 中，可以通过 `webpackChunkName: 'xxx'` 来指定 name
         - 使用 `optimization` 打包多文件中的 `node_modules` 公共引用时，会使用 chunkFilename 规则命名打包结果
 
 - `library`
@@ -2825,5 +2777,287 @@
             mode: 'development'
         }
         ```
+
+## resolve
+[top](#catalog)
+- resolve的功能: **配置模块的解析规则**
+
+- `alias`
+    - 功能: 配置解析模块的路径的别名
+    - 使用场景
+        - 用于解决在入口文件中引入资源时，**路径过深**的问题
+    - 优点
+        - 简写路径，使代码更清晰
+    - 缺点
+        - 写代码时，不会有代码提示
+    - 示例
+        - 配置alias
+            ```js
+            resolve: {
+                alias: {
+                    // 为 _dirname/src/css 创建一个别名 $css
+                    $css: resolve(__dirname, 'src/css'),
+                }
+            }
+            ```
+        - 引用资源
+            ```js
+            // 不使用 alias，直接通过路径引入资源
+            // import '../css/index.css'
+            // 使用 $css 替换 ../css
+            import '$css/index.css'
+            ```
+        - 编译时，通过 `$css` 找到绝对路径，然后到该路径下搜索资源
+
+- `extensions`
+    - 功能: 配置省略文件路径后缀名的规则
+    - 示例:
+        - 配置
+            ```js
+            extensions: ['.js', '.json']
+            ```
+        - 入口文件引入资源
+            ```js
+            // 省略后缀名 .json，由 resolve.extensions 自动匹配
+            import testJson from  '$json/test_json'
+            ```
+    - 编译时，会按照数组中的顺序来匹配文件
+        - 一般不会配置 '.css'
+            - 因为css的名字一般会和html、js等同名
+            - 如果入口文件中出现同名文件会导致编译异常
+- modules
+    - 功能: 提醒webpack，解析模块时，去哪个目录下搜索外部依赖
+    - 示例:
+        ```js
+        // 第一个指定多层嵌套时的目标路径
+        // 最后一个用 node_modules，以防止找不到的情况
+        modules:[ resolve(__dirname, '../../node_modules'), "node_modules"]
+        ```
+    - 优点
+        - 在一个多层嵌套的工程中，通过指定搜索路径可以提升打包速度
+    - 不同的搜索流程比较
+        - webpack的默认搜索流程
+            1. 默认到同级的 node_modules 目录下搜索
+            2. 如果当前路径下没有，则到上一级目录搜索
+            3. 一直搜索到根目录，如果一直都没有搜索到，则报错
+        - 指定 modules 后的搜索流程
+            - 按照数组的元素顺序，直接到指定目录下搜索
+    - **一般会在数组最后附加 node_modules，防止找不到的情况**
+
+- 示例
+    - 参考配置与代码
+        - [src/testcode/config_introduction/resolve/webpack.config.js](src/testcode/config_introduction/resolve/webpack.config.js)
+        - [src/testcode/config_introduction/resolve/src/js/index.js](src/testcode/config_introduction/resolve/src/js/index.js)
+
+    - `webpack.config.js` 配置内容
+        ```js
+        const {resolve} = require('path')
+        const HtmlWebpackPlugin = require('html-webpack-plugin')
+        module.exports={
+            entry: {
+                main: './src/js/index.js',
+            },
+
+            output:{
+                path: resolve(__dirname, 'build'),
+                filename:'js/[name].js'
+            },
+            module:{
+                rules:[
+                    {
+                        test:/\.css$/,
+                        use:['style-loader', 'css-loader'],
+                    },
+                ]
+            },
+            plugins:[
+                new HtmlWebpackPlugin()
+            ],
+            mode: 'development',
+            // 配置模块解析规则
+            resolve:{
+                // 配置解析模块路径别名
+                alias:{
+                    $css: resolve(__dirname, 'src/css'),
+                    $json: resolve(__dirname, 'src/json'),
+                },
+
+                // 配置省略文件路径后缀名的规则
+                extensions: ['.js', '.json'],
+
+                // 提醒webpack，解析模块时，去哪个目录下搜索外部依赖
+                modules:[ resolve(__dirname, '../../node_modules'), "node_modules"]
+            }
+        }
+        ```
+    - `index.js`
+        ```js
+        // import '../css/index.css'
+        import '$css/index.css'
+        // 省略后缀名 .json，由 resolve.extensions 自动匹配
+        import testJson from  '$json/test_json'
+
+        console.log('this is config_introduction entry')
+        for (let k in testJson) {
+            console.log(`key=${k}, value=${testJson[k]}`)
+        }
+        console.log(testJson)
+        ```
+
+## devServer
+[top](#catalog)
+- 参考配置
+    - [src/testcode/config_introduction/devServer/webpack.config.js](src/testcode/config_introduction/devServer/webpack.config.js)
+
+- 配置内容及说明
+    ```js
+    devServer:{
+        // 1. 代码运行及监视
+        // 运行代码的目录
+        contentBase: resolve(__dirname, 'build'),
+        // 监视 contentBase 目录下的文件。一旦文件变化，就会reload
+        watchContentBase: true,
+        watchOptions:{
+            // 监视文件时，忽略某些文件
+            ignored: /node_modules/,
+        },
+
+        // 2. 控制日志输出
+        // 不显示启动服务器的日志信息
+        clientLogLevel:'none',
+
+        /*
+            除了一些基本的启动消息以外，其他内容都不显示
+            clientLogLevel:'none' + quiet: true，控制台基本就不会显示什么信息了
+        */
+        // quiet: true,
+
+        /*
+            如果出错了，不要全屏提示，打印到控制台日志中
+            如果配置了: clientLogLevel:'none' + quiet: true, 则不会打印到日志
+        */
+        overlay:false,
+
+        // 3. 访问设置
+        // 指定服务端口号
+        port: 5000,
+        // 指定域名
+        host:'localhost',
+        // 是否自动打开浏览器
+        open: false,
+        // 设置服务器代理 --> 用于解决开发环境的跨域问题
+        proxy: {
+            // 当devServer(5000)服务器接收到 /api/xxx 开头的请求，就会把请求转发到另一个服务器(3000)
+            '/api': {
+                target: 'http://localhost:3000',
+                // 发送请求时，请求路径重写: 将 /api/xx 改成 /xxx
+                pathRewrite:{
+                    '^api':''
+                }
+            }
+        },
+
+        // 4. 优化设置
+        // 是否开启gzip压缩
+        compress: true,
+        // 是否开启HMR功能
+        hot: true,
+    }
+    ```
+
+## optimization
+[top](#catalog)
+- `optimization` 配置只有在生成环境下才有意义
+- 3种配置
+    1. runtimeChunk
+        - 功能: 将每个模块中记录的其他模块的hash单独打包为一个文件，防止页面缓存失效
+    2. minimizer
+        - 功能: 配置生产环境的压缩方案，包括: js、css
+        - 默认使用 terser包 来执行 js 压缩
+            - 如果要配置 terser，需要下载包
+                - `npm i terser-webpack-plugin -D`
+    3. splitChunks
+        - 功能: 提取第三方的公共依赖
+
+- 参考配置
+    - [src/testcode/config_introduction/optimization/webpack.config.js](src/testcode/config_introduction/optimization/webpack.config.js)
+
+- 主要配置内容及说明
+    ```js
+    const {resolve} = require('path')
+    const HtmlWebpackPlugin = require('html-webpack-plugin')
+    const TerserWebpackPlugin = require('terser-webpack-plugin')
+    module.exports={
+        entry: {
+            main: './src/js/index.js',
+        },
+
+        output:{
+            path: resolve(__dirname, 'build'),
+            filename:'js/[name].[contenthash:10].js',
+            chunkFilename:'js/[name].[contenthash:10]_chunk.js',
+        },
+        module:{...},
+        plugins:[...],
+        mode: 'production',
+
+        optimization:{
+            /*
+                1. 将每个模块中记录的其他模块的hash单独打包为一个文件: runtime，防止页面缓存失效
+                用于解决:
+                    - 前提: 在 a 中引入 b。编译后，a 会包含 b 的hash值
+                    - 修改 b 会导致 a 中包含的hash值发生变化，使 a 的页面缓存失效
+            */
+        runtimeChunk: {
+                name: enrtypoint => `runtime-${enrtypoint.name}`
+            },
+
+            // 2. 配置生产环境的压缩方案，包括: js、css
+            // 默认使用 terser包 来执行 js 压缩
+            minimizer:[
+                new TerserWebpackPlugin({
+                    // 开启缓存
+                    cache: true,
+                    // 开启多进程打包
+                    parallel: true,
+                    // 使用source map，否则会被压缩掉
+                    sourceMap: true
+                })
+            ],
+            // 3. 提取第三方的公共依赖
+            splitChunks: {
+                chunks:'all',
+                // 一下都是默认值，一般可以不写
+                // chunk打包的公共规则
+                minSize: 30 * 1024,             // 分割chunk的最小容量为30kb，小于minSize就不会分割
+                maxSize: 0,                     // 分割chunk的最大容量，0 表示没有限制
+                minChunks:1,                    // 如果要提取chunk，至少要被引用 1 次
+                maxAsyncRequests: 5,            // 按需加载时，并行加载的最大文件数
+                maxInitialRequests: 3,           // 入口js文件最大并行请求数量
+                automaticNameDelimiter: '~',    // 提取后，文件名的连接符，如: vendors~main.238036fce6.js
+                name: true,                     // 可以使用命名规则
+                cacheGroups: {                  //分割 chunk 的组
+                    // node_modules中的文件会被打包到 vendors 组的 chunk 中: vendors~xxx.js
+                    // 打包到分组之前，需要满足之前的公共规则
+                    vendors: {
+                        test: /[\\/]node_modules[\\/]/,
+                        // 打包优先级
+                        priority: -10,
+                    },
+                    default: {
+                        minChunks: 2,   // 如果要提取chunk，至少要被引用2次。会覆盖公共规则
+                        // 打包优先级
+                        priority: -20,
+
+                        // 开启代码复用：
+                        // 如果当前要打包的模块，和之前已经被提取的模块是同一个，就会复用
+                        // 不会重新打包
+                        reuseExistingChunk: true
+                    }
+                }
+            },
+        }
+    }
+    ```
 
 [top](#catalog)

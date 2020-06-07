@@ -6,6 +6,15 @@ const HtmlWebpackPlugin = require('html-webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 // 7.3 css压缩
 const OptimizeCssAssetsWebpackPlugin = require('optimize-css-assets-webpack-plugin')
+// 15.1 PWA
+const WorkboxWebpackPlugin = require('workbox-webpack-plugin')
+// 18. 配置压缩策略
+const TerserWebpackPlugin = require('terser-webpack-plugin')
+
+// dll引入插件
+// const webpack = require('webpack')
+// const AddAssetHtmlWebpackPlugin = require('add-asset-html-webpack-plugin')
+
 
 // 设置nodejs的环境变量。可影响:
 // 7.2 css兼容性配置，postcss: 读取哪种 browserslist 配置
@@ -36,7 +45,11 @@ const commonCssLoader = [
 
 module.exports={
     // 1. 入口
-    entry:'./src/js/index.js',
+    // entry:'./src/js/index.js',
+    // 14.1 文件分割配置
+    entry:{
+        main: './src/js/index.js'
+    },
 
     // 2. 输出
     output:{
@@ -44,7 +57,9 @@ module.exports={
         path: resolve( __dirname, 'build'),
         // 指定输出子目录和输出文件名
         // 12. 缓存穿透策略，在文件名中添加一个 hash值
-        filename: 'js/built.[contenthash:10].js'
+        // 14.2 文件分割配置：[name]
+        filename: 'js/[name].[contenthash:10].js',
+        chunkFilename:'js/[name].[contenthash:10]_chunk.js',
     },
 
     // 3. loader
@@ -189,11 +204,66 @@ module.exports={
         }),
         // 7.3 css压缩
         new OptimizeCssAssetsWebpackPlugin(),
+
+        // 15.2 开启PWA
+        new WorkboxWebpackPlugin.GenerateSW({
+            // 删除旧的 serviceworker，使用最新的
+            clientsClaim:true,
+            // 帮助 serviceworker 快速启动
+            skipWaiting:true,
+        }),
+        // dll 引入配置
+        // 1. 引入dll的映射文件
+        // new webpack.DllReferencePlugin({
+        //     manifest: resolve(__dirname, 'dll/manifest.json')
+        // }),
+        // 2. 输出dll的编译结果到打包结果中
+        // new AddAssetHtmlWebpackPlugin({
+        //     filepath: resolve(__dirname, 'dll/xxxx.js')
+        // })
     ],
 
     // 5. mode
     // mode: 'development',
     mode: 'production',
 
-    devtool:'cheap-module-source-map'
+    // 13. source-map 策略
+    // devtool:'cheap-module-source-map',
+    devtool:'source-map',
+
+    optimization:{
+        // 14.3 公共引用打包
+        splitChunks:{
+            chunks: 'all'
+        },
+        // 17. 将各模块的hash值单独打包为一个文件，防止页面缓存失效
+        runtimeChunk: {
+            name: enrtypoint => `runtime-${enrtypoint.name}`
+        },
+        // 18. 配置压缩策略
+        minimizer:[
+            // 配置js压缩策略
+            new TerserWebpackPlugin({
+                // 开启缓存
+                cache: true,
+                // 开启多进程打包
+                parallel: true,
+                // 使用source map，否则会被压缩掉
+                sourceMap: true
+            })
+        ],
+    },
+
+    // 16. 配置模块解析规则
+    resolve:{
+        alias:{                     // 配置解析模块路径别名
+            $css: resolve(__dirname, 'src/css'),
+            $json: resolve(__dirname, 'src/json'),
+        },
+
+        extensions: ['.js', '.json'],   // 配置省略文件路径后缀名的规则
+
+        // 提醒webpack，解析模块时，去哪个目录下搜索外部依赖
+        modules:[ resolve(__dirname, '../../node_modules'), "node_modules"]
+    }
 }

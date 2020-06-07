@@ -98,23 +98,56 @@ module.exports={
 
     // 5. mode
     mode: 'development',
-    // mode: 'production',
-
-    // 6. 开发服务器 devServer
-    devServer:{
-        // 指定编译结果目录
-        contentBase: resolve(__dirname, "build"),
-        // 开启gzip压缩，使结果更小更快
-        compress: true,
-        // 指定服务器的端口号
-        port: 8888,
-        // 启动后，自动打开浏览器
-        // open: true,
-
-        // 7. 开启 HMR功能
-        hot: true,
-    },
 
     // 8. source-map 配置
     devtool: 'eval-source-map',
+
+    // 6. 开发服务器 devServer
+    devServer:{
+        // 6.1. 代码运行及监视
+        contentBase: resolve(__dirname, 'build'),
+        watchContentBase: true,
+        watchOptions:{
+            ignored: /node_modules/,    // 监视文件时，忽略某些文件
+        },
+
+        // 6.2. 控制日志输出
+        clientLogLevel:'none',
+        // quiet: true,
+        overlay:false,                  // 如果出错了，不要全屏提示，打印到控制台日志中
+
+        // 6.3. 访问设置
+        port: 5000,
+        host:'localhost',
+        open: false,                    // 是否自动打开浏览器
+        // 设置服务器代理 --> 用于解决开发环境的跨域问题
+        proxy: {
+            // 当devServer(5000)服务器接收到 /api/xxx 开头的请求，就会把请求转发到另一个服务器(3000)
+            '/api': {
+                target: 'http://localhost:3000',
+                // 发送请求时，请求路径重写: 将 /api/xx 改成 /xxx
+                pathRewrite:{
+                    '^api':''
+                }
+            }
+        },
+
+        // 6.4. 优化设置
+        compress: true,             // 是否开启gzip压缩
+        hot: true,                  // 是否开启HMR功能
+    },
+
+    // 9. 配置模块解析规则
+    resolve:{
+        alias:{                     // 配置解析模块路径别名
+            $css: resolve(__dirname, 'src/css'),
+            $json: resolve(__dirname, 'src/json'),
+        },
+
+        extensions: ['.js', '.json'],   // 配置省略文件路径后缀名的规则
+
+        // 提醒webpack，解析模块时，去哪个目录下搜索外部依赖
+        modules:[ resolve(__dirname, '../../node_modules'), "node_modules"]
+    }
+
 }
