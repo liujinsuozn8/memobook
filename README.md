@@ -37,10 +37,12 @@
 
 - 数据库
     - mysql
-        - [基本知识](mysql/base/base.md)
-    - nosql
-        - redis
-            - [基本知识](nosql/redis/base/base.md)
+        - [基本知识](database/mysql/base/base.md)
+    - oracle
+        - oracle基础
+            - [oracle体系结构](database/oracle/base/structure.md)
+    - redis
+        - [基本知识](database/redis/base/base.md)
 
 - 开发语言
     - java
@@ -58,7 +60,17 @@
         - jdk源码分析
             - [集合框架](java/jdkAnalyze/collection.md)
     - javascript
-        - [基本知识](javascript/base/base.md)
+        - 基础
+            - [基本知识](javascript/base/base.md)
+            - [dom操作](javascript/base/dom.md)
+            - [bom操作](javascript/base/bom.md)
+        - [js原理](javascript/underlyingPrinciple/base.md)
+        - es标准
+            - [es5、es6、es7](javascript/es/567.md)
+        - 模块化开发
+            - [模块化标准- commonjs、AMD、ES6](javascript/module/base/base.md)
+            - webpack
+                - [webpack的基本使用方法](javascript/module/webpack/base.md)
     - go
         - [基本知识](go/base.md)
         - [并发](go/multithreading/multithreading.md)
