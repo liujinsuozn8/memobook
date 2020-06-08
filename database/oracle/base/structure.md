@@ -617,6 +617,9 @@
     |user_objects|数据库对象的名称、类型及其他信息|`select object_name, object_type from user_objects where object_name like '%A%';`|
     |user_triggers|触发器的名称、类型及其他信息|`select trigger_name, trigger_type from user_triggers;`|
     |user_indexes|索引的名称、索引所属的数据表的名称|`select index_name, table_name from user_indexes;`|
+    |user_cons_columns|表约束字段视图、数码了哪些字段属于那些约束|`select owner,constraint_name,table_name,column_name from user_cons_columns where table_name='<表名>' and constraint_name in '<约束名>'`|
+
+
 
 - `all_` 视图中的常用数据字典视图
 
