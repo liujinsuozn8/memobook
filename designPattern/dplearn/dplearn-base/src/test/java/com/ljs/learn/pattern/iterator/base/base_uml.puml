@@ -1,0 +1,79 @@
+@startuml
+
+class OutputImpl{
+
+}
+
+note right of OutputImpl
+负责所有学院的输出
+end note
+
+'Aggregate部分
+'学院
+interface College{
+    createIterator():Iterator
+}
+'学院
+class ComputerCollege{
+    createIterator():Iterator
+}
+'学院
+class InfoCollege{
+    createIterator():Iterator
+}
+
+'迭代器部分
+interface Iterator{
+    + hasNext(): boolean
+    + next(): E
+    + remove():void
+}
+
+'学院迭代器
+class ComputerCollegeIterator{
+    + hasNext(): boolean
+    + next(): E
+    + remove():void
+}
+'学院迭代器
+class InfoCollegeIterator{
+    + hasNext(): boolean
+    + next(): E
+    + remove():void
+}
+
+'系
+class Department{
+
+}
+
+class Client{
+
+}
+
+Client -right-> OutputImpl
+Client --> Iterator
+OutputImpl o-- College
+
+Iterator <|... ComputerCollegeIterator
+College <|... ComputerCollege
+
+Iterator <|... InfoCollegeIterator
+College <|... InfoCollege
+
+ComputerCollege --> ComputerCollegeIterator
+InfoCollege --> InfoCollegeIterator
+
+'Client --> Iterator
+'Client --> College
+
+ComputerCollege o--- Department
+ComputerCollegeIterator o--- Department
+
+InfoCollege o--- Department
+InfoCollegeIterator o--- Department
+
+
+
+
+@enduml

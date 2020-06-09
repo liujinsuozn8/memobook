@@ -37,19 +37,19 @@
     - [单例模式形式7-枚举](#单例模式形式7-枚举)
     - [单例模式在JDK中的应用](#单例模式在JDK中的应用)
 - 创建型-工厂模式
-    - [引入问题-pizza订购](#引入问题-pizza订购)
+    - [工厂模式-引入问题-pizza订购](#工厂模式-引入问题-pizza订购)
     - [简单工厂模式](#简单工厂模式)
     - [静态工厂模式](#静态工厂模式)
     - [工厂方法模式](#工厂方法模式)
     - [抽象工厂模式](#抽象工厂模式)
     - [工厂模式总结](#工厂模式总结)
 - 创建型-原型模式
-    - [引入问题-克隆羊](#引入问题-克隆羊)
+    - [原型模式-引入问题-克隆羊](#原型模式-引入问题-克隆羊)
     - [原型模式的基本原理](#原型模式的基本原理)
     - [浅拷贝和深拷贝](#浅拷贝和深拷贝)
     - [原型模式的注意事项和细节](#原型模式的注意事项和细节)
 - 创建型-建造者模式
-    - [引入问题-盖房子](#引入问题-盖房子)
+    - [建造者模式-引入问题-盖房子](#建造者模式-引入问题-盖房子)
     - [建造者模式简介](#建造者模式简介)
     - [使用建造者模式改造引入问题](#使用建造者模式改造引入问题)
     - [建造者模式的注意事项和细节](#建造者模式的注意事项和细节)
@@ -66,18 +66,18 @@
         - [接口配器模式的使用方法](#接口配器模式的使用方法)
     - [适配器模式在SpringMVC中的应用](#适配器模式在SpringMVC中的应用)
 - 结构型-桥接模式
-    - [引入问题-不同品牌的手机编程](#引入问题-不同品牌的手机编程)
+    - [桥接模式-引入问题-多品牌手机管理](#桥接模式-引入问题-多品牌手机管理)
     - [桥接模式简介](#桥接模式简介)
     - [使用桥接模式改进引入问题](#使用桥接模式改进引入问题)
     - [桥接模式的注意事项和细节](#桥接模式的注意事项和细节)
     - [JDBC中的桥接模式](#JDBC中的桥接模式)
 - 结构型-装饰器模式
-    - [问题引入-咖啡订单](#问题引入-咖啡订单)
+    - [装饰器模式-引入问题-咖啡订单](#装饰器模式-引入问题-咖啡订单)
     - [装饰者模式简介](#装饰者模式简介)
     - [使用装饰者模式改进引入问题](#使用装饰者模式改进引入问题)
     - [装饰者模式在JDK中的应用-FilterInputStream](#装饰者模式在JDK中的应用-FilterInputStream)
 - 结构型-组合模式
-    - [引入问题-学校院系展示](#引入问题-学校院系展示)
+    - [组合模式-引入问题-学校院系展示](#组合模式-引入问题-学校院系展示)
     - [组合模式简介](#组合模式简介)
     - [使用组合模式改进引入问题](#使用组合模式改进引入问题)
     - [组合模式在JDK源码中的应用-HashMap](#组合模式在JDK源码中的应用-HashMap)
@@ -88,35 +88,42 @@
     - [Cglib代理](#Cglib代理)
     - [代理模式的变体](#代理模式的变体)
 - 结构型-外观模式
-    - [引入问题-组件家庭影院](#引入问题-组件家庭影院)
+    - [外观模式-引入问题-组件家庭影院](#外观模式-引入问题-组件家庭影院)
     - [外观模式简介](#外观模式简介)
     - [外观模式的注意事项和细节](#外观模式的注意事项和细节)
     - [外观模式解决引入问题](#外观模式解决引入问题)
 - 结构型-享元模式
-    - [引入问题-展示网站](#引入问题-展示网站)
+    - [享元模式-引入问题-展示网站](#享元模式-引入问题-展示网站)
     - [享元模式简介](#享元模式简介)
     - [享元模式的原理](#享元模式的原理)
     - [享元模式的注意事项和细节](#享元模式的注意事项和细节)
     - [使用享元模式改进引入问题](#使用享元模式改进引入问题)
     - [享元模式在JDK中的使用-Integer源码解析](#享元模式在JDK中的使用-Integer源码解析)
 - 行为型-模版方法模式
-    - [引入问题-制作豆浆](#引入问题-制作豆浆)
+    - [模版模式-引入问题-制作豆浆](#模版模式-引入问题-制作豆浆)
     - [模版方法模式简介](#模版方法模式简介)
     - [模版方法模式原理](#模版方法模式原理)
     - [模版方法模式实现引入问题](#模版方法模式实现引入问题)
     - [模版方法模式的钩子方法](#模版方法模式的钩子方法)
     - [模版方法模式在Spring中的应用-IOC源码解析](#模版方法模式在Spring中的应用-IOC源码解析)
 - 行为型-命令模式
-    - [引入问题-智能生活项目需求](#引入问题-智能生活项目需求)
+    - [命令模式-引入问题-智能生活项目需求](#命令模式-引入问题-智能生活项目需求)
     - [命令模式简介](#命令模式简介)
     - [命令模式原理](#命令模式原理)
     - [命令模式在Spring中的应用-JdbcTempate源码解析](#命令模式在Spring中的应用-JdbcTempate源码解析)
 - 行为型-访问者模式
-    - [引入问题-测评系统](#引入问题-测评系统)
+    - [访问者模式-引入问题-测评系统](#访问者模式-引入问题-测评系统)
     - [访问者模式简介](#访问者模式简介)
     - [访问者模式的原理](#访问者模式的原理)
     - [使用访问者模式实现引入问题](#使用访问者模式实现引入问题)
     - [访问者模式的注意事项和细节](#访问者模式的注意事项和细节)
+- 行为型-迭代器模式
+    - [迭代器模式-引入问题-学校院系展示](#迭代器模式-引入问题-学校院系展示)
+    - [迭代器模式简介](#迭代器模式简介)
+    - [迭代器模式原理](#迭代器模式原理)
+    - [迭代器模式实现引入问题](#迭代器模式实现引入问题)
+    - [迭代器模式在JDK中的应用--ArrayList分析](#迭代器模式在JDK中的应用--ArrayList分析)
+    - [迭代器模式的注意实事项和细节](#迭代器模式的注意实事项和细节)
 - [](#)
 - [](#)
 
@@ -1167,7 +1174,6 @@
         - 菱形指向整体
     - 组合关系也是整体和部分的关系，但是**整体和部分不可分开**
         - 不可分开即同时创建，同时销毁，无法相互分离
-        - 如：
     - 示例
         - 参考代码：[/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/UML/composition/Composition.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/UML/composition/Composition.java)
             ```java
@@ -1801,7 +1807,7 @@
 - `java.lang.Runtime`采用的是饿汉式-静态常量的方式
 
 # 创建型-工厂模式
-## 引入问题-pizza订购
+## 工厂模式-引入问题-pizza订购
 [top](#catalog)
 - 需求
     - 披萨店项目：要便于披萨种类的扩展，要便于维护
@@ -2367,7 +2373,7 @@
     - 不要覆盖基类中已经实现的方法
  
 # 创建型-原型模式
-## 引入问题-克隆羊
+## 原型模式-引入问题-克隆羊
 [top](#catalog)
 - 需求
     1. 创建一只羊
@@ -2692,7 +2698,7 @@
     - 需要为每一个类实现`Cloneable`接口，对于已有的类，需要直接修改源代码，违反了ocp原则   
 
 # 创建型-建造者模式
-## 引入问题-盖房子
+## 建造者模式-引入问题-盖房子
 [top](#catalog)
 - 需求
     - 需要建房子：这一过程为打桩、砌墙、封顶
@@ -3302,7 +3308,7 @@ P64
 
 
 # 结构型-桥接模式
-## 引入问题-不同品牌的手机编程
+## 桥接模式-引入问题-多品牌手机管理
 [top](#catalog)
 - 需求
     - 实现对不同手机类型的不同品牌实现操作编程，包括：开机、关机、上网、打电话等
@@ -3550,7 +3556,7 @@ P64
 
 
 # 结构型-装饰器模式
-## 问题引入-咖啡订单
+## 装饰器模式-引入问题-咖啡订单
 [top](#catalog)
 - 需求
     - 咖啡：Espresso(意大利浓咖啡)、ShortBlack、LongBlack(美式咖啡)、Decaf(无因咖啡)
@@ -3804,7 +3810,7 @@ P64
     - 所以在jdk的io体系中，使用了装饰者模式增加了抽象主体`InputStream`的功能
 
 # 结构型-组合模式
-## 引入问题-学校院系展示
+## 组合模式-引入问题-学校院系展示
 [top](#catalog)
 - 需求
     - 在一个页面中展示出学校的院系组成
@@ -4355,7 +4361,7 @@ P64
     - 主要使用在多线程编程中，完成多线程间同步工作
 
 # 结构型-外观模式
-## 引入问题-组件家庭影院
+## 外观模式-引入问题-组件家庭影院
 [top](#catalog)
 - 所需内容
     - DVD播放器、投影仪、自动屏幕、环绕立体声、爆米花机
@@ -4594,7 +4600,7 @@ P64
         ```
 
 # 结构型-享元模式
-## 引入问题-展示网站
+## 享元模式-引入问题-展示网站
 [top](#catalog)
 - 同样的一套展示网站架构，不同用户有不同的需求，包括
     - 以新闻的形式发布展示内容
@@ -4896,7 +4902,7 @@ P64
         ```
 
 # 行为型-模版方法模式
-## 引入问题-制作豆浆
+## 模版模式-引入问题-制作豆浆
 [top](#catalog)
 - 编写制作豆浆的程序
     1. 制作流程：选材 --> 添加配料 --> 浸泡 --> 放入豆浆机打磨
@@ -5247,7 +5253,7 @@ P64
         ```
 
 # 行为型-命令模式
-## 引入问题-智能生活项目需求
+## 命令模式-引入问题-智能生活项目需求
 [top](#catalog)
 - 需求
     - 购买一套智能家电，包括照明灯、风扇、冰箱、洗衣机，只要在手机上安装app就能控制智能家电工作
@@ -5580,7 +5586,7 @@ P64
     ```
 
 # 行为型-访问者模式
-## 引入问题-测评系统
+## 访问者模式-引入问题-测评系统
 [top](#catalog)
 - 需求
     - 将观众分为男人和女人，对歌手进行测评。当看完某个歌手表演后，给出对该歌手的评价
@@ -5793,4 +5799,372 @@ P64
         - 数据结构相对稳定 ---> 具体 Element 稳定
         - 经常变化的功能需求 ---> 多样化的访问者
         - 即在稳定的数据结构之上，通过方法的扩展
+
+# 行为型-迭代器模式
+## 迭代器模式-引入问题-学校院系展示
+[top](#catalog)
+- 与组合模式的引入问题类似
+    - 参考：[组合模式-引入问题-学校院系展示](#组合模式-引入问题-学校院系展示)
+- 编写程序展示一个学校院系结构
+    - 要在一个页面中展示出学校的院系组成
+    - 一个学校有多个学院
+    - 一个学院有多个系
+
+- 实现中的问题
+    - 将需求转化为树型结构之后，每个结点中保存子节点的方式不同
+    - 保存方式包括：数组、集合、Map等等，无法提供统一的遍历方式
+    
+- 解决方法
+    - 使用迭代器模式
+
+## 迭代器模式简介
+[top](#catalog)
+- 迭代器模式，Iterator Pattern
+- 迭代器模式的作用
+    - 提供一种遍历元素的统一接口，用一致的方法遍历集合元素
+    - 遍历时，不需要知道集合对象的底层结构，即不会暴露元素的内部结构
+- 适用场景
+    - 集合元素是用不同方式实现的，需要统一的方式来遍历集合
+
+## 迭代器模式原理
+[top](#catalog)
+- 原理类图
+    - uml代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/iterator/principle_uml.puml](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/iterator/principle_uml.puml)
+    - 图
+        - ![imgs/pattern/iterator/principle_uml.png](imgs/pattern/iterator/principle_uml.png)
+        
+- 角色划分
+    - Iterator: 迭代器接口
+        - 由java提供
+    - ConcreteIterator: 具体迭代器类
+        - 负责迭代
+    - Aggregate: 聚合器接口
+        - 一个统一的集合聚合接口，实现类内部需要聚合了一个集合
+        - 负责将客户端和具体集合解耦
+    - ConcreteAggregate: 聚合器实现类
+        - 具体的集合持有类，
+        - 对外提供一个方法，**返回/生成一个迭代器**，该迭代器可以进行集合遍历
+
+## 迭代器模式实现引入问题
+[top](#catalog)
+- UML图
+    - uml代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/iterator/base/base_uml.puml](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/iterator/base/base_uml.puml)
+    - 图
+        - ![base_uml](imgs/pattern/iterator/base/base_uml.png)
+- 聚合器与迭代器接口
+    - 参考代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/iterator/base/aggregate/College.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/iterator/base/aggregate/College.java)
+    - 代码内容
+        ```java
+        public interface College {
+            Iterator createIterator();
+        
+            // 返回当前学院的名称
+            String getName();
+        
+            // 增加系的方法
+            void addDepartment(String name, String desc);
+        }
+        ```
+- 聚合器与迭代器实现--迭代数组
+    - 参考代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/iterator/base/aggregate/ComputerCollege.java/Users/liujinsuo/myGit/memobook/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/iterator/base/aggregate/ComputerCollege.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/iterator/base/aggregate/ComputerCollege.java/Users/liujinsuo/myGit/memobook/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/iterator/base/aggregate/ComputerCollege.java)
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/iterator/base/iter/ComputerCollegeIterator.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/iterator/base/iter/ComputerCollegeIterator.java)
+    - 代码内容
+        ```java
+        public class ComputerCollege implements College {
+            Department[] ds;
+            // 保存当前数组的对象个数
+            int numOfDs = 0;
+        
+            public ComputerCollege() {
+                ds = new Department[5];
+            }
+        
+            @Override
+            public Iterator createIterator() {
+                return new ComputerCollegeIterator(this.ds);
+            }
+        
+            @Override
+            public String getName() {
+                return "Computer College";
+            }
+        
+            @Override
+            public void addDepartment(String name, String desc) {
+                Department d = new Department(name, desc);
+                ds[numOfDs] = d;
+                numOfDs++;
+            }
+        }
+        ```
+        ```java
+        public class ComputerCollegeIterator implements Iterator {
+            // 需要知道Department是以怎样过的方式保存的
+            Department[] ds;
+            int position=0; //遍历的位置
+        
+            public ComputerCollegeIterator(Department[] ds) {
+                this.ds = ds;
+            }
+        
+            // 判断是否还有下一个元素
+            @Override
+            public boolean hasNext() {
+                if (position >= ds.length || ds[position] == null){
+                    return false;
+                } else {
+                    return true;
+                }
+            }
+        
+            @Override
+            public Object next() {
+                Department d = ds[position];
+                position ++;
+                return d;
+            }
+        
+            // 删除方法，默认空实现
+            @Override
+            public void remove() {
+        
+            }
+        }
+        ```
+- 聚合器与迭代器实现--迭代ArrayLost
+    - 参考代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/iterator/base/aggregate/InfoCollege.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/iterator/base/aggregate/InfoCollege.java)
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/iterator/base/iter/InfoCollegeIterator.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/iterator/base/iter/InfoCollegeIterator.java)
+    - 代码内容
+        ```java
+        public class InfoCollege implements College {
+            List<Department> ds;
+            // 保存当前数组的对象个数
+            int numOfDs = 0;
+        
+            public InfoCollege() {
+                ds = new ArrayList<>();
+            }
+        
+            @Override
+            public Iterator createIterator() {
+                return new InfoCollegeIterator(this.ds);
+            }
+        
+            @Override
+            public String getName() {
+                return "Info College";
+            }
+        
+            @Override
+            public void addDepartment(String name, String desc) {
+                Department d = new Department(name, desc);
+                ds.add(d) ;
+            }
+        }
+        ```
+        ```java
+        public class InfoCollegeIterator implements Iterator {
+            // 需要知道Department是以怎样过的方式保存的
+            List<Department> ds;
+            int position=-1; //遍历的位置
+        
+            public InfoCollegeIterator(List<Department> ds) {
+                this.ds = ds;
+            }
+        
+            // 判断是否还有下一个元素
+            @Override
+            public boolean hasNext() {
+                if (position >= ds.size() - 1){
+                    return false;
+                } else {
+                    position++;
+                    return true ;
+                }
+            }
+        
+            @Override
+            public Object next() {
+                Department d = ds.get(position);
+                return d;
+            }
+        
+            // 删除方法，默认空实现
+            @Override
+            public void remove() {
+        
+            }
+        }
+        ```
+- 输出器
+    - 参考代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/iterator/base/OutputImpl.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/iterator/base/OutputImpl.java)
+    -  代码内容
+        ```java
+        public class OutputImpl {
+            // 学院的集合
+            List<College> cs;
+        
+            public OutputImpl(List<College> cs) {
+                this.cs = cs;
+            }
+        
+            // 遍历所有学院，然后调用printDepartment遍历学院下的系
+            public void printCollege(){
+                // 取出所有学院
+                // java中的List已经实现了Iterator
+                Iterator<College> iterator = cs.iterator();
+                while (iterator.hasNext()){
+                    // 取出一个学院
+                    College c = iterator.next();
+                    System.out.println(c.getName());
+                    // 得到对应的迭代器
+                    printDepartment(c.createIterator());
+                }
+            }
+        
+            // 输出系
+            public void printDepartment(Iterator iter){
+                while (iter.hasNext()){
+                    Department d =(Department) iter.next();
+                    System.out.println(d.getName());
+                }
+            }
+        }
+        ```
+- 测试类
+    - 参考代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/iterator/base/Client.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/iterator/base/Client.java)
+    - 测试内容
+        ```java
+        @Test
+        public void test01(){
+            // 创建学院和系
+            ComputerCollege computerCollege = new ComputerCollege();
+            computerCollege.addDepartment("Da", "Da");
+            computerCollege.addDepartment("Db", "Db");
+            computerCollege.addDepartment("Dc", "Dc");
+            computerCollege.addDepartment("Dd", "Dd");
+    
+            InfoCollege infoCollege = new InfoCollege();
+            infoCollege.addDepartment("ia", "ia");
+            infoCollege.addDepartment("ib", "ib");
+            infoCollege.addDepartment("ic", "ic");
+            infoCollege.addDepartment("id", "id");
+    
+            // 创建学院集合
+            List<College> cs = new ArrayList<>();
+            cs.add(computerCollege);
+            cs.add(infoCollege);
+    
+            // 创建输出器，并打印
+            OutputImpl output = new OutputImpl(cs);
+            output.printCollege();
+        }
+        ```
+
+## 迭代器模式在JDK中的应用--ArrayList分析
+[top](#catalog)
+- 使用示例
+    - 参考代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/iterator/jdkAnalyze/ArrayListTest.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/iterator/jdkAnalyze/ArrayListTest.java)
+    - 代码内容
+        ```java
+        @Test
+        public void tet01(){
+            // 1. 获得一个聚合器接口实例
+            List<String> a = new ArrayList<>();
+            a.add("aaaa");
+            a.add("bbbb");
+            a.add("cccc");
+    
+            // 2. 创建迭代器
+            Iterator<String> iter = a.iterator();
+    
+            // 3. 开始迭代
+            while( iter.hasNext() ){
+                System.out.println(iter.next());
+            }
+        }
+        ```
+- 原理类图
+    - uml代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/iterator/jdkAnalyze/arraylist_uml.puml](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/iterator/jdkAnalyze/arraylist_uml.puml)
+    - 图
+        - ![arraylist_uml](imgs/pattern/iterator/jdk_analyze/arraylist_uml.png)
+
+- 原理说明
+    - ArrayList是聚合器，List接口是聚合器 接口
+        ```java
+        public class ArrayList<E> extends AbstractList<E>
+                implements List<E>, RandomAccess, Cloneable, java.io.Serializable
+        {
+            // 集合对象
+            transient Object[] elementData;
+            
+            // // 调用内部类生成迭代器
+            public Iterator<E> iterator() {
+                return new Itr();
+            }
+        }
+        ```
+    - Itr是迭代器实现，以内部类的方式存在于ArrayList
+        - 由于是内部类，所以没有通过构造器或setter来设置集合对象，而是直接使用父类中的集合对象
+        ```java
+        private class Itr implements Iterator<E> {
+            int cursor;       // index of next element to return
+            int lastRet = -1; // index of last element returned; -1 if no such
+            int expectedModCount = modCount;
+        
+            // prevent creating a synthetic constructor
+            Itr() {}
+        
+            public boolean hasNext() {
+                return cursor != size;
+            }
+        
+            @SuppressWarnings("unchecked")
+            public E next() {
+                checkForComodification();
+                int i = cursor;
+                if (i >= size)
+                    throw new NoSuchElementException();
+                // 直接使用父类中的集合对象来进行迭代
+                Object[] elementData = ArrayList.this.elementData;
+                if (i >= elementData.length)
+                    throw new ConcurrentModificationException();
+                cursor = i + 1;
+                return (E) elementData[lastRet = i];
+            }
+        
+            public void remove() {
+                //....
+            }
+            // 其他方法
+            // ...
+        }
+        ```
+
+## 迭代器模式的注意实事项和细节
+[top](#catalog)
+- 适用场景
+    - 当需要展示一组相似对象，或者遍历相同对象时
+- 优点
+    - 提供统一的方法遍历对象，使用时不用考虑聚合对象的类型
+        - 聚合对象的类型及其遍历方法全部封装在迭代器内部，所以可以通过统一的方法遍历
+    - 隐藏了聚合对象的内部结构。在遍历时，只会获取到迭代器，而不会知道聚合器的具体组成
+    - 提供了一种设计思想：一个类应该只有一个引起变化的原因，即单一职责原则
+        - 即一个对象负责遍历，一个对象负责存储数据
+        - 在聚合器中，将迭代器分开，就是要把集合管理器、集合迭代器的责任分开
+            - 如数据存储在 ArrayList，遍历由 Itr 来执行
+        - 如果集合发生变化，只会影响到聚合器；如果遍历方式发生变化，只会影响迭代器
+
+- 缺点
+    -  每个聚合对象都需要一个迭代器，会生成多个迭代器不好管理
+
 [top](#catalog)

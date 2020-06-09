@@ -1,0 +1,52 @@
+@startuml
+
+interface Iterator{
+    + hasNext(): boolean
+    + next(): E
+    + remove():void
+}
+
+-class ArrayList.Itr{
+    + hasNext(): boolean
+    + next(): E
+    + remove():void
+}
+
+interface List{
+    + iterator(): Iterator
+}
+
+class ArrayList{
+    - elements: Object[]
+    + iterator(): Iterator
+}
+
+class Object{
+
+}
+
+class Client{
+
+}
+
+note top of List
+List 充当了聚合器接口
+end note
+
+List <|... ArrayList
+
+Iterator <|... ArrayList.Itr
+
+note top of ArrayList.Itr
+ArrayList.Itr是内部类，
+所以两者是组合关系
+end note
+ArrayList.Itr -right-* ArrayList
+
+ArrayList o-- Object
+ArrayList.Itr --> Object
+
+Client  ---> List
+Client  ---> Iterator
+
+@enduml
