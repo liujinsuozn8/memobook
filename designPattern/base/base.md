@@ -111,6 +111,12 @@
     - [命令模式简介](#命令模式简介)
     - [命令模式原理](#命令模式原理)
     - [命令模式在Spring中的应用-JdbcTempate源码解析](#命令模式在Spring中的应用-JdbcTempate源码解析)
+- 行为型-访问者模式
+    - [引入问题-测评系统](#引入问题-测评系统)
+    - [访问者模式简介](#访问者模式简介)
+    - [访问者模式的原理](#访问者模式的原理)
+    - [使用访问者模式实现引入问题](#使用访问者模式实现引入问题)
+    - [访问者模式的注意事项和细节](#访问者模式的注意事项和细节)
 - [](#)
 - [](#)
 
@@ -5285,7 +5291,7 @@ P64
     - 使对象之间的调用关系更加灵活
 
 - 命令模式的缺点
-    - 系统可能会有过多的具体命令类，增加了系统的负责度
+    - 系统可能会有过多的具体命令类，增加了系统的复杂度
     
 - 命令模式的经典应用场景
     - 界面，界面中的每一个按钮都是一条命令
@@ -5542,36 +5548,249 @@ P64
             this.execute((StatementCallback)(new ExecuteStatementCallback()));
         }
         
-            @Nullable
-            public <T> T execute(StatementCallback<T> action) throws DataAccessException {
-                Assert.notNull(action, "Callback object must not be null");
-                Connection con = DataSourceUtils.getConnection(this.obtainDataSource());
-                Statement stmt = null;
-        
-                Object var11;
-                try {
-                    stmt = con.createStatement();
-                    this.applyStatementSettings(stmt);
-                    // 相当于 Invoker，执行了指令中的方法，然后递归给棋坛资源使用
-                    T result = action.doInStatement(stmt);
-                    this.handleWarnings(stmt);
-                    var11 = result;
-                } catch (SQLException var9) {
-                    String sql = getSql(action);
-                    JdbcUtils.closeStatement(stmt);
-                    stmt = null;
-                    DataSourceUtils.releaseConnection(con, this.getDataSource());
-                    con = null;
-                    throw this.translateException("StatementCallback", sql, var9);
-                } finally {
-                    JdbcUtils.closeStatement(stmt);
-                    DataSourceUtils.releaseConnection(con, this.getDataSource());
-                }
-        
-                return var11;
+        @Nullable
+        public <T> T execute(StatementCallback<T> action) throws DataAccessException {
+            Assert.notNull(action, "Callback object must not be null");
+            Connection con = DataSourceUtils.getConnection(this.obtainDataSource());
+            Statement stmt = null;
+    
+            Object var11;
+            try {
+                stmt = con.createStatement();
+                this.applyStatementSettings(stmt);
+                // 相当于 Invoker 执行了指令中的方法，然后给其他资源使用
+                T result = action.doInStatement(stmt);
+                this.handleWarnings(stmt);
+                var11 = result;
+            } catch (SQLException var9) {
+                String sql = getSql(action);
+                JdbcUtils.closeStatement(stmt);
+                stmt = null;
+                DataSourceUtils.releaseConnection(con, this.getDataSource());
+                con = null;
+                throw this.translateException("StatementCallback", sql, var9);
+            } finally {
+                JdbcUtils.closeStatement(stmt);
+                DataSourceUtils.releaseConnection(con, this.getDataSource());
             }
+    
+            return var11;
+        }
     }
     ```
 
+# 行为型-访问者模式
+## 引入问题-测评系统
+[top](#catalog)
+- 需求
+    - 将观众分为男人和女人，对歌手进行测评。当看完某个歌手表演后，给出对该歌手的评价
+    - 评价有不同的种类，如成功、失败等
+- 传统方案
+    - 实现方式
+        - 子类继承父类，并在子类中提供返回结果的方法 
+        ```
+              Person
+                │
+           ┌────┴────┐
+         man        woman
+        ```
+    - 存在的问题
+        - 随着系统增加越来越多的新功能时，对代码改动较大，违反了ocp原则
+        - 扩展性不好。比如增加了新的人员类型、管理方法、评价方式等，都不太容易
 
+## 访问者模式简介
+[top](#catalog)
+- 什么是 访问者模式 （Visitor Pattern）
+    - 封装一些作用于某种数据结构元素的操作。在不改变数据结构的前提下，定义作用于这些元素的新操作
+- 作用 
+    - 用于将数据结构和数据操作分离，解决数据结构和操作耦合性问题
+
+- 应用场景
+    - 需要对一个对象结构中的对象进行很多不同操作，同时需要避免让这些操作影响这些类 
+    
+## 访问者模式的原理
+[top](#catalog)
+- 在被访问的类中，添加一个对外提供接待访问者的接口
+- 原理类图
+    - uml代码
+        - [/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/visitor/principle_uml.puml](/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/visitor/principle_uml.puml)
+        
+    - 图
+        - ![principle_uml](imgs/pattern/visitor/principle_uml.png)
+
+- 角色划分
+    - Visitor，抽象访问者
+        - 为所有子类添加一个visit方法
+    - ConcreteVisitor，具体访问者
+        - 实现 Visitor 声明的操作，是每个操纵的实现部分
+    - ObjectStructure，对象结构
+        - 可以枚举它的元素
+        - 可以提供一个高层的接口，用来**允许访问者访问内部元素**
+    - Element，抽象元素
+        - 定义了一个`accept`方法，接收一个访问者对象
+    - ConcreteElement，具体元素
+        - 实现了`accept`方法
+
+- Element 提供的功能
+    - 向外部暴露一个方法，来接收访问者。
+    - 在暴露的方法内将 Element 自身作为参数提供给访问者，使访问者完成访问
+- ObjectStructure 提供的功能
+    - 将 Element 保存到 ObjectStructure 中
+    - 暴露一个方法接收访问者，并以统一的方法，使访问者访问内部的每一个 Element
+
+- 对于调用者
+    - 调用者关联 ObjectStructure 和 访问者
+    - 通过 ObjectStructure 对外暴露的方法，使访问者统一访问内部的 Element 
+
+- 模式的整体---双分派的应用
+    1. 第一次分派：在Client中，将访问者传入 对象结构
+    2. 第二次分派：在ConcreteElement内部，将 自身作为参数传递给访问者，使访问者完整访问操作
+
+- 什么是双分派
+    - 双分派是指无论类如何变化，都能找到期望的方法运行
+    - 双分派意味着得到执行的操作取决于请求的种类和接受者两个类型
+
+## 使用访问者模式实现引入问题
+[top](#catalog)
+- UML图
+    - uml代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/visitor/base/base_uml.puml](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/visitor/base/base_uml.puml)
+    - 图
+        - ![base_uml](imgs/pattern/visitor/base/base_uml.png)
+- 角色分析
+    - 访问者：
+        - 接口/抽象类：Action
+        - 实现类：Success、Fail
+    - 元素
+        - 接口/抽象类：Person
+        - 实现类：Man、Woman
+    - 对象结构
+        - ObjectStructure
+
+- 如果添加了新投票方式 Wait，即新的访问者
+    - Wait 只需要继承并实现 Action，不用修改 Person 部分，
+    - 使用时，直接通过 ObjectStructure 注入 Wait 即可
+
+- 访问者
+    - 参考代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/visitor/base/Action.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/visitor/base/Action.java)
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/visitor/base/Fail.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/visitor/base/Fail.java)
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/visitor/base/Success.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/visitor/base/Success.java)
+    - 代码内容
+        ```java
+        public abstract class Action {
+            // 得到男性的测评
+            public abstract void getManResult(Man  man);
+            // 得到女性的测评
+            public abstract void getWomanResult(Woman  woman);
+        }
+        ```
+        ```java
+        public class Fail extends Action {
+            @Override
+            public void getManResult(Man man) {
+                System.out.println("man fail");
+            }
+        
+            @Override
+            public void getWomanResult(Woman woman) {
+                System.out.println("woman fail");
+            }
+        }
+        ```
+        ```java
+        public class Success extends Action {
+            @Override
+            public void getManResult(Man man) {
+                System.out.println("man success");
+            }
+        
+            @Override
+            public void getWomanResult(Woman woman) {
+                System.out.println("woman  success");
+            }
+        }
+        ```
+
+- 元素
+    - 参考代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/visitor/base/Person.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/visitor/base/Person.java)
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/visitor/base/Man.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/visitor/base/Man.java)
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/visitor/base/Woman.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/visitor/base/Woman.java)
+    - 代码内容
+        ```java
+        public abstract class Person {
+            // 提供一个方法，让访问者可以访问
+            public abstract void accept(Action action);
+        }
+        ```
+        ```java
+        // 双分派的第二次分派
+        // 1. 第一次分派：在客户端程序中，将具体状态作为参数传递到Woman中
+        // 2. 第二次分派：Woman类调用作为参数的具体方法 getWomanResult，
+        //              同时将自己作为参数传入
+        public class Man extends Person {
+            @Override
+            public void accept(Action action) {
+                action.getManResult(this);
+            }
+        }
+        ```
+        ```java
+        // 双分派的第二次分派
+        // 1. 第一次分派：在客户端程序中，将具体状态作为参数传递到Woman中
+        // 2. 第二次分派：Woman类调用作为参数的具体方法 getWomanResult，
+        //              同时将自己作为参数传入
+        public class Woman extends Person {
+            @Override
+            public void accept(Action action) {
+                action.getWomanResult(this);
+            }
+        }
+        ```
+- Client
+    - 参考代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/visitor/base/Client.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/visitor/base/Client.java)
+    - 代码内容
+        ```java
+        @Test
+        public void test01(){
+            ObjectStructure os = new ObjectStructure();
+    
+            os.attach(new Man());
+            os.attach(new Woman());
+            os.attach(new Woman());
+            os.attach(new Man());
+    
+            Success success = new Success();
+    
+            // 双分派的第一次分派
+            // 1. 第一次分派：在客户端程序中，将具体状态作为参数传递到Woman中
+            // 2. 第二次分派：Woman类调用作为参数的具体方法 getWomanResult，
+            //              同时将自己作为参数传入
+            os.display(success);
+        }
+        ```
+
+## 访问者模式的注意事项和细节
+[top](#catalog)
+- 优点
+    - 访问者模式符合单一职责原则，让程序具有优秀的扩展性，灵活性非常高
+    - 访问者可以对功能进行统一，适用于：报表、UI、拦截器、过滤器
+- 缺点
+    - 违反了迪米特法则
+        - 具体元素对访问者公布细节，即访问者知道了类的内部细节
+        - 在修改具体元素时，比较困难
+    - 违背了依赖倒转原则
+        - 访问者依赖的是具体元素，而不是抽象元素
+            - 如下的两个方法依赖了具体元素，但是可以通过接口化来解决
+                ```java
+                public void getManResult(Man man)
+                public void getWomanResult(Woman woman)
+                ```
+- 适用的场景
+    - **数据结构相对稳定**的，同时又有经常变化的功能需求的系统
+        - 数据结构相对稳定 ---> 具体 Element 稳定
+        - 经常变化的功能需求 ---> 多样化的访问者
+        - 即在稳定的数据结构之上，通过方法的扩展
 [top](#catalog)

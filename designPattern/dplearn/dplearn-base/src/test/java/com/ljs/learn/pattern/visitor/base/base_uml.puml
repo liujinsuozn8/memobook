@@ -1,0 +1,50 @@
+@startuml
+
+abstract class Action{
+    + getManResult(man: Man): void
+    + getWomanResult(woman: Woman): void
+}
+
+class Success{
+    + getManResult(man: Man): void
+    + getWomanResult(woman: Woman): void
+}
+
+class Fail{
+    + getManResult(man: Man): void
+    + getWomanResult(woman: Woman): void
+}
+
+abstract class Person{
+    + accept(action: Action): void
+}
+
+class Man{
+    + accept(action: Action): void
+}
+
+class Woman{
+    + accept(action: Action): void
+}
+
+class ObjectStructure{
+    - elements:Person
+    + display(action: Action): void
+}
+
+class client{
+}
+
+Action <|-- Success
+Action <|-- Fail
+
+Action  <--- Person
+Person <|-- Man
+Person <|-- Woman
+
+ObjectStructure  o-right- Person
+
+client  -right-> Action
+client  -right-> ObjectStructure
+
+@enduml
