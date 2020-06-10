@@ -20,9 +20,4 @@ public class Client {
         weatherData.setData(10,20,30);
         weatherData.setData(300,200,1000);
     }
-
-    @Test
-    public void test02(){
-        Observable
-    }
 }
