@@ -124,7 +124,11 @@
     - [迭代器模式实现引入问题](#迭代器模式实现引入问题)
     - [迭代器模式在JDK中的应用--ArrayList分析](#迭代器模式在JDK中的应用--ArrayList分析)
     - [迭代器模式的注意实事项和细节](#迭代器模式的注意实事项和细节)
-- [](#)
+- [行为型-观察者模式](#行为型-观察者模式)
+    - [观察者模式-引入问题-天气预报项目](#观察者模式-引入问题-天气预报项目)
+    - [传统方案-自动推送方式的实现](#传统方案-自动推送方式的实现)
+    - [观察者模式原理](#观察者模式原理)
+    - [观察者模式在JDK中的应用-Observable分析](#观察者模式在JDK中的应用-Observable分析)
 - [](#)
 
 
@@ -6166,5 +6170,295 @@ P64
 
 - 缺点
     -  每个聚合对象都需要一个迭代器，会生成多个迭代器不好管理
+
+# 行为型-观察者模式
+## 观察者模式-引入问题-天气预报项目
+[top](#catalog)
+- 需求
+    - 气象站可以将每天测量到的数据以公告的形式发布出去
+        - 数据包括：温度、湿度、气压等等
+        - 发布方式包括：自己的网站，或第三方机构发布
+    - 需要设计开发的API，便于其他点放也能介入气象站获取数据
+    - 提供获取温度、湿度、气压的接口
+    - **测试数据更新时，要能够实时的通知给第三方**
+
+- 传统设计方案-方案1: 手动获取数据
+    - uml图
+        - uml代码
+            - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/observer/base/plan01_base_uml.puml](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/observer/base/plan01_base_uml.puml)
+        - 图
+            - ![plan01_base_uml](imgs/pattern/observer/base/plan01_base_uml.png)
+
+    - 设计方法
+        - 通过 `getXxxx` 方法，让第三方接入，并获取相关信息
+        - 气象站也可以通过调用 `dataChange()` 更新数据，统一获得所有的最新数据  
+
+- 传统设计方案-方案2: 自动推送
+    - uml图
+        - uml代码
+            - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/observer/base/plan02_push_uml.puml](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/observer/base/plan02_push_uml.puml)
+        - 图
+            - ![plan01_base_uml](imgs/pattern/observer/base/plan02_push_uml.png)
+    - 设计方法
+        - 由 `WeatherData` 保存获取数据的对象
+        - 在有新数据时，`WeatherData` 主动推送给各个对象
+
+
+- 传统方案的问题
+    1. 其他第三方接入时，需要修改WeatherData中保存的类
+    2. 无法在运行时动态的添加第三方
+    3. 违反了ocp原则
+
+## 传统方案-自动推送方式的实现
+[top](#catalog)
+- 参考代码
+    - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/observer/base/plan02/CurrentConditions.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/observer/base/plan02/CurrentConditions.java)
+    - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/observer/base/plan02/WeatherData.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/observer/base/plan02/WeatherData.java)
+- 代码内容
+    - 气象站/第三方
+        ```java
+        // 显示天气信息状况，相当于气象站/第三方
+        public class CurrentConditions {
+            private float temperature;
+            private float pressure;
+            private float humidity;
+        
+            // 由 WeatherData 对象来调用，使用推送模式
+            public void update(float temperature, float pressure, float humidity){
+                this.temperature = temperature;
+                this.pressure = pressure;
+                this.humidity = humidity;
+                display();
+            }
+        
+            public void display(){
+                System.out.println("temperature = " + temperature);
+                System.out.println("pressure = " + pressure);
+                System.out.println("humidity = " + humidity);
+            }
+        }
+        ```
+    - WeatherData
+        ```java
+        // 保存最新的天气情况信息
+        // 包含一个 CurrentConditions 对象，作为接入方，可以接收数据
+        // 当数据更新时，调用 CurrentConditions.update方法，推送数据
+        public class WeatherData {
+            private float temperature;
+            private float pressure;
+            private float humidity;
+            private CurrentConditions currentConditions;
+        
+            public WeatherData(CurrentConditions currentConditions) {
+                this.currentConditions = currentConditions;
+            }
+        
+            // 将最新的数据推送给 CurrentConditions
+            public void dataChange(){
+                currentConditions.update(getTemperature(), getPressure(), getHumidity());
+            }
+        
+            public void setData(float temperature, float pressure, float humidity){
+                this.temperature = temperature;
+                this.pressure = pressure;
+                this.humidity = humidity;
+                // 将最新的数据推送给 CurrentConditions
+                dataChange();
+            }
+        
+            public float getTemperature() {
+                return temperature;
+            }
+        
+            public float getPressure() {
+                return pressure;
+            }
+        
+            public float getHumidity() {
+                return humidity;
+            }
+        }
+        ```
+    - 测试类
+        - 参考代码
+            - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/observer/base/plan02/Client.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/observer/base/plan02/Client.java)
+        - 测试内容
+            ```java
+            @Test
+            public void test01(){
+                // 创建接入方
+                CurrentConditions currentConditions = new CurrentConditions();
+                WeatherData weatherData = new WeatherData(currentConditions);
+        
+                // 更新并推送数据
+                weatherData.setData(10, 20, 30);
+                weatherData.setData(60, 30, 10);
+            }
+                ```
+
+## 观察者模式原理
+[top](#catalog)
+- 原理类图
+    - uml代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/observer/principle_uml.puml](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/observer/principle_uml.puml)
+    - 图
+        - ![imgs/pattern/observer/principle_uml.png](imgs/pattern/observer/principle_uml.png)
+
+- 角色划分
+    - subject：可观察对象
+        - 用于注册、删除、通知 observer，并以**集合的方式**统一管理Obersver
+        - `registerObserver()`，注册observer
+        - `removeObserver()`，删除observer
+        - `notifyObservers()`，通知所有注册的observer
+            - 根据不同需求，有不同的数据获取方式
+                1. 可以是更新数据，让用户来取
+                2. 主动推送数据
+    - observer：输入接收者，观察者
+    
+- 观察者模式---多对一依赖的一种设计方案
+    - Subject: 被依赖的对象
+    - Observer: 依赖的对象。subject通知observer变化
+    - subject是一，obverser是多
+
+- 观察者模式的好处
+    - 观察者模式会议集合的方式管理用户（Observer）
+    - 每次增加 Observer时 ，不需要修改 Subject，遵守了ocp原则
+
+## 使用观察者模式实现引入问题
+[top](#catalog)
+- UML图
+    - uml代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/observer/improve/Baidu.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/observer/improve/Baidu.java)
+    - 图
+        - ![imgs/pattern/observer/improve/improve_uml.png](imgs/pattern/observer/improve/improve_uml.png)
+
+- 观察者接口及实现
+    - 参考代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/observer/improve/Observer.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/observer/improve/Observer.java)
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/observer/improve/CurrentCondition.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/observer/improve/CurrentCondition.java)
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/observer/improve/Baidu.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/observer/improve/Baidu.java)
+    - 代码内容
+        ```java
+        public interface Observer {
+            void update(float temperature, float pressure, float humidity);
+        }
+        ```
+        ```java
+        public class CurrentCondition implements Observer {
+            private float temperature;
+            private float pressure;
+            private float humidity;
+        
+            // 由 WeatherData 对象来调用，使用推送模式
+            @Override
+            public void update(float temperature, float pressure, float humidity){
+                this.temperature = temperature;
+                this.pressure = pressure;
+                this.humidity = humidity;
+                display();
+            }
+        
+            public void display(){
+                System.out.println("CurrentCondition temperature = " + temperature);
+                System.out.println("CurrentCondition pressure = " + pressure);
+                System.out.println("CurrentCondition humidity = " + humidity);
+            }
+        }
+        ```
+        ```java
+        public class Baidu implements Observer{
+            // 实现内容 与 CurrentCondition 想通过
+        }
+        ```
+- 可观察对象接口及其实现
+    - 参考代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/observer/improve/Subject.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/observer/improve/Subject.java)
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/observer/improve/WeatherData.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/observer/improve/WeatherData.java)
+    - 代码内容
+        ```java
+        public interface Subject {
+            void registerObserver(Observer o);
+            void removeObserver(Observer o);
+            void notifyObservers();
+        }
+        ```
+        ```java
+        /*
+            保存最新的天气情况信息
+            包含观察者，使用ArrayList管理
+            当数据更新时，调用 CurrentConditions.update方法，推送数据
+            
+            使用时的流程
+                1. 创建 WeatherData
+                2. 注册 Observer
+                3. 调用 setData() 设置数据
+                4. 内部调用 notifyObservers() 通知观察者
+         */
+        public class WeatherData implements Subject {
+            private float temperature;
+            private float pressure;
+            private float humidity;
+            private ArrayList<Observer> observers;
+        
+            public WeatherData() {
+                observers = new ArrayList<Observer>();
+            }
+        
+            // 设置最新的数据，并推送给 所有的 Observer
+            public void setData(float temperature, float pressure, float humidity){
+                this.temperature = temperature;
+                this.pressure = pressure;
+                this.humidity = humidity;
+                
+                // 将最新的数据推送给每个 Observer
+                notifyObservers();
+            }
+        
+            // 注册观察者
+            @Override
+            public void registerObserver(Observer o) {
+                observers.add(o);
+            }
+        
+            // 删除观察者
+            @Override
+            public void removeObserver(Observer o) {
+                if (observers.contains(o)){
+                    observers.remove(o);
+                }
+            }
+        
+            // 遍历并通知所有的观察者
+            @Override
+            public void notifyObservers() {
+                for (Observer observer : observers) {
+                    observer.update(temperature, pressure, humidity);
+                }
+            }
+
+            // getter
+            // ...
+        }
+        ```
+- 测试类
+    - 参考代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/observer/improve/Client.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/observer/improve/Client.java)
+    - 代码内容
+        ```java
+        @Test
+        public void test01(){
+            WeatherData weatherData = new WeatherData();
+    
+            // 创建观察者
+            CurrentCondition c1 = new CurrentCondition();
+            Baidu c2 = new Baidu();
+    
+            // 注册观察者
+            weatherData.registerObserver(c1);
+            weatherData.registerObserver(c2);
+    
+            weatherData.setData(10,20,30);
+        }
+        ```
 
 [top](#catalog)

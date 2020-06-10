@@ -1,0 +1,38 @@
+@startuml
+
+interface Subject{
+    + registerObserver(o: Observer): void
+    + removeObserver(): void
+    + notifyObservers(): void
+}
+
+class WeatherData{
+    - observers: ArrayList
+    + registerObserver(o: Observer): void
+    + removeObserver(): void
+    + notifyObservers(): void
+}
+
+interface Observer{
+    + update(): void
+}
+
+class CurrentCondition{
+    + update(): void
+}
+class Baidu {
+    + update(): void
+}
+class Sina{
+    + update(): void
+}
+
+Subject <|... WeatherData
+Subject .left...> Observer
+WeatherData o-- Observer
+
+Observer <|... CurrentCondition
+Observer <|... Baidu
+Observer <|... Sina
+
+@enduml

@@ -1,0 +1,18 @@
+@startuml
+
+class WeatherData{
+    + 气象站/第三方
+    + getTemperature():Object
+    + getHumidity():Object
+    + getPressure():Object
+    + dataChaneg()
+}
+
+class 气象站/第三方{
+    + update():void
+    + display():void
+}
+
+"气象站/第三方" <-- WeatherData
+
+@enduml

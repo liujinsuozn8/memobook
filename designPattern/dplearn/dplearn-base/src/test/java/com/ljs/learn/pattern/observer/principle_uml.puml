@@ -1,0 +1,38 @@
+@startuml
+
+interface Subject{
+    + registerObserver(o: Observer): void
+    + removeObserver(): void
+    + notifyObservers(): void
+}
+
+class ConcreteSubject{
+    - observers: ArrayList
+    + registerObserver(o: Observer): void
+    + removeObserver(): void
+    + notifyObservers(): void
+}
+
+interface Observer{
+    + update(): void
+}
+
+class ConcreteObserver1{
+    + update(): void
+}
+class ConcreteObserver2{
+    + update(): void
+}
+class ConcreteObserver3{
+    + update(): void
+}
+
+Subject <|... ConcreteSubject
+Subject .left...> Observer
+ConcreteSubject o-- Observer
+
+Observer <|... ConcreteObserver1
+Observer <|... ConcreteObserver2
+Observer <|... ConcreteObserver3
+
+@enduml
