@@ -1,0 +1,35 @@
+@startuml
+
+class Calculator {
+    + run(HashMap<String,Integer>): int
+}
+
+abstract class Expression{
+    + inpterpret():void
+}
+
+class VarExpression{
+
+}
+
+abstract class SymbolExpression{
+
+}
+
+class SubExpression{
+
+}
+
+class AddExpression{
+
+}
+
+Calculator o-- Expression
+
+Expression <|--- VarExpression
+Expression <|--- SymbolExpression
+Expression ---o SymbolExpression
+
+SymbolExpression <|-- SubExpression
+SymbolExpression <|-- AddExpression
+@enduml

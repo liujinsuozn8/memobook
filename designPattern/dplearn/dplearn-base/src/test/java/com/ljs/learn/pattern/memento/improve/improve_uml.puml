@@ -1,0 +1,28 @@
+@startuml
+
+class Memento{
+    - atk: int
+    - def: int
+}
+
+class GameRole{
+    - atk: int
+    - def: int
+    + createMemento():Memento
+}
+
+class Caretaker{
+    - mementos:ArrayList<Memento>
+}
+
+class Client{
+
+}
+
+GameRole ..right.> Memento
+
+Client ..> GameRole
+Client ..> Memento
+
+Memento --o Caretaker
+@enduml

@@ -1,0 +1,26 @@
+@startuml
+
+class Context{
+
+}
+
+abstract class AbstractExpression{
+    + interpret(): void
+}
+
+class TerminalExpression{
+
+}
+
+class NoTerminalExpression{
+
+}
+
+AbstractExpression <|--- TerminalExpression
+AbstractExpression <|--- NoTerminalExpression
+NoTerminalExpression o--- AbstractExpression
+
+Client ...> Context
+Client ...> AbstractExpression
+
+@enduml

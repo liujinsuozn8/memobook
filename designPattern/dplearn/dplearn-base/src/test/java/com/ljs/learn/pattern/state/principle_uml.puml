@@ -1,0 +1,27 @@
+@startuml
+
+class Context{
+    - state: State
+    + getState(): State
+}
+
+interface State{
+    + operation1(): void
+    + operation2(): void
+}
+
+class ConcreteStateA {
+    + operation1(): void
+    + operation2(): void
+}
+
+class ConcreteStateB {
+    + operation1(): void
+    + operation2(): void
+}
+
+State <|... ConcreteStateA
+State <|... ConcreteStateB
+
+Context o--right- State
+@enduml

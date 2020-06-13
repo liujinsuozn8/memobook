@@ -1,0 +1,49 @@
+@startuml
+
+'Client .right..> 中介者
+'
+'中介者 ...>  电器1
+'中介者 ...>  电器2
+'中介者 ...>  电器3
+'中介者 ...>  电器4
+
+abstract class Mediator{
+}
+class ConcreteMediator{
+    - colleagues: HashMap
+}
+
+note bottom of ConcreteMediator
+具体中介类
+1. 管理所有的 Colleague 类（同事类）
+2. 完成相应的操作和任务
+end note
+
+abstract class Colleague{
+}
+class ConcreteColleague01{
+    + ConcreteColleague01()
+}
+class ConcreteColleague02{
+    + ConcreteColleague02()
+}
+
+class Client{
+}
+
+Mediator <|--down- ConcreteMediator
+Colleague <|--down- ConcreteColleague02
+Colleague <|--down- ConcreteColleague01
+
+Mediator .right..> Colleague
+Colleague .left..> Mediator
+
+ConcreteColleague02 .right.> Mediator
+ConcreteColleague01 .right.> Mediator
+
+Colleague -left-o ConcreteMediator
+
+Client  .down.> Mediator
+Client  .down.> Colleague
+
+@enduml

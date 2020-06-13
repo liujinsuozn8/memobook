@@ -1,0 +1,62 @@
+@startuml
+
+interface State{
+    + deductMoney(): void
+    + raffle(): boolean
+    + dispensePrize(): void
+}
+
+note bottom of State
+NoRaffleState  不能抽奖状态
+CanRaffleState 能抽奖状态
+DispenseState  发放奖品状态
+DispenseOutState 奖品发完状态
+end note
+
+
+class NoRaffleState{
+
+}
+
+class CanRaffleState{
+
+}
+
+class DispenseState{
+
+}
+
+class DispenseOutState{
+
+}
+
+class RaffleActivity{
+    - state: State
+    + deductMoney(): void
+    + raffle(): void
+}
+
+note right of RaffleActivity
+Activity 包含所有的状态对象
+各状态对象也包含 RaffleActivity 对象
+end note
+
+class Client{
+
+}
+
+State <|... NoRaffleState
+State <|... CanRaffleState
+State <|... DispenseState
+State <|... DispenseOutState
+
+
+NoRaffleState <---> RaffleActivity
+CanRaffleState <---> RaffleActivity
+DispenseState <---> RaffleActivity
+DispenseOutState <---> RaffleActivity
+
+Client ...> State
+Client ...> RaffleActivity
+
+@enduml

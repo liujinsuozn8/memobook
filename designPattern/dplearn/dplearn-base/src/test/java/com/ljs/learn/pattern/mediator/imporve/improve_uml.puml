@@ -1,0 +1,55 @@
+@startuml
+
+'Client .right..> 中介者
+'
+'中介者 ...>  电器1
+'中介者 ...>  电器2
+'中介者 ...>  电器3
+'中介者 ...>  电器4
+
+abstract class Mediator{
+}
+class ConcreteMediator{
+    - colleagueMap: HashMap
+    + getMessage(): void
+}
+
+
+abstract class Colleague{
+    + sendMessage():void
+    + getMediator():Mediator
+}
+class 时钟{
+}
+class 咖啡机{
+}
+class 窗帘{
+}
+class 电视{
+}
+
+
+class Client{
+}
+
+Mediator <|---left- ConcreteMediator
+
+Mediator .right..> Colleague
+Colleague .left..> Mediator
+
+Colleague <|--down- 时钟
+Colleague <|--down- 咖啡机
+Colleague <|--down- 窗帘
+Colleague <|--down- 电视
+
+咖啡机 -right-> Mediator
+电视 -right-> Mediator
+窗帘 -right-> Mediator
+时钟 -right> Mediator
+
+Colleague ---left-o ConcreteMediator
+
+Client  .down.> Mediator
+Client  .down.> Colleague
+
+@enduml

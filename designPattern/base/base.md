@@ -51,7 +51,7 @@
 - 创建型-建造者模式
     - [建造者模式-引入问题-盖房子](#建造者模式-引入问题-盖房子)
     - [建造者模式简介](#建造者模式简介)
-    - [使用建造者模式改造引入问题](#使用建造者模式改造引入问题)
+    - [建造者模式实现引入问题](#建造者模式实现引入问题)
     - [建造者模式的注意事项和细节](#建造者模式的注意事项和细节)
     - [建造者模式在JDK中的使用-StringBuilder](#建造者模式在JDK中的使用-StringBuilder)
 - 结构型-适配器模式
@@ -68,18 +68,18 @@
 - 结构型-桥接模式
     - [桥接模式-引入问题-多品牌手机管理](#桥接模式-引入问题-多品牌手机管理)
     - [桥接模式简介](#桥接模式简介)
-    - [使用桥接模式改进引入问题](#使用桥接模式改进引入问题)
+    - [桥接模式实现引入问题](#桥接模式实现引入问题)
     - [桥接模式的注意事项和细节](#桥接模式的注意事项和细节)
     - [JDBC中的桥接模式](#JDBC中的桥接模式)
 - 结构型-装饰器模式
     - [装饰器模式-引入问题-咖啡订单](#装饰器模式-引入问题-咖啡订单)
     - [装饰者模式简介](#装饰者模式简介)
-    - [使用装饰者模式改进引入问题](#使用装饰者模式改进引入问题)
+    - [装饰者模式实现引入问题](#使用装饰者模式改进引入问题)
     - [装饰者模式在JDK中的应用-FilterInputStream](#装饰者模式在JDK中的应用-FilterInputStream)
 - 结构型-组合模式
     - [组合模式-引入问题-学校院系展示](#组合模式-引入问题-学校院系展示)
     - [组合模式简介](#组合模式简介)
-    - [使用组合模式改进引入问题](#使用组合模式改进引入问题)
+    - [组合模式实现引入问题](#组合模式实现引入问题)
     - [组合模式在JDK源码中的应用-HashMap](#组合模式在JDK源码中的应用-HashMap)
 - 结构型-代理模式
     - [代理模式简介](#代理模式简介)
@@ -91,13 +91,13 @@
     - [外观模式-引入问题-组件家庭影院](#外观模式-引入问题-组件家庭影院)
     - [外观模式简介](#外观模式简介)
     - [外观模式的注意事项和细节](#外观模式的注意事项和细节)
-    - [外观模式解决引入问题](#外观模式解决引入问题)
+    - [外观模式实现引入问题](#外观模式实现引入问题)
 - 结构型-享元模式
     - [享元模式-引入问题-展示网站](#享元模式-引入问题-展示网站)
     - [享元模式简介](#享元模式简介)
     - [享元模式的原理](#享元模式的原理)
     - [享元模式的注意事项和细节](#享元模式的注意事项和细节)
-    - [使用享元模式改进引入问题](#使用享元模式改进引入问题)
+    - [享元模式实现引入问题](#享元模式实现引入问题)
     - [享元模式在JDK中的使用-Integer源码解析](#享元模式在JDK中的使用-Integer源码解析)
 - 行为型-模版方法模式
     - [模版模式-引入问题-制作豆浆](#模版模式-引入问题-制作豆浆)
@@ -115,7 +115,7 @@
     - [访问者模式-引入问题-测评系统](#访问者模式-引入问题-测评系统)
     - [访问者模式简介](#访问者模式简介)
     - [访问者模式的原理](#访问者模式的原理)
-    - [使用访问者模式实现引入问题](#使用访问者模式实现引入问题)
+    - [访问者模式实现引入问题](#访问者模式实现引入问题)
     - [访问者模式的注意事项和细节](#访问者模式的注意事项和细节)
 - 行为型-迭代器模式
     - [迭代器模式-引入问题-学校院系展示](#迭代器模式-引入问题-学校院系展示)
@@ -124,13 +124,34 @@
     - [迭代器模式实现引入问题](#迭代器模式实现引入问题)
     - [迭代器模式在JDK中的应用--ArrayList分析](#迭代器模式在JDK中的应用--ArrayList分析)
     - [迭代器模式的注意实事项和细节](#迭代器模式的注意实事项和细节)
-- [行为型-观察者模式](#行为型-观察者模式)
+- 行为型-观察者模式
     - [观察者模式-引入问题-天气预报项目](#观察者模式-引入问题-天气预报项目)
     - [传统方案-自动推送方式的实现](#传统方案-自动推送方式的实现)
     - [观察者模式原理](#观察者模式原理)
-    - [观察者模式在JDK中的应用-Observable分析](#观察者模式在JDK中的应用-Observable分析)
+    - [观察者模式实现引入问题](#观察者模式实现引入问题)
+- 行为型-中介者模式
+    - [中介者模式-引入问题-智能家庭管理项目](#中介者模式-引入问题-智能家庭管理项目)
+    - [中介者模式简介](#中介者模式简介)
+    - [中介者模式实现引入问题](#中介者模式实现引入问题)
+    - [中介者模式的注意事项和细节](#中介者模式的注意事项和细节)
+- 行为型-备忘录模式
+    - [备忘录模式-引入问题-游戏角色恢复状态](#备忘录模式-引入问题-游戏角色恢复状态)
+    - [备忘录模式简介](#备忘录模式简介)
+    - [备忘录模式原理](#备忘录模式原理)
+    - [备忘录模式实现引入问题](#备忘录模式实现引入问题)
+    - [备忘录模式的注意事项和细节](#备忘录模式的注意事项和细节)
+- 行为型-解析器模式
+    - [解析器模式-引入问题-四则运算问题](#解析器模式-引入问题-四则运算问题)
+    - [解析器模式简介](#解析器模式简介)
+    - [解析器模式原理](#解析器模式原理)
+    - [解释器模式实现引入问题](#解释器模式实现引入问题)
+    - [解释器模式在Spring中的应用--SpelExpressionParser分析](#解释器模式在Spring中的应用--SpelExpressionParser分析)
+- 行为型-状态模式
+    - [状态模式-引入问题-APP抽奖活动](#状态模式-引入问题-APP抽奖活动)
+    - [状态模式简介](#状态模式简介)
+    - [状态模式原理](#状态模式原理)
+    - [状态模式实现引入问题](#状态模式实现引入问题)
 - [](#)
-
 
 # 设计模式简介
 [top](#catalog)
@@ -2792,7 +2813,7 @@
 - 建造者模式的原理图
     - ![builder_principle](imgs/pattern/builder/base/builder_principle.png)
     
-## 使用建造者模式改造引入问题
+## 建造者模式实现引入问题
 [top](#catalog)
 - 改进方式
     - 将房子作为产品类：`House`
@@ -3361,7 +3382,7 @@ P64
     - 原理说明
         - 在UML图中，抽象类和接口是聚合的关系，本质是调用者和被调用关系
         
-## 使用桥接模式改进引入问题
+## 桥接模式实现引入问题
 [top](#catalog)
 - 改进方式
     - 实现部分
@@ -3610,7 +3631,7 @@ P64
 
     - 进行多层装饰之后，调用发方法时，会通过递归调用来完成
     
-## 使用装饰者模式改进引入问题
+## 装饰者模式实现引入问题
 [top](#catalog)
 - 改进方法
     - 构建主体部分
@@ -3866,7 +3887,7 @@ P64
     - 要求较高的抽象性
         - 如果节点和叶子有很多的差异性，如方法、属性都不一样，则不适合使用组合模式
 
-## 使用组合模式改进引入问题
+## 组合模式实现引入问题
 [top](#catalog)
 - 实现方法
     - 创建叶子和节点的抽象类：`OrganizationComponent`，提供添加、删除、打印方法
@@ -4446,7 +4467,7 @@ P64
     - 如果子系统比较少，并且调用简单，则不必创建一个外观类，直接使用即可
 - **外观模式的目的是让系统有层次，利于维护**
 
-## 外观模式解决引入问题
+## 外观模式实现引入问题
 [top](#catalog)
 - 改进后的url图
     - ![improve_uml](imgs/pattern/facade/improve/improve_uml.png)
@@ -4705,7 +4726,7 @@ P64
     - 外部状态具有固化特性，不应该随着内部状态的改变而改变
 
         
-## 使用享元模式改进引入问题 
+## 享元模式实现引入问题 
 [top](#catalog)
 - 改进后的UML图
     - uml代码
@@ -5660,7 +5681,7 @@ P64
     - 双分派是指无论类如何变化，都能找到期望的方法运行
     - 双分派意味着得到执行的操作取决于请求的种类和接受者两个类型
 
-## 使用访问者模式实现引入问题
+## 访问者模式实现引入问题
 [top](#catalog)
 - UML图
     - uml代码
@@ -6324,7 +6345,7 @@ P64
     - 观察者模式会议集合的方式管理用户（Observer）
     - 每次增加 Observer时 ，不需要修改 Subject，遵守了ocp原则
 
-## 使用观察者模式实现引入问题
+## 观察者模式实现引入问题
 [top](#catalog)
 - UML图
     - uml代码
@@ -6367,7 +6388,7 @@ P64
         ```
         ```java
         public class Baidu implements Observer{
-            // 实现内容 与 CurrentCondition 想通过
+            // 实现内容 与 CurrentCondition 相同
         }
         ```
 - 可观察对象接口及其实现
@@ -6458,6 +6479,984 @@ P64
             weatherData.registerObserver(c2);
     
             weatherData.setData(10,20,30);
+        }
+        ```
+
+# 行为型-中介者模式
+## 中介者模式-引入问题-智能家庭管理项目
+[top](#catalog)
+- 需求
+    - 智能家庭包括各种设备: 闹钟、咖啡机、电视机、窗帘等等
+    - 看电视时，各个设备可以协同工作，自动完成看电视的准备
+        - 如工作流程为
+            1. 闹钟响起
+            2. 咖啡机开始做咖啡
+            3. 窗帘自动落下
+            4. 电视机开始播放
+
+- 传统方式实现时，可能会产生的调用关系的UML图
+    -  uml代码
+         - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/mediator/base/base_uml.puml](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/mediator/base/base_uml.puml)
+    - 图
+        - ![base_uml](imgs/pattern/mediator/base/base_uml.png)
+
+- 传统方式的问题
+    - 当各个电器对象有多种状态改变时，相互之间的调用关系会比较复杂
+    - 各个电器对象之间彼此关联、引用
+    - 各个电器对象之间传递参数，容易混乱
+    - 当系统新增一个电器对象时，或者执行流程改变时，代码的可维护性、可扩展性都不好
+    
+## 中介者模式原理
+[top](#catalog)
+- 中介者模式 Mediator Pattern
+- 中介者模式的作用
+    - 将复杂的**对象间交互操作**封装到中介对象中，将对象解耦
+    - 中介者使各个对象不需要显示的相互引用，降低系统的耦合性，可以独立改变对象间的交互方式
+
+- 经典应用--MVC模式 
+    - Controller 是 Model 和 View 之间交互时的中介者。在前后端交互时起到了中间人的作用
+    
+- 原理类图
+    - uml代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/mediator/principle_uml.puml](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/mediator/principle_uml.puml)
+    - 图
+        - ![imgs/pattern/mediator/principle_uml.png](imgs/pattern/mediator/principle_uml.png)
+
+- 角色划分
+    - Mediator，抽象中介
+        - 定义了 Colleague 到中介对象的接口
+    - ConcreteMediator，具体中介者
+        - 用一个集合来管理具体同事
+        - 可以接收某个同事对象的消息，完成相应的任务
+    - Colleague，抽象同事类
+    - ConcreteColleague，具体同事类
+        - 每个同事类之间是没有任何关联的
+        - 每个具体同事类都依赖中介者对象
+
+- Mediator 和 ConcreteColleague 之间需要相互关联，才能完成**管理和消息发送**
+
+## 中介者模式实现引入问题
+[top](#catalog)
+- UML图
+    - uml代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/mediator/imporve/improve_uml.puml](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/mediator/imporve/improve_uml.puml)
+    - 图
+        - ![improve_uml](imgs/pattern/mediator/improve/improve_uml.png)
+
+- 操作流程
+    1. 创建一个 ConcreteMediator 对象
+    2. 创建各个 Coleague类
+    3. 在创建 Colleague对象的同时，就通过构造器，将自身添加到 `colleagueMap`
+    4. Colleague对象 可以调用 sendMessage，最终会去调用 ConcreteMediator 的getMessage方法
+    5. getMessage 会根据接收到的 Colleague对象 发出的消息来协调、调用其他的 Colleague对象
+
+- 注意事项
+    - `getMessage()` 方法是核心方法，完成相应的任务
+    - 各个 Colleague对象 不会直接相互引用，而是通过中介者来通信
+
+- 中介者
+    - 参考代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/mediator/imporve/mediator/Mediator.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/mediator/imporve/mediator/Mediator.java)
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/mediator/imporve/mediator/ConcreteMediator.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/mediator/imporve/mediator/ConcreteMediator.java)
+    - 代码内容
+        ```java
+        public abstract class Mediator {
+            // 将中介者对象保存到集合中
+            public abstract void register(String colleagueName, Colleague colleague);
+            // 接收由具体同事对象发出的消息
+            public abstract void getMessage(int stateChange, String colleagueName);
+            //
+            public abstract void sendMessage();
+        }
+        ```
+        ```java
+        public class ConcreteMediator extends Mediator{
+            // 管理所有的同事对象
+            public HashMap<String, Colleague> colleagueMap;
+            public HashMap<String, String> interMap;
+        
+            public ConcreteMediator() {
+                colleagueMap = new HashMap<String, Colleague>();
+                interMap = new HashMap<String, String>();
+            }
+        
+            @Override
+            public void register(String colleagueName, Colleague colleague) {
+                colleagueMap.put(colleagueName, colleague);
+        
+                if (colleague instanceof Alarm){
+                    interMap.put("Alarm", colleagueName);
+                } else if (colleague instanceof CoffeeMachine) {
+                    interMap.put("CoffeeMachine", colleagueName);
+                } else if (colleague instanceof TV) {
+                    interMap.put("TV", colleagueName);
+                } else if  (colleague instanceof Curtains){
+                    interMap.put("Curtains", colleagueName);
+                }
+            }
+        
+            // 具体中介者中的核心方法
+            // 根据得到的消息，完成对应的任务
+            @Override
+            public void getMessage(int stateChange, String colleagueName) {
+                if (colleagueMap.get(colleagueName) instanceof Alarm){
+                    if (stateChange == 0){
+                        ((CoffeeMachine) (colleagueMap.get(
+                                interMap.get("CoffeeMachine")))).startCoffee();
+        
+                        ((TV) (colleagueMap.get(interMap.get("TV")))).startTV();
+                    } else if (stateChange == 1){
+                        ((TV) (colleagueMap.get(interMap.get("TV")))).stopTV();
+                    }
+                } else if (colleagueMap.get(colleagueName) instanceof CoffeeMachine){
+                    ((Curtains)(colleagueMap.get(interMap.get("Curtains")))).upCurtains();
+                } else if (colleagueMap.get(colleagueName) instanceof TV){
+        
+                } else if (colleagueMap.get(colleagueName) instanceof Curtains) {
+        
+                }
+        
+            }
+        
+            @Override
+            public void sendMessage() {
+        
+            }
+        }
+        ```
+- 同事类
+    - 参考代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/mediator/imporve/colleague/Colleague.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/mediator/imporve/colleague/Colleague.java)
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/mediator/imporve/colleague/Alarm.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/mediator/imporve/colleague/Alarm.java)
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/mediator/imporve/colleague/CoffeeMachine.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/mediator/imporve/colleague/CoffeeMachine.java)
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/mediator/imporve/colleague/Curtains.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/mediator/imporve/colleague/Curtains.java)
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/mediator/imporve/colleague/TV.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/mediator/imporve/colleague/TV.java)
+    - 代码内容
+        ```java
+        // 抽象同事类
+        public abstract class Colleague {
+            private Mediator mediator;
+            public String name;
+        
+            public Colleague(Mediator mediator, String name) {
+                this.mediator = mediator;
+                this.name = name;
+            }
+        
+            public Mediator getMediator() {
+                return mediator;
+            }
+        
+            public abstract void sendMessage(int stateChange);
+        }
+        ```
+        ```java
+        // 具体同事类
+        public class Alarm extends Colleague {
+            public Alarm(Mediator mediator, String name) {
+                super(mediator, name);
+        
+                // 创建对象的同事，将自己注册到 中介者中
+                mediator.register(name, this);
+            }
+        
+            public void sendAlarm(int stateChange){
+                sendMessage(stateChange);
+            }
+        
+            @Override
+            public void sendMessage(int stateChange) {
+                // 调用中介者对象
+                this.getMediator().getMessage(stateChange, this.name);
+            }
+        }
+        ```
+        ```java
+        public class TV extends Colleague {
+            public TV(Mediator mediator, String name) {
+                super(mediator, name);
+                mediator.register(name, this);
+            }
+        
+            @Override
+            public void sendMessage(int stateChange) {
+                this.getMediator().getMessage(stateChange, this.name);
+            }
+        
+            public void startTV(){
+                System.out.println("startTV");
+            }
+            public void stopTV(){
+                System.out.println("stopTV");
+            }
+        }
+        ```
+- 测试类
+    - 参考代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/mediator/imporve/Client.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/mediator/imporve/Client.java)
+    - 测试内容
+        ```java
+        @Test
+        public void test01(){
+            // 1. 创建 中介者
+            ConcreteMediator mediator = new ConcreteMediator();
+            // 创建 Colleague 并注册到中介者
+            Alarm alarm = new Alarm(mediator, "alarm");
+            CoffeeMachine coffeeMachine = new CoffeeMachine(mediator, "coffeeMachine");
+            Curtains curtains = new Curtains(mediator, "curtains");
+            TV tv = new TV(mediator, "TV");
+    
+            // 3. 向中介者发送消息，并执行具体任务
+            alarm.sendAlarm(0);
+            coffeeMachine.finishCoffee();
+            alarm.sendAlarm(1);
+        }
+        ```
+
+## 中介者模式的注意事项和细节
+[top](#catalog)
+- 多个类相互耦合，会形成网状结构，使用中介者模式将网状结构分离为星型结构，进行解耦
+- 减少类间依赖，降低了耦合性，符合迪米特法则
+- 中介者承担了较多的责任，一旦中介者出现了问题，整个系统都会收到影响
+- 如果设计不当，中介者对象本身会变得过于复杂
+
+# 行为型-备忘录模式
+## 备忘录模式-引入问题-游戏角色恢复状态
+[top](#catalog)
+- 需求
+    - 游戏角色有攻击力和防御力
+    - 在作战前保存自身的状态，即攻击力和防御力
+    - 在作战后，攻击力和防御力下降，从备忘录对象恢复到大战前的状态
+- 传统解决方案：一个角色对应一个状态对象
+    ```java
+      角色
+       ^
+       │
+    状态对象
+    ```
+
+- 传统方式的问题
+    - 一个角色对应一个状态对象，当角色很多时，会存在大量状态对象。不利于管理，开销也大
+    - 只是简单的备份：new出另外一个状态对象，再把数据拷贝到状态对象中，**会暴露对象的内部细节**
+        - 因为需要知道被保存对象的一些实现细节来完成备份
+
+## 备忘录模式简介
+[top](#catalog)
+- 备忘录模式，Memento Pattern
+- 作用
+    - 在不破坏封装性的前提下，捕获一个对象的内部状态，并在对象之外保存状态
+    - 在需要回退时，可以通过保存的状态来恢复对象
+
+## 备忘录模式原理
+[top](#catalog)
+- 原理类图
+    - uml代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/memento/principle_uml.puml](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/memento/principle_uml.puml)
+    - 图
+        - ![principle_uml](imgs/pattern/memento/principle_uml.png)
+
+- 角色划分
+    - Originato，需要保存状态的原始对象
+    - Memento，备忘录对象
+        - 负责保存 Originator 的内部状态
+    - Caretaket，守护者对象
+        - 负责保存多个备忘录对象
+        - 可以通过 `HashMap<String, 集合>` 的方式，保存多个 Originator 对象的不同时间的状态
+
+- 适用场景
+    - 游戏存档
+    - windows撤销快捷键：ctrl+z
+    - 浏览器中的后退
+    - 数据库的事务管理
+
+## 备忘录模式实现引入问题
+[top](#catalog)
+- UML类图
+    - uml代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/memento/improve/improve_uml.puml](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/memento/improve/improve_uml.puml)
+    - 图
+        - ![improve_uml](imgs/pattern/memento/improve/improve_uml.png)
+
+- 原始对象
+    - 参考代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/memento/improve/GameRole.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/memento/improve/GameRole.java)
+    - 代码内容
+        ```java
+        public class GameRole {
+            private int atk;
+            private int def;
+        
+            public GameRole(int atk, int def) {
+                this.atk = atk;
+                this.def = def;
+            }
+        
+            // 创建Memento
+            public Memento createMemento(){
+                return new Memento(atk, def);
+            }
+        
+            // 使用Memento恢复
+            public void recover(Memento memento){
+                atk = memento.getAtk();
+                def = memento.getDef();
+            }
+        
+            // 显示当前角色的状态
+            public void display(){
+                System.out.println("atk=" + atk + ", def=" + def);
+            }
+            //...
+            // getter、setter
+        }
+        ```
+- 备忘录对象
+    - 参考代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/memento/improve/Memento.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/memento/improve/Memento.java)
+    - 代码内容
+        ```java
+        public class Memento {
+            private int atk;
+            private int def;
+        
+            public Memento(int atk, int def) {
+                this.atk = atk;
+                this.def = def;
+            }
+        
+            public int getAtk() {
+                return atk;
+            }
+        
+            public int getDef() {
+                return def;
+            }
+        }
+        ```
+
+- 守护者对象
+    - 参考代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/memento/improve/Caretaker.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/memento/improve/Caretaker.java)
+    - 代码内容
+        ```java
+        public class Caretaker {
+            // 只保存一次状态
+            private Memento memento;
+            // 保存多次状态
+            // private ArrayList<Memento> mementos;
+            // 保存多个角色的多个状态
+            // private HashMap<String, ArrayList<Memento>> rolesMementos;
+        
+            public Memento getMemento() {
+                return memento;
+            }
+        
+            public void setMemento(Memento memento) {
+                this.memento = memento;
+            }
+        }
+        ```
+- 测试嗲吗
+    - 参考代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/memento/improve/Client.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/memento/improve/Client.java)
+    - 测试内容
+        ```java
+        @Test
+        public void test01(){
+            // 创建角色
+            GameRole role = new GameRole(100, 100);
+    
+            // 保存状态对象
+            Caretaker caretaker = new Caretaker();
+            caretaker.setMemento(role.createMemento());
+    
+            // 1. 显示状态
+            role.display();
+    
+            // 2. 修改状态，并显示状态
+            role.setAtk(50);
+            role.setAtk(60);
+            role.display();
+    
+            // 3. 恢复并显示状态
+            role.recover(caretaker.getMemento());
+            role.display();
+        }
+        ```
+## 备忘录模式的注意事项和细节
+[top](#catalog)
+- 备忘录模式给用户提供了一种可以恢复状态的机制，可以恢复到某个历史状态
+- 实现了信息的封装，使得用户不需要关心状态的保存细节
+- 如果类的成员遍历过多，会占用比较大的资源
+- 每次保存都会消耗一定的内存
+- 为了节约内存，**备忘录模式可以和原型模式配合使用**
+
+# 行为型-解析器模式
+## 解析器模式-引入问题-四则运算问题
+[top](#catalog)
+- 需求：实现四则运算，如计算: a+b-c 的值
+    1. 先输入表达式的形式，如：a+b+c-d+e，要求表达式的字母不能重复
+    2. 再分别输入 a、b、c、d、e
+    3. 依照表达式计算结果  
+
+- 传统解决方案
+    1. 编写一个方法，接收表达式的形式
+    2. 然后根据用户输入的数值进行解析，计算并得到结果
+
+- 传统方案的问题
+    - 如果加入新的运算符，如： *、/ 等等，不利于扩展
+    - 用一个方法来解析会造成程序结构混乱，不够清晰
+
+- 解决方法
+    - 使用解析器模式，即：表达式 -> 解析器(可以有多种) -> 结果 
+
+## 解析器模式简介
+[top](#catalog)
+- 解释器，Interpreter Pattern
+- 解释器的功能
+    - 指定一个语言（表达式的形式），定义它的文法的一种表示，并定义一个解释器，使用该解释器来解释语言中的句子（表达式）
+- 编译原理中的解释器
+    - 编译原理中的编译过程
+        1. 一个算数表达式通过**词法分析器**形成词法单元
+        2. 然后这些词法单元再通过**语法分析器**构建语法分析树
+        3. 最终形成一颗抽象的语法分析树
+    - 在编译原理中，词法分析器、语法分析器 都可以视作解释器
+
+- 适用场景
+    - 当一个语言需要解释执行，可将该语言中的句子表示为一个抽象语法树时，就可以考虑使用解释器模式，让程序具有良好的扩展性
+        - 前提
+            1. 将一个需要解释执行的语言中的句子表示为一个抽象语法树
+            2. 一些重复出现的问题可以用一种简单的语言来表达
+            3. 一些简单语法需要解释的场景
+    - 一般会用来处理比较复杂的问题，如: 编译器、表达式计算、正则表达式、机器人等
+  
+- 解释器可能带来的问题
+    - 解释器模式会引起类膨胀
+    - 解释器模式采用递归调用，将会导致调试复杂、执行效率降低
+    
+## 解析器模式原理
+[top](#catalog)
+- 原理类图
+    - uml代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/interpreter/principle_uml.puml](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/interpreter/principle_uml.puml)
+    - 图
+        - ![imgs/pattern/interpreter/principle_uml.png](imgs/pattern/interpreter/principle_uml.png)
+
+- 角色划分
+    - Context: 环境角色
+        - 含有解释器之外的全局信息
+    - AbstractExpression: 抽象表达式
+        - 声明一个抽象的解释操作
+        - 解释操作为抽象语法树中所有的结点所共享
+    - TerminalExpression: 终结符表达式
+        - 实现文法中与终结符相关的解释操作
+    - NoTerminalExpression: 非终结符表达式
+        - 实现文法中与非终结符相关的解释操作
+    - Context 和 TerminalExpression 的信息通过Client输入 
+
+## 解释器模式实现引入问题
+[top](#catalog)
+- UML类图
+    - uml代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/interpreter/imporve/improve_uml.puml](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/interpreter/imporve/improve_uml.puml)
+    - 图
+        - ![imporve_uml](imgs/pattern/interpreter/improve/imporve_uml.png)
+- 表达式
+    - 参考代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/interpreter/imporve/Expression.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/interpreter/imporve/Expression.java)
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/interpreter/imporve/VarExpression.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/interpreter/imporve/VarExpression.java)
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/interpreter/imporve/SymbolExpression.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/interpreter/imporve/SymbolExpression.java)
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/interpreter/imporve/AddExpression.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/interpreter/imporve/AddExpression.java)
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/interpreter/imporve/SubExpression.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/interpreter/imporve/SubExpression.java)
+    - 代码内容
+        ```java
+        // 抽象类表达式，通过HashMap键值对，可以获取到变量的值
+        public abstract class Expression {
+            // 解释公式和数值，key就是公式中的参数
+            // 如公式是 a+b+c
+            // HashMap是：{a:1, b:3, c:5}
+            public abstract int interpret(HashMap<String, Integer> var);
+        }
+        ```
+        ```java
+        // 终结符解析器
+        // 变量解析器
+        public class VarExpression extends Expression {
+            // key 就是公式中的参数
+            // 如公式是：a+b+c
+            // key就是：a、b、c
+            private String key;
+        
+            public VarExpression(String key) {
+                this.key = key;
+            }
+        
+            // var 是 {a=1, b=3, c=5}
+            // 根据对象内部的key，返回对应值
+            @Override
+            public int interpret(HashMap<String, Integer> var) {
+                return var.get(key);
+            }
+        }
+        ```
+        ```java
+        /**
+         * 非终结符解析器
+         * 抽象运算符号解析器
+         * 每个运算符都只和自己左右两个数字有关系，但左右两个数字有可能也是一个解析的结果，
+         * 无论何种类型，都是Expression的实现类
+         * */
+        public abstract class SymbolExpression extends Expression {
+            protected Expression left;
+            protected Expression right;
+        
+            public SymbolExpression(Expression left, Expression right) {
+                this.left = left;
+                this.right = right;
+            }
+        }
+
+        // 加法解释器
+        public class AddExpression extends SymbolExpression {
+            public AddExpression(Expression left, Expression right) {
+                super(left, right);
+            }
+        
+            // 处理加法运算
+            // var 仍然是 {a=1, b=3, c=5} 形式的运算参数集合
+            @Override
+            public int interpret(HashMap<String, Integer> var) {
+                return super.left.interpret(var) + super.right.interpret(var);
+            }
+        }
+
+        // 减法解释器
+        public class SubExpression extends SymbolExpression {
+            public SubExpression(Expression left, Expression right) {
+                super(left, right);
+            }
+        
+            // 处理剑法运算
+            // // var 仍然是 {a=1, b=3, c=5} 形式的运算参数集合
+            @Override
+            public int interpret(HashMap<String, Integer> var) {
+                return super.left.interpret(var) - super.right.interpret(var);
+            }
+        }
+        ```
+
+- Calculator，类似于Context类
+    - 参考代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/interpreter/imporve/Calculator.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/interpreter/imporve/Calculator.java)
+    - 代码内容
+        ```java
+        public class Calculator {
+            // 定义表达式
+            private Expression expression;
+        
+            public Calculator(String expStr) {
+                Stack<Expression> stack = new Stack<>();
+                // 将表达式拆分成字符数组
+                char[] chars = expStr.toCharArray();
+        
+                Expression left = null;
+                Expression right = null;
+        
+                for (int i = 0; i < chars.length; i++) {
+                    switch (chars[i]) {
+                        case '+':
+                            // 从栈中获取左值
+                            left = stack.pop();
+                            // 创建右值，并调整遍历的index
+                            right = new VarExpression(String.valueOf(chars[++i]));
+                            // 创建加法表达式，并保存到栈
+                            stack.push(new AddExpression(left, right));
+                            break;
+                        case '-':
+                            // 从栈中获取左值
+                            left = stack.pop();
+                            // 创建右值
+                            right = new VarExpression(String.valueOf(chars[++i]));
+                            // 创建减法表达式，并保存到栈
+                            stack.push(new SubExpression(left, right));
+                            break;
+                        default:
+                            // 参数部分
+                            stack.push(new VarExpression(String.valueOf(chars[i])));
+                            break;
+                    }
+                }
+                // 遍历后得到最后一个表达式对象，
+                this.expression = stack.pop();
+            }
+        
+            public int run(HashMap<String,Integer> var){
+                // var 仍然是 {a=1, b=3, c=5} 形式的运算参数集合
+                return this.expression.interpret(var);
+            }
+        }
+        ```
+- 测试类
+    - 参考代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/interpreter/imporve/Client.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/interpreter/imporve/Client.java)
+    - 测试内容
+        ```java
+        public static void main(String[] args) throws IOException {
+            // 1. 获取表达式
+            System.out.println("请输入表达式：");
+            String expStr = new BufferedReader(new InputStreamReader(System.in)).readLine();
+    
+            // 2. 输入表达式中的参数值
+            HashMap<String, Integer> map = new HashMap<>();
+            for (char c : expStr.toCharArray()) {
+                if (c != '+' && c != '-'){
+                    System.out.println("请输入" + c + ":");
+                    String param = new BufferedReader(new InputStreamReader(System.in)).readLine();
+                    map.put(String.valueOf(c), Integer.valueOf(param));
+                }
+            }
+            System.out.println(map);
+    
+            // 3. 创建计算器
+            Calculator calculator = new Calculator(expStr);
+    
+            // 4. 执行计算
+            System.out.println("计算结果：" + calculator.run(map));
+        }
+        ```
+      
+## 解释器模式在Spring中的应用--SpelExpressionParser分析
+[top](#catalog)
+- 示例代码
+    - 参考代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/interpreter/spring/SpringTest.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/interpreter/spring/SpringTest.java)
+    - 代码内容
+        ```java
+        @Test
+        public void test01(){
+            SpelExpressionParser parser = new SpelExpressionParser();
+            Expression expression = parser.parseExpression("10 * 20 * (2+1) -15");
+            int result = (Integer)expression.getValue();
+            System.out.println(result); // 585
+        }
+        ```
+- Expression 与 ExpressionParser 之间的依赖关系
+    - 依赖关系图
+        - uml代码
+            - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/interpreter/spring/ExpressionParser.uml](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/interpreter/spring/ExpressionParser.uml)
+        - 图
+            - ![ExpressionParser_uml](imgs/pattern/interpreter/spring/ExpressionParser_uml.png)
+
+    - 使用时，根据不同的parser对象，返回不同的Expression对象
+    - Expression就是解释器接口，可以执行并返回结果。下面有不同类型的解释器实现类
+    - ExpressionParser接口， 用来生成解释器
+
+# 行为型-状态模式
+## 状态模式-引入问题-APP抽奖活动
+[top](#catalog)
+- APP抽奖活动的需求
+    1. 加入每参加一次这个活动要扣除用户50积分，中奖概率是10%
+    2. 奖品数量固定，抽完就不能抽奖
+    3. 活动有4个状态
+        - 可以抽奖
+        - 不能抽奖
+        - 发放奖品
+        - 奖品领完
+    4. 活动的四个状态转化关系图
+        ```
+            已扣除50积分
+           ┌────────────>>  可以抽奖 
+           │         　  　　　│  │
+           │   90%不会中奖     │  │  
+        不能抽奖 <<────────────┘  │  点击抽奖，并中奖，概率10%
+           ^            　　  　　│
+           ^            　　　  　V
+           │            　　　  　V
+           └───<<───<<─────── 发放奖品
+                奖品数 > 0        │
+                           　 　　│ 奖品数 = 0
+                           　 　　V
+                               奖品领完
+                           　 　　│
+                           　 　　│
+                           　 　　V
+                               活动结束
+        ```
+       
+- 传统解决方式
+    - 将状态保存在一个全局变量中
+    - 通过：if-else判断状态，来执行不同的逻辑
+
+- 传统方式的缺点
+    - 代码难以应对业务变化
+        - 在添加一种状态时，需要手动添加 if-else
+        - 在添加一种功能时，要对所有的状态进行判断
+    - 代码会变的难以维护，一旦没有处理某个状态，可能会导致严重的Bug
+## 状态模式简介
+[top](#catalog)
+- 状态模式，State Pattern
+- 作用/功能
+    - 主要用来解决：**对象在多种状态转换时，需要对外输出不同行为的问题**
+- 状态模式中的状态
+    - 状态和行为是**一一对应的**，状态之间可以相互转换
+    - 当一个对象的内在状态改变时，允许改变其行为，这个对象看起来像是改变了其类
+        - 如：处于状态A时，只能使用操作A；处于状态B时，只能使用操作B
+
+- 状态模式的优缺点
+    - 优点
+        - 代码有很强的可读性，状态模式将每个状态的行为封装到一个类中
+        - 方便维护
+            - 删除了容易产生问题的 if-else 语句
+        - 符合开闭原则，容易增删状态
+    - 缺点
+        - 每个状态都需要一个对应的类，当状态过多时会产生大量的类，增加维护难度
+
+- **适用场景**
+    - 一个事件或对象有很**多种状态**，**状态之间会相互转换**，并且对不同的状态要求不同的行为
+        
+## 状态模式原理
+[top](#catalog)
+- 原理图
+    - uml代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/state/principle_uml.puml](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/state/principle_uml.puml)
+    - 图
+        - ![principle_uml](imgs/pattern/state/principle_uml.png)
+
+- 角色划分
+    - Context类：环境角色
+        - 用于维护 State 接口实例，并且定义了当前状态
+        - 通过 Context 来执行操作，并驱动State的变化
+        - 为了保证方法一致，可以让Context类实现 State接口
+    - State接口：抽象状态角色
+        - 定义一个接口与Context的一个特定接口相关的行为
+    - ConcreteState类：具体的状态角色
+        - 每个类实现一个与 Context 的一个状态相关的行为
+        
+## 状态模式实现引入问题
+[top](#catalog)
+- UML类图
+    - uml代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/state/improve/improve_uml.puml](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/state/improve/improve_uml.puml)
+    - 图
+        - ![improve_uml](imgs/pattern/state/improve/improve_uml.png)
+- 实现思路
+    - 将所有状态保存在 Activity 类中
+    - 由 Activity 类执行操作，驱动状态改变
+    - 状态类中执行相应操作，并修改 Activity 类中的状态
+
+- 活动类 / 环境角色 
+    - 参考代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/state/improve/RaffleActivity.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/state/improve/RaffleActivity.java)
+    - 代码内容
+        ```java
+        // 抽奖活动
+        public class RaffleActivity {
+            // 表示活动的当前状态。状态会不断变化
+            private State state;
+        
+            // 奖品数量
+            private int count = 0;
+        
+            // 包含可变化的几种状态
+            private State noRaffleState =  new NoRaffleState(this);
+            private State canRaffleState = new CanRaffleState(this);
+            private State dispenseState = new DispenseState(this);
+            private State dispenseOutState = new DispenseOutState(this);
+        
+            // 构造器初始化：奖品数量 和 并初始化为【不能抽奖】的状态
+            public RaffleActivity(int count) {
+                this.state = getNoRaffleState();
+                this.count = count;
+            }
+        
+            // 扣除积分
+            public void deductMoney(){
+                state.deductMoney();
+            }
+        
+            // 是否抽中奖品
+            public void raffle(){
+                // 如果当前状态是：抽奖成功，则领取奖品
+                if (state.raffle()){
+                    state.dispensePrize();
+                }
+            }
+
+            // 每次获取数量时，将数量减1
+            public int getCount() {
+                int curCount = count;
+                count--;
+                return curCount;
+            }
+            // getter、setter
+            // ...
+        }
+        ```
+- 状态类
+    - 参考代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/state/improve/State.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/state/improve/State.java)
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/state/improve/NoRaffleState.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/state/improve/NoRaffleState.java)
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/state/improve/CanRaffleState.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/state/improve/CanRaffleState.java)
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/state/improve/DispenseState.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/state/improve/DispenseState.java)
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/state/improve/DispenseOutState.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/state/improve/DispenseOutState.java)
+    - 代码内容
+        ```java
+        // 抽象状态
+        public interface State {
+            // 扣除50积分
+            void deductMoney();
+            // 是否抽中奖品
+            boolean raffle();
+            // 发放奖品
+            void dispensePrize();
+        }
+        ```
+        ```java
+        // 不能抽奖状态
+        public class NoRaffleState implements State {
+            private RaffleActivity activity;
+        
+            public NoRaffleState(RaffleActivity activity) {
+                this.activity = activity;
+            }
+        
+            // 当前状态可以扣积分，将状态设置为可以抽奖状态
+            @Override
+            public void deductMoney() {
+                System.out.println("扣除50积分，可以抽奖");
+                activity.setState(activity.getCanRaffleState());
+            }
+        
+            // 当前状态不能抽奖
+            @Override
+            public boolean raffle() {
+                System.out.println("未扣积分，不能抽奖");
+                return false;
+            }
+        
+            // 当前状态不能发放奖品
+            @Override
+            public void dispensePrize() {
+                System.out.println("不能发放奖品");
+            }
+        }
+        ```
+        ```java
+        // 可以抽奖的状态
+        public class CanRaffleState implements State {
+            private RaffleActivity activity;
+        
+            public CanRaffleState(RaffleActivity activity) {
+                this.activity = activity;
+            }
+        
+            // 已经扣除积分，进入抽奖状态，不能再次扣除积分
+            @Override
+            public void deductMoney() {
+                System.out.println("积分已扣除，可以抽奖");
+            }
+        
+            // 执行抽奖。抽奖后，根据抽奖结果，改变状态
+            @Override
+            public boolean raffle() {
+                System.out.println("正在抽奖，请稍等");
+                int num = new Random().nextInt(10);
+                // 10%的中奖几率
+                if (num == 0){
+                    // 改变状态为发放奖品
+                    activity.setState(activity.getDispenseState());
+                    return true;
+                } else {
+                    System.out.println("未中奖");
+                    // 改变状态为不能抽奖
+                    activity.setState(activity.getNoRaffleState());
+                    return false;
+                }
+            }
+        
+            @Override
+            public void dispensePrize() {
+                System.out.println("不能发放奖品");
+            }
+        }
+        ```
+        ```java
+        // 发放奖品的状态
+        public class DispenseState implements State {
+            private RaffleActivity activity;
+        
+            public DispenseState(RaffleActivity activity) {
+                this.activity = activity;
+            }
+        
+            @Override
+            public void deductMoney() {
+                System.out.println("积分已扣除，可以抽奖");
+            }
+        
+            @Override
+            public boolean raffle() {
+                System.out.println("不能抽奖");
+                return false;
+            }
+        
+            // 发放奖品
+            @Override
+            public void dispensePrize() {
+                if (activity.getCount() > 0){
+                    System.out.println("您中奖了");
+                    // 将状态设置为不能抽奖
+                    activity.setState(activity.getNoRaffleState());
+                } else {
+                    System.out.println("奖品已经发送完了");
+                    // 将状态设置为奖品发送完毕
+                    activity.setState(activity.getDispenseOutState());
+                }
+            }
+        }
+        ```
+        ```java
+        // 奖品发完状态
+        public class DispenseOutState implements State{
+            private RaffleActivity activity;
+        
+            public DispenseOutState(RaffleActivity activity) {
+                this.activity = activity;
+            }
+        
+            @Override
+            public void deductMoney() {
+                System.out.println("奖品已发完，活动结束");
+            }
+        
+            @Override
+            public boolean raffle() {
+                System.out.println("奖品已发完，活动结束");
+                return false;
+            }
+        
+            @Override
+            public void dispensePrize() {
+                System.out.println("奖品已发完，活动结束");
+            }
+        }
+        ```
+- 测试类
+    - 参考代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/state/improve/Client.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/state/improve/Client.java)
+    - 测试内容
+        ```java
+        @Test
+        public void test01(){
+            // 创建活动
+            RaffleActivity activity = new RaffleActivity(1);
+    
+            // 执行抽奖
+            for (int i = 0; i < 30; i++) {
+                System.out.println("-----第" + (i+1) + "次抽奖---");
+                activity.deductMoney();
+                activity.raffle();
+            }
         }
         ```
 
