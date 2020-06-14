@@ -1,7 +1,10 @@
 - 编程基础
     - 设计模式
-        - [基于java的设计模式](designPattern/base/base.md)
+        - [设计模式基础(基于java)](designPattern/base/base.md)
             - 配套代码：[designPattern/dplearn](designPattern/dplearn)
+    - 算法
+        - [算法基础(基于java)](algorithm/base/base_java.md)
+            - 配套代码：[algorithm/src/java-algorithm](algorithm/src/java-algorithm)
 
 - DevOps
     - [服务器软件的概念与比较](devops/server/base/serverCompare.md)
