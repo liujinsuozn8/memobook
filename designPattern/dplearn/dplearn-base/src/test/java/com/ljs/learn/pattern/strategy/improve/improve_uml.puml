@@ -1,0 +1,94 @@
+@startuml
+
+'策略接口
+interface FlyBehavior{
+    fly(): void
+}
+
+class NoFlyBehavior{
+
+}
+
+class GoodFlyBehavior{
+
+}
+
+class BadFlyBehavior{
+
+}
+
+'策略接口
+interface QuackBehavior{
+    quack(): void
+}
+
+class CanQuackBehavior{
+
+}
+
+class NoQuackBehavior{
+
+}
+
+'策略接口
+interface SwimBehavior{
+    swim(): void
+}
+
+class CanSwimBehavior{
+
+}
+
+class NoSwimBehavior{
+
+}
+
+
+'鸭子类
+abstract class Duck{
+    - flyBehavior: FlyBehavior
+    - quackBehavior: QuackBehavior
+    - swimBehavior: SwimBehavior
+
+    + setFlyBehavior(b: FlyBehavior): void
+    + setQuackBehavior(b: QuackBehavior): void
+    + setSwimBehavior(b: SwimBehavior): void
+}
+
+note left of Duck
+通过setter来切换策略
+end note
+
+class WileDuck{
+
+}
+
+class BeijingDuck{
+
+}
+
+class ToyDuck{
+
+}
+
+
+FlyBehavior <|... NoFlyBehavior
+FlyBehavior <|... GoodFlyBehavior
+FlyBehavior <|... BadFlyBehavior
+
+QuackBehavior <|... CanQuackBehavior
+QuackBehavior <|... NoQuackBehavior
+
+SwimBehavior <|... CanSwimBehavior
+SwimBehavior <|... NoSwimBehavior
+
+Duck <|-right- WileDuck
+Duck <|-right- BeijingDuck
+Duck <|-right- ToyDuck
+
+Duck o-- FlyBehavior
+Duck o-- QuackBehavior
+Duck o-- SwimBehavior
+
+
+@enduml

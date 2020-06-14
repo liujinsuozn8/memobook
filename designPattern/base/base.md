@@ -151,6 +151,18 @@
     - [状态模式简介](#状态模式简介)
     - [状态模式原理](#状态模式原理)
     - [状态模式实现引入问题](#状态模式实现引入问题)
+- 行为型-策略模式
+    - [策略模式-引入问题-鸭子问题](#策略模式-引入问题-鸭子问题)
+    - [传统方式实现鸭子问题](#传统方式实现鸭子问题)
+    - [策略模式简介](#策略模式简介)
+    - [策略模式原理](#策略模式原理)
+    - [策略模式实现引入问题](#策略模式实现引入问题)
+    - [策略模式在JDK中的应用--Arrays分析](#策略模式在JDK中的应用--Arrays分析)
+- 行为型-责任链模式
+    - [责任链模式-引入问题-OA系统采购审批](#责任链模式-引入问题-OA系统采购审批)
+    - [责任链模式简介](#责任链模式简介)
+    - [责任链模式原理](#责任链模式原理)
+    - [责任链模式实现引入问题](#责任链模式实现引入问题)
 - [](#)
 
 # 设计模式简介
@@ -7456,6 +7468,520 @@ P64
                 System.out.println("-----第" + (i+1) + "次抽奖---");
                 activity.deductMoney();
                 activity.raffle();
+            }
+        }
+        ```
+
+# 行为型-策略模式
+## 策略模式-引入问题-鸭子问题
+[top](#catalog)
+- 鸭子项目需求
+    - 有各种鸭子，如野鸭、北京鸭等等
+    - 鸭子有各种行为，如：叫、飞行等
+    - 能够显示鸭子的信息
+
+## 传统方式实现鸭子问题
+[top](#catalog)
+- 传统的实现方式
+    - 继承与重写父类方法
+- 传统方法的问题
+    - 继承带来的问题
+        - 所有鸭子都继承了Duck类，每个子类都拥有所有方法
+            - 如：fly 方法让所有鸭子都会飞
+        - 对类的局部改动，尤其是超类的局部改动，会影响其他部分
+        - 可以通过子类重写父类方法来解决
+    - 对于ToyDuck，需要覆盖父类所有的方法
+
+- UML类图
+    - uml代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/strategy/base/base_uml.puml](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/strategy/base/base_uml.puml)
+    - 图
+        - ![base_uml](imgs/pattern/strategy/base/base_uml.png)
+- 实现代码
+    - 参考代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/strategy/base/Duck.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/strategy/base/Duck.java)
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/strategy/base/WildDuck.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/strategy/base/WildDuck.java)
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/strategy/base/BeijingDuck.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/strategy/base/BeijingDuck.java)
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/strategy/base/ToyDuck.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/strategy/base/ToyDuck.java)
+    - 代码内容
+        ```java
+        public abstract class Duck {
+            // 显示鸭子的信息
+            public abstract void display();
+        
+            public void quack(){
+                System.out.println("鸭子叫");
+            }
+            public void swim(){
+                System.out.println("鸭子游泳");
+            }
+            public void fly(){
+                System.out.println("鸭子飞行");
+            }
+        }
+        ```
+        ```java
+        public class WildDuck extends Duck {
+            @Override
+            public void display() {
+                System.out.println("WildDuck");
+            }
+        }
+        ```
+        ```java
+        public class BeijingDuck extends Duck {
+            @Override
+            public void display() {
+                System.out.println("BeijingDuck");
+            }
+        
+            @Override
+            public void fly() {
+                System.out.println("北京鸭不能飞行");
+            }
+        }
+        ```
+        ```java
+        public class ToyDuck extends Duck {
+            @Override
+            public void display() {
+                System.out.println("ToyDuck");
+            }
+            public void quack(){
+                System.out.println("玩具鸭不能叫");
+            }
+            public void swim(){
+                System.out.println("玩具鸭不能游泳");
+            }
+            public void fly(){
+                System.out.println("玩具鸭不能飞行");
+            }
+        }
+        ```
+
+## 策略模式简介
+[top](#catalog)
+- 策略模式，Strategy Pattern
+- 作用/功能
+    - 定义算法族，分别封装起来，让它们之间可以互相替换
+    - 该模式让算法的变化独立于使用算法的用户
+
+- 策略模式的关键：**分析项目中变化与不变化的部分**
+- 策略模式的设计原则
+    1. 把变化的代码从不必变代码中分离出来
+    2. 针对接口编程而不是具体类（定义了策略接口）
+    3. 多用组合/聚合，少用继承（通过组合方式使用过策略）
+    4. 用行为类组合，而不是行为的继承，使用结构更有弹性
+
+- 策略模式的优缺点
+    - 优点
+        - 提供了可以替换继承关系的办法
+        - 策略模式将算法封装在独立的Strategy类中，可以独立于Context改变，易于切换和扩展
+        - 实现了开闭原则
+            - 客户端增加行为不用修改源代码，只需要添加一种策略
+            - 可以避免使用 if...else 语句
+    - 缺点
+        - 每一个策略都要对应一个类
+        - 当策略过多时会导致类过多，不好维护
+        
+## 策略模式原理
+[top](#catalog)
+- 原理类图
+    - uml代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/strategy/principle_uml.puml](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/strategy/principle_uml.puml)
+    - 图
+        - ![principle_uml](imgs/pattern/strategy/principle_uml.png)
+
+- **context 中可以包含很多种策略接口，至于需要使用哪个策略，需要在构造器中指定**
+
+## 策略模式实现引入问题
+[top](#catalog)
+- UML类图
+    - uml代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/strategy/improve/improve_uml.puml](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/strategy/improve/improve_uml.puml)
+    - 图
+        - ![improve_uml](imgs/pattern/strategy/improve/improve_uml.png)
+- 实现思路
+    - 将各种行为编码到不同类型的策略中
+    - 初始化Duck对象时，装载不同类型的策略对象
+    - 主要功能全部封装在Duck类中，子类只负责提供策略对象来完成继承
+    - 可以通过setter，单独为某个实例对象设置不同的策略对象
+- 策略接口及其实现:Fly
+    - 参考代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/strategy/improve/behavior/fly/FlyBehavior.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/strategy/improve/behavior/fly/FlyBehavior.java)
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/strategy/improve/behavior/fly/GoodFlyBehavior.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/strategy/improve/behavior/fly/GoodFlyBehavior.java)
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/strategy/improve/behavior/fly/BadFlyBehavior.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/strategy/improve/behavior/fly/BadFlyBehavior.java)
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/strategy/improve/behavior/fly/NoFlyBehavior.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/strategy/improve/behavior/fly/NoFlyBehavior.java)
+    - 代码内容
+        ```java
+        public interface FlyBehavior {
+            void fly();
+        }
+        ```
+        ```java
+        public class GoodFlyBehavior implements FlyBehavior {
+            @Override
+            public void fly() {
+                System.out.println("飞行技术好");
+            }
+        }
+        ```
+        ```java
+        public class BadFlyBehavior implements FlyBehavior {
+            @Override
+            public void fly() {
+                System.out.println("飞行技术一般");
+            }
+        }
+        ```
+        ```java
+        public class NoFlyBehavior implements FlyBehavior {
+            @Override
+            public void fly() {
+                System.out.println("无法飞行");
+            }
+        }
+        ```
+- 其他策略接口及其实现:Quack、Swim
+    - 参考代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/strategy/improve/behavior/quack](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/strategy/improve/behavior/quack)
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/strategy/improve/behavior/swim](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/strategy/improve/behavior/swim)
+- Duck及其实现类
+    - 参考代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/strategy/improve/duck/Duck.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/strategy/improve/duck/Duck.java)
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/strategy/improve/duck/WildDuck.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/strategy/improve/duck/WildDuck.java)
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/strategy/improve/duck/BeijingDuck.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/strategy/improve/duck/BeijingDuck.java)
+    - 代码内容
+        ```java
+        public abstract class Duck {
+            // 策略接口
+            FlyBehavior flyBehavior;
+            QuackBehavior quackBehavior;
+            SwimBehavior swimBehavior;
+        
+            // 显示鸭子的信息
+            public abstract void display();
+        
+            // 调用策略对象实现功能
+            public void quack(){
+                if (quackBehavior != null){
+                    quackBehavior.quack();
+                }
+            }
+            public void swim(){
+                if (swimBehavior != null){
+                    swimBehavior.swim();
+                }
+            }
+            public void fly(){
+                if (flyBehavior != null){
+                    flyBehavior.fly();
+                }
+            }
+        }
+        ```
+        ```java
+        public class WildDuck extends Duck {
+            public WildDuck() {
+                flyBehavior = new GoodFlyBehavior();
+                quackBehavior = new CanQuackBehavior();
+                swimBehavior = new CanSwimBehavior();
+            }
+        
+            @Override
+            public void display() {
+                System.out.println("WildDuck");
+            }
+        }
+        ```
+        ```java
+        public class ToyDuck extends Duck {
+            public ToyDuck() {
+                flyBehavior = new NoFlyBehavior();
+                quackBehavior = new NoQuackBehavior();
+                swimBehavior = new NoSwimBehavior();
+            }
+        
+            @Override
+            public void display() {
+                System.out.println("ToyDuck");
+            }
+        }
+        ```
+- 测试类
+    - 参考代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/strategy/improve/Client.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/strategy/improve/Client.java)
+    - 测试内容
+        ```java
+        @Test
+        public void test01(){
+            // 1. 创建并使用对象
+            Duck wildDuck = new WildDuck();
+            wildDuck.display();
+            wildDuck.fly();
+            wildDuck.quack();
+            wildDuck.swim();
+    
+            Duck toyDuck = new ToyDuck();
+            toyDuck.display();
+            toyDuck.fly();
+            toyDuck.quack();
+            toyDuck.swim();
+    
+            // 2. 创建对象，并修改某个策略对象
+            Duck wildDuck02 = new WildDuck();
+            wildDuck02.setFlyBehavior(new BadFlyBehavior());
+            wildDuck02.setSwimBehavior(new NoSwimBehavior());
+            wildDuck02.display();
+            wildDuck02.fly();
+            wildDuck02.quack();
+            wildDuck02.swim();
+        }
+        ```
+      
+## 策略模式在JDK中的应用--Arrays分析
+[top](#catalog)
+- Arrays.sort 中的 Comparator 使用了策略模式
+- 测试代码
+    - 参考代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/strategy/jdk/ArraysTest.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/strategy/jdk/ArraysTest.java)
+    - 测试内容
+        ```java
+        @Test
+        public void test01(){
+            Integer[] data = {3,2,6,4,8,2,4};
+            // 创建匿名类对象，按照降序排序
+            // 相当于一个策略接口的对象
+            // 在compare中执行策略
+            Comparator<Integer> comparator = new Comparator<Integer>() {
+                @Override
+                public int compare(Integer o1, Integer o2) {
+                    if (o1 < o2) {
+                        return 1;
+                    } else {
+                        return -1;
+                    }
+                }
+            };
+    
+            // [3, 2, 6, 4, 8, 2, 4]
+            System.out.println(Arrays.toString(data));
+            Arrays.sort(data, comparator);
+            // [8, 6, 4, 4, 3, 2, 2]
+            System.out.println(Arrays.toString(data));
+        }
+        ```
+
+- Arrays.sort 源码
+    ```java
+    // 调用时，指定策略对象
+    public static <T> void sort(T[] a, Comparator<? super T> c) {
+        if (c == null) {
+            // 如果没有指定策略，则使用默认排序方式
+            sort(a);
+        } else {
+            // 使用策略对象完成排序
+            if (LegacyMergeSort.userRequested)
+                legacyMergeSort(a, c);
+            else
+                TimSort.sort(a, 0, a.length, c, null, 0, 0);
+        }
+    }
+    ```
+
+# 行为型-责任链模式
+## 责任链模式-引入问题-OA系统采购审批
+[top](#catalog) 
+- OA系统的需求
+    1. 采购员采购教学器材
+    2. 如果金额 <= 5000，由教学主任审批 （0 <= x <= 5000）
+    3. 如果金额 <= 10000，由院长审批 （5000 <= x <= 10000）
+    4. 如果金额 <= 30000，由副校长审批 （10000 <= x <= 30000）
+    5. 如果金额 > 30000，由校长审批 （ x > 30000）
+- 传统解决方案
+    - 接收到一个请求后，根据采购金额来调用对应的审批者 Approver
+    - UML类图
+        - uml代码
+            - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/responsibility/base/base_uml.puml](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/responsibility/base/base_uml.puml)  
+        - 图
+            - ![base_uml](imgs/pattern/responsibility/base/base_uml.png)
+
+- 传统方式的问题
+    - 需要使用 if-else 来根据不同的金额进行处理 
+    - 如果各个级别的审批解发生变化，代码也需要变化
+    - 编码时，必须明确知道有多少个审批级别
+    - 采购处理本身 和 审批者 Approver 存在强耦合关系，不利于代码的扩展和维护
+
+## 责任链模式简介
+[top](#catalog) 
+- 责任链模式，Chain of Responsibility pattern
+- 功能/作用
+    - 责任链模式为请求创建了一个接受者对象的链，将请求的接收者和发送者解耦
+    - 将多个接受者组成一条链，并沿着这条链传递请求，直到有一个对象处理它为止
+- 在责任链模式中，通常每个接受者都包含对另一个接受者的引用。如果一个对象不能处理该请求，则会将请求传给下一个接受者
+
+- 责任链模式的优点和缺点 
+    - 优点
+        - 将请求和处理分开，实现解耦，提高系统的灵活性
+        - 简化了对象，使对象不需要知道链的结构
+    - 缺点
+    - 性能会受到影响
+        - 如果链比较长，会影响性能
+        - 需要控制链中最大结点的数量，在 Handler 之间建立连接时，需要判断是否已经超阀值，避免责任链过长
+    - 调试不方便
+        - 责任链采用了类似递归的方式调用，调试逻辑比较复杂
+- 适用场景
+    - 有多个对象可以处理同一个请求
+    - 如：
+        - 多级请求
+        - 请加/加薪等审批流程
+        - java web中 Tomcat对Encoding的处理
+        - 拦截器
+
+## 责任链模式原理
+[top](#catalog) 
+- 原理类图
+    - uml代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/responsibility/principle_uml.puml](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/responsibility/principle_uml.puml)
+    - 图
+        - ![/designPattern/base/imgs/pattern/responsibility/principle_uml.png](/designPattern/base/imgs/pattern/responsibility/principle_uml.png)
+- 角色划分
+    - Handler：抽象处理者
+        - 定义了一个处理请求的接口
+        - 在内部包含另外一个Handler
+    - ConcreteHandler：具体处理者
+        - 处理自己负责的请求，可以访问它的后继者，即下一个处理者
+        - 如果可以处理当前请求，则进行处理，否则将请求交给后继者处理，从而形成一个责任链
+    - Request
+        - 含有很多属性，表示一个请求
+        
+- 责任链的形式
+    - 单条责任链
+        - 一般情况下会从起点位置开始传入 Request，直到无法搜索到可以处理的 Handler
+    - 环状责任链
+        - 如果希望：从任何位置的 Approver 开始都能够寻找到可以处理请求的 Handler，则需要构建一个环状责任链
+
+
+## 责任链模式实现引入问题
+[top](#catalog) 
+- UML类图
+    - uml代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/responsibility/improve/improve_uml.puml](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/responsibility/improve/improve_uml.puml)
+    - 图
+        - ![imgs/pattern/responsibility/improve/improve_uml.png](imgs/pattern/responsibility/improve/improve_uml.png)
+- 实现思路
+    - 每个 Approver 相当于一个 Handler，内部包含下一个 Approver
+    - 初始化时，手动构成责任链
+    - 将 Request 作为请求，传入 Approver 的方法中，启动责任链，并搜索可以处理请求的 Approver
+
+- Request
+    - 参考代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/responsibility/improve/PurchaseRequest.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/responsibility/improve/PurchaseRequest.java)
+    - 代码内容
+        ```java
+        // 请求类
+        public class PurchaseRequest {
+            private int type = 0 ;// 请求类型
+            private float price = 0.0f;//请求金额
+            private int id = 0;
+        
+            public PurchaseRequest(int type, float price, int id) {
+                this.type = type;
+                this.price = price;
+                this.id = id;
+            }
+            // getter、setter
+        }
+        ```
+- Approver及其实现类，即 Handler
+    - 参考代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/responsibility/improve/Approver.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/responsibility/improve/Approver.java)
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/responsibility/improve/DepartmentApprover.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/responsibility/improve/DepartmentApprover.java)
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/responsibility/improve/CollegeApprover.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/responsibility/improve/CollegeApprover.java)
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/responsibility/improve/ViceSchoolMasterApprover.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/responsibility/improve/ViceSchoolMasterApprover.java)
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/responsibility/improve/SchoolMasterApprover.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/responsibility/improve/SchoolMasterApprover.java)
+    - 代码内容
+        ```java
+        public abstract class Approver {
+            // 下一个处理者
+            Approver approver;
+            // 名字
+            String name;
+        
+            public Approver(String name) {
+                this.name = name;
+            }
+        
+            public void setApprover(Approver approver) {
+                this.approver = approver;
+            }
+        
+            // 处理请求的方法，得到一个请求
+            // 处理是由子类完成的，需要一个抽象方法
+            public abstract void processRequest(PurchaseRequest request);
+        }
+        ```
+        ```java
+        public class DepartmentApprover extends Approver {
+            public DepartmentApprover(String name) {
+                super(name);
+            }
+        
+            @Override
+            public void processRequest(PurchaseRequest request) {
+                if (request.getPrice() <= 5000){
+                    System.out.println("request id = " + request.getId() + ", processed by: " + name);
+                } else {
+                    approver.processRequest(request);
+                }
+            }
+        }
+        ```
+        ```java
+        public class CollegeApprover extends Approver {
+            public CollegeApprover(String name) {
+                super(name);
+            }
+        
+            @Override
+            public void processRequest(PurchaseRequest request) {
+                if (request.getPrice() > 5000 && request.getPrice() <= 10000){
+                    System.out.println("request id = " + request.getId() + ", processed by: " + name);
+                } else {
+                    approver.processRequest(request);
+                }
+            }
+        }
+        ```
+        ```java
+        public class ViceSchoolMasterApprover extends Approver {
+            public ViceSchoolMasterApprover(String name) {
+                super(name);
+            }
+        
+            @Override
+            public void processRequest(PurchaseRequest request) {
+                if (request.getPrice() > 10000 && request.getPrice() <= 30000){
+                    System.out.println("request id = " + request.getId() + ", processed by: " + name);
+                } else {
+                    approver.processRequest(request);
+                }
+            }
+        }
+        ```
+        ```java
+        public class SchoolMasterApprover extends Approver {
+            public SchoolMasterApprover(String name) {
+                super(name);
+            }
+        
+            @Override
+            public void processRequest(PurchaseRequest request) {
+                if (request.getPrice() > 30000){
+                    System.out.println("request id = " + request.getId() + ", processed by: " + name);
+                } else {
+                    approver.processRequest(request);
+                }
             }
         }
         ```

@@ -1,0 +1,47 @@
+@startuml
+
+interface Strategy{
+    + operation1(): void
+    + operation2(): void
+}
+
+class ConcreteStrategyA{
+
+}
+
+class ConcreteStrategyB{
+
+}
+interface StrategyB{
+    + operation1(): void
+    + operation2(): void
+}
+
+class ConcreteStrategyC{
+
+}
+
+class ConcreteStrategyD{
+
+}
+
+class Context{
+    - strategy1:Strategy
+    - strategy2:StrategyB
+    + setStrategy1(s: Strategy): void
+    + setStrategy2(s: StrategyB): void
+}
+
+note left of Context
+通过setter来切换策略
+end note
+
+Strategy <|-- ConcreteStrategyA
+Strategy <|-- ConcreteStrategyB
+
+StrategyB <|-- ConcreteStrategyC
+StrategyB <|-- ConcreteStrategyD
+
+Context o--- Strategy
+Context o--- StrategyB
+@enduml

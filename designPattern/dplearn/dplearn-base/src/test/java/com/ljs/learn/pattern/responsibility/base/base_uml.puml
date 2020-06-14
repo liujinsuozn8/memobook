@@ -1,0 +1,23 @@
+@startuml
+
+class PurchaseRequest{
+    - type
+    - number
+    - price
+    + getSum():int
+}
+
+class Approver01{
+
+}
+class Approver02{
+
+}
+class Approver03{
+
+}
+
+PurchaseRequest ...> Approver01
+PurchaseRequest ...> Approver02
+PurchaseRequest ...> Approver03
+@enduml
