@@ -22,6 +22,7 @@
 - 框架
     - Spring
         - [基本知识](java/spring/base/base.md)
+        - [Spring注解开发](java/spring/anotation/base.md)
         - [集成其他框架](java/spring/integration/integration.md)
         - [SSM框架集成](/java/spring/ssm/base.md)
     - Mybatis
@@ -101,7 +102,7 @@
 
 - 开发工具
     - jetbrains
-        - [intellijIDEA](intellijIDEA/base_memo.md)
+        - [intellijIDEA](intellijIDEA/base/base.md)
 
 - linux
     - [基本知识](linux/base/base.md)

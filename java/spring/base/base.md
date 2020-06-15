@@ -1400,7 +1400,15 @@
 - 使用注解开发时，需要在xml中指定需要扫描的包路径。启动后，Spring会自动扫描包下的有效bean
 - 配置内容
     ```xml
-    <context:component-scan base-package="包路径"/>
+    <context:component-scan 
+        base-package="包路径" 
+        use-default-fileters="true/false(是否使用默认的过滤规则，默认扫描所有)"
+    />
+        <!-- 配置只扫描哪些包，需要：use-default-fileters="false" -->
+        <context:include-filter type="过滤类型" expression="匹配规则"/> 
+        <!-- 配置不扫描哪些包 -->
+        <context:exclude-filter type="过滤类型" expression="匹配规则"/> 
+    </context:component-scan>
     ```
 
 - 在设置包内扫描后，不需要显示的在xml中配置bean，所以需要使用各种注解来完成对应的xml配置功能
@@ -1731,7 +1739,8 @@
         <import resource="其他配置文件的路径"></import>
         ```
     - 可以修饰类接口
-    - `@Import(a.class, b.class,...)`，使用时，写明需要引入的类的`Class`对象，一个注解中可以引入多个
+    - `@Import(a.class, b.class,...)`，使用时，写明需要引入的类的`Class`对象
+    - 一个注解中可以引入多个
     - 源码
         ```java
         @Target(ElementType.TYPE)
@@ -1808,7 +1817,7 @@
 
 - 注解之间的配合
     - 如果在配置类中使用`@Bean`注册了，则被注册的类可以不使用`@Component`，只用注册信息就可以搜索到类
-    - 如果在类没有用`@Bean`在配置类中注册，需要使用两个注解：`@Component`和`@ComponentScan(包名)` 相互配合
+    - 如果类没有用`@Bean`在配置类中注册，需要使用两个注解：`@Component`和`@ComponentScan(包名)` 相互配合
         1. 使用`@Component`装饰bean类
         2. 使用`@ComponentScan(包名)`装饰配置类，以保证在启动时Spring可以搜索到该类
         3. 如果没有这两个注解的配合，将无法通过Spring的上下文对象获取bean

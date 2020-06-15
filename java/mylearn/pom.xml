@@ -20,6 +20,8 @@
     <module>myspringMVC</module>
     <module>myssm</module>
     <module>myshiro</module>
+      <module>myspring-annotation</module>
+    <module>myspring-annotation</module>
 
   </modules>
 
