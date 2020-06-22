@@ -7985,5 +7985,32 @@ P64
             }
         }
         ```
+- 测试代码
+    - 参考代码
+        - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/responsibility/improve/Client.java](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/responsibility/improve/Client.java)
+    - 测试内容
+        ```java
+        @Test
+        public void test01() {
+            // 1. 创建一个请求
+            PurchaseRequest request = new PurchaseRequest(1, 35000, 1);
+
+            // 2. 创建各级审批者
+            Approver department = new DepartmentApprover("Department A");
+            Approver college = new CollegeApprover("College A");
+            Approver viceSchoolMaster = new ViceSchoolMasterApprover("ViceSchoolMaster A");
+            Approver schoolMaster = new SchoolMasterApprover("SchoolMaster A");
+
+            // 3. 将审批着组成责任链
+            // 如果希望从任何一个级别开始都能够处理，则需要处理人构成环形
+            department.setApprover(college);
+            college.setApprover(viceSchoolMaster);
+            viceSchoolMaster.setApprover(schoolMaster);
+            schoolMaster.setApprover(department);
+
+            // 4. 处理请求
+            department.processRequest(request);
+        }
+        ```
 
 [top](#catalog)
