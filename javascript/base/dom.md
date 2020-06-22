@@ -1340,6 +1340,10 @@
         ```js
         event.cancelBubble = true;
         ```
+    - 执行`event.stopPropagation()`
+    - `event.stopPropagation()` 与 `event.cancelBubble` 的不同点
+        - `stopPropagation` 方法属于W3C标准，但是IE浏览器不兼容
+        - `cancelBubble` 不属于W3C标准`，开始只有IE浏览器支持，现在部分浏览器也开始支持
 
 - 示例
     - [/javascript/base/src/dom/domEvent/eventBubble.html](/javascript/base/src/dom/domEvent/eventBubble.html)
@@ -1951,6 +1955,7 @@
     |元素拖拽|当拖拽一个网页中的内容时，浏览器会默认到搜索引擎中搜索内容|这种 默认行为 可能会导致拖拽功能的异常|
     |鼠标滚轮滚动|如果页面有滚动条，鼠标在某个元素上滚轮滚动时，会触发浏览器的默认事件，整个页面也会同时滚动||
     |键盘按下|当在文本框中按下键盘时，一些按钮的内容会输入到文本框中||
+    |submit按钮按下|form的submit按钮按下后，会**自动提交表单**||
     
 - 取消默认行为
     - 两种取消方法

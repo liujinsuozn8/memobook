@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>create scope</title>
+</head>
+<body>
+    <button class="btn01">btn01-1</button>
+    <button class="btn01">btn01-2</button>
+    <button class="btn01">btn01-3</button>
+    <button class="btn01">btn01-4</button>
+    
+    <br>
+    <button class="btn02">btn02-1</button>
+    <button class="btn02">btn02-2</button>
+    <button class="btn02">btn02-3</button>
+    <button class="btn02">btn02-4</button>
+    
+    <br>
+    <button class="btn03">btn03-1</button>
+    <button class="btn03">btn03-2</button>
+    <button class="btn03">btn03-3</button>
+    <button class="btn03">btn03-4</button>
+
+    <script type="text/javascript">
+        // 1. 默认情况下 for 没有作用域，每次用的都是同一个i
+        var btn01s = document.querySelectorAll('.btn01');
+        for(var i = 0; i < btn01s.length; i++){
+            btn01s[i].onclick = function(){ console.log(i)};
+            // 每次都会输出5
+        }
+
+        // 2. 闭包函数有自己独立的作用域，可以保存变量
+        var btn02s = document.querySelectorAll('.btn02');
+        for (var i = 0; i < btn02s.length; i++){
+            (function(index){
+                btn02s[index].onclick = function(){ console.log(index)};
+            })(i)
+        }
+
+        // 3. 使用let之后，每次循环都会创建一个作用域，每次使用的 i 都是自己作用域内部的变量
+        var btn03s = document.querySelectorAll('.btn03');
+        for (let i = 0; i < btn03s.length; i++){
+            btn03s[i].onclick = function(){ console.log(i)};
+        }        
+    </script>
+</body>
+</html>
