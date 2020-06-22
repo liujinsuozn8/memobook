@@ -1,0 +1,39 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>show list</title>
+    </head>
+    <body>
+        <div id="mylist">
+            <!-- 显示方式1：手动循环 -->
+            <section>show list method01:</section>
+            <ul>
+                <li>{{tlist[0]}}</li>
+                <li>{{tlist[1]}}</li>
+                <li>{{tlist[2]}}</li>
+                <li>{{tlist[3]}}</li>
+            </ul>
+
+            <!-- 显示方式2：使用vue指令，自动遍历数组 -->
+            <section>show list method02:</section>
+            <ul>
+                <li v-for='item in tlist'>{{item}}</li>
+            </ul>
+        </div>
+        <script type='text/javascript' src='./js/vue.js'></script>
+        <script type='text/javascript'>
+            let app = new Vue({
+                el: '#mylist',
+                data:{
+                    tlist:[
+                        'aaaaa',
+                        'bbbb',
+                        'cccc',
+                        'ddddd',
+                    ]
+                }
+            });
+        </script>
+    </body>
+</html>

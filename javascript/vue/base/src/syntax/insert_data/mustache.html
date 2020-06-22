@@ -1,0 +1,27 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta charset='UTF-8'>
+        <title>mustache</title>
+    </head>
+    <body>
+        <div id="app">
+            <!-- 拼接内容 -->
+            <div>{{param1}} - {{param2}}</div>
+            <div>{{param1 + ' ' + param2}}</div>
+            <!-- 显示count的2倍 -->
+            <div>{{count * 2}}</div>
+        </div>
+        <script src='../js/vue.js'></script>
+        <script>
+            let app = new Vue({
+                el:"#app",
+                data:{
+                    count:4,
+                    param1:'12345',
+                    param2:'qwert',
+                }
+            });
+        </script>
+    </body>
+</html>

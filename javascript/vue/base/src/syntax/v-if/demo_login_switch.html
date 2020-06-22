@@ -1,0 +1,44 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta charset='UTF-8'>
+        <title>demo login switch</title>
+    </head>
+    <body>
+        <div id="app">
+            <!-- 根据 boolean型变量来控制登录模式 -->
+            <span v-if='loginType'>
+                <label for="username">username: </label>
+                <!-- 设置 key='username'，来防止DOM元素复用 -->
+                <input type="text" name="username" key='username'>
+            </span>
+            <span v-else>
+                <label for="useremail">useremail: </label>
+                <!-- 设置 key='useremail'，来防止DOM元素复用 -->
+                <input type="email" id="useremail" key='useremail'>
+            </span>
+
+            <br>
+            <!-- 通过按钮来切换 boolean型变量的值 -->
+            <button @click='loginByName'>login by name</button>
+            <button @click='loginByEmail'>login by email</button>
+        </div>
+        <script type='text/javascript' src='../js/vue.js'></script>
+        <script type='text/javascript'>
+            const app = new Vue({
+                el:'#app',
+                data:{
+                    loginType: 'true', // true=username, false=useremail
+                },
+                methods:{
+                    loginByName(){
+                        this.loginType=true;
+                    },
+                    loginByEmail(){
+                        this.loginType=false;
+                    }
+                }
+            })
+        </script>
+    </body>
+</html>

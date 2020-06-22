@@ -1,0 +1,61 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta charset='UTF-8'>
+        <title>v-bind</title>
+        <style>
+            .text__active{
+                color:red;
+                font-size: 20px;
+            }
+            .text__line{
+                color:black;
+                font-size: 15px;
+            }
+
+            .bcbox{
+                background-color: #aaa;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="app">
+            <!-- 通过 对象语法 来设置属性值，
+                 value 为 true 的属性会生效
+            -->
+
+            <!-- 1. 直接使用对象 -->
+            <div>1. 直接使用对象</div>
+            <div :class='{text__line: isLine, text__active: isActive}'>test content</div>
+
+            <!-- 2. 使用某个 method -->
+            <div>2. 使用某个 method</div>
+            <div :class='setClass()'>test content</div>
+
+            <!-- 3. 和其他 class 共存 -->
+            <div>3. 和其他 class 共存</div>
+            <div class='bcbox' :class='{text__line: isLine, text__active: isActive}'>test content</div>
+
+            <button @click='changeClass'>change class</button>
+        </div>
+        <script src='../js/vue.js'></script>
+        <script>
+            let app = new Vue({
+                el:"#app",
+                data:{
+                    isActive: false,
+                    isLine: true,
+                },
+                methods:{
+                    changeClass: function(){
+                        this.isActive = !this.isActive;
+                        this.isLine = !this.isLine;
+                    },
+                    setClass: function(){
+                        return {text__line: this.isLine, text__active: this.isActive};
+                    }
+                }
+            });
+        </script>
+    </body>
+</html>

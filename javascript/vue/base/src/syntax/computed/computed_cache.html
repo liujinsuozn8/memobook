@@ -1,0 +1,65 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta charset='UTF-8'>
+        <title>computed cache</title>
+    </head>
+    <body>
+        <div id="app">
+            <!-- 1. 第一次执行计算，在控制台输出: `call fullMsg` -->
+            <div>{{fullMsg}}</div>
+
+            <!-- 2. 之后的多次计算使用缓存，控制台不会有任何输出 -->
+            <div>{{fullMsg}}</div>
+            <div>{{fullMsg}}</div>
+            <div>{{fullMsg}}</div>
+
+            <!-- 3. 输入新的msg1，并点击按钮，会修改 msg1 的值。
+                 因为计算属性中使用了 this.msg1，所以会重新计算，
+                 并在控制台输出一次: `call fullMsg`。
+
+                 通过方法获取结果时，也会重新计算，因为没有缓存，
+                 方法会调用多次，在控制台会输出多次: `call getFullMsg`
+            -->
+            <input type="text" id='newMsg1'>
+            <button @click='changeMsg1'>change msg1</button>
+
+            <div>---------------------------------------</div>
+            <!-- 4. 通过方法获取结果。方法没有缓存，每次都会重新计算
+                 在控制台会输出多次: `call getFullMsg`
+            -->
+            <div>{{getFullMsg()}}</div>
+            <div>{{getFullMsg()}}</div>
+            <div>{{getFullMsg()}}</div>
+            <div>{{getFullMsg()}}</div>
+        </div>
+        <script type='text/javascript' src='../js/vue.js'></script>
+        <script type='text/javascript'>
+            let app = new Vue({
+                el: '#app',
+                data:{
+                    msg1: 'start',
+                    msg2: 'end'
+                },
+                computed:{
+                    fullMsg: function(){
+                        // 多次调用时只会打印一次
+                        console.log('call fullMsg');
+                        // 计算属性中使用了 data中的数据，当数据发生变化时，会重新计算
+                        return this.msg1 + ' ' + this.msg2;
+                    }
+                },
+                methods:{
+                    // 修改 data 中的数据，来触发计算属性的重新计算
+                    changeMsg1: function(){
+                        this.msg1 = document.querySelector('#newMsg1').value;
+                    },
+                    getFullMsg: function(){
+                        console.log('call getFullMsg');
+                        return this.msg1 + '---' + this.msg2;
+                    }
+                }
+            });
+        </script>
+    </body>
+</html>

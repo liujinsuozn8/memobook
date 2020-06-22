@@ -1,0 +1,27 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta charset='UTF-8'>
+        <title>v-cloak</title>
+        <style>
+            /* 设置不显示包含 v-cloak 的属性 */
+            [v-cloak]{
+                display: none;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="app" v-cloak>
+            {{msg}}
+        </div>
+        <script src='../js/vue.js'></script>
+        <script>
+            let app = new Vue({
+                el:"#app",
+                data:{
+                    msg:'testmsg'
+                }
+            });
+        </script>
+    </body>
+</html>

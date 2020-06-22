@@ -1,0 +1,41 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>counter</title>
+    </head>
+    <body>
+        <div id="counter">
+            <div>{{count}}</div>
+            <!-- 绑定指令监听的事件 -->
+            <!-- 1. 直接修改变量 -->
+            <button v-on:click="count++">+</button>
+            <button v-on:click="count--">-</button>
+            <br>
+            <!-- 2. 调用方法 -->
+            <button v-on:click="incr">+</button>
+
+            <!-- 3. 绑定方法的简写方式 -->
+            <button @click="sub">-</button>
+        </div>
+
+        <script type='text/javascript' src='./js/vue.js'></script>
+        <script type='text/javascript'>
+            let counter = document.querySelector('#counter');
+
+            // 将data从Vue对象中抽取处理，单独设置，形成model
+            // 在Vue对象内部，通过代理的方式，使得 this 对象可以访问到内部的属性
+            let app_data = { count:0, };
+
+            // 通过 Vue对象构造 ViewModel
+            let app = new Vue({
+                el: counter,// 直接挂载DOM对象
+                data: app_data,
+                methods:{
+                    incr: function(){this.count++},
+                    sub: function(){this.count--},
+                }
+            });
+        </script>
+    </body>
+</html>

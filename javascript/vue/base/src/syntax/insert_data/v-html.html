@@ -1,0 +1,26 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta charset='UTF-8'>
+        <title>v-html</title>
+    </head>
+    <body>
+        <div id="app">
+            <div>show text: {{htmlData}}</div>
+
+            <!-- 最终会被翻译为 <div><a></a></div> 的形式 -->
+            show html: <div v-html='htmlData'></div>
+
+        </div>
+        <script src='../js/vue.js'></script>
+        <script>
+            let app = new Vue({
+                el:"#app",
+                data:{
+                    // 模拟从服务器获取一段html代码
+                    htmlData:'<a href="https://www.baidu.com/">baidu</a>'
+                }
+            });
+        </script>
+    </body>
+</html>

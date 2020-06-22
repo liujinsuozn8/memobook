@@ -1,0 +1,24 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta charset='UTF-8'>
+        <title>v-pre</title>
+    </head>
+    <body>
+        <div id="app">
+            <!-- 1. 执行数据绑定 -->
+            <div>{{msg}}</div>
+            <!-- 2. 跳过编译，直接在页面中显示 {{msg}} -->
+            <div v-pre>{{msg}}</div>
+        </div>
+        <script src='../js/vue.js'></script>
+        <script>
+            let app = new Vue({
+                el:"#app",
+                data:{
+                    msg:'testmsg'
+                }
+            });
+        </script>
+    </body>
+</html>

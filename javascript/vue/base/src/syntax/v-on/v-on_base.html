@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>v-on base</title>
+</head>
+<body>
+    <div id="app">
+        <div>{{count}}</div>
+        <!-- 1. Function -->
+        <!-- 1.1 使用无参函数 -->
+        <button v-on:click='add'>add1</button>
+        <!-- 1.2 使用有参函数，并传递参数 -->
+        <button v-on:click='addN(3)'>add + 3</button>
+        <!-- 1.3 使用有参函数，但是没有传递参数
+            参数的值默认为 undefined，0 + undefined = NaN
+        -->
+        <button v-on:click='addN()'>addN undefined</button>
+        <!-- 1.4 只通过函数名使用有参函数 -->
+        <button v-on:click='addN'>addN event</button>
+
+        <!-- 2. 简写语法 -->
+        <button @click='sub'>sub1</button>
+        <br>
+        <!-- 3. Inline Statement，内联语句 -->
+        <button v-on:click='count=0'>clear</button>
+
+        <br>
+        <br>
+        <!-- 1.5 使用参数中包含普通参数和event对象的函数 -->
+        <button v-on:click='eventTest("clickTest", $event)'>eventTest</button>
+
+    </div>
+    <script src="../js/vue.js"></script>
+    <script>
+        const app = new Vue({
+            el:'#app',
+            data:{
+                count:0,
+            },
+            methods:{
+                add(){
+                    this.count++;
+                },
+                sub(){
+                    this.count--;
+                },
+                addN(n){
+                    this.count += n;
+                },
+                eventTest(p, event){
+                    console.log(`p=${p}，event=${event}`)
+                }
+            }
+        });
+    </script>
+</body>
+</html>

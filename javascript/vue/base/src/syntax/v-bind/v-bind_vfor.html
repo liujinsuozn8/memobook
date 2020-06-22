@@ -1,0 +1,29 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>v-bind v-for</title>
+        <style>
+            .active{
+                color: red;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="app">
+            <ul>
+                <li v-for='(ele, i) in tlist' :class >{{i}} - {{ele}}</li>
+            </ul>
+        </div>
+
+        <script type='text/javascript' src='../js/vue.js'></script>
+        <script type='text/javascript'>
+            let app = new Vue({
+                el:'#app',
+                data:{
+                    tlist:['aaa','bbbb','ccc','ddd']
+                }
+            });
+        </script>
+    </body>
+</html>

@@ -1,0 +1,37 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta charset='UTF-8'>
+        <title>v-bind style</title>
+    </head>
+    <body>
+        <div id="app">
+            <!-- 直接设置需要加单引号 -->
+            <div :style="[{fontSize: '10px'},{color: 'red'}]">{{msg}}</div>
+
+            <!-- 使用变量 -->
+            <div :style="[style1, style2]">{{msg}}</div>
+            <!-- 使用方法 -->
+            <div :style="getStyle()">{{msg}}</div>
+            <!-- 与其他style共存 -->
+            <div style='color:#47e' :style="getStyle()">{{msg}}</div>
+
+        </div>
+        <script src='../js/vue.js'></script>
+        <script>
+            let app = new Vue({
+                el:'#app',
+                data:{
+                    msg:'testMsg',
+                    style1: {finalSize: '15px'},
+                    style2: {backgroundColor: '#aaa'},
+                },
+                methods:{
+                    getStyle:function(){
+                        return [this.style1, this.style2]
+                    }
+                }
+            });
+        </script>
+    </body>
+</html>

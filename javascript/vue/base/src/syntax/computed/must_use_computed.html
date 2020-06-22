@@ -1,0 +1,33 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta charset='UTF-8'>
+        <title>must_use_computed</title>
+    </head>
+    <body>
+        <div id="app">
+            <!-- 通过计算属性获取书的总价 -->
+            <div>totalPrice of books: {{booksTotalPrice}}</div>
+        </div>
+        <script type='text/javascript' src='../js/vue.js'></script>
+        <script type='text/javascript'>
+            let app = new Vue({
+                el:'#app',
+                data:{
+                    books:[
+                        {id:'0001', name:'book01', price:100},
+                        {id:'0002', name:'book02', price:200},
+                        {id:'0003', name:'book03', price:300},
+                        {id:'0004', name:'book04', price:400},
+                        {id:'0005', name:'book05', price:500},
+                    ]
+                },
+                computed:{
+                    booksTotalPrice: function(){
+                        return this.books.map((item)=>item.price).reduce((prev, curr)=>prev + curr);
+                    }
+                }
+            });
+        </script>
+    </body>
+</html>

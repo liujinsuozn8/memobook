@@ -1,0 +1,36 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta charset='UTF-8'>
+        <title>v-bind style</title>
+    </head>
+    <body>
+        <div id="app">
+            <!-- 直接设置需要加单引号 -->
+            <div :style="{fontSize: '10px'}">{{msg}}</div>
+
+            <!-- 使用变量 -->
+            <div :style="{fontSize: finalSize}">{{msg}}</div>
+            <!-- 使用方法 -->
+            <div :style="getStyle()">{{msg}}</div>
+            <!-- 与其他style共存 -->
+            <div style='background-color: #aaa;' :style="getStyle()">{{msg}}</div>
+
+        </div>
+        <script src='../js/vue.js'></script>
+        <script>
+            let app = new Vue({
+                el:'#app',
+                data:{
+                    msg:'testMsg',
+                    finalSize: '10px',
+                },
+                methods:{
+                    getStyle:function(){
+                        return {fontSize: this.finalSize}
+                    }
+                }
+            });
+        </script>
+    </body>
+</html>

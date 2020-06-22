@@ -1,0 +1,57 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta charset='UTF-8'>
+        <title>computed getter & setter</title>
+    </head>
+    <body>
+        <div id="app">
+            <div>{{fullMsg}}</div>
+
+            <div>{{fullName}}</div>
+
+            <!-- 在此输入 newName -->
+            newName: <input type="text" id="newName" placeholder="please write new name">
+            <!-- 点击按钮后，从文本框 newName 中获取数据，并重新设置 fullName-->
+            <button @click='changeName'>changeName</button>
+        </div>
+        <script type="text/javascript" src='../js/vue.js'></script>
+        <script>
+            let app = new Vue({
+                el:'#app',
+                data:{
+                    msg1:'start',
+                    msg2:'end',
+
+                    firstName:'aaa',
+                    endName:'bbb'
+                },
+                computed:{
+                    // 1. 只包含 getter
+                    fullMsg:{
+                        get: function(){
+                            return this.msg1 + this.msg2;
+                        },
+                        // set: function(data){...}
+                    },
+
+                    // 2. 同时设置 getter、setter
+                    fullName:{
+                        get: function(){
+                            return this.firstName + ' ' + this.endName;
+                        },
+                        set: function(newName){
+                            [this.firstName, this.endName] = newName.split(' ');
+                        }
+                    }
+                },
+                methods:{
+                    // 重新设置 fullName
+                    changeName: function(){
+                        this.fullName = document.querySelector('#newName').value;
+                    }
+                }
+            });
+        </script>
+    </body>
+</html>

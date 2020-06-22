@@ -1,0 +1,27 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta charset='UTF-8'>
+        <title>v-text</title>
+    </head>
+    <body>
+        <div id="app">
+            <div v-text='msg'>msg =</div>
+            <button v-on:click='change'>change</button>
+        </div>
+        <script src='../js/vue.js'></script>
+        <script>
+            let app = new Vue({
+                el:"#app",
+                data:{
+                    msg:'testmsg'
+                },
+                methods: {
+                    change: function(){
+                        this.msg="changed msg";
+                    }
+                }
+            });
+        </script>
+    </body>
+</html>

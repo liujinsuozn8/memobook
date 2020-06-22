@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>v-show</title>
+</head>
+<body>
+    <div id="app">
+        <div v-show='flg'>v-show test</div>
+        <button @click='changFlg'>change flg</button>
+    </div>
+    <script type='text/javascript' src='../js/vue.js'></script>
+    <script type='text/javascript'>
+        const app = new Vue({
+            el: '#app',
+            data:{
+                flg: true
+            },
+            methods:{
+                changFlg(){ this.flg = !this.flg; }
+            }
+        })
+    </script>
+</body>
+</html>

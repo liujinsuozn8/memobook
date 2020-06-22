@@ -1,0 +1,31 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta charset='UTF-8'>
+        <title>v-once</title>
+    </head>
+    <body>
+        <div id="app">
+            <div>text01: {{msg}}</div>
+
+            <!-- 1. 直接显示html源代码 -->
+            <div v-once>text02: {{msg}}</div>
+            <!-- 2. 使浏览器加载html -->
+            <button v-on:click='change'>change</button>
+        </div>
+        <script src='../js/vue.js'></script>
+        <script>
+            let app = new Vue({
+                el:"#app",
+                data:{
+                    msg:'testmsg'
+                },
+                methods:{
+                    change:function(){
+                        this.msg='123456';
+                    }
+                }
+            });
+        </script>
+    </body>
+</html>

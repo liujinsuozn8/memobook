@@ -64,17 +64,20 @@
         - jdk源码分析
             - [集合框架](java/jdkAnalyze/collection.md)
     - javascript
-        - 基础
+        - js基础
             - [基本知识](javascript/base/base.md)
             - [dom操作](javascript/base/dom.md)
             - [bom操作](javascript/base/bom.md)
-        - [js原理](javascript/underlyingPrinciple/base.md)
+        - [js高级原理](javascript/underlyingPrinciple/base.md)
         - es标准
             - [es5、es6、es7](javascript/es/567.md)
         - 模块化开发
             - [模块化标准- commonjs、AMD、ES6](javascript/module/base/base.md)
             - webpack
                 - [webpack的基本使用方法](javascript/module/webpack/base.md)
+        - js开发框架
+            - Vue
+                - [Vue的基本使用](javascript/vue/base/base.md)
     - go
         - [基本知识](go/base.md)
         - [并发](go/multithreading/multithreading.md)

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>v-for demo: show list</title>
+    <style>
+        .active{
+            color: red;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <ul>
+            <!-- 通过比较当前元素的index 和被选中元素的index 是否相等来设置元素样式 -->
+            <li v-for='(item, index) in testList' 
+                :class="{active: selectedIndex === index}" 
+                @click='itemClicked(index)' >
+                {{item}}
+            </li>
+        </ul>
+    </div>
+    <script type='text/javascript' src='../js/vue.js'></script>
+    <script type='text/javascript'>
+        const app = new Vue({
+            el: '#app',
+            data: {
+                testList:['aaa', 'bbb', 'ccc', 'ddd'],
+                selectedIndex: 0,
+            },
+            methods:{
+                itemClicked(index){
+                    this.selectedIndex = index
+                }
+            }
+        });
+    </script>
+</body>
+</html>

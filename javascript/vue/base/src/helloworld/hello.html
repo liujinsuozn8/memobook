@@ -1,0 +1,21 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>hello</title>
+    </head>
+    <body>
+        <!-- 绑定数据 -->
+        <div id="app">{{message}} : {{name}}</div>
+        <script type='text/javascript' src="./js/vue.js"></script>
+        <script>
+           let app = new Vue({
+               el:'#app', // 挂载要管理的元素
+               data: { // 定义数据
+                    message: 'test msg',
+                    name: 'helloworld',
+               }
+           });
+        </script>
+    </body>
+</html>

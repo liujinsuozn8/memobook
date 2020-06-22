@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>v-for base</title>
+</head>
+<body>
+    <div id="app">
+        <section>1. 遍历数组</section>
+        <ul>
+            <!-- 1.1. 遍历时，只使用 value  -->
+            <li v-for='item in testList' :key=item>{{item}}</li>
+            <!-- 输出:
+                aaa
+                bbb
+                ccc
+                ddd
+            -->
+        </ul>
+
+        <ul>
+            <!-- 1.2. 遍历时，同时使用 value 和 索引 -->
+            <li v-for='(item, index) in testList' :key=item>{{index}}--{{item}}</li>
+            <!-- 输出:
+                0--aaa
+                1--bbb
+                2--ccc
+                3--ddd
+            -->
+        </ul>
+
+        <section>2. 遍历对象</section>
+        <ul>
+            <!-- 2.1. 遍历时，只使用 value  -->
+            <li v-for='item in testObj' :key=item>{{item}}</li>
+            <!-- 输出:
+                v1
+                v3
+                v4
+                v2
+            -->
+        </ul>
+        <ul>
+            <!-- 2.2. 遍历时，同时使用 value 和 key -->
+            <li v-for='(item, key) in testObj' :key=item>{{key}} : {{item}}</li>
+            <!-- 输出:
+                k1 : v1
+                k3 : v3
+                k4 : v4
+                k2 : v2
+            -->
+        </ul>
+        <ul>
+            <!-- 2.3. 遍历时，同时使用 value、key、索引
+                 索引表示当前属性是对象中的第几个属性
+            -->
+            <li v-for='(item, key, index) in testObj' :key=item>{{index}}--{{key}} : {{item}}</li>
+            <!-- 输出:
+                0--k1 : v1
+                1--k3 : v3
+                2--k4 : v4
+                3--k2 : v2
+            -->
+        </ul>
+    </div>
+    <script type='text/javascript' src='../js/vue.js'></script>
+    <script type="text/javascript">
+        const app = new Vue({
+            el:'#app',
+            data:{
+                testList:['aaa', 'bbb', 'ccc', 'ddd'],
+                testObj:{
+                    k1:'v1',
+                    k3:'v3',
+                    k4:'v4',
+                    k2:'v2',
+                }
+            }
+        });
+    </script>
+</body>
+</html>

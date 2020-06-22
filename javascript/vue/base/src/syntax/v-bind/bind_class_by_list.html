@@ -1,0 +1,52 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta charset='UTF-8'>
+        <title>v-bind</title>
+        <style>
+            .bcbox{
+                background-color: #aaa;
+            }
+            .active{
+                color: red;
+            }
+            .small_font{
+                font-size: 10px;
+            }
+            .big_font{
+                font-size: 20px;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="app">
+            <!-- 通过 数组语法 来设置属性值 -->
+
+            <!-- 1. 直接设置数组 -->
+            <div> 1. 直接设置数组 </div>
+            <div :class="['small_font', 'active']">test content</div>
+
+            <!-- 2. 使用 methods 设置 -->
+            <div :class='setClass()'>test content</div>
+
+            <!-- 3. 和普通class共存 -->
+            <div class='bcbox' :class="['small_font', 'active']">test content</div>
+
+        </div>
+        <script src='../js/vue.js'></script>
+        <script>
+            let app = new Vue({
+                el:"#app",
+                methods:{
+                    changeClass: function(){
+                        this.isActive = !this.isActive;
+                        this.isLine = !this.isLine;
+                    },
+                    setClass: function(){
+                        return ["big_font", 'bcbox']
+                    }
+                }
+            });
+        </script>
+    </body>
+</html>

@@ -1,0 +1,55 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta charset='UTF-8'>
+        <title>v-bind</title>
+        <style>
+            .box01{
+                height: 20px;
+                width: 20px;
+                background-color: #aaa;
+            }
+            .box02{
+                height: 20px;
+                width: 20px;
+                background-color: #bfa;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="app">
+            <!-- 1. 使用 v-bind 的基本语法 -->
+            <!-- 1.1. 为 class 属性动态绑定属性值 -->
+            <div v-bind:class='boxType'></div>
+            <!-- 1.2. 为按钮绑定click事件，单击后切换 div 的 class -->
+            <button @click='changeBoxType'>change div</button>
+
+            <br><br>
+
+            <!-- 2. 使用 v-bind 的简写语法 -->
+            <a :href="dynLink.href">{{dynLink.content}}</a>
+        </div>
+        <script src='../js/vue.js'></script>
+        <script>
+            let app = new Vue({
+                el:"#app",
+                data:{
+                    boxType:'box01',
+                    dynLink:{
+                        href:'https://www.baidu.com/',
+                        content:'baidu'
+                    }
+                },
+                methods:{
+                    changeBoxType: function(){
+                        if (this.boxType === 'box01'){
+                            this.boxType = 'box02'
+                        } else {
+                            this.boxType = 'box01'
+                        }
+                    }
+                }
+            });
+        </script>
+    </body>
+</html>
