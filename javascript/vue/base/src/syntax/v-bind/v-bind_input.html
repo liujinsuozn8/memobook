@@ -1,0 +1,29 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta charset='UTF-8'>
+        <title>v-bing input</title>
+    </head>
+    <body>
+        <div id="app">
+            <!-- 使用数据，动态绑定 id、value、for属性 -->
+            <label v-for='item in typeList' :for='item'>
+                <input type="checkbox" :id='item' :value='item' v-model='types'>{{item}}
+            </label>
+            <div>seletedType: {{types}}</div>
+        </div>
+        <script type='text/javascript' src='../js/vue.js'></script>
+        <script type='text/javascript'>
+            const app = new Vue({
+                el:'#app',
+                data:{
+                    // types用于双向绑定数据
+                    types:["type01"],
+                    // 通过该数据，来实现展示数据的动态绑定
+                    typeList:["type01", "type02", "type03", "type04"]
+                }
+            });
+        </script>
+
+    </body>
+</html>

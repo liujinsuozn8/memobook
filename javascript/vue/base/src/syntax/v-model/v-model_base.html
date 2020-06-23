@@ -1,0 +1,32 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta charset='UTF-8'>
+        <title>v-model base</title>
+    </head>
+    <body>
+        <div id="app">
+            <!-- 双向绑定数据: msg -->
+            <input type="text" name="msg" v-model='msg'>
+
+            <!-- 点击按钮输出当前 msg 的数据 -->
+            <button @click='printMsg'>print</button>
+            <!-- 点击按钮初始化 msg 的数据，页面也会同步显示 -->
+            <button @click='initMsg'>init</button>
+        </div>
+
+        <script type='text/javascript' src='../js/vue.js'></script>
+        <script type='text/javascript'>
+            const app = new Vue({
+                el: '#app',
+                data:{
+                    msg: 'initMsg',
+                },
+                methods:{
+                    printMsg(){ console.log(this.msg) },
+                    initMsg(){ this.msg='initMsg' },
+                }
+            });
+        </script>
+    </body>
+</html>

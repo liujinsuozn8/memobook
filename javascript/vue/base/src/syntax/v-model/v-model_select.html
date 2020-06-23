@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>v-model select</title>
+</head>
+<body>
+    <div id="app">
+        <!-- 1. 单选，绑定到一个普通类型 -->
+        <select name="p1" v-model='p1'>
+            <option value="aaaa">aaaa</option>
+            <option value="bbbb">bbbb</option>
+            <option value="cccc">cccc</option>
+            <option value="dddd">dddd</option>
+        </select>
+        <div>{{p1}}</div>
+
+        <!-- 2. 多选，绑定到一个数组 -->
+        <select multiple name="p2" v-model='p2'>
+            <option value="aaaa">aaaa</option>
+            <option value="bbbb">bbbb</option>
+            <option value="cccc">cccc</option>
+            <option value="dddd">dddd</option>
+        </select>
+        <div>{{p2}}</div>
+    </div>
+
+    <script type='text/javascript' src='../js/vue.js'></script>
+    <script type='text/javascript'>
+        const app = new Vue({
+            el: '#app',
+            data: {
+                p1:'bbbb',
+                p2:['cccc'],
+            }
+        });
+    </script>
+</body>
+</html>

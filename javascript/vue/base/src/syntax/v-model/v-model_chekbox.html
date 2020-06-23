@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>v-model checkbox</title>
+</head>
+<body>
+    <div id="app">
+        <!-- 1. 单选框，绑定一个boolean变量 -->
+        <label for="agree">
+            <input type="checkbox" name='agree' id="agree" v-model='isAgree'>agree
+        </label>
+        <br>
+        <button :disabled='!isAgree'>next</button>
+
+        <br>
+        <br>
+        <!-- 2. checkbox多选框，绑定一个数组-->
+        <input type="checkbox" name='hobbies' value="hobby01" v-model='hobbies'>hobby01
+        <input type="checkbox" name='hobbies' value="hobby02" v-model='hobbies'>hobby02
+        <input type="checkbox" name='hobbies' value="hobby03" v-model='hobbies'>hobby03
+        <div>selectedHobied: {{hobbies}}</div>
+    </div>
+    <script type='text/javascript' src='../js/vue.js'></script>
+    <script type='text/javascript'>
+        const app = new Vue({
+            el:'#app',
+            data:{
+                isAgree: false,
+                hobbies: ['hobby02'], // 初始值默认会被选中
+            }
+        });
+    </script>
+</body>
+</html>

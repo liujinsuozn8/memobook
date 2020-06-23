@@ -1,0 +1,117 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset='UTF-8'>
+    <title>shopping cart</title>
+    <style>
+        .cartTable{
+            border: black 1px solid;
+            border-collapse: collapse;
+        }
+        .cartTable_cell{
+            border: black 1px solid;
+            height: 30px;
+            width: 90px;
+            padding: 0 30px;
+            vertical-align: middle;
+        }
+        .cartTable_cell--small{
+            width: 50px;
+        }
+        .cartTable_cell--center{
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div id='shoppingCart'>
+        <div v-show='!isShowCartTable'>empty shoppingCart</div>
+        <div v-show='isShowCartTable'>
+
+            <table class="cartTable" >
+                <!-- 表头 -->
+                <tr>
+                    <th class='cartTable_cell cartTable_cell--small'></th>
+                    <th class='cartTable_cell'>bookName</th>
+                    <th class='cartTable_cell'>time</th>
+                    <th class='cartTable_cell'>price</th>
+                    <th class='cartTable_cell'>count</th>
+                    <th class='cartTable_cell'>action</th>
+                </tr>
+                <!-- 循环显示 每个图书的数据 -->
+                <tr v-for='(item, index) in bookDetails'>
+                    <td class="cartTable_cell cartTable_cell--small cartTable_cell--center">{{index + 1}}</td>
+                    <td class="cartTable_cell cartTable_cell--center">{{item.bookName}}</td>
+                    <td class="cartTable_cell cartTable_cell--center">{{item.time}}</td>
+                    <td class="cartTable_cell">{{item.price | priceFormat}}</td>
+                    <td class="cartTable_cell cartTable_cell--center">
+                        <!-- 绑定disabled属性，当数量为1时，禁止使用 `-` 按钮 -->
+                        <button :disabled="item.count <= 1" @click='subBookCount(index)'>-</button>
+                        {{item.count}}
+                        <button @click='addBookCount(index)'>+</button>
+                    </td>
+                    <td class="cartTable_cell cartTable_cell--center">
+                        <button @click='deleteBook(index)'>delete</button>
+                    </td>
+                </tr>
+            </table>
+            <div>totalPrice: {{totalPrice | priceFormat}}</div>
+        </div>
+    </div>
+
+
+    <script type='text/javascript' src='../js/vue.js'></script>
+    <script type='text/javascript'>
+        const app = new Vue({
+            el:'#shoppingCart',
+            data:{
+                bookDetails:[
+                    { bookName:'aaa', time:'aaat', price:12.50, count:1 },
+                    { bookName:'bbb', time:'bbbt', price:45.60, count:1 },
+                    { bookName:'ccc', time:'ccct', price:23.00, count:1 },
+                ],
+            },
+            methods:{
+                // 从数组中删除指定的index上的图书数据
+                deleteBook(index){
+                    this.bookDetails.splice(index, 1);
+                },
+                // 图书数量 + 按钮事件
+                addBookCount(index){
+                    this.bookDetails[index].count++;
+                },
+                // 图书数量 - 按钮事件
+                subBookCount(index){
+                    let book = this.bookDetails[index]
+                    if (book.count > 1 ){
+                        book.count--;
+                    }
+                    // this.bookDetails[index].count--;
+                },
+            },
+            computed:{
+                // 如果图书全部删除，则不显示购物车；有图书时才显示
+                isShowCartTable(){
+                    return this.bookDetails.length != 0;
+                },
+
+                // 显示总价
+                totalPrice(){
+                    if (this.bookDetails.length != 0){
+                        return this.bookDetails.map(item => item.price*item.count)
+                                          .reduce( (prev, cur)=> prev + cur);
+                    } else {
+                        return 0;
+                    }
+                }
+            },
+            filters:{
+                // 设置金额的显示方式
+                priceFormat(price){
+                    return '￥' + price.toFixed(2);
+                }
+            }
+        });
+    </script>
+</body>
+</html>

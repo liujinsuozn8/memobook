@@ -8,10 +8,9 @@
     - [列表展示示例](#列表展示示例)
     - [计数器示例](#计数器示例)
 - [vue中的MVVM](#vue中的MVVM)
-- [Vue-options中的选项](#Vue-options中的选项)
 - [Vue的生命周期?????](#Vue的生命周期)
-- [Vue基本语法](#Vue基本语法)
-    - [Vue插值操作](#Vue插值操作)
+- [Vue基本指令](#Vue基本指令)
+    - [Vue插值指令](#Vue插值指令)
         - [Mustache语法](#Mustache语法)
         - [v-once指令--一次性渲染](#v-once指令--一次性渲染)
         - [v-html指令--渲染html字符串](#v-html指令--渲染html字符串)
@@ -24,11 +23,7 @@
         - [通过数组语法绑定class](#通过数组语法绑定class)
         - [通过对象语法绑定style](#通过对象语法绑定style)
         - [通过数组语法绑定style](#通过数组语法绑定style)
-    - [computed--计算属性](#computed--计算属性)
-        - [计算属性的简介](#计算属性的简介)
-        - [简写计算属性的使用示例](#简写计算属性的使用示例)
-        - [计算属性getter和setter的示例](#计算属性getter和setter的示例)
-        - [计算属性的缓存](#计算属性的缓存)
+        - [值绑定--v-bind在表单项中的应用](#值绑定--v-bind在表单项中的应用)
     - [v-on--事件监听](#v-on--事件监听)
         - [v-on的基本用法](#v-on的基本用法)
         - [v-on的修饰符](#v-on的修饰符)
@@ -39,8 +34,23 @@
     - [v-for--遍历数组和对象](#v-for--遍历数组和对象)
         - [v-for的基本使用方法](#v-for的基本使用方法)
         - [v-for列表展示示例](#v-for列表展示示例)
-    - [](#)
-
+    - [v-model--表单绑定](#v-model--表单绑定)
+        - [v-model的基本用法](#v-model的基本用法)
+        - [v-model的实现原理](#v-model的实现原理)
+        - [v-model与radio结合使用](#v-model与radio结合使用)
+        - [v-model与checkbox结合使用](#v-model与checkbox结合使用)
+        - [v-model与select结合使用](#v-model与select结合使用)
+        - [v-model--修饰符](#v-model--修饰符)
+    - [Vue基本指令--综合示例--图书购物车](#Vue基本指令--综合示例--图书购物车)
+- [Vue-options中的选项](#Vue-options中的选项)
+    - [常用options选项](#常用options选项)
+    - [computed--计算属性](#computed--计算属性)
+        - [计算属性的简介](#计算属性的简介)
+        - [简写计算属性的使用示例](#简写计算属性的使用示例)
+        - [计算属性getter和setter的示例](#计算属性getter和setter的示例)
+        - [计算属性的缓存](#计算属性的缓存)
+    - [filters--过滤器](#filters--过滤器)
+- [](#)
 
 # Vuejs概述
 [top](#catalog)
@@ -272,31 +282,14 @@
         });
         ```
 
-# Vue-options中的选项
-[top](#catalog)
-- el
-    - 类型: `String | HTMLElement`
-    - 作用: 将DOM对象挂在到一个Vue实例上，有Vue对象管理DOM对象
-- data
-    - 类型: `Object | Function`
-    - 作用: Vue实例对应的数据对象
-    - 在<label style="color:red">组件化开发</label>时，data<label style="color:red">必须是</label>一个<label style="color:red">函数</label>
-- methods
-    - 类型: `{[key String]: Function}`
-        - Function如果使用**箭头函数**，需要考虑**是否有 this 以及 this 的作用域**
-    - 定义属于Vue对象的一些方法，可以在其他地方调用，也可以在指令中使用
-- computed
-    - 类型: `Object`
-    - 作用: 计算属性
-
 # Vue的生命周期
 [top](#catalog)
 - created: 一般会做网络请求
 - mounted:
 ????
 
-# Vue基本语法
-## Vue插值操作
+# Vue基本指令
+## Vue插值指令
 ### Mustache语法
 [top](#catalog)
 - 语法
@@ -341,13 +334,14 @@
 
 ### v-once指令--一次性渲染
 [top](#catalog)
-- 语法
+- 功能
+    - 元素和组件**只渲染一次**，不会随着数据的改变而改变
+
+- 使用方法
     - 该指令后面不需要任何表达式
     ```html
     <div v-once>{{text}}</div>
     ```
-- 功能
-    - 元素和组件**只渲染一次**，不会随着数据的改变而改变
 
 - 示例
     - 参考代码
@@ -380,14 +374,15 @@
 
 ### v-html指令--渲染html字符串
 [top](#catalog)
-- 语法
-    ```html
-    <div v-html='变量名'></div>
-    ```
 - 功能
     - 使浏览器加载html代码并渲染
         - 如果通过 `{{}}` 语法，会直接显示变量内容，不会被渲染。v-html可以避免这个问题
     - 标签内部如果已经有其他信息，会被该指令覆盖
+
+- 使用方法
+    ```html
+    <div v-html='变量名'></div>
+    ```
 
 - 示例
     - 参考代码
@@ -415,12 +410,14 @@
 
 ### v-text指令--绑定数据
 [top](#catalog)
-- 语法
+- 功能
+    - 与mustache类似，动态（双向）绑定**content部分**的数据
+
+- 使用方法
     ```html
     <div v-text='变量名'></div>
     ```
-- 功能
-    - 与mustache类似，动态（双向）绑定**content部分**的数据
+
 - 缺点
     - 不如mustache灵活
     - 会覆盖标签内已有的数据
@@ -451,13 +448,14 @@
 
 ### v-pre指令--显示原始代码
 [top](#catalog)
-- 语法
-    ```html
-    <div v-pre>{{msg}}</div>
-    ```
 - 功能
     - 不对元素进行编译，直接显示数据内容
     - 常用于显示mustache语法
+
+- 使用方法
+    ```html
+    <div v-pre>{{msg}}</div>
+    ```
 
 - 示例
     - 参考代码
@@ -474,7 +472,11 @@
 
 ### v-cloak指令--临时属性遮盖
 [top](#catalog)
-- 语法
+- 功能
+    - 隐藏未编译的 `{{}}` 标签直到 Vue对象准备完成
+    - 可以防止页面加载时 `{{}}` 标签的闪烁
+
+- 使用方法
     - html部分，将 `v-cloak` 作为标签的无属性值属性使用
         ```html
         <div id="app" v-cloak>
@@ -487,10 +489,6 @@
             display: none;
         }
         ```
-
-- 功能
-    - 隐藏未编译的 `{{}}` 标签直到 Vue对象准备完成
-    - 可以防止页面加载时 `{{}}` 标签的闪烁
 
 - 语法的执行流程
     1. 在vue解析之前，标签中有 `v-cloak` 属性
@@ -533,7 +531,10 @@
 ## v-bind--绑定属性
 ### v-bind的基本用法
 [top](#catalog)
-- 语法
+- 功能
+    - 用于动态绑定一个或多个属性值，或者向另一个组件传递props值 ????
+
+- 使用方法
     - 基本写法
         ```html
         <div v-bind:属性名='变量名'></div>
@@ -542,9 +543,6 @@
         ```html
         <div :属性名='变量名'></div>
         ```
-
-- 功能
-    - 用于动态绑定一个或多个属性值，或者向另一个组件传递props值 ????
 
 - 常用的需要绑定属性值的属性
     ```html
@@ -871,6 +869,964 @@
         </script>
         ```
 
+### 值绑定--v-bind在表单项中的应用
+[top](#catalog)
+- 设置页面数据时，数据不是固定的，需要根据从服务器获取的数据来动态绑定
+- 示例：设置 多选checkbox
+    - 参考代码
+        - [src/syntax/v-bind/v-bind_input.html](src/syntax/v-bind/v-bind_input.html)
+    - html代码
+        ```html
+        <div id="app">
+            <!-- 使用数据，动态绑定 id、value、for属性 -->
+            <label v-for='item in typeList' :for='item'>
+                <input type="checkbox" :id='item' :value='item' v-model='types'>{{item}}
+            </label>
+            <div>seletedType: {{types}}</div>
+        </div>
+        ```
+    - js代码
+        ```js
+        const app = new Vue({
+            el:'#app',
+            data:{
+                // types用于双向绑定数据
+                types:["type01"],
+                // 通过该数据，来实现展示数据的动态绑定
+                typeList:["type01", "type02", "type03", "type04"]
+            }
+        });
+        ```
+
+
+## v-on--事件监听
+### v-on的基本用法
+[top](#catalog)
+- 作用
+    - 为DOM元素的某个事件绑定 事件监听器/事件处理函数
+- v-on 可以使用的值: `Function | Inline Statement | Object`
+
+- 使用方法
+    - Function，使用methods中的函数名
+        1. 使用无参函数
+            ```html
+            <!-- 调用函数时，不需要加括号 -->
+            <div v-on:事件名='<methods>中的函数名'></div>
+            ```
+        2. 使用带参数的函数
+            ```html
+            <!-- 1. 传递参数正常调用 -->
+            <div v-on:事件名='<methods>中的函数名(参数)'></div>
+            <!-- 2. 只添加了括号，没有传参，则参数默认为 undefined -->
+            <div v-on:事件名='<methods>中的函数名()'></div>
+            <!-- 3. 如果只写了函数名，则 Vue 会将 event 对象作为第一个参数传入方法 -->
+            <div v-on:事件名='<methods>中的函数名'></div>
+            ```
+        3. **只使用** event 对象的函数
+            ```html
+            <!-- 直接通过函数名调用，Vue会自动将event对象做为参数传给方法 -->
+            <div v-on:事件名='<methods>中的函数名'></div>
+            ```
+        4. 使用参数中包含**普通参数和event对象**的函数
+            ```html
+            <!-- 通过 $event，将event对象传入函数 -->
+            <div v-on:事件名='<methods>中的函数名(其他参数, $event)'></div>
+            ```
+    - Inline Statement，内联语句
+        ```html
+        <div v-on:事件名='自定义语句'></div>
+        ```
+    - Object
+        - Object类型很少使用
+
+- v-on 的简写: `@`
+    ```html
+    <div @事件名='...'></div>
+    ```
+
+- 示例
+    - 参考代码
+        - [src/syntax/v-on/v-on_base.html](src/syntax/v-on/v-on_base.html)
+    - html代码
+        ```html
+        <div id="app">
+            <div>{{count}}</div>
+            <!-- 1. Function -->
+            <!-- 1.1 使用无参函数 -->
+            <button v-on:click='add'>add1</button>
+            <!-- 1.2 使用有参函数，并传递参数 -->
+            <button v-on:click='addN(3)'>add + 3</button>
+            <!-- 1.3 使用有参函数，但是没有传递参数
+                参数的值默认为 undefined，0 + undefined = NaN
+            -->
+            <button v-on:click='addN()'>addN undefined</button>
+            <!-- 1.4 只通过函数名使用有参函数 -->
+            <button v-on:click='addN'>addN event</button>
+
+            <!-- 2. 简写语法 -->
+            <button @click='sub'>sub1</button>
+            <br>
+            <!-- 3. Inline Statement，内联语句 -->
+            <button v-on:click='count=0'>clear</button>
+
+            <br>
+            <br>
+            <!-- 1.5 使用参数中包含普通参数和event对象的函数 -->
+            <button v-on:click='eventTest("clickTest", $event)'>eventTest</button>
+
+        </div>
+        ```
+    - js代码
+        ```js
+        const app = new Vue({
+            el:'#app',
+            data:{
+                count:0,
+            },
+            methods:{
+                add(){
+                    this.count++;
+                },
+                sub(){
+                    this.count--;
+                },
+                addN(n){
+                    this.count += n;
+                },
+                eventTest(p, event){
+                    console.log(`p=${p}，event=${event}`)
+                }
+            }
+        });
+        ```
+
+### v-on的修饰符
+[top](#catalog)
+- 修饰符的作用
+    - 在某些情况下，拿到event对象的目的是进行一些事件处理
+    - Vue提供了修饰符来辅助开发者方便的处理一些事件
+
+        |修饰符|作用|
+        |-|-|
+        |`.stop`|调用 event.stopPropagation()，可用于阻止事件的冒泡|
+        |`.prevent`|调用 event.preventDefault()，用于阻止浏览器的默认事件|
+        |`.[keyCode|keyAlias]`|当事件是由特定按键触发时，才触发回调|
+        |`.native`|监听组件根元素的原生事件 ?????|
+        |`.once`|只触发一次回调，类似于jquery的once|
+
+- 示例
+    - 参考代码
+        - [src/syntax/v-on/v-on_modifier.html](src/syntax/v-on/v-on_modifier.html)
+    - html代码
+        ```html
+        <div id="app">
+            <section>1. .stop，取消事件冒泡</section>
+            <div class='boxA' @click='divClick01'>
+                <button @click.stop='btnClick01'>btn01</button>
+            </div>
+            <br>
+
+            <section>2. .prevent，取消submit的默认提交行为</section>
+            <form action="">
+                <input type="submit" value="submit" @click.prevent='submitClick'>
+            </form>
+
+            <br>
+            <section>3. .[keyCode|keyAlias] 监听 enter事件</section>
+            <input type="text" @keyup.13='inputEnter'>
+
+            <br>
+            <br>
+            <section>4. .once 只触发一次监听事件</section>
+            <button @click.once='onceClick'>oncebtn</button>
+        </div>
+        ```
+    - js代码
+        ```js
+        const app = new Vue({
+            el: '#app',
+            methods:{
+                divClick01(){
+                    console.log('call divClick01');
+                },
+                btnClick01(){
+                    console.log('call btnClick01');
+                },
+                submitClick(){
+                    console.log('call submitClick');
+                },
+                inputEnter(event){
+                    console.log(event.target.value);
+                },
+                onceClick(){
+                    console.log('call onceClick');
+                }
+            }
+        })
+        ```
+
+## 条件判断指令
+### 条件判断指令的基本使用
+[top](#catalog)
+- 3种条件判断指令
+    - v-if
+    - v-else
+    - v-else-if
+
+- 作用
+    - 根据变量或者表达式的结果，在DOM中渲染或销毁对象
+    - 当变量或者表达式是false是，会将整个DOM元素从html中删除
+
+- 使用方法
+    1. 单独使用 `v-if`
+        ```html
+        <div v-if='boolean型变量'>...</div>
+        <!-- 或者 -->
+        <div v-if='表达式'>...</div>
+        ```
+    2. `v-else` 需要和 `v-if`一起使用
+        ```html
+        <div v-if='变量/表达式'>...</div>
+        <!-- 当 v-if 条件不满足时，渲染 v-else 标识的元素 -->
+        <div v-else>...</div>
+        ```
+    3. `v-else-if` 需要和 `v-if` 一起使用
+        ```html
+        <div v-if='条件1'>...</div>
+        <div v-else-if='条件2'>...</div>
+        <div v-else-if='条件3'>...</div>
+        ...
+
+        <!-- 如果没有 v-else，当所有条件都不满足时，不会渲染任何元素
+             如果有   v-else，当所有条件都不满足时，渲染 v-else 标识的元素
+          -->
+        <div v-else>...</div>
+        ```
+
+- 一般不推荐直接在html中使用 `v-else-if`
+    - 多个 `v-else-if` 会导致html代码混乱，逻辑不清晰
+    - 如果逻辑判读过多，应该选择使用 **计算属性**，来遮盖负责的逻辑，使html代码更加清晰
+- 示例
+    - 参考代码
+        - [src/syntax/v-if/v-if.html](src/syntax/v-if/v-if.html)
+    - html代码
+        ```html
+        <div id="app">
+            <div>{{count}}</div>
+            <button @click='add'>add</button>
+            <button @click='sub'>sub</button>
+            <br>
+
+            <!-- 1. 使用 v-if/ v-else， 通过 boolean型变量 控制元素是否显示 -->
+            <div v-if='flg'>count > 5</div>
+            <div v-else>count &lt;= 5</div>
+
+            <br>
+            <!-- v-if，v-else-if，v-else 的组合使用，根据count所处的范围，显示不同的等级 -->
+            <div v-if='count>= 8'>A</div>
+            <div v-else-if='count>= 6'>B</div>
+            <div v-else-if='count>= 3'>C</div>
+            <div v-else>D</div>
+        </div>
+        ```
+    - js代码
+        ```js
+        const app = new Vue({
+            el: '#app',
+            data:{
+                count: 0,
+                flg: false,
+            },
+            methods:{
+                add(){
+                    this.count++;
+                    this.flg = this.count > 5;
+                },
+                sub(){
+                    this.count--;
+                    this.flg = this.count > 5;
+                },
+            }
+        });
+        ```
+
+### 条件判断指令示例-登录切换
+[top](#catalog)
+- 需求
+    - 点击 `login by name` 按钮，切换为用户名登录
+    - 点击 `login by email` 按钮，切换为邮箱登陆
+- <label style='color:red'>登录切换操作中会出现的问题</label>
+    - 如果 input 输入框中已经输入了数据，再点击按钮切换时，输入框中的数据不会被清空
+    - 问题的原因
+        1. vue在将DOM渲染到浏览器之前，处于性能的考虑，会尽可能的复用已经存在的元素，而不是创建新的元素
+        2. 在示例中，Vue内部发现原来的input元素不再使用，直接作为v-else中的input来使用了
+    - **解决方法**
+        - 在input中添加**不同的key**，来避免DOM元素的复用
+        - vue底层在发现key不同时，不会复用元素
+
+- 参考代码
+    - [demo_login_switch](src/syntax/v-if/demo_login_switch.html)
+- html代码
+    ```html
+    <div id="app">
+        <!-- 根据 boolean型变量来控制登录模式 -->
+        <span v-if='loginType'>
+            <label for="username">username: </label>
+            <!-- 设置 key='username'，来防止DOM元素复用 -->
+            <input type="text" id="username" key='username'>
+        </span>
+        <span v-else>
+            <label for="useremail">useremail: </label>
+            <!-- 设置 key='useremail'，来防止DOM元素复用 -->
+            <input type="email" id="useremail" key='useremail'>
+        </span>
+
+        <br>
+        <!-- 通过按钮来切换 boolean型变量的值 -->
+        <button @click='loginByName'>login by name</button>
+        <button @click='loginByEmail'>login by email</button>
+    </div>
+    ```
+- js代码
+    ```js
+    const app = new Vue({
+        el:'#app',
+        data:{
+            loginType: 'true', // true=username, false=useremail
+        },
+        methods:{
+            loginByName(){
+                this.loginType=true;
+            },
+            loginByEmail(){
+                this.loginType=false;
+            }
+        }
+    })
+    ```
+
+## v-show--控制元素渲染
+[top](#catalog)
+- 作用
+    - 根据变量或表达式结果，来控制元素是否渲染
+    - 当变量或表达式为 false 时，会为元素添加行内样式: `style='display:none'`，来隐藏元素
+
+- 使用方法
+    ```html
+    <div v-show='boolean变量/表达式'></div>
+    ```
+
+- `v-show` 与 `v-if` 的异同
+    - 相同点
+        - 都可以控制元素是否渲染
+    - 不同点
+        - 不渲染元素时，v-if会删除DOM元素，v-show会使用行内样式隐藏元素
+
+- 开发中如何选择 `v-show` 和 `v-if`
+    - 当DOM元素的显示与隐藏切换比较频繁时，使用 `v-show`
+        - `v-show` 通过内联样式控制元素，性能比较好
+        - 如果使用 `v-if`，会造成重复的DOM元素的添加与删除，性能不好
+    - 当只有一次切换时，可以使用 `v-if`
+
+- 示例
+    - 参考代码
+        - [src/syntax/v-show/v-show.html](src/syntax/v-show/v-show.html)
+    - 代码内容
+        ```html
+        <div id="app">
+            <div v-show='flg'>v-show test</div>
+            <button @click='changFlg'>change flg</button>
+        </div>
+        <script type='text/javascript' src='../js/vue.js'></script>
+        <script type='text/javascript'>
+            const app = new Vue({
+                el: '#app',
+                data:{
+                    flg: true
+                },
+                methods:{
+                    changFlg(){ this.flg = !this.flg; }
+                }
+            })
+        </script>
+        ```
+
+## v-for--遍历数组和对象
+### v-for的基本使用方法
+[top](#catalog)
+- 作用
+    - 遍历数组和对象
+- 使用方法
+    - 遍历数组
+        ```html
+        <!-- 1. 只使用 数组元素 -->
+        <li v-for='item in 数组变量名' :key=item>{{item}}</li>
+
+        <!-- 2. 使用 数组元素 和 索引 -->
+        <li v-for='(item, index) in 数组变量名' :key=item>{{item}}{{index}}</li>
+
+        <!-- item、index 两个变量可以任意命名，但是顺序是不变的，
+             元素在前，索引在后
+         -->
+        ```
+    - 遍历对象
+        ```html
+        <!-- 1. 遍历时，只使用 value  -->
+        <li v-for='item in 对象变量名' :key=item>{{item}}</li>
+
+        <!-- 2. 遍历时，同时使用 value 和 key -->
+        <li v-for='(item, key) in 对象变量名' :key=item>{{key}} : {{item}}</li>
+
+        <!-- 3. 遍历时，同时使用 value、key、索引
+                索引表示当前属性是对象中的第几个属性
+            -->
+        <li v-for='(item, key, index) in 对象变量名' :key=item>{{index}}--{{key}} : {{item}}</li>
+
+        <!-- item、key、index 三个变量可以任意命名，但是顺序是不变的，
+             属性值、属性名、属性的索引
+         -->
+        ```
+
+- 为什么要添加绑定`:key`属性?
+    - 为了提高更新虚拟DOM的效率
+    - 当在数组中加插入一个元素时，会执行Diff算法，将原始数据向后移动然后将新数据写入到对应位置的DOM元素中
+    - 绑定key之后，Diff会准确的找到数据的插入点，创建DOM元素并插入，性能更高
+
+- 示例
+    - 参考代码
+        - [src/syntax/v-for/v-for_base.html](src/syntax/v-for/v-for_base.html)
+
+    - js代码
+        ```js
+        const app = new Vue({
+            el:'#app',
+            data:{
+                testList:['aaa', 'bbb', 'ccc', 'ddd'],
+                testObj:{
+                    k1:'v1',
+                    k3:'v3',
+                    k4:'v4',
+                    k2:'v2',
+                }
+            }
+        });
+        ```
+    - html代码
+        ```html
+        <div id="app">
+            <section>1. 遍历数组</section>
+            <ul>
+                <!-- 1.1. 遍历时，只使用 value  -->
+                <li v-for='item in testList' :key=item>{{item}}</li>
+                <!-- 输出:
+                    aaa
+                    bbb
+                    ccc
+                    ddd
+                -->
+            </ul>
+
+            <ul>
+                <!-- 1.2. 遍历时，同时使用 value 和 索引 -->
+                <li v-for='(item, index) in testList' :key=item>{{index}}--{{item}}</li>
+                <!-- 输出:
+                    0--aaa
+                    1--bbb
+                    2--ccc
+                    3--ddd
+                -->
+            </ul>
+
+            <section>2. 遍历对象</section>
+            <ul>
+                <!-- 2.1. 遍历时，只使用 value  -->
+                <li v-for='item in testObj' :key=item>{{item}}</li>
+                <!-- 输出:
+                    v1
+                    v3
+                    v4
+                    v2
+                -->
+            </ul>
+            <ul>
+                <!-- 2.2. 遍历时，同时使用 value 和 key -->
+                <li v-for='(item, key) in testObj' :key=item>{{key}} : {{item}}</li>
+                <!-- 输出:
+                    k1 : v1
+                    k3 : v3
+                    k4 : v4
+                    k2 : v2
+                -->
+            </ul>
+            <ul>
+                <!-- 2.3. 遍历时，同时使用 value、key、索引
+                    索引表示当前属性是对象中的第几个属性
+                -->
+                <li v-for='(item, key, index) in testObj' :key=item>{{index}}--{{key}} : {{item}}</li>
+                <!-- 输出:
+                    0--k1 : v1
+                    1--k3 : v3
+                    2--k4 : v4
+                    3--k2 : v2
+                -->
+            </ul>
+        </div>
+        ```
+
+### 可以进行响应式更新的数组方法
+[top](#catalog)
+- 可以进行响应式更新的数组方法（Vue内部会进行监听）
+    - push()
+    - pop()
+    - shift()
+    - unshift()
+    - splice()
+    - sort()
+    - reverse()
+- 直接通过索引修改数组元素，不会响应式更新
+- 通过Vue提供的方法实现响应式修改数组元素
+    ```js
+    Vue.set(this.数组变量名, index, 修改后的元素值);
+    ```
+
+### v-for列表展示示例
+[top](#catalog)
+- 需求  
+    - 将数组中的数据以列表的形式展示
+    - 页面显示后，默认第一行为红色
+    - 之后，被点击的项目为红色，其他项目为黑色
+
+- 实现方法
+    - 通过 `v-for` 来实现列表展示
+    - 设置一个变量，表示当前被选中元素的索引: `selectedIndex`
+    - 通过v-bind 的对象绑定方式设置样式
+        - 通过 `selectedIndex == 当前元素的index` 的结果来判断是否设置样式
+    - 为每个元素绑定click事件，每次点击时修改 `selectedIndex`，保证每次只有被点击的元素是红色的
+
+- 参考代码
+    - [src/syntax/v-for/demo_show_list.html](src/syntax/v-for/demo_show_list.html)
+- 代码内容
+    ```html
+    <ul>
+        <!-- 通过比较当前元素的index 和被选中元素的index 是否相等来设置元素样式 -->
+        <li v-for='(item, index) in testList'
+            :class="{active: selectedIndex === index}"
+            @click='itemClicked(index)' >
+            {{item}}
+        </li>
+    </ul>
+    ```
+    ```js
+    const app = new Vue({
+        el: '#app',
+        data: {
+            testList:['aaa', 'bbb', 'ccc', 'ddd'],
+            selectedIndex: 0,
+        },
+        methods:{
+            itemClicked(index){
+                this.selectedIndex = index
+            }
+        }
+    });
+    ```
+
+## v-model--表单绑定
+### v-model的基本用法
+[top](#catalog)
+- 作用
+    - 实现（表单）元素和数据的**双向绑定**
+- 使用方法
+    ```html
+    <input type="..." v-model='变量名'>
+    ```
+- 示例
+    - 参考代码
+        - [src/syntax/v-model/v-model_base.html](src/syntax/v-model/v-model_base.html)
+    - html代码
+        ```html
+        <div id="app">
+            <!-- 双向绑定数据: msg -->
+            <input type="text" name="msg" v-model='msg'>
+
+            <!-- 点击按钮输出当前 msg 的数据 -->
+            <button @click='printMsg'>print</button>
+            <!-- 点击按钮初始化 msg 的数据，页面也会同步显示 -->
+            <button @click='initMsg'>init</button>
+        </div>
+        ```
+    - js代码
+        ```js
+        const app = new Vue({
+            el: '#app',
+            data:{
+                msg: 'initMsg',
+            },
+            methods:{
+                printMsg(){ console.log(this.msg) },
+                initMsg(){ this.msg='initMsg' },
+            }
+        });
+        ```
+
+### v-model的实现原理
+[top](#catalog)
+- v-model 指令可以转换为两个其他指令的结合
+    1. `v-bind:value` 指令，数据绑定方向: `model --->>> view`
+        ```html
+        <input type="..."  v-bind:value='变量名'  ....>
+        ```
+    2. `v-on:input` 指令响应页面的输入，数据绑定方向: `view --->>> model`
+        ```html
+        <!-- 从 event 对象中获取页面修改后的值，并绑定到变量 -->
+        <input type="..."  v-on:input='变量名 = $event.target.value'  ....>
+        ```
+
+- 示例
+    - 参考代码
+        - [src/syntax/v-model/v-model_principle.html](src/syntax/v-model/v-model_principle.html)
+    - html代码
+        ```html
+        <div id="app">
+            <!-- 只做: 将model数据绑定到view。
+            修改文本框的数据后，再点击 init 按钮，页面不会将数据初始化，
+            因为数据没有发生变化，所以不会重新绑定数据
+            -->
+            <!-- <input type="text" v-bind:value='msg'> -->
+
+
+            <!-- 1. v-bind:value，将model数据绑定到view
+                 2. v-on:input，将view中修改后的数据绑定到model
+            -->
+            <!-- 通过事件响应函数来实现绑定 -->
+            <input type="text" v-bind:value='msg' v-on:input='inputHandle'>
+            <br>
+            <!-- 通过内联代码来实现绑定 -->
+            <input type="text" v-bind:value='msg' v-on:input='msg = $event.target.value'>
+
+            <!-- 点击按钮输出当前 msg 的数据 -->
+            <button @click='printMsg'>print</button>
+            <!-- 点击按钮初始化 msg 的数据，页面也会同步显示 -->
+            <button @click='initMsg'>init</button>
+        </div>
+        ```
+    - js代码
+        ```js
+        const app = new Vue({
+            el: '#app',
+            data:{
+                msg: 'initMsg',
+            },
+            methods:{
+                printMsg(){ console.log(this.msg) },
+                initMsg(){ this.msg='initMsg' },
+
+                // 响应输入框的输入，并将 view 的数据 绑定到 model
+                // 每次按下按键都会触发 input 事件，所以可以完成实时的双向数据绑定
+                inputHandle(event){
+                    console.log('-----');
+                    this.msg = event.target.value;
+                }
+            }
+        });
+        ```
+
+### v-model与radio结合使用
+[top](#catalog)
+- 与 单选按钮 radio 结合
+    - 默认情况下需要将多个 radio 的 `name`属性相同，才能成组
+    - 使用 `v-model` 绑定**相同变量**后，可以省略 `name` 属性，多个按钮会自动成组
+
+- 示例
+    - 参考代码
+        - [src/syntax/v-model/v-model_radio.html](src/syntax/v-model/v-model_radio.html)
+    - html代码
+        ```html
+        <div id="app">
+            <input type="radio" v-model='type' value='0'>type0
+            <input type="radio" v-model='type' value='1'>type1
+            <input type="radio" v-model='type' value='2'>type2
+            <input type="radio" v-model='type' value='3'>type3
+            <br>
+            <div>selectedType: {{type}}</div>
+            <br>
+
+            <input type="radio" v-model='sex' value='male'>male
+            <input type="radio" v-model='sex' value='female'>female
+            <br>
+            <div>selectedSex: {{sex}}</div>
+        </div>
+        ```
+    - js代码
+        ```js
+        const app = new Vue({
+            el: '#app',
+            data:{
+                type:0,
+                sex:'',
+            }
+        });
+        ```
+
+### v-model与checkbox结合使用
+[top](#catalog)
+- 与checkbox结合
+    - 单选框，需要绑定一个boolean型变量，不需要设置`value`属性
+    - 多选框，需要绑定一个数组型变量，并设置`value`属性
+- 示例
+    - 参考代码
+        - [src/syntax/v-model/v-model_chekbox.html](src/syntax/v-model/v-model_chekbox.html)
+    - html代码
+        ```html
+        <div id="app">
+            <!-- 1. 单选框，绑定一个boolean变量 -->
+            <label for="agree">
+                <input type="checkbox" name='agree' id="agree" v-model='isAgree'>agree
+            </label>
+            <br>
+            <button :disabled='!isAgree'>next</button>
+
+            <br>
+            <br>
+            <!-- 2. checkbox多选框，绑定一个数组-->
+            <input type="checkbox" name='hobbies' value="hobby01" v-model='hobbies'>hobby01
+            <input type="checkbox" name='hobbies' value="hobby02" v-model='hobbies'>hobby02
+            <input type="checkbox" name='hobbies' value="hobby03" v-model='hobbies'>hobby03
+            <div>selectedHobied: {{hobbies}}</div>
+        </div>
+        ```
+    - js代码
+        ```js
+        const app = new Vue({
+            el:'#app',
+            data:{
+                isAgree: false,
+                hobbies: ['hobby02'], // 初始值默认会被选中
+            }
+        });
+        ```
+
+### v-model与select结合使用
+[top](#catalog)
+- 与select结合
+    - 当选中一个option时，vue会将对应的value绑定到变量
+    - 单选select，需要绑定到一个基本类型变量
+    - 多选select，绑定到一个数组类型变量
+
+- 示例
+    - 参考代码
+        - [src/syntax/v-model/v-model_select.html](src/syntax/v-model/v-model_select.html)
+    - html代码
+        ```html
+        <div id="app">
+            <!-- 1. 单选，绑定到一个基本类型 -->
+            <select name="p1" v-model='p1'>
+                <option value="aaaa">aaaa</option>
+                <option value="bbbb">bbbb</option>
+                <option value="cccc">cccc</option>
+                <option value="dddd">dddd</option>
+            </select>
+            <div>{{p1}}</div>
+
+            <!-- 2. 多选，绑定到一个数组 -->
+            <select multiple name="p2" v-model='p2'>
+                <option value="aaaa">aaaa</option>
+                <option value="bbbb">bbbb</option>
+                <option value="cccc">cccc</option>
+                <option value="dddd">dddd</option>
+            </select>
+            <div>{{p2}}</div>
+        </div>
+        ```
+    - js代码
+        ```js
+        const app = new Vue({
+            el: '#app',
+            data: {
+                p1:'bbbb',
+                p2:['cccc'],
+            }
+        });
+        ```
+
+### v-model--修饰符
+[top](#catalog)
+- 常用修饰符
+    - lasy
+        - 默认情况下，v-model会在input事件中同步输入框的数据，即数据的更新时实时的
+        - lazy可以上数据在输入框**失去焦点或者按下回车后**才更新
+    - number
+        - 默认情况下，在输入框中输入的字母、数字都会被转换为字符串类型
+            - 即使数据初始化为 number 型，在重新绑定后，也会变为 string 型
+        - number可以将输入内容**自动转换成数字类型**
+    - trim
+        - 用于**去除输入内容首尾的空格**
+        - trim 也具有 lasy 的性质
+
+- 示例
+    - 参考代码
+        - [src/syntax/v-model/modifier.html](src/syntax/v-model/modifier.html)
+    - html内容
+        ```html
+        <div id="app">
+            <!-- 1. lazy 失去焦点或者按下回车后才更新数据 -->
+            <input type="text" name="msg" id="msg" v-model.lazy='msg'>
+            <div>{{msg}}</div>
+
+            <!-- 2. 将输入内容自动转换成数字类型 -->
+            <!-- 2.1 只有初始化时，是number型，数据更新后会变为string型 -->
+            <input type="number" name="num1" id="num1" v-model='num1'>
+            <div>{{ num1 + '----' +  (typeof num1) }}</div>
+            <!-- 2.2 数据更新时，会自动变为string型 -->
+            <input type="number" name="num2" id="num2" v-model.number='num2'>
+            <div>{{ num2 + '----' +  (typeof num2) }}</div>
+
+            <!-- 3. trim，用于去除输入内容首尾的空格 -->
+            <input type="text" name="str" id="str" v-model.trim='str'>
+            <button @click='showStr'>show str</button>
+        </div>
+        ```
+    - js内容
+        ```js
+        const app = new Vue({
+            el:"#app",
+            data:{
+                msg:'testmsg',
+                num1:0,
+                num2:1,
+                str:'    dddd     ',
+            },
+            methods:{
+                showStr(){
+                    console.log(this.str)
+                }
+            }
+        });
+        ```
+## Vue基本指令--综合示例--图书购物车
+[top](#catalog)
+- 需求
+    - 每一行需要显示：当前购买数据的编号、书名、出版日期、价格、购买数量、删除操作按钮
+    - 购买数量可以通过`+`、`-`按钮加减。但是每本图书的数量最少为1
+    - 在购物车的列表下方显示书的总价
+    - 图书价格 与 总价 保留两位小数
+    - 点击删除按钮可以删除当前行
+    - 当所有图书被删除后，不显示界面，只显示一行文字: 购物车为空
+- 实现内容
+    - 参考代码
+        - [src/syntax/exercise/demo_shopping_cart.html](src/syntax/exercise/demo_shopping_cart.html)
+    - html代码
+        ```html
+        <div id='shoppingCart'>
+            <div v-show='!isShowCartTable'>empty shoppingCart</div>
+            <div v-show='isShowCartTable'>
+
+                <table class="cartTable" >
+                    <!-- 表头 -->
+                    <tr>
+                        <th class='cartTable_cell cartTable_cell--small'></th>
+                        <th class='cartTable_cell'>bookName</th>
+                        <th class='cartTable_cell'>time</th>
+                        <th class='cartTable_cell'>price</th>
+                        <th class='cartTable_cell'>count</th>
+                        <th class='cartTable_cell'>action</th>
+                    </tr>
+                    <!-- 循环显示 每个图书的数据 -->
+                    <tr v-for='(item, index) in bookDetails'>
+                        <td class="cartTable_cell cartTable_cell--small cartTable_cell--center">{{index + 1}}</td>
+                        <td class="cartTable_cell cartTable_cell--center">{{item.bookName}}</td>
+                        <td class="cartTable_cell cartTable_cell--center">{{item.time}}</td>
+                        <td class="cartTable_cell">{{item.price | priceFormat}}</td>
+                        <td class="cartTable_cell cartTable_cell--center">
+                            <!-- 绑定disabled属性，当数量为1时，禁止使用 `-` 按钮 -->
+                            <button :disabled="item.count <= 1" @click='subBookCount(index)'>-</button>
+                            {{item.count}}
+                            <button @click='addBookCount(index)'>+</button>
+                        </td>
+                        <td class="cartTable_cell cartTable_cell--center">
+                            <button @click='deleteBook(index)'>delete</button>
+                        </td>
+                    </tr>
+                </table>
+                <div>totalPrice: {{totalPrice | priceFormat}}</div>
+            </div>
+        </div>
+        ```
+    - js代码
+        ```js
+        const app = new Vue({
+            el:'#shoppingCart',
+            data:{
+                bookDetails:[
+                    { bookName:'aaa', time:'aaat', price:12.50, count:1 },
+                    { bookName:'bbb', time:'bbbt', price:45.60, count:1 },
+                    { bookName:'ccc', time:'ccct', price:23.00, count:1 },
+                ],
+            },
+            methods:{
+                // 从数组中删除指定的index上的图书数据
+                deleteBook(index){
+                    this.bookDetails.splice(index, 1);
+                },
+                // 图书数量 + 按钮事件
+                addBookCount(index){
+                    this.bookDetails[index].count++;
+                },
+                // 图书数量 - 按钮事件
+                subBookCount(index){
+                    let book = this.bookDetails[index]
+                    if (book.count > 1 ){
+                        book.count--;
+                    }
+                    // this.bookDetails[index].count--;
+                },
+            },
+            computed:{
+                // 如果图书全部删除，则不显示购物车；有图书时才显示
+                isShowCartTable(){
+                    return this.bookDetails.length != 0;
+                },
+
+                // 显示总价
+                totalPrice(){
+                    if (this.bookDetails.length != 0){
+                        return this.bookDetails.map(item => item.price*item.count)
+                                        .reduce( (prev, cur)=> prev + cur);
+                    } else {
+                        return 0;
+                    }
+                }
+            },
+            filters:{
+                // 设置金额的显示方式
+                priceFormat(price){
+                    return '￥' + price.toFixed(2);
+                }
+            }
+        });
+        ```
+
+# Vue-options中的选项
+## 常用options选项
+[top](#catalog)
+- el
+    - 类型: `String | HTMLElement`
+    - 作用: 将DOM对象挂在到一个Vue实例上，有Vue对象管理DOM对象
+- data
+    - 类型: `Object | Function`
+    - 作用: Vue实例对应的数据对象
+    - 在<label style="color:red">组件化开发</label>时，data<label style="color:red">必须是</label>一个<label style="color:red">函数</label>
+- methods
+    - 类型: `{[key String]: Function}`
+        - Function如果使用**箭头函数**，需要考虑**是否有 this 以及 this 的作用域**
+    - 定义属于Vue对象的一些方法，可以在其他地方调用，也可以在指令中使用
+- computed
+    - 类型: `{[key String]: Function}`
+    - 作用: 计算属性
+- filter
+    - 类型: `{[key String]: Function}`
+    - 作用: 数据转换
+
 ## computed--计算属性
 ### 计算属性的简介
 [top](#catalog)
@@ -928,8 +1884,6 @@
         ```html
         <div>{{计算属性名}}</div>
         ```
-
-
 
 ### 简写计算属性的使用示例
 [top](#catalog)
@@ -1076,602 +2030,129 @@
     - 参考代码
         - [src/syntax/computed/computed_cache.html](src/syntax/computed/computed_cache.html)
 
-    - 代码内容
-        - html代码
-            ```html
-            <div id="app">
-                <!-- 1. 第一次执行计算，在控制台输出: `call fullMsg` -->
-                <div>{{fullMsg}}</div>
-
-                <!-- 2. 之后的多次计算使用缓存，控制台不会有任何输出 -->
-                <div>{{fullMsg}}</div>
-                <div>{{fullMsg}}</div>
-                <div>{{fullMsg}}</div>
-
-                <!-- 3. 输入新的msg1，并点击按钮，会修改 msg1 的值。
-                    因为计算属性中使用了 this.msg1，所以会重新计算，
-                    并在控制台输出一次: `call fullMsg`。
-
-                    通过方法获取结果时，也会重新计算，因为没有缓存，
-                    方法会调用多次，在控制台会输出多次: `call getFullMsg`
-                -->
-                <input type="text" id='newMsg1'>
-                <button @click='changeMsg1'>change msg1</button>
-
-                <div>---------------------------------------</div>
-                <!-- 4. 通过方法获取结果。方法没有缓存，每次都会重新计算
-                    在控制台会输出多次: `call getFullMsg`
-                -->
-                <div>{{getFullMsg()}}</div>
-                <div>{{getFullMsg()}}</div>
-                <div>{{getFullMsg()}}</div>
-                <div>{{getFullMsg()}}</div>
-            </div>
-            ```
-        - js代码
-            ```js
-            let app = new Vue({
-                el: '#app',
-                data:{
-                    msg1: 'start',
-                    msg2: 'end'
-                },
-                computed:{
-                    fullMsg: function(){
-                        // 多次调用时只会打印一次
-                        console.log('call fullMsg');
-                        // 计算属性中使用了 data中的数据，当数据发生变化时，会重新计算
-                        return this.msg1 + ' ' + this.msg2;
-                    }
-                },
-                methods:{
-                    // 修改 data 中的数据，来触发计算属性的重新计算
-                    changeMsg1: function(){
-                        this.msg1 = document.querySelector('#newMsg1').value;
-                    },
-                    getFullMsg: function(){
-                        console.log('call getFullMsg');
-                        return this.msg1 + '---' + this.msg2;
-                    }
-                }
-            });
-            ```
-
-## v-on--事件监听
-### v-on的基本用法
-[top](#catalog)
-- v-on
-    - 作用: 为DOM元素的某个事件绑定 事件监听器/事件处理函数
-    - 简写: `@`
-    - 需要的值: `Function | Inline Statement | Object`
-    - 参数: `event`
-
-- v-on 的使用方式
-    - Function，使用methods中的函数名
-        1. 使用无参函数
-            ```html
-            <!-- 调用函数时，不需要加括号 -->
-            <div v-on:事件名='<methods>中的函数名'></div>
-            ```
-        2. 使用带参数的函数
-            ```html
-            <!-- 1. 传递参数正常调用 -->
-            <div v-on:事件名='<methods>中的函数名(参数)'></div>
-            <!-- 2. 只添加了括号，没有传参，则参数默认为 undefined -->
-            <div v-on:事件名='<methods>中的函数名()'></div>
-            <!-- 3. 如果只写了函数名，则 Vue 会将 event 对象作为第一个参数传入方法 -->
-            <div v-on:事件名='<methods>中的函数名'></div>
-            ```
-        3. **只使用** event 对象的函数
-            ```html
-            <!-- 直接通过函数名调用，Vue会自动将event对象做为参数传给方法 -->
-            <div v-on:事件名='<methods>中的函数名'></div>
-            ```
-        4. 使用参数中包含**普通参数和event对象**的函数
-            ```html
-            <!-- 通过 $event，将event对象传入函数 -->
-            <div v-on:事件名='<methods>中的函数名(其他参数, $event)'></div>
-            ```
-    - Inline Statement，内联语句
+    - html代码
         ```html
-        <div v-on:事件名='自定义语句'></div>
+        <div id="app">
+            <!-- 1. 第一次执行计算，在控制台输出: `call fullMsg` -->
+            <div>{{fullMsg}}</div>
+
+            <!-- 2. 之后的多次计算使用缓存，控制台不会有任何输出 -->
+            <div>{{fullMsg}}</div>
+            <div>{{fullMsg}}</div>
+            <div>{{fullMsg}}</div>
+
+            <!-- 3. 输入新的msg1，并点击按钮，会修改 msg1 的值。
+                因为计算属性中使用了 this.msg1，所以会重新计算，
+                并在控制台输出一次: `call fullMsg`。
+
+                通过方法获取结果时，也会重新计算，因为没有缓存，
+                方法会调用多次，在控制台会输出多次: `call getFullMsg`
+            -->
+            <input type="text" id='newMsg1'>
+            <button @click='changeMsg1'>change msg1</button>
+
+            <div>---------------------------------------</div>
+            <!-- 4. 通过方法获取结果。方法没有缓存，每次都会重新计算
+                在控制台会输出多次: `call getFullMsg`
+            -->
+            <div>{{getFullMsg()}}</div>
+            <div>{{getFullMsg()}}</div>
+            <div>{{getFullMsg()}}</div>
+            <div>{{getFullMsg()}}</div>
+        </div>
         ```
-    - Object
-        - Object类型很少使用
-- v-on 的简写用法
+    - js代码
+        ```js
+        let app = new Vue({
+            el: '#app',
+            data:{
+                msg1: 'start',
+                msg2: 'end'
+            },
+            computed:{
+                fullMsg: function(){
+                    // 多次调用时只会打印一次
+                    console.log('call fullMsg');
+                    // 计算属性中使用了 data中的数据，当数据发生变化时，会重新计算
+                    return this.msg1 + ' ' + this.msg2;
+                }
+            },
+            methods:{
+                // 修改 data 中的数据，来触发计算属性的重新计算
+                changeMsg1: function(){
+                    this.msg1 = document.querySelector('#newMsg1').value;
+                },
+                getFullMsg: function(){
+                    console.log('call getFullMsg');
+                    return this.msg1 + '---' + this.msg2;
+                }
+            }
+        });
+        ```
+
+## filters--过滤器
+[top](#catalog)
+- filters 的作用，格式化数据
+- filters的定义
+    ```js
+    const app = new Vue({
+        el:'#app',
+        filters:{
+            // 过滤器可以有一个参数，也可以有多个参数
+            过滤器名: function(参数){
+                // 执行参数变换
+                return 变换结果;
+            },
+            过滤器名: function(参数1, 参数2, 参数3, ....){
+                // 执行参数变换
+                return 变换结果;
+            }
+    });
+    ```
+- filters的使用方法
+    - 参数 与 过滤器之间 通过 `|` 分割
+    - 过滤器包含多个参数时，参数使用 逗号 分割
     ```html
-    <div @事件名='...'></div>
+    <!-- 一个参数的过滤器 -->
+    <div>{{data | 过滤器名}}</div>
+
+    <!-- 多个参数的过滤器 -->
+    <div>{{data1, data2, data3,..... | 过滤器名}}</div>
     ```
 
 - 示例
     - 参考代码
-        - [src/syntax/v-on/v-on_base.html](src/syntax/v-on/v-on_base.html)
-    - 代码内容
-        - html代码
-            ```html
-            <div id="app">
-                <div>{{count}}</div>
-                <!-- 1. Function -->
-                <!-- 1.1 使用无参函数 -->
-                <button v-on:click='add'>add1</button>
-                <!-- 1.2 使用有参函数，并传递参数 -->
-                <button v-on:click='addN(3)'>add + 3</button>
-                <!-- 1.3 使用有参函数，但是没有传递参数
-                    参数的值默认为 undefined，0 + undefined = NaN
-                -->
-                <button v-on:click='addN()'>addN undefined</button>
-                <!-- 1.4 只通过函数名使用有参函数 -->
-                <button v-on:click='addN'>addN event</button>
-
-                <!-- 2. 简写语法 -->
-                <button @click='sub'>sub1</button>
-                <br>
-                <!-- 3. Inline Statement，内联语句 -->
-                <button v-on:click='count=0'>clear</button>
-
-                <br>
-                <br>
-                <!-- 1.5 使用参数中包含普通参数和event对象的函数 -->
-                <button v-on:click='eventTest("clickTest", $event)'>eventTest</button>
-
-            </div>
-            ```
-        - js代码
-            ```js
-            const app = new Vue({
-                el:'#app',
-                data:{
-                    count:0,
-                },
-                methods:{
-                    add(){
-                        this.count++;
-                    },
-                    sub(){
-                        this.count--;
-                    },
-                    addN(n){
-                        this.count += n;
-                    },
-                    eventTest(p, event){
-                        console.log(`p=${p}，event=${event}`)
-                    }
-                }
-            });
-            ```
-
-### v-on的修饰符
-[top](#catalog)
-- 在某些情况下，拿到event对象的目的是进行一些事件处理
-- Vue提供了修饰符来辅助开发者方便的处理一些事件
-
-    |修饰符|作用|
-    |-|-|
-    |`.stop`|调用 event.stopPropagation()，可用于阻止事件的冒泡|
-    |`.prevent`|调用 event.preventDefault()，用于阻止浏览器的默认事件|
-    |`.[keyCode|keyAlias]`|当事件是由特定按键触发时，才触发回调|
-    |`.native`|监听组件根元素的原生事件 ?????|
-    |`.once`|只触发一次回调，类似于jquery的once|
-
-- 示例
-    - 参考代码
-        - [src/syntax/v-on/v-on_modifier.html](src/syntax/v-on/v-on_modifier.html)
-    - 代码内容
-        - html代码
-            ```html
-            <div id="app">
-                <section>1. .stop，取消事件冒泡</section>
-                <div class='boxA' @click='divClick01'>
-                    <button @click.stop='btnClick01'>btn01</button>
-                </div>
-                <br>
-
-                <section>2. .prevent，取消submit的默认提交行为</section>
-                <form action="">
-                    <input type="submit" value="submit" @click.prevent='submitClick'>
-                </form>
-
-                <br>
-                <section>3. .[keyCode|keyAlias] 监听 enter事件</section>
-                <input type="text" @keyup.13='inputEnter'>
-
-                <br>
-                <br>
-                <section>4. .once 只触发一次监听事件</section>
-                <button @click.once='onceClick'>oncebtn</button>
-            </div>
-            ```
-        - js代码
-            ```js
-            const app = new Vue({
-                el: '#app',
-                methods:{
-                    divClick01(){
-                        console.log('call divClick01');
-                    },
-                    btnClick01(){
-                        console.log('call btnClick01');
-                    },
-                    submitClick(){
-                        console.log('call submitClick');
-                    },
-                    inputEnter(event){
-                        console.log(event.target.value);
-                    },
-                    onceClick(){
-                        console.log('call onceClick');
-                    }
-                }
-            })
-            ```
-
-## 条件判断指令
-### 条件判断指令的基本使用
-[top](#catalog)
-- 3种条件判断指令
-    - v-if
-    - v-else
-    - v-else-if
-
-- 条件判断指令的作用
-    - 根据变量或者表达式的结果，在DOM中渲染或销毁对象
-    - 当变量或者表达式是false是，会将整个DOM元素从html中删除
-
-- 条件判断指令的用法
-    1. 单独使用 `v-if`
-        ```html
-        <div v-if='boolean型变量'>...</div>
-        <!-- 或者 -->
-        <div v-if='表达式'>...</div>
-        ```
-    2. `v-else` 需要和 `v-if`一起使用
-        ```html
-        <div v-if='变量/表达式'>...</div>
-        <!-- 当 v-if 条件不满足时，渲染 v-else 标识的元素 -->
-        <div v-else>...</div>
-        ```
-    3. `v-else-if` 需要和 `v-if` 一起使用
-        ```html
-        <div v-if='条件1'>...</div>
-        <div v-else-if='条件2'>...</div>
-        <div v-else-if='条件3'>...</div>
-        ...
-
-        <!-- 如果没有 v-else，当所有条件都不满足时，不会渲染任何元素
-             如果有   v-else，当所有条件都不满足时，渲染 v-else 标识的元素
-          -->
-        <div v-else>...</div>
-        ```
-
-- 一般不推荐直接在html中使用 `v-else-if`
-    - 多个 `v-else-if` 会导致html代码混乱，逻辑不清晰
-    - 如果逻辑判读过多，应该选择使用 **计算属性**，来遮盖负责的逻辑，使html代码更加清晰
-- 示例
-    - 参考代码
-        - [src/syntax/v-if/v-if.html](src/syntax/v-if/v-if.html)
-    - 代码内容
-        - html代码
-            ```html
-            <div id="app">
-                <div>{{count}}</div>
-                <button @click='add'>add</button>
-                <button @click='sub'>sub</button>
-                <br>
-
-                <!-- 1. 使用 v-if/ v-else， 通过 boolean型变量 控制元素是否显示 -->
-                <div v-if='flg'>count > 5</div>
-                <div v-else>count &lt;= 5</div>
-
-                <br>
-                <!-- v-if，v-else-if，v-else 的组合使用，根据count所处的范围，显示不同的等级 -->
-                <div v-if='count>= 8'>A</div>
-                <div v-else-if='count>= 6'>B</div>
-                <div v-else-if='count>= 3'>C</div>
-                <div v-else>D</div>
-            </div>
-            ```
-        - js代码
-            ```js
-            const app = new Vue({
-                el: '#app',
-                data:{
-                    count: 0,
-                    flg: false,
-                },
-                methods:{
-                    add(){
-                        this.count++;
-                        this.flg = this.count > 5;
-                    },
-                    sub(){
-                        this.count--;
-                        this.flg = this.count > 5;
-                    },
-                }
-            });
-            ```
-
-### 条件判断指令示例-登录切换
-[top](#catalog)
-- 需求
-    - 点击 `login by name` 按钮，切换为用户名登录
-    - 点击 `login by email` 按钮，切换为邮箱登陆
-- <label style='color:red'>登录切换操作中会出现的问题</label>
-    - 如果 input 输入框中已经输入了数据，再点击按钮切换时，输入框中的数据不会被清空
-    - 问题的原因
-        1. vue在将DOM渲染到浏览器之前，处于性能的考虑，会尽可能的复用已经存在的元素，而不是创建新的元素
-        2. 在示例中，Vue内部发现原来的input元素不再使用，直接作为v-else中的input来使用了
-    - **解决方法**
-        - 在input中添加**不同的key**，来避免DOM元素的复用
-        - vue底层在发现key不同时，不会复用元素
-
-- 参考代码
-    - [demo_login_switch](src/syntax/v-if/demo_login_switch.html)
-- 代码内容
-    - html代码
-        ```html
-        <div id="app">
-            <!-- 根据 boolean型变量来控制登录模式 -->
-            <span v-if='loginType'>
-                <label for="username">username: </label>
-                <!-- 设置 key='username'，来防止DOM元素复用 -->
-                <input type="text" id="username" key='username'>
-            </span>
-            <span v-else>
-                <label for="useremail">useremail: </label>
-                <!-- 设置 key='useremail'，来防止DOM元素复用 -->
-                <input type="email" id="useremail" key='useremail'>
-            </span>
-
-            <br>
-            <!-- 通过按钮来切换 boolean型变量的值 -->
-            <button @click='loginByName'>login by name</button>
-            <button @click='loginByEmail'>login by email</button>
-        </div>
-        ```
+        - [src/syntax/filter/filter_base.html](src/syntax/filter/filter_base.html)
     - js代码
         ```js
         const app = new Vue({
             el:'#app',
             data:{
-                loginType: 'true', // true=username, false=useremail
+                testName: 'testName',
+                testPrice: 1234,
             },
-            methods:{
-                loginByName(){
-                    this.loginType=true;
+            filters:{
+                // 一个参数的过滤器
+                nameFormatter(name){
+                    return 'Mr.'+name;
                 },
-                loginByEmail(){
-                    this.loginType=false;
+
+                // 多个参数的过滤器
+                priceFormatter(price, decimalSize){
+                    return '￥' + price.toFixed(decimalSize);
                 }
             }
-        })
+        });
         ```
-
-## v-show--控制元素渲染
-[top](#catalog)
-- v-show 的作用
-    - 根据变量或表达式结果，来控制元素是否渲染
-    - 当变量或表达式为 false 时，会为元素添加行内样式: `style='display:none'`，来隐藏元素
-
-- v-show的使用方法
-    ```html
-    <div v-show='boolean变量/表达式'></div>
-    ```
-
-- `v-show` 与 `v-if` 的异同
-    - 相同点
-        - 都可以控制元素是否渲染
-    - 不同点
-        - 不渲染元素时，v-if会删除DOM元素，v-show会使用行内样式隐藏元素
-
-- 开发中如何选择 `v-show` 和 `v-if`
-    - 当DOM元素的显示与隐藏切换比较频繁时，使用 `v-show`
-        - `v-show` 通过内联样式控制元素，性能比较好
-        - 如果使用 `v-if`，会造成重复的DOM元素的添加与删除，性能不好
-    - 当只有一次切换时，可以使用 `v-if`
-
-- 示例
-    - 参考代码
-        - [src/syntax/v-show/v-show.html](src/syntax/v-show/v-show.html)
-    - 代码内容
+    - html代码
         ```html
         <div id="app">
-            <div v-show='flg'>v-show test</div>
-            <button @click='changFlg'>change flg</button>
+            <!-- 输出: Mr.testName -->
+            name: <p>{{testName | nameFormatter}}</p>
+            <!-- 输出: ￥1234.00 -->
+            price: <p>{{testPrice, 2 | priceFormatter}}</p>
         </div>
-        <script type='text/javascript' src='../js/vue.js'></script>
-        <script type='text/javascript'>
-            const app = new Vue({
-                el: '#app',
-                data:{
-                    flg: true
-                },
-                methods:{
-                    changFlg(){ this.flg = !this.flg; }
-                }
-            })
-        </script>
         ```
 
-## v-for--遍历数组和对象
-### v-for的基本使用方法
-[top](#catalog)
-- v-for 的作用
-    - 遍历数组和对象
-- v-for 的使用方法
-    - 遍历数组
-        ```html
-        <!-- 1. 只使用 数组元素 -->
-        <li v-for='item in 数组变量名' :key=item>{{item}}</li>
-
-        <!-- 2. 使用 数组元素 和 索引 -->
-        <li v-for='(item, index) in 数组变量名' :key=item>{{item}}{{index}}</li>
-
-        <!-- item、index 两个变量可以任意命名，但是顺序是不变的，
-             元素在前，索引在后
-         -->
-        ```
-    - 遍历对象
-        ```html
-        <!-- 1. 遍历时，只使用 value  -->
-        <li v-for='item in 对象变量名' :key=item>{{item}}</li>
-
-        <!-- 2. 遍历时，同时使用 value 和 key -->
-        <li v-for='(item, key) in 对象变量名' :key=item>{{key}} : {{item}}</li>
-
-        <!-- 3. 遍历时，同时使用 value、key、索引
-                索引表示当前属性是对象中的第几个属性
-            -->
-        <li v-for='(item, key, index) in 对象变量名' :key=item>{{index}}--{{key}} : {{item}}</li>
-
-        <!-- item、key、index 三个变量可以任意命名，但是顺序是不变的，
-             属性值、属性名、属性的索引
-         -->
-        ```
-
-- 为什么要添加绑定`:key`属性?
-    - 为了提高更新虚拟DOM的效率
-    - 当在数组中加插入一个元素时，会执行Diff算法，将原始数据向后移动然后将新数据写入到对应位置的DOM元素中
-    - 绑定key之后，Diff会准确的找到数据的插入点，创建DOM元素并插入，性能更高
-
-- 示例
-    - 参考代码
-        - [src/syntax/v-for/v-for_base.html](src/syntax/v-for/v-for_base.html)
-
-    - 代码内容
-        - js代码
-            ```js
-            const app = new Vue({
-                el:'#app',
-                data:{
-                    testList:['aaa', 'bbb', 'ccc', 'ddd'],
-                    testObj:{
-                        k1:'v1',
-                        k3:'v3',
-                        k4:'v4',
-                        k2:'v2',
-                    }
-                }
-            });
-            ```
-        - html代码
-            ```html
-            <div id="app">
-                <section>1. 遍历数组</section>
-                <ul>
-                    <!-- 1.1. 遍历时，只使用 value  -->
-                    <li v-for='item in testList' :key=item>{{item}}</li>
-                    <!-- 输出:
-                        aaa
-                        bbb
-                        ccc
-                        ddd
-                    -->
-                </ul>
-
-                <ul>
-                    <!-- 1.2. 遍历时，同时使用 value 和 索引 -->
-                    <li v-for='(item, index) in testList' :key=item>{{index}}--{{item}}</li>
-                    <!-- 输出:
-                        0--aaa
-                        1--bbb
-                        2--ccc
-                        3--ddd
-                    -->
-                </ul>
-
-                <section>2. 遍历对象</section>
-                <ul>
-                    <!-- 2.1. 遍历时，只使用 value  -->
-                    <li v-for='item in testObj' :key=item>{{item}}</li>
-                    <!-- 输出:
-                        v1
-                        v3
-                        v4
-                        v2
-                    -->
-                </ul>
-                <ul>
-                    <!-- 2.2. 遍历时，同时使用 value 和 key -->
-                    <li v-for='(item, key) in testObj' :key=item>{{key}} : {{item}}</li>
-                    <!-- 输出:
-                        k1 : v1
-                        k3 : v3
-                        k4 : v4
-                        k2 : v2
-                    -->
-                </ul>
-                <ul>
-                    <!-- 2.3. 遍历时，同时使用 value、key、索引
-                        索引表示当前属性是对象中的第几个属性
-                    -->
-                    <li v-for='(item, key, index) in testObj' :key=item>{{index}}--{{key}} : {{item}}</li>
-                    <!-- 输出:
-                        0--k1 : v1
-                        1--k3 : v3
-                        2--k4 : v4
-                        3--k2 : v2
-                    -->
-                </ul>
-            </div>
-            ```
-
-### 可以进行响应式更新的数组方法
-[top](#catalog)
-- 可以进行响应式更新的数组方法（Vue内部会进行监听）
-    - push()
-    - pop()
-    - shift()
-    - unshift()
-    - splice()
-    - sort()
-    - reverse()
-- 直接通过索引修改数组元素，不会响应式更新
-- 通过Vue提供的方法实现响应式修改数组元素
-    ```js
-    Vue.set(this.数组变量名, index, 修改后的元素值);
-    ```
-
-### v-for列表展示示例
-[top](#catalog)
-- 需求  
-    - 将数组中的数据以列表的形式展示
-    - 页面显示后，默认第一行为红色
-    - 之后，被点击的项目为红色，其他项目为黑色
-
-- 实现方法
-    - 通过 `v-for` 来实现列表展示
-    - 设置一个变量，表示当前被选中元素的索引: `selectedIndex`
-    - 通过v-bind 的对象绑定方式设置样式
-        - 通过 `selectedIndex == 当前元素的index` 的结果来判断是否设置样式
-    - 为每个元素绑定click事件，每次点击时修改 `selectedIndex`，保证每次只有被点击的元素是红色的
-
-- 参考代码
-    - [src/syntax/v-for/demo_show_list.html](src/syntax/v-for/demo_show_list.html)
-- 代码内容
-    ```html
-    <ul>
-        <!-- 通过比较当前元素的index 和被选中元素的index 是否相等来设置元素样式 -->
-        <li v-for='(item, index) in testList' 
-            :class="{active: selectedIndex === index}" 
-            @click='itemClicked(index)' >
-            {{item}}
-        </li>
-    </ul>
-    ```
-    ```js
-    const app = new Vue({
-        el: '#app',
-        data: {
-            testList:['aaa', 'bbb', 'ccc', 'ddd'],
-            selectedIndex: 0,
-        },
-        methods:{
-            itemClicked(index){
-                this.selectedIndex = index
-            }
-        }
-    });
-    ```
 
 [top](#catalog)

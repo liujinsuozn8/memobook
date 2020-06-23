@@ -1,0 +1,43 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta charset='UTF-8'>
+        <title>v-model modifier</title>
+    </head>
+    <body>
+        <div id="app">
+            <!-- 1. lazy 失去焦点或者按下回车后才更新数据 -->
+            <input type="text" name="msg" id="msg" v-model.lazy='msg'>
+            <div>{{msg}}</div>
+
+            <!-- 2. 将输入内容自动转换成数字类型 -->
+            <!-- 2.1 只有初始化时，是number型，数据更新后会变为string型 -->
+            <input type="number" name="num1" id="num1" v-model='num1'>
+            <div>{{ num1 + '----' +  (typeof num1) }}</div>
+            <!-- 2.2 数据更新时，会自动变为string型 -->
+            <input type="number" name="num2" id="num2" v-model.number='num2'>
+            <div>{{ num2 + '----' +  (typeof num2) }}</div>
+
+            <!-- 3. trim，用于去除输入内容首尾的空格 -->
+            <input type="text" name="str" id="str" v-model.trim='str'>
+            <button @click='showStr'>show str</button>
+        </div>
+        <script src='../js/vue.js'></script>
+        <script>
+            const app = new Vue({
+                el:"#app",
+                data:{
+                    msg:'testmsg',
+                    num1:0,
+                    num2:1,
+                    str:'    dddd     ',
+                },
+                methods:{
+                    showStr(){
+                        console.log(this.str)
+                    }
+                }
+            });
+        </script>
+    </body>
+</html>

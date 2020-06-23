@@ -1,0 +1,52 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta charset='UTF-8'>
+        <title>v-model base</title>
+    </head>
+    <body>
+        <div id="app">
+            <!-- 只做: 将model数据绑定到view。
+            修改文本框的数据后，再点击 init 按钮，页面不会将数据初始化，
+            因为数据没有发生变化，所以不会重新绑定数据
+            -->
+            <!-- <input type="text" v-bind:value='msg'> -->
+
+
+            <!-- 1. v-bind:value，将model数据绑定到view
+                 2. v-on:input，将view中修改后的数据绑定到model
+            -->
+            <!-- 通过事件响应函数来实现绑定 -->
+            <input type="text" v-bind:value='msg' v-on:input='inputHandle'>
+            <br>
+            <!-- 通过内联代码来实现绑定 -->
+            <input type="text" v-bind:value='msg' v-on:input='msg = $event.target.value'>
+
+            <!-- 点击按钮输出当前 msg 的数据 -->
+            <button @click='printMsg'>print</button>
+            <!-- 点击按钮初始化 msg 的数据，页面也会同步显示 -->
+            <button @click='initMsg'>init</button>
+        </div>
+
+        <script type='text/javascript' src='../js/vue.js'></script>
+        <script type='text/javascript'>
+            const app = new Vue({
+                el: '#app',
+                data:{
+                    msg: 'initMsg',
+                },
+                methods:{
+                    printMsg(){ console.log(this.msg) },
+                    initMsg(){ this.msg='initMsg' },
+
+                    // 响应输入框的输入，并将 view 的数据 绑定到 model
+                    // 每次按下按键都会触发 input 事件，所以可以完成实时的双向数据绑定
+                    inputHandle(event){
+                        console.log('-----');
+                        this.msg = event.target.value;
+                    }
+                }
+            });
+        </script>
+    </body>
+</html>

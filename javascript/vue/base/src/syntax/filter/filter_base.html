@@ -1,0 +1,37 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta charset='UTF-8'>
+        <title>option filter test</title>
+    </head>
+    <body>
+        <div id="app">
+            <!-- 输出: Mr.testName -->
+            name: <p>{{testName | nameFormatter}}</p>
+            <!-- 输出: ￥1234.00 -->
+            price: <p>{{testPrice, 2 | priceFormatter}}</p>
+        </div>
+
+        <script type='text/javascript' src='../js/vue.js'></script>
+        <script type='text/javascript'>
+            const app = new Vue({
+                el:'#app',
+                data:{
+                    testName: 'testName',
+                    testPrice: 1234,
+                },
+                filters:{
+                    // 一个参数的过滤器
+                    nameFormatter(name){
+                        return 'Mr.'+name;
+                    },
+
+                    // 多个参数的过滤器
+                    priceFormatter(price, decimalSize){
+                        return '￥' + price.toFixed(decimalSize);
+                    }
+                }
+            });
+        </script>
+    </body>
+</html>
