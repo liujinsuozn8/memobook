@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>iterator sample</title>
+    <script type="text/javascript">
+        // 1. iterator原理
+        // 模拟指针对象--遍历器对象
+        function MyIterator(arr){
+            //也可以使用闭包
+            return {
+                arr,
+                index:  0,
+                length: arr.length,
+                next(){
+                    if (this.index < this.length){
+                        return {value: this.arr[this.index++], done:true}
+                    } else {
+                        return {value: undefined, done:false}
+                    }
+                }
+            }
+        }
+        let iter = MyIterator(["a","b","t","c"])
+        console.log(iter.next())
+        console.log(iter.next())
+        console.log(iter.next())
+        console.log(iter.next())
+        console.log(iter.next())
+
+        // 2. 自定义数组迭代器
+        function ArrayIterator(arr){
+            // 创建对象
+            return {
+                // for of 遍历执行后，调用该方法，返回一个包含 next() 的对象
+                [Symbol.iterator](){
+                    return {
+                        arr,
+                        index:0,
+                        length:arr.length,
+                        next(){
+                            if (this.index < this.length){
+                                return {value: this.arr[this.index++], done:false}
+                            } else {
+                                return {value: undefined, done:true}
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        let arrayIter = ArrayIterator([1,2,"t",4,5]);
+        for(let n of arrayIter){
+            console.log(n)
+        }
+
+        // 3. 自定义对象迭代器
+        // type=true ,遍历value
+        // type != false, 遍历key
+        function ObjIterator(obj, type=true){
+            // 创建对象
+            return {
+                // for of 遍历执行后，调用该方法，返回一个包含 next() 的对象
+                [Symbol.iterator](){
+                    let datas = type === true? Object.values(obj) : Object.keys(obj)
+                    let length = datas.length
+                    return {
+                        index:0,
+                        datas,
+                        length,
+                        next(){
+                            if (this.index < this.length){
+                                return {value:this.datas[this.index++], done:false}
+                            }else {
+                                return {value:undefined, done:true}
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        let obj={name:"testName", age:22, gender:false}
+        let objIter = ObjIterator(obj)
+        for(let p of objIter){
+            console.log(p)
+        }
+    </script>
+</head>
+<body>
+</body>
+</html>

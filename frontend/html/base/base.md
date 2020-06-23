@@ -893,6 +893,9 @@
         ```
     - `<select>`
         - 需要设置`name`，才能把数据发送给服务器
+        - 可以设置无属性值属性: `multiple`
+            - 可以同时选择多个option
+            - 提交时，该属性会以数组的形式发送
     - `<option>`
         - `value`是发送给服务器的具体值
         - 标签内容是页面中的显示内容
@@ -910,6 +913,24 @@
     - 每种类型按钮的功能都与`<input>`下的按钮功能相同
     - `<button></button>`是成对标签，相比自结束标签`<input>`，可以提供更加复杂的结构
 
+- `<label>` 与 表单项
+    - 如果 `label` 的 `for` 属性与某个表单项的id相同，当点击label时，对应的表单项会自动选中
+        ```html
+        <!-- 方式1 -->
+        <label for='表单项id'>xxx</label>
+        <input id='表单项id'>
+
+        <!-- 方式2: 嵌套 -->
+        <label for='表单项id'>
+            <input id='表单项id'>xxxx
+        </label>
+        ```
+    - 如果对checkbox应用 `for` 属性，**在点击文字的同时，选择框会被选中**
+        ```html
+        <label type='checkbox' for='表单项id'>
+            <input id='表单项id'>
+        </label>
+        ```
 - 示例
     - 参考代码
         - 表单页面：[/frontendhtml/base/src/form/base.html](/frontendhtml/base/src/form/base.html)
