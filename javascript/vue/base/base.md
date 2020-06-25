@@ -50,6 +50,14 @@
         - [计算属性getter和setter的示例](#计算属性getter和setter的示例)
         - [计算属性的缓存](#计算属性的缓存)
     - [filters--过滤器](#filters--过滤器)
+- [组件化开发](#组件化开发)
+    - [Vue组件化简介](#Vue组件化简介)
+    - [组件的基本使用步骤](#组件的基本使用步骤)
+    - [全局组件和局部组件](#全局组件和局部组件)
+    - [父组件和子组件](#父组件和子组件)
+    - [组件的注册方法](#组件的注册方法)
+- [](#)
+- [](#)
 - [](#)
 
 # Vuejs概述
@@ -1826,6 +1834,10 @@
 - filter
     - 类型: `{[key String]: Function}`
     - 作用: 数据转换
+- components
+    - 类型: `{[key String]: 组件构造器}`
+    - 作用: 注册只能在当前Vue实例对象内部使用的**局部组件**
+    - 参考: [全局组件和局部组件](#全局组件和局部组件)
 
 ## computed--计算属性
 ### 计算属性的简介
@@ -2154,5 +2166,321 @@
         </div>
         ```
 
+# 组件化开发
+## Vue组件化简介
+[top](#catalog)
+- Vue的组件化
+    - Vue组件化提供一种抽象，使开发者可以开发出可复用的组件来构成复杂的应用
+    - 任何的应用都会被抽象成一颗**组件树**
+        - [图](?????)
+    - 通过组件化，可以让代码便于组织和管理，扩展型更强
+
+- 组件化的应用
+    - 开发时，将页面尽可能的拆分成多个小的、可复用的组件
+
+## 组件的基本使用步骤
+[top](#catalog)
+- 组件使用的3个步骤
+    1. 创建组件构造器，调用 `Vue.extend()`
+    2. 注册组件，调用 `Vue.component()`
+    3. 在Vue实例的作用范围内使用组件
+
+- `Vue.extend()`
+    - 调用 `Vue.extend()`，会创建一个 `组件构造器`
+    - 通常在创建组件构造器时，会传入 `template`，即自定义的组件模板
+        - `template` 是使用组件时，需要显示的html
+    - 在Vue2.x以后，更推荐使用: ????? 来创建组件构造器，但是底层调用的仍然是 `Vue.extend()`
+
+- `Vue.component('组件名', 组件构造器对象)`
+    - 用于将 `组件构造器` 注册为一个全局组件，并为组件设置组件名
+
+- 示例
+    - 参考代码
+        - [src/syntax/component/base.html](src/syntax/component/base.html)
+    - 代码内容
+        ```html
+        <div id="app">
+            <!-- 3. 在Vue实例的作用范围，多次内使用组件 -->
+            <new-cpn></new-cpn>
+            <new-cpn></new-cpn>
+        </div>
+        <script type='text/javascript' src='../js/vue.js'></script>
+        <script type='text/javascript'>
+            // 1. 创建组件构造器
+            const cpn = Vue.extend({
+                template:`
+                    <div>
+                        <p>test1</p>
+                        <p>test2</p>
+                        <p>test3</p>
+                    </div>
+                `
+            });
+
+            // 2. 注册组件
+            // Vue.component('组件名', 组件构造器对象);
+            Vue.component('new-cpn', cpn);
+
+            const app = new Vue({
+                el: '#app'
+            });
+        </script>
+        ```
+
+## 全局组件和局部组件
+[top](#catalog)
+- 全局组件
+    - 在全局作用域中，通过 `Vue.component()` 注册的组件
+    - 可以在多个Vue实例中使用
+- 局部组件
+    - 在某个Vue实例的 `components` 属性中**注册**的组件
+    - 只能在Vue实例内部使用，外部无法使用
+    - 注册方法
+        ```js
+        const app = new Vue({
+            el: '#app1',
+            // 在 components 属性内注册局部组件
+            components: {
+                // 组件名: 组件构造器
+                '组件名': Vue.extend({
+                        template:`...`
+                    }),
+            }
+        });
+        ```
+
+- 示例
+    - 参考代码
+        - [src/syntax/component/global_loacl.html](src/syntax/component/global_loacl.html)
+    - 代码内容
+        ```html
+        <!-- 3. Vue实例1 -->
+        <div id="app1">
+            <div>---------this is app1---------</div>
+            <!-- 使用全局组件 -->
+            <global-cpn></global-cpn>
+            <!-- 使用局部组件 -->
+            <local-cpn></local-cpn>
+        </div>
+
+        <!-- 4. Vue实例2 -->
+        <div id="app2">
+            <div>---------this is app2---------</div>
+            <!-- 使用全局组件 -->
+            <global-cpn></global-cpn>
+            <!-- 使用 app1 的局部组件。（浏览器无法识别标签，无法渲染 ）-->
+            <local-cpn></local-cpn>
+        </div>
+        <script type='text/javascript' src='../js/vue.js'></script>
+        <script type='text/javascript'>
+            // 1. 创建全局组件，并注册
+            const globalCpn = Vue.extend({
+                template:`
+                    <div>
+                        <p>global test1</p>
+                        <p>global test2</p>
+                    </div>`
+            });
+
+            Vue.component('global-cpn', globalCpn);
+
+            const app1 = new Vue({
+                el: '#app1',
+                // 2. 在 components 属性内注册局部组件
+                components: {
+                    // 组件名: 组件构造器
+                    'local-cpn': Vue.extend({
+                            template:`
+                                <div>
+                                    <p>local test1</p>
+                                    <p>local test2</p>
+                                </div>`
+                        }),
+                }
+            });
+
+            const app2 = new Vue({
+                el: '#app2'
+            });
+        </script>
+        ```
+
+## 父组件和子组件
+[top](#catalog)
+- 使用 `Vue.extend()` 创建组件构造器时，可以通过 `components` 属性注册子组件
+    ```js
+    Vue.extend({
+        tempalte:`...`,
+        components: {
+            '子组件名': 子组件构造器
+        }
+    })
+    ```
+- 普通的Vue实例也可以视作一种组件，根组件。它内部包含了其他组件
+- 对于Vue实例，在使用父组件时，父组件的模板已经确定下来了，所以Vue示例无法感知到子组件的存在
+    - 如果在Vue实例中使用了子组件，会报错
+
+- 示例
+    - 参考代码
+        - [src/syntax/component/parent_child.html](src/syntax/component/parent_child.html)
+    - html代码
+        ```html
+        <div id="app">
+            <!-- 使用父组件 -->
+            <parent-cpn></parent-cpn>
+        </div>
+        ```
+    - js代码
+        ```js
+        // 创建一个子组件
+        const child = Vue.extend({
+            template:`
+                <div>
+                    <p>this is child</p>
+                    <p>child test</p>
+                </div>`
+        })
+        const parent = Vue.extend({
+            template:`
+                <div>
+                    <p>this is parent</p>
+                    <p>parent test</p>
+
+                    <!-- 使用子组件 -->
+                    <child-cpn></child-cpn>
+                </div>`,
+            // 在父组件中，注册子组件
+            components:{
+                'child-cpn':child,
+            }
+        })
+
+        const app = new Vue({
+            el:"#app",
+            data:{
+                msg:'testmsg'
+            },
+            // 注册父组件
+            components:{
+                'parent-cpn': parent,
+            }
+        });
+        ```
+
+## 组件的注册方法
+[top](#catalog)
+- 两种注册方法
+    1. 原生方法：创建构造器对象--> 注册
+        ```js
+        // 创建构造器对象
+        const cpn1 = Vue.extend({
+            template: `...`,
+            ...
+        }) 
+        // 注册
+        Vue.component('组件名', cpn1)
+        ```
+    2. `Vue.component` 的语法糖：直接将`extend()` 方法中的对象作为参数注册组件
+        - 全局组件
+            ```js
+            Vue.component('组件名', {
+                template: `...`,
+                ...
+            });
+            ```
+        - 局部组件
+            ```js
+            new Vue({
+                el:'#app',
+                components:{
+                    '组件名':{
+                        template: `...`,
+                        ...
+                    }
+                }
+            });
+            ```
+        - 子组件
+            ```js
+            new Vue({
+                template:`...`,
+                component:{
+                    '组件名':{
+                        template: `...`,
+                        ...
+                    }
+                }
+            });
+            ```
+
+- 示例
+    - 参考代码
+        - [src/syntax/component/registe_component.html](src/syntax/component/registe_component.html)
+    - html代码
+        ```html
+        <div id="app">
+            <!-- 原生方法创建并注册组件 -->
+            <cpn1></cpn1>
+            <!-- 使用语法糖注册的全局组件 -->
+            <cpn2></cpn2>
+            
+            <!-- 使用在Vue实例内部注册的局部组件 -->
+            <main-cpn></main-cpn>
+        </div>
+        ```
+    - js代码
+        ```js
+        // 1. 原生方法创建并注册组件
+        const cpn1 = Vue.extend({
+            template:`
+                <div>
+                    <p>this is cpn1</p>
+                </div>
+            `
+        });
+
+        Vue.component('cpn1', cpn1);
+
+        // 2. 使用语法糖创建并注册全局组件
+        Vue.component('cpn2', {
+            template:`
+                <div>
+                    <p>this is cpn2</p>
+                    <cpn2-child></cpn2-child>
+                </div>
+            `,
+            // 注册子组件
+            components: {
+                'cpn2-child':{
+                    template:`
+                        <div>
+                            <p>this is cpn2 child</p>
+                        </div>
+                    `
+                }
+            }
+        });
+
+        // 3. 使用语法糖创建并注册局部组件
+        const app = new Vue({
+            el: '#app',
+            components:{
+                'main-cpn':{
+                    template:`
+                        <div>
+                            <p>this is main cpn</p>
+                        </div>
+                    `
+                }
+            }
+        })
+        ```
 
 [top](#catalog)
+
+## 其他
+-  组件的搜索与渲染过程
+    - 对于Vue实例和父组件
+        - 先在内部的 `components` 属性中搜索已注册的组件
+        - 如果内部没有，则开始搜索全局组件
+        - 如果全局组件也没有，会报错

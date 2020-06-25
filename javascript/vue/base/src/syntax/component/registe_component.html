@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+    <div id="app">
+        <!-- 原生方法创建并注册组件 -->
+        <cpn1></cpn1>
+        <!-- 使用语法糖注册的全局组件 -->
+        <cpn2></cpn2>
+        
+        <!-- 使用在Vue实例内部注册的局部组件 -->
+        <main-cpn></main-cpn>
+    </div>
+    <script type='text/javascript' src='../js/vue.js'></script>
+    <script type='text/javascript'>
+        // 1. 原生方法创建并注册组件
+        const cpn1 = Vue.extend({
+            template:`
+                <div>
+                    <p>this is cpn1</p>
+                </div>
+            `
+        });
+
+        Vue.component('cpn1', cpn1);
+
+        // 2. 使用语法糖创建并注册全局组件
+        Vue.component('cpn2', {
+            template:`
+                <div>
+                    <p>this is cpn2</p>
+                    <cpn2-child></cpn2-child>
+                </div>
+            `,
+            // 注册子组件
+            components: {
+                'cpn2-child':{
+                    template:`
+                        <div>
+                            <p>this is cpn2 child</p>
+                        </div>
+                    `
+                }
+            }
+        });
+
+        // 3. 使用语法糖创建并注册局部组件
+        const app = new Vue({
+            el: '#app',
+            components:{
+                'main-cpn':{
+                    template:`
+                        <div>
+                            <p>this is main cpn</p>
+                        </div>
+                    `
+                }
+            }
+        })
+    </script>
+</body>
+</html>

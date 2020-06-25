@@ -1,0 +1,50 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta charset='UTF-8'>
+        <title>component relationship: parent, child</title>
+    </head>
+    <body>
+        <div id="app">
+            <!-- 使用父组件 -->
+            <parent-cpn></parent-cpn>
+            <child-cpn></child-cpn>
+        </div>
+        <script src='../js/vue.js'></script>
+        <script>
+            // 创建一个子组件
+            const child = Vue.extend({
+                template:`
+                    <div>
+                        <p>this is child</p>
+                        <p>child test</p>
+                    </div>`
+            })
+            const parent = Vue.extend({
+                template:`
+                    <div>
+                        <p>this is parent</p>
+                        <p>parent test</p>
+
+                        <!-- 使用子组件 -->
+                        <child-cpn></child-cpn>
+                    </div>`,
+                // 在父组件中，注册子组件
+                components:{
+                    'child-cpn':child,
+                }
+            })
+
+            const app = new Vue({
+                el:"#app",
+                data:{
+                    msg:'testmsg'
+                },
+                // 注册父组件
+                components:{
+                    'parent-cpn': parent,
+                }
+            });
+        </script>
+    </body>
+</html>

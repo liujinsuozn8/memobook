@@ -1,0 +1,35 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta charset='UTF-8'>
+        <title>component base</title>
+    </head>
+    <body>
+        <div id="app">
+            <!-- 3. 在Vue实例的作用范围，多次内使用组件 -->
+            <new-cpn></new-cpn>
+            <new-cpn></new-cpn>
+        </div>
+        <script type='text/javascript' src='../js/vue.js'></script>
+        <script type='text/javascript'>
+            // 1. 创建组件构造器
+            const cpn = Vue.extend({
+                template:`
+                    <div>
+                        <p>test1</p>
+                        <p>test2</p>
+                        <p>test3</p>
+                    </div>
+                `
+            });
+
+            // 2. 注册组件
+            // Vue.component('组件名', 组件构造器对象);
+            Vue.component('new-cpn', cpn);
+
+            const app = new Vue({
+                el: '#app'
+            });
+        </script>
+    </body>
+</html>
