@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>component data</title>
+</head>
+<body>
+    <div id="app">
+        <!-- 3. 多次使用相同组件，组件的数据不会互相干扰 -->
+        <counter></counter>
+        <counter></counter>
+    </div>
+    <!-- 1. 设置组件模板 -->
+    <template id='counter-template'>
+        <div>
+            <p>{{count}}</p>
+            <button @click='add'>+</button>
+            <button @click='sub'>-</button>
+        </div>
+    </template>
+    <script type='text/javascript' src='../../js/vue.js'></script>
+    <script type='text/javascript'>
+        // 2. 创建组件，并设置组件的数据和方法
+        Vue.component('counter', {
+            template: '#counter-template',
+            data(){
+                return {count:0}
+            },
+            methods:{
+                add(){ this.count++; },
+                sub(){ this.count--; }
+            }
+        })
+
+        const app = new Vue({
+            el:'#app',
+            data:{},
+        });
+    </script>
+</body>
+</html>

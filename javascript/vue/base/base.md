@@ -51,11 +51,21 @@
         - [计算属性的缓存](#计算属性的缓存)
     - [filters--过滤器](#filters--过滤器)
 - [组件化开发](#组件化开发)
-    - [Vue组件化简介](#Vue组件化简介)
+    - [Vue组件简介](#Vue组件简介)
     - [组件的基本使用步骤](#组件的基本使用步骤)
     - [全局组件和局部组件](#全局组件和局部组件)
     - [父组件和子组件](#父组件和子组件)
     - [组件的注册方法](#组件的注册方法)
+    - [组件模板抽离](#组件模板抽离)
+    - [组件的数据](#组件的数据)
+        - [组件数据的基本使用](#组件数据的基本使用)
+        - [为什么组件的data必须是Function](#为什么组件的data必须是Function)
+    - [父子组件通信](#父子组件通信)
+        - [父子组件通信的方法与应用场景](#父子组件通信的方法与应用场景)
+        - [props基本介绍](#props基本介绍)
+        - [props的设置与传值方法](#props的设置与传值方法)
+        - [使用字符串数组设置props](#使用字符串数组设置props)
+        - [使用对象设置props](#使用对象设置props)
 - [](#)
 - [](#)
 - [](#)
@@ -2167,7 +2177,7 @@
         ```
 
 # 组件化开发
-## Vue组件化简介
+## Vue组件简介
 [top](#catalog)
 - Vue的组件化
     - Vue组件化提供一种抽象，使开发者可以开发出可复用的组件来构成复杂的应用
@@ -2177,6 +2187,10 @@
 
 - 组件化的应用
     - 开发时，将页面尽可能的拆分成多个小的、可复用的组件
+
+- 组件与Vue实例
+    - 组件中包含了template、data、methods 等属性，与Vue实例类似
+    - 组件的原型是指向 `Vue` 的
 
 ## 组件的基本使用步骤
 [top](#catalog)
@@ -2189,7 +2203,8 @@
     - 调用 `Vue.extend()`，会创建一个 `组件构造器`
     - 通常在创建组件构造器时，会传入 `template`，即自定义的组件模板
         - `template` 是使用组件时，需要显示的html
-    - 在Vue2.x以后，更推荐使用: ????? 来创建组件构造器，但是底层调用的仍然是 `Vue.extend()`
+    - 在Vue2.x以后，更推荐使用语法糖来创建组件构造器，但是底层调用的仍然是 `Vue.extend()`
+        - 参考: [组件的注册方法](#组件的注册方法)
 
 - `Vue.component('组件名', 组件构造器对象)`
     - 用于将 `组件构造器` 注册为一个全局组件，并为组件设置组件名
@@ -2248,6 +2263,7 @@
             }
         });
         ```
+- **局部组件和Vue实例可以看作一种特殊的父子组件**
 
 - 示例
     - 参考代码
@@ -2316,13 +2332,13 @@
         }
     })
     ```
-- 普通的Vue实例也可以视作一种组件，根组件。它内部包含了其他组件
+- 普通的Vue实例也可以**视作一种父组件---根组件**。它内部包含了其他组件
 - 对于Vue实例，在使用父组件时，父组件的模板已经确定下来了，所以Vue示例无法感知到子组件的存在
     - 如果在Vue实例中使用了子组件，会报错
 
 - 示例
     - 参考代码
-        - [src/syntax/component/parent_child.html](src/syntax/component/parent_child.html)
+        - [src/syntax/component/parent_child/base.html](src/syntax/component/parent_child/base.html)
     - html代码
         ```html
         <div id="app">
@@ -2376,11 +2392,12 @@
         const cpn1 = Vue.extend({
             template: `...`,
             ...
-        }) 
+        })
         // 注册
         Vue.component('组件名', cpn1)
         ```
     2. `Vue.component` 的语法糖：直接将`extend()` 方法中的对象作为参数注册组件
+        - 底层使用的仍然是 `Vue.extend()`
         - 全局组件
             ```js
             Vue.component('组件名', {
@@ -2423,7 +2440,7 @@
             <cpn1></cpn1>
             <!-- 使用语法糖注册的全局组件 -->
             <cpn2></cpn2>
-            
+
             <!-- 使用在Vue实例内部注册的局部组件 -->
             <main-cpn></main-cpn>
         </div>
@@ -2475,6 +2492,451 @@
             }
         })
         ```
+
+## 组件模板抽离
+[top](#catalog)
+- 两种定义html模板的方式
+    - 使用 script 标签
+        ```html
+        <script type='text/x-template' id='模板id'>
+            模板内容...
+        </script>
+        <script type='text/javascript'>
+            Vue.component('组件id', {
+                template: '#模板id' // 通过 css选择器语法，关联模板和组件
+            })
+        </script>
+        ```
+    - 使用 template 标签
+        ```html
+        <template id='模板id'>
+            模板内容...
+        </template>
+        <script type='text/javascript'>
+            Vue.component('组件id', {
+                template: '#模板id' // 通过 css选择器语法，关联模板和组件
+            })
+        </script>
+        ```
+- 示例
+    - 参考代码
+        - [src/syntax/component/exract_template.html](src/syntax/component/exract_template.html)
+    - 代码内容
+        ```html
+        <div id="app">
+            <!-- 4. 使用组件 -->
+            <cpn01></cpn01>
+            <cpn01></cpn01>
+            <cpn02></cpn02>
+            <cpn02></cpn02>
+        </div>
+
+        <!-- 1. 使用 script 标签创建模板 -->
+        <script type='text/x-template' id='cpn01-template'>
+            <div>
+                <p>this is cpn01</p>
+                <p>this is cpn01 test</p>
+            </div>
+        </script>
+
+        <!-- 2. 使用 template 标签创建模板 -->
+        <template id='cpn02-template'>
+            <div>
+                <p>this is cpn02</p>
+                <p>this is cpn02 test</p>
+            </div>
+        </template>
+
+        <script type='text/javascript' src='../js/vue.js'></script>
+        <script type='text/javascript'>
+            const app = new Vue({
+                el: '#app',
+                // 3. 关联模板和组件
+                components:{
+                    cpn01:{ template: '#cpn01-template'},
+                    cpn02:{ template: '#cpn02-template'},
+                }
+            });
+        </script>
+        ```
+
+## 组件的数据
+### 组件数据的基本使用
+[top](#catalog)
+- 组件无法访问: Vue实例 或 父组件 中的data
+    - 如果组件可以访问那些数据，Vue实例 或 父组件 会变得不好维护
+- 组件数据的保存
+    - 组件的 `data` 属性用于保存组件数据
+- 组件 `data` 属性的类型
+    - **必须是 `Function` 类型**，并返回一个实例对象，这个实例对象中保存数据
+    - 实例对象中的**属性**可以通过 `{{}}` 语法插入到页面
+
+- 示例
+    - 参考代码
+        - [src/syntax/component/data/component_data.html](src/syntax/component/data/component_data.html)
+    - 代码内容
+        ```html
+        <div id="app">
+            <div>{{msg}}</div>
+            <cpn1></cpn1>
+        </div>
+
+        <!-- 组件模板，变量名与Vue实例同名，但是不会冲突 -->
+        <template id='cpn1-template'>
+            <div>{{msg}}</div>
+        </template>
+
+        <script type='text/javascript' src='../js/vue.js'></script>
+        <script type='text/javascript'>
+            // 关联组件与模板，并设置数据
+            Vue.component('cpn1', {
+                template: '#cpn1-template',
+                data(){
+                    return {
+                        msg:'con1msg'
+                    }
+                }
+            })
+            const app = new Vue({
+                el: '#app',
+                data:{
+                    msg:'appmsg',
+                }
+            });
+        </script>
+        ```
+
+### 为什么组件的data必须是Function
+[top](#catalog)
+- <label style='color:red'>为什么组件的data必须是 Function</label>
+    - 页面中，相同组件可以使用多次
+        - 即: 相同组件可以有多个实例
+    - 如果 data 是 Object类型，会导致**相同组件间共享一份数据，操作时会互相干扰**
+    - 每个组件实例都通过调用 Function 返回一个 Object ，可以使组件间的数据相互隔离
+
+- 相同组件的多个实例共享数据的方法
+    - 共享方法
+        1. 在组件的外部作用域创建一个通用的数据对象
+        2. 在data中，每次调用都返回这个通用对象
+    - 写法
+        ```js
+        const obj = {...};
+        Vue.component('组件名', {
+            template:'...',
+            data(){ return obj; } // 每次调用都返回 obj，来共享数据
+        })
+        ```
+    - 一般不推荐共享数据的写法，会导致组件间相互干扰
+
+- 示例
+    - 参考代码
+        - [src/syntax/component/data/component_data_must_function.html](src/syntax/component/data/component_data_must_function.html)
+    - 代码内容
+        ```html
+        <div id="app">
+            <!-- 3. 多次使用相同组件，组件的数据不会互相干扰 -->
+            <counter></counter>
+            <counter></counter>
+        </div>
+        <!-- 1. 设置组件模板 -->
+        <template id='counter-template'>
+            <div>
+                <p>{{count}}</p>
+                <button @click='add'>+</button>
+                <button @click='sub'>-</button>
+            </div>
+        </template>
+        <script type='text/javascript' src='../js/vue.js'></script>
+        <script type='text/javascript'>
+            // 2. 创建组件，并设置组件的数据和方法
+            Vue.component('counter', {
+                template: '#counter-template',
+                data(){
+                    return {count:0}
+                },
+                methods:{
+                    add(){ this.count++; },
+                    sub(){ this.count--; }
+                }
+            })
+
+            const app = new Vue({
+                el:'#app',
+                data:{},
+            });
+        </script>
+        ```
+
+## 父子组件通信
+### 父子组件通信的方法与应用场景
+[top](#catalog)
+- 父子组件通信 的应用场景
+    - 组件的数据一般是来自网络或者向服务器请求
+    - 当多个组件都需要数据时，会将请求数据的操作封装到父组件中
+    - 由父组件统一获取数据，然后交给子组件，减少网络请求数据量
+- 父子组件通信的方法
+    1. 通过 `props` 向子组件传递数据
+    2. 通过 `emit event` 事件向父组件发送消息
+        ```
+               传送 Props
+          ┌──────────────────────┐
+          │                      │
+          │                      V
+        Parent(父组件)      Child(子组件)
+          ^                      │
+          ^                      │
+          └──────────────────────┘
+                emit event
+        ```
+- 在实际开发中，Vue实例与子组件(局部组件)通信、父组件和子组件的通信过程是一样的
+
+### props基本介绍
+[top](#catalog)
+- 在组件中，使用选项: `props`，来声明需要从父组件接收的数据
+- 在模版中，可以使用插值语法插入某个props；可以在计算属性中，通过 `this.props属性名` 来使用接收的数据
+- props的值有两种方式
+    1. 字符串数组
+        - 每个字符串都是传递参数时的名称
+    2. 对象
+        - 最常用的方式，主要用于设置数据的验证方式
+
+### props的设置与传值方法
+[top](#catalog)
+1. 在模版中定义需要使用的props
+    ```html
+    <!-- 在子组件模板中使用 props -->
+    <template id='子组件模板'>
+        <div>
+            <p>{{props1}}</p>
+            <p>{{props2}}</p>
+        </div>
+    </template>
+    ```
+2. 定义子组件构造器，可以直接在Vue实例或父组件中直接定义
+    ```js
+    const 子组件构造器 = {
+        template: '#子组件模板',
+        // 使用字符串数组设置 props
+        props: ['参数1', '参数2'],
+        // 或者使用对象设置 props
+        // props: {参数1: 类型, 参数2: 类型},
+    }
+    ```
+3. 在父组件中，设置数据、设置子组件
+    ```js
+    const app = new Vue({
+        el: '#app',
+        // 设置数据
+        data:{
+            父组件参数1: ...,
+            父组件参数2: ...,
+        },
+        // 定义子组件
+        components:{
+            子组件名: 子组件构造器
+        }
+    });
+    ```
+4. 传递数据---在父组件的模板中，通过 props 向子组件传递数据
+    - 通过 `v-bind` 将父组件数据传给子组件的 props
+        ```html
+        <!-- 父组件 -->
+        <div id="app">
+            <!-- 将父组件的数据传给子组件的props -->
+            <子组件名 v-bind:参数1='父组件参数1' v-bind:参数1='父组件参数2'>
+            </子组件名>
+        </div>
+        ```
+    - 直接传递一个字符串，**一般不推荐这样使用**
+        ```html
+        <!-- 父组件 -->
+        <div id="app">
+            <!-- 使用字符串的方式传值 -->
+            <子组件名 参数1='abcde' 参数1='12345'>
+            </子组件名>
+        </div>
+        ```
+
+### 使用字符串数组设置props
+[top](#catalog)
+- 字符串数组
+    - 每个字符串都是传递参数时的名称
+- 示例
+    - 参考代码
+        - [src/syntax/component/parent_child/props_string_array.html](src/syntax/component/parent_child/props_string_array.html)
+    - 代码内容
+        1. 在模版中定义需要使用的props
+            ```html
+            <template id='child-template'>
+                <div>
+                    <p>{{title}}</p>
+                    <ul>
+                        <li v-for='item in showlist'>{{item}}</li>
+                    </ul>
+                    <p>{{end}}</p>
+                </div>
+            </template>
+            ```
+        2. 定义子组件构造器
+            ```js
+            const child = {
+                template: '#child-template',
+                // 通过 字符串数组 设置子组件的 props，
+                props:['showlist', 'title', 'end'],
+            };
+            ```
+        3. 在父组件中，设置数据、设置子组件
+            ```js
+            const app = new Vue({
+                el: '#app',
+                data:{  // 设置父组件的数据
+                    typeList:['aaa', 'bbb', 'ccc'],
+                    title:'this is type list'
+                },
+                components:{    // 设置子组件
+                    'child-cpn': child,
+                }
+            });
+            ```
+        4. 传递数据
+            ```html
+            <div id="app">
+                <!-- 4. 使用子组件，依照 props 中设置的名字
+                        4.1 通过 v-bind 的方式传递数据
+                            将 Vue实例的 typeList 传递到子组件的 showlist
+                            将 Vue实例的 title 传递到子组件的 title
+                        4.2 不使用 v-bind，直接传递一个字符串
+                            向 end 传递一个字符串
+                -->
+                <child-cpn v-bind:showlist='typeList' :title='title' end='this is end'></child-cpn>
+            </div>
+            ```
+
+### 使用对象设置props
+[top](#catalog)
+- 对象设置 props
+    - 通过对象可以设置传递时的类型，主要用于**类型验证**
+        - 类型验证默认支持的数据类型
+            - String
+            - Number
+            - Boolean
+            - Array
+            - Object
+            - Date
+            - Function
+            - Symbol
+        - 当有自定义**构造函数**时，验证也支持自定义的类型
+    - 对象中的props可以设置默认值
+
+- 对象的几种设置方法
+    ```js
+    // 自定义类型
+    function Person(name, age){
+        this.name = name;
+        this.age = age;
+    }
+
+    const child = {
+        template: '#child-template',
+        props:{
+            prop1: String,          // 方式1: 设置单一类型
+            prop2: [String, Number],// 方式2: 设置多个可能的类型
+            prop3: {                // 方式3: 使用对象设置某个属性的验证方式
+                type: String,
+                required: true,     // 必须传递数据
+            },
+            prop4: {
+                type:Number,
+                default: 123,       // 设置默认值
+            },
+            // Object类型的默认值，必须使用Function，并返回一个对象，防止多个组件实例相互干扰
+            prop5: {
+                type: Object,
+                default(){
+                    return {msg:'this is default prop5'};
+                }
+            },
+            // Array类型的默认值，必须使用Function，并返回一个数组，防止多个组件实例相互干扰
+            prop6: {
+                type: Array,
+                default(){
+                    return ['pro6-1', 'pro6-2', 'pro6-3'];
+                }
+            },
+            prop7: {                // 方式4: 使用自定义验证函数
+                validator: function(value){
+                    return ['yes', 'no', 'giveup'].indexOf(value) !== -1;
+                }
+            },
+            prop8: Person,          // 方式5: 使用自定义类型
+        },
+        computed: {
+            // 在计算属性中利用 props
+            personStr(){
+                return `name=${this.prop8.name}, age=${this.prop8.age}`
+            }
+        }
+    };
+    ```
+
+- 示例
+    - 参考代码
+        - [src/syntax/component/parent_child/props_obj.html](src/syntax/component/parent_child/props_obj.html)
+    - 说明内容   
+        1. 在模版中定义需要使用的props
+            ```html
+            <template id='child-template'>
+                <div>
+                    <p>prop1 : {{prop1}}</p>
+                    <p>prop2 : {{prop2}}</p>
+                    <p>prop3 : {{prop3}}</p>
+                    <p>prop4 : {{prop4}}</p>
+                    <p>prop5 : {{prop5}}</p>
+                    <p>prop6 : {{prop6}}</p>
+                    <p>prop7 : {{prop7}}</p>
+                    <p>prop8 : {{personStr}}</p> <!-- 调用计算属性 -->
+                </div>
+            </template>
+            ```
+        2. 定义子组件构造器
+            - 参考上面的：对象的几种设置方法
+        3. 在父组件中，设置数据、设置子组件
+            ```js
+            const app = new Vue({
+                el: '#app',
+                data:{          // 设置父组件的数据
+                    prop1Value: 'this is prop1Value',
+                    prop2Value: 888,
+                    prop3Value: 'abcde',
+                    prop4Value: 5678,
+                    prop5Value: {p1:'aaa', p2:'bbb', p3:'ccc'},
+                    prop6Value: ['item1', 'item2', 'item3', 'item4'],
+                    prop7Value: 'no',
+                    prop8Value: new Person('testPerson', 22),
+                },
+                components:{    // 设置子组件
+                    'child-cpn': child,
+                }
+            });
+            ```
+        4. 传递数据
+            ```html
+            <div id="app">
+                <!-- 4. 父组件给子组件传递数据 -->
+                <child-cpn :prop1='prop1Value' :prop2='prop2Value' :prop3='prop3Value'
+                :prop4='prop4Value' :prop5='prop5Value' :prop6='prop6Value' 
+                :prop7='prop7Value' :prop8='prop8Value'>
+                </child-cpn>
+
+                <!-- prop3不传值，prop7传一个不符合规则的值 
+                    控制台会报错，但是页面仍然可以正常显示
+                -->
+                <child-cpn :prop1='prop1Value' prop2='prop2Value' 
+                :prop4='prop4Value' :prop5='prop5Value' :prop6='prop6Value' 
+                prop7='aaas' :prop8='prop8Value'>
+                </child-cpn>
+            </div>
+            ```
 
 [top](#catalog)
 

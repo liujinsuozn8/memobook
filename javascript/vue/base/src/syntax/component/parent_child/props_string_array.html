@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>component parent child-- props</title>
+</head>
+<body>
+    <div id="app">
+        <!-- 4. 使用子组件，依照 props 中设置的名字
+                4.1 通过 v-bind 的方式传递数据
+                    将 Vue实例的 typeList 传递到子组件的 showlist
+                    将 Vue实例的 title 传递到子组件的 title
+                4.2 不使用 v-bind，直接传递一个字符串
+                    向 end 传递一个字符串
+        -->
+        <child-cpn v-bind:showlist='typeList' :title='title' end='this is end'></child-cpn>
+    </div>
+
+    <script type='text/javascript' src='../../js/vue.js'></script>
+
+    <!-- 1. 在模版中定义需要使用的props -->
+    <template id='child-template'>
+        <div>
+            <p>{{title}}</p>
+            <ul>
+                <li v-for='item in showlist'>{{item}}</li>
+            </ul>
+            <p>{{end}}</p>
+        </div>
+    </template>
+    <script type='text/javascript'>
+        // 2. 定义子组件构造器
+        const child = {
+            template: '#child-template',
+            // 通过 字符串数组 设置子组件的 props，
+            props:['showlist', 'title', 'end'],
+        };
+
+        // 3. 创建Vue实例 作为父组件使用
+        const app = new Vue({
+            el: '#app',
+            data:{  // 设置父组件的数据
+                typeList:['aaa', 'bbb', 'ccc'],
+                title:'this is type list'
+            },
+            components:{    // 设置子组件
+                'child-cpn': child,
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>component data</title>
+</head>
+<body>
+    <div id="app">
+        <div>{{msg}}</div>
+        <cpn1></cpn1>
+    </div>
+
+    <!-- 组件模板，变量名与Vue实例同名，但是不会冲突 -->
+    <template id='cpn1-template'>
+        <div>{{msg}}</div>
+    </template>
+
+    <script type='text/javascript' src='../../js/vue.js'></script>
+    <script type='text/javascript'>
+        // 关联组件与模板，并设置数据
+        Vue.component('cpn1', {
+            template: '#cpn1-template',
+            data(){
+                return {
+                    msg:'con1msg'
+                }
+            }
+        })
+        const app = new Vue({
+            el: '#app',
+            data:{
+                msg:'appmsg',
+            }
+        });
+    </script>
+</body>
+</html>

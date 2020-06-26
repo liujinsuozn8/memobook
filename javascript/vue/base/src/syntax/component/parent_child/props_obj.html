@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>component parent child-- props</title>
+</head>
+<body>
+    <div id="app">
+        <!-- 4. 父组件给子组件传递数据 -->
+        <child-cpn :prop1='prop1Value' :prop2='prop2Value' :prop3='prop3Value'
+         :prop4='prop4Value' :prop5='prop5Value' :prop6='prop6Value' 
+         :prop7='prop7Value' :prop8='prop8Value'>
+        </child-cpn>
+
+        <!-- prop3不传值，prop7传一个不符合规则的值 
+            控制台会报错，但是页面仍然可以正常显示
+        -->
+        <child-cpn :prop1='prop1Value' prop2='prop2Value' 
+         :prop4='prop4Value' :prop5='prop5Value' :prop6='prop6Value' 
+         prop7='aaas' :prop8='prop8Value'>
+        </child-cpn>
+    </div>
+
+    <script type='text/javascript' src='../../js/vue.js'></script>
+
+    <!-- 1. 在模版中定义需要使用的props -->
+    <template id='child-template'>
+        <div>
+            <p>prop1 : {{prop1}}</p>
+            <p>prop2 : {{prop2}}</p>
+            <p>prop3 : {{prop3}}</p>
+            <p>prop4 : {{prop4}}</p>
+            <p>prop5 : {{prop5}}</p>
+            <p>prop6 : {{prop6}}</p>
+            <p>prop7 : {{prop7}}</p>
+            <p>prop8 : {{personStr}}</p>
+        </div>
+    </template>
+
+    <script type='text/javascript'>
+        // 自定义类型
+        function Person(name, age){
+            this.name = name;
+            this.age = age;
+        }
+
+        // 2. 创建子组件构造器，使用对象设置 props
+        const child = {
+            template: '#child-template',
+            props:{
+                prop1: String,          // 方式1: 设置单一类型
+                prop2: [String, Number],// 方式2: 设置多个可能的类型
+                prop3: {                // 方式3: 使用对象设置某个属性的验证方式
+                    type: String,
+                    required: true,     // 必须传递数据
+                },
+                prop4: {
+                    type:Number,
+                    default: 123,       // 设置默认值
+                },
+                // Object类型的默认值，必须使用Function，并返回一个对象，防止多个组件实例相互干扰
+                prop5: {
+                    type: Object,
+                    default(){
+                        return {msg:'this is default prop5'};
+                    }
+                },
+                // Array类型的默认值，必须使用Function，并返回一个数组，防止多个组件实例相互干扰
+                prop6: {
+                    type: Array,
+                    default(){
+                        return ['pro6-1', 'pro6-2', 'pro6-3'];
+                    }
+                },
+                prop7: {                // 方式4: 使用自定义验证函数
+                    validator: function(value){
+                        return ['yes', 'no', 'giveup'].indexOf(value) !== -1;
+                    }
+                },
+                prop8: Person,          // 方式5: 使用自定义类型
+            },
+            computed: {
+                // 在计算属性中利用 props
+                personStr(){
+                    return `name=${this.prop8.name}, age=${this.prop8.age}`
+                }
+            }
+        };
+
+        // 3. 创建Vue实例，设置数据、设置子组件
+        const app = new Vue({
+            el: '#app',
+            data:{          // 设置父组件的数据
+                prop1Value: 'this is prop1Value',
+                prop2Value: 888,
+                prop3Value: 'abcde',
+                prop4Value: 5678,
+                prop5Value: {p1:'aaa', p2:'bbb', p3:'ccc'},
+                prop6Value: ['item1', 'item2', 'item3', 'item4'],
+                prop7Value: 'no',
+                prop8Value: new Person('testPerson', 22),
+            },
+            components:{    // 设置子组件
+                'child-cpn': child,
+            }
+        });
+    </script>
+</body>
+</html>
