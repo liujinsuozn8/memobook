@@ -1670,14 +1670,27 @@
 - 示例
     - 参考代码
         - [/javascript/base/src/dom/domEvent/eventNotify.html](/javascript/base/src/dom/domEvent/eventNotify.html)
-
+    - html内容
+        ```html
+        <div id="box01"> box01
+            <div id="box02"> box02
+                <div id="box03"> box03 </div>
+            </div>
+        </div>
+        ```
     - js内容
         ```js
         var box01 = document.getElementById("box01");
         var box02 = document.getElementById("box02");
         var box03 = document.getElementById("box03");
 
-        // 设置事件都在捕获阶段被触发
+        /*
+            设置事件都在捕获阶段被触发
+            点击box03后的输出顺序为：
+            this is box01
+            this is box02
+            this is box03
+        */
         box01.addEventListener(
             "click",
             function(){alert("this is box01")},
