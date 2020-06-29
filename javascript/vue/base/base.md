@@ -66,8 +66,8 @@
         - [props的设置与传值方法](#props的设置与传值方法)
         - [使用字符串数组设置props](#使用字符串数组设置props)
         - [使用对象设置props](#使用对象设置props)
-- [](#)
-- [](#)
+        - [处理子组件中使用驼峰命名的props名](#处理子组件中使用驼峰命名的props名)
+        - [自定义事件--子级向父级传递](#自定义事件--子级向父级传递)
 - [](#)
 
 # Vuejs概述
@@ -2882,7 +2882,7 @@
 - 示例
     - 参考代码
         - [src/syntax/component/parent_child/props_obj.html](src/syntax/component/parent_child/props_obj.html)
-    - 说明内容   
+    - 说明内容
         1. 在模版中定义需要使用的props
             ```html
             <template id='child-template'>
@@ -2924,19 +2924,180 @@
             <div id="app">
                 <!-- 4. 父组件给子组件传递数据 -->
                 <child-cpn :prop1='prop1Value' :prop2='prop2Value' :prop3='prop3Value'
-                :prop4='prop4Value' :prop5='prop5Value' :prop6='prop6Value' 
+                :prop4='prop4Value' :prop5='prop5Value' :prop6='prop6Value'
                 :prop7='prop7Value' :prop8='prop8Value'>
                 </child-cpn>
 
-                <!-- prop3不传值，prop7传一个不符合规则的值 
+                <!-- prop3不传值，prop7传一个不符合规则的值
                     控制台会报错，但是页面仍然可以正常显示
                 -->
-                <child-cpn :prop1='prop1Value' prop2='prop2Value' 
-                :prop4='prop4Value' :prop5='prop5Value' :prop6='prop6Value' 
+                <child-cpn :prop1='prop1Value' prop2='prop2Value'
+                :prop4='prop4Value' :prop5='prop5Value' :prop6='prop6Value'
                 prop7='aaas' :prop8='prop8Value'>
                 </child-cpn>
             </div>
             ```
+
+### 处理子组件中使用驼峰命名的props名
+[top](#catalog)
+- 默认情况下，父组件**不能**为直接为子组件中使用驼峰命名的props传值
+
+- 子组件中用驼峰命名的 props名，通过 `v-bind` 传递数据时，需要**将驼峰分解，并用 `-` 连接**
+- 示例
+    - 参考代码
+        - [src/syntax/component/parent_child/props_camel.html](src/syntax/component/parent_child/props_camel.html)
+    - 代码内容
+        1. 创建子组件模板
+            ```html
+            <template id='cpn-template'>
+                <div>
+                    <!-- 在子组件中，仍然通过驼峰命名的方式使用props -->
+                    <div>childObj: {{childObj}}</div>
+                    <div>childCpnMsg: {{childCpnMsg}}</div>
+                </div>
+            </template>
+            ```
+        2. 创建子组件构造器
+            ```js
+            const childCpn = {
+                template: '#cpn-template',
+                props:{
+                    // 在子组件中，使用驼峰命名的方式声明 props
+                    childObj: {
+                        type:Object
+                    },
+                    childCpnMsg:{
+                        type: String
+                    }
+                }
+            }
+            ```
+        3. 在父组件中注册子组件
+            ```js
+            const app = new Vue({
+                el: '#app',
+                data:{
+                    obj: {name:'testName', age:22},
+                    msg: 'testMsg'
+                },
+                components:{
+                    child: childCpn,
+                }
+            });
+            ```
+        4. 父组件给子组件中 **驼峰命名的props** 传递数据
+            ```html
+            <div id="app">
+                <!-- 将子组件中的驼峰命名的props名分解，并用 `-` 连接 -->
+                <child :child-obj='obj' :child-cpn-msg='msg'></child>
+            </div>
+            ```
+
+### 自定义事件--子级向父级传递
+[top](#catalog)
+- 什么时候需要自定义事件
+    - 最常见的传递，子组件产生的事件，希望父组件能够监听到，并响应
+    - 子组件需要向父组件传递数据
+
+- 如何自定义事件
+    ```js
+    this.$emit('自定义事件名' [, 数据参数])
+    ```
+- 通过 `v-on` 监听自定义事件
+    ```html
+    <div>
+        <子组件 v-on:自定义事件名='组件的响应函数'></子组件>
+    </div>
+    ```
+
+- 基本使用步骤
+    1. 在子组件中的某个方法中，创建自定义事件。（方法可以是子组件的某个事件监听函数）
+        ```js
+        methods:{
+            方法名(item){
+                // 通过自定义事件，向父组件发射一个事件
+                // 事件名称, 事件参数
+                this.$emit('自定义事件名' [, 数据参数]);
+            }
+        }
+        ```
+    2. 在父组件中监听
+        ```html
+        <div>
+            <子组件 v-on:自定义事件名='组件的响应函数'></子组件>
+        </div>
+        ```
+    3. 在父组件中定义方法来处理子组件发射的事件
+        ```js
+        methods:{
+            组件的响应函数([数据参数,...]){
+                // ...
+            }
+        }
+        ```
+
+- 示例
+    - 参考代码
+        - [src/syntax/component/parent_child/emit_event.html](src/syntax/component/parent_child/emit_event.html)
+    - 代码内容
+        1. 定义子组件的模板
+            ```html
+            <template id='child-template'>
+                <div>
+                    <button v-for='item in categories' @click='btnClick(item)'>{{item.name}}</button><br>
+                </div>
+            </template>
+            ```
+        2. 创建子组件的组件构造器
+            ```js
+            const childCpn = {
+                template: '#child-template',
+                // 设置模板中按钮的显示数据
+                data(){
+                    return {
+                        categories: [
+                            {id:'01', name:'aaa'},
+                            {id:'02', name:'bbb'},
+                            {id:'03', name:'ccc'},
+                            {id:'04', name:'ddd'},
+                            {id:'05', name:'eee'},
+                        ]
+                    };
+                },
+                methods:{
+                    // 设置按钮的Click事件，并在click事件内，向父对象发射一个自定义事件
+                    btnClick(item){
+                        console.log(`btnClick: item.id = ${item.id}, item.name = ${item.name}`);
+                        // 向父组件发射一个自定义事件
+                        this.$emit('item-click', item)
+                    }
+                }
+            }
+            ```
+        3. 在父组件中注册子组件
+            ```js
+            const app = new Vue({
+                el: '#app',
+                components:{
+                    child: childCpn,
+                },
+                methods:{
+                    // 设置子组件自定义事件的响应函数，并接受自定义事件发送的数据
+                    childItemClick(item){
+                        console.log(`childItemClick: item.id = ${item.id}, item.name = ${item.name}`);
+                    }
+                }
+            });
+            ```
+        4. 使用子组件并监听子组件的时间
+            ```html
+            <div id="app">
+                <!-- 父组件通过 v-on 监听子组件发射的事件 -->
+                <!-- 需要将驼峰命名的事件名分解，并用 `-` 连接 -->
+                <child @item-click='childItemClick'></child>
+            </div>
+            ```
+
 
 [top](#catalog)
 

@@ -1,0 +1,51 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta charset='UTF-8'>
+        <title>props camel</title>
+    </head>
+    <body>
+        <div id="app">
+            <!-- 4. 父组件给子组件传递数据 -->
+            <!-- 将子组件中的驼峰命名的props名分解，并用 `-` 连接 -->
+            <child :child-obj='obj' :child-cpn-msg='msg'></child>
+        </div>
+
+        <!-- 1. 创建子组件模板 -->
+        <template id='cpn-template'>
+            <div>
+                <!-- 在子组件中，仍然通过驼峰命名的方式使用props -->
+                <div>childObj: {{childObj}}</div>
+                <div>childCpnMsg: {{childCpnMsg}}</div>
+            </div>
+        </template>
+        <script type='text/javascript' src='../../js/vue.js'></script>
+        <script>
+            // 2. 创建子组件构造器
+            const childCpn = {
+                template: '#cpn-template',
+                props:{
+                    // 在子组件中，使用驼峰命名的方式声明 props
+                    childObj: {
+                        type:Object
+                    },
+                    childCpnMsg:{
+                        type: String
+                    }
+                }
+            }
+
+            // 3. 在父组件中注册子组件
+            const app = new Vue({
+                el: '#app',
+                data:{
+                    obj: {name:'testName', age:22},
+                    msg: 'testMsg'
+                },
+                components:{
+                    child: childCpn,
+                }
+            });
+        </script>
+    </body>
+</html>

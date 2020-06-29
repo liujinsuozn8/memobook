@@ -1,0 +1,63 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>emit event base</title>
+    </head>
+    <body>
+        <!-- 4. 使用子组件并监听子组件的时间 -->
+        <div id="app">
+            <!-- 父组件通过 v-on 监听子组件发射的事件 -->
+            <!-- 需要将驼峰命名的事件名分解，并用 `-` 连接 -->
+            <child @item-click='childItemClick'></child>
+        </div>
+
+        <!-- 1. 定义子组件的模板  -->
+        <template id='child-template'>
+            <div>
+                <button v-for='item in categories' @click='btnClick(item)'>{{item.name}}</button><br>
+            </div>
+        </template>
+        <script type='text/javascript' src='../../js/vue.js'></script>
+        <script type='text/javascript'>
+            // 2. 创建子组件的组件构造器
+            const childCpn = {
+                template: '#child-template',
+                // 设置模板中按钮的显示数据
+                data(){
+                    return {
+                        categories: [
+                            {id:'01', name:'aaa'},
+                            {id:'02', name:'bbb'},
+                            {id:'03', name:'ccc'},
+                            {id:'04', name:'ddd'},
+                            {id:'05', name:'eee'},
+                        ]
+                    };
+                },
+                methods:{
+                    // 设置按钮的Click事件，并在click事件内，向父对象发射一个自定义事件
+                    btnClick(item){
+                        console.log(`btnClick: item.id = ${item.id}, item.name = ${item.name}`);
+                        // 向父组件发射一个自定义事件
+                        this.$emit('item-click', item)
+                    }
+                }
+            }
+
+            // 3. 在父组件中注册子组件
+            const app = new Vue({
+                el: '#app',
+                components:{
+                    child: childCpn,
+                },
+                methods:{
+                    // 设置子组件自定义事件的响应函数，并接受自定义事件发送的数据
+                    childItemClick(item){
+                        console.log(`childItemClick: item.id = ${item.id}, item.name = ${item.name}`);
+                    }
+                }
+            });
+        </script>
+    </body>
+</html>
