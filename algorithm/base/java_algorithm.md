@@ -38,6 +38,9 @@
 - [排序算法--快速排序](#排序算法--快速排序)
     - [快速排序基本思想](#快速排序基本思想)
     - [快速排序的实现--右侧pivot](#快速排序的实现--右侧pivot)
+- [排序算法--归并排序](#排序算法--归并排序)
+    - [归并排序的思想](#归并排序的思想)
+    - [归并排序的实现](#归并排序的实现)
 - [](#)
 - [](#)
 - [](#)
@@ -1252,5 +1255,167 @@
             // 输出: [1, 2, 3, 4, 5, 5, 6, 7]
         }
         ```
+
+# 排序算法--归并排序
+## 归并排序的思想
+[top](#catalog)
+- 归并排序采用分治策略
+    - 分：将问题分成一些小的问题，然后递归求解
+    - 治：将分阶段的答案按照规则拼接在一起
+- 归并排序的两个阶段
+    - 拆分阶段
+        - 就是通过递归将序列拆分为不可再分的子序列
+        - 拆分的结果类似于一颗完全二叉树
+    - 合并阶段
+        - 将两个已经有序的子序列合并成一个有序序列
+        - 总体合并次数 = `序列长度 - 1`，是线性增长的
+
+- 拆分于合并的总体示例
+    - ![mergosort_flow](imgs/algorithm/sort/mergesort/mergosort_flow.png)
+
+- 序列合并的示例
+    - ![merge_demo](imgs/algorithm/sort/mergesort/merge_demo.png)
+    
+## 归并排序的实现
+[top](#catalog)
+- 合并阶段的实现
+    1. 计算4个位置
+        1. left的起始位置
+        2. left的结束位置
+        3. right的起始位置
+        4. right的结束位置
+    2. left、right依次比较，将较小的元素保存到临时数组，然后向后移动指针
+    3. 持续比较、移动指针，直到left或right用完
+    4. 将 left 或 right 中剩余的数据一次保存到临时数组中
+        - 剩余数据本身就是有序的，所以可以直接保存
+    5. 将临时数组中的数据拷贝到原始数组中
+- 拆分阶段的实现
+    1. 计算left的结束位置，即中间位置: `(left + right)/2`
+    2. 迭代的向左拆分
+    3. 迭代的向右拆分
+    4. 拆分到每个子序列只剩一个元素时，回溯，同时进行合并
+    
+- 实现内容
+    - 参考代码
+        - [/algorithm/src/java-algorithm/myalgorithm/src/main/java/com/ljs/learn/myalgorithm/sort/MergeSort.java](/algorithm/src/java-algorithm/myalgorithm/src/main/java/com/ljs/learn/myalgorithm/sort/MergeSort.java)
+    - 合并阶段
+        ```java
+        /** 归并排序的合并阶段
+         *
+         * @param array     原始数组
+         * @param startIdx  左指针的起始位置
+         * @param midIdx    左指针的结束位置
+         * @param endIdx    右指针的结束位置
+         * @param temp      保存数据的临时数组
+         */
+        public static void merge(int[] array, int startIdx, int midIdx, int endIdx, int[] temp){
+            // 划分左右指针
+            int left = startIdx;
+            int right = midIdx + 1;
+            //  初始化 temp 的起始索引
+            int t = 0;
+    
+            // 比较left和right所指向的元素，并保存到temp中
+            // 直到左侧或右侧结束
+            while (left <= midIdx && right <= endIdx){
+                if(array[left] <= array[right]){
+                    temp[t] = array[left];
+                    t++;
+                    left++;
+                } else {
+                    temp[t] = array[right];
+                    t++;
+                    right++;
+                }
+            }
+    
+            // 将left或right中剩余的部分保存到temp中
+            while ( left <= midIdx ){
+                temp[t] = array[left];
+                t++;
+                left++;
+            }
+            while ( right <= endIdx ){
+                temp[t] = array[right];
+                t++;
+                right++;
+            }
+    
+            // 将temp中有序的数据拷贝到原始数组中
+            left = startIdx;
+            t = 0;
+            while (left <= endIdx){
+                array[left] = temp[t];
+                t++;
+                left++;
+            }
+        }
+        ```
+    - 拆分阶段
+        ```java
+        public static void split(int[] array, int startIdx, int endIdx, int[] temp){
+            // startIdx < endIdx，说明当前要拆分的子序列中还有至少2个元素
+            // 如果不满足，则说明当前子序列中只有一个元素
+            if (startIdx < endIdx) {
+                int midIdx = (startIdx + endIdx) / 2;
+                // 向左拆分
+                split(array, startIdx, midIdx, temp);
+    
+                // 向右拆分
+                split(array, midIdx + 1, endIdx, temp);
+    
+                // 左边和右边拆分完成之后，执行合并
+                merge(array, startIdx, midIdx, endIdx, temp);
+            }
+        }
+        ```
+    - 启动排序
+        ```java
+        public static void sort(int[] array){
+            // 根据原始序列的大小创建临时数组
+            int[] temp = new int[array.length];
+            // 开始拆分，拆分到不可分后，回溯并执行合并
+            split(array, 0, array.length-1, temp);
+        }
+        ```
+- 测试内容
+    - 参考代码
+        - [/algorithm/src/java-algorithm/myalgorithm/src/test/java/com/ljs/learn/myalgorithm/sort/MergeSortTest.java](/algorithm/src/java-algorithm/myalgorithm/src/test/java/com/ljs/learn/myalgorithm/sort/MergeSortTest.java)
+    - 测试代码
+        - 合并阶段测试  
+            ```java
+            @Test
+            public void testMerge(){
+                int[] array = {4,8,  5,7  ,1,3,  2,6};
+        
+                int[] temp = new int[array.length];
+                //合并 0 ～ 3
+                MergeSort.merge(array, 0, 1, 3, temp);
+                System.out.println("合并 0 ～ 3: " + Arrays.toString(array));
+                //合并 4 ～ 7
+                MergeSort.merge(array, 4, 5, 7, temp);
+                System.out.println("合并 4 ～ 7: " + Arrays.toString(array));
+                //合并 0 ～ 7
+                MergeSort.merge(array, 0, 3, 7, temp);
+                System.out.println("合并 0 ～ 7: " + Arrays.toString(array));
+        
+                // 输出
+                // 合并 0 ～ 3: [4, 5, 7, 8, 1, 3, 2, 6]
+                // 合并 4 ～ 7: [4, 5, 7, 8, 1, 2, 3, 6]
+                // 合并 0 ～ 7: [1, 2, 3, 4, 5, 6, 7, 8]
+            }
+            ```    
+        - 排序测试
+            ```java
+            @Test
+            public void testSort(){
+                int[] array = {8,4,5,7,1,3,6,2};
+                MergeSort.sort(array);
+                System.out.println(Arrays.toString(array));
+                // 输出
+                // [1, 2, 3, 4, 5, 6, 7, 8]
+            }
+            ```
+
 
 [top](#catalog)

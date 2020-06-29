@@ -2,6 +2,7 @@ package com.ljs.learn.myalgorithm.sort;
 
 import java.util.Arrays;
 
+// 快速排序
 public class QuickSort {
     public static void sort(int[] array, int left, int right){
         // 分别保存作右下标
