@@ -1,0 +1,60 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta charset='UTF-8'>
+        <title>父组件访问子组件-$children & $refs</title>
+    </head>
+    <body>
+        <div id="app">
+            <!-- 分别声明各个组件的 ref 属性 -->
+            <child ref='child01'></child>
+            <child ref='child02'></child>
+            <child ref='child03'></child>
+            <button @click='callChildren'>show by children</button>
+            <button @click='callRefs'>show child02 by refs</button>
+        </div>
+
+        <template id='child-template'>
+            <div>
+                <p>child: {{id}}</p>
+            </div>
+        </template>
+
+        <script type='text/javascript' src='../js/vue.js'></script>
+        <script type='text/javascript'>
+            const childCpn = {
+                template: '#child-template',
+                data(){
+                    return {
+                        id: Math.round(Math.random()*10),
+                    }
+                },
+                methods:{
+                    // 1. 创建子组件的方法
+                    showId(){
+                        console.log('this is childCpn, childId = ' + this.id);
+                    }
+                }
+            };
+            const app = new Vue({
+                el: '#app',
+                components: { child: childCpn },
+                methods:{
+                    callChildren(){
+                        for(let c of this.$children){   // 获取所有的子组件并遍历
+                            console.log(c.showId());    // 调用子组件的方法
+                            console.log(c.id);          // 访问子组件的属性
+                        }
+                    },
+                    callRefs(){
+                        // 通过 ref属性值 访问指定的子组件
+                        console.log(this.$refs.child02.showId());
+
+                        // 输出属性本身：{child01: VueComponent, child02: VueComponent, child03: VueComponent}
+                        console.log(this.$refs);
+                    }
+                }
+            });
+        </script>
+    </body>
+</html>

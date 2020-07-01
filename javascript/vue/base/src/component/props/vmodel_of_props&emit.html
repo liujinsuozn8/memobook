@@ -1,0 +1,83 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta charset='UTF-8'>
+        <title>props属性的双向绑定--通过emit事件修改父组件的数据</title>
+    </head>
+    <body>
+        <div id="app">
+            <p>param1: {{param1}}</p>
+            <p>param2: {{param2}}</p>
+            <!-- 3. 在父组件中，监听子组件的emit事件 -->
+            <child :num1='param1' :num2='param2'
+                   @num1-change='param1Change' @num2-change='param2Change'>
+            </child>
+        </div>
+
+        <template id='child-template'>
+            <div>
+                <!-- 1. 在子组件中，将 v-model 拆分成 v-bind 和 v-on
+                    在 v-on 的监听事件中，修改组件内和父组件的数据
+                -->
+                <p>num1: {{dnum1}}</p>
+                <input type="text" name="num1" id="num1" :value="dnum1" @input='num1Change'>
+                <p>num2: {{dnum2}}</p>
+                <input type="text" name="num2" id="num2" :value="dnum2" @input='num2Change'>
+            </div>
+        </template>
+        <script type='text/javascript' src='../js/vue.js'></script>
+        <script type='text/javascript'>
+
+            // 子组件构造器
+            const childCpn = {
+                template: '#child-template',
+                props:{
+                    num1: Number,
+                    num2: Number,
+                },
+                // 将 props数据设置到 data 中，通过双向绑定来操作数据
+                data(){
+                    return {
+                        dnum1:this.num1,
+                        dnum2:this.num2,
+                    }
+                },
+                methods:{
+                    // 2. 监听输入框修改事件，将修改后的数据同步更新到当前组件内部 和 父组件
+                    num1Change(event){
+                        // 同步组件内部的数据
+                        this.dnum1 = event.target.value;
+                        // 发射 emit 事件，将数组同步到父组件
+                        this.$emit('num1-change', this.dnum1);
+                    },
+                    num2Change(event){
+                        this.dnum2 = event.target.value;
+                        this.$emit('num2-change', this.dnum2);
+                    },
+                }
+            }
+
+            // 父组件
+            const app = new Vue({
+                el: '#app',
+                data:{
+                    param1: 1234,
+                    param2: 5678,
+                },
+                components:{
+                    child: childCpn
+                },
+                methods: {
+                    // 4. 在父组件中设置子组件emit事件的响应函数，将数据同步到父组件的 data 中
+                    // 事件接受到的是字符串，需要手动执行类型转换
+                    param1Change(data){
+                        this.param1 = parseFloat(data);
+                    },
+                    param2Change(data){
+                        this.param2 = parseFloat(data);
+                    },
+                }
+            });
+        </script>
+    </body>
+</html>

@@ -50,7 +50,7 @@
         - [计算属性getter和setter的示例](#计算属性getter和setter的示例)
         - [计算属性的缓存](#计算属性的缓存)
     - [filters--过滤器](#filters--过滤器)
-- [组件化开发](#组件化开发)
+- [组件化开发--基础](#组件化开发--基础)
     - [Vue组件简介](#Vue组件简介)
     - [组件的基本使用步骤](#组件的基本使用步骤)
     - [全局组件和局部组件](#全局组件和局部组件)
@@ -60,14 +60,25 @@
     - [组件的数据](#组件的数据)
         - [组件数据的基本使用](#组件数据的基本使用)
         - [为什么组件的data必须是Function](#为什么组件的data必须是Function)
-    - [父子组件通信](#父子组件通信)
-        - [父子组件通信的方法与应用场景](#父子组件通信的方法与应用场景)
+- [组件化开发--父子组件通信](#组件化开发--父子组件通信)
+    - [父子组件通信的方法与应用场景](#父子组件通信的方法与应用场景)
+    - [props--父级向子级传递](#props--父级向子级传递)
         - [props基本介绍](#props基本介绍)
         - [props的设置与传值方法](#props的设置与传值方法)
         - [使用字符串数组设置props](#使用字符串数组设置props)
         - [使用对象设置props](#使用对象设置props)
         - [处理子组件中使用驼峰命名的props名](#处理子组件中使用驼峰命名的props名)
-        - [自定义事件--子级向父级传递](#自定义事件--子级向父级传递)
+    - [emit自定义事件--子级向父级传递](#emit自定义事件--子级向父级传递)
+    - [props与emit的综合使用](#props与emit的综合使用)
+        - [props属性与双向绑定](#props属性与双向绑定)
+        - [props双向绑定同步修改父组件数据--手动实现](#props双向绑定同步修改父组件数据--手动实现)
+        - [props双向绑定同步修改父组件数据--watch属性实现](#props双向绑定同步修改父组件数据--watch属性实现)
+    - [父子组件间的访问](#父子组件间的访问)
+        - [父子组件访问的本质](#父子组件访问的本质)
+        - [父组件访问子组件--$children与$refs](#父组件访问子组件--$children与$refs)
+        - [子组件访问父组件--$parent与$root](#子组件访问父组件--$parent与$root)
+- [](#)
+- [](#)
 - [](#)
 
 # Vuejs概述
@@ -245,7 +256,7 @@
 
 # vue中的MVVM
 [top](#catalog)
-- 什么是MVVM？
+- 什么是MVVM
     - View
     - Model
     - ViewModel
@@ -328,7 +339,7 @@
 
 - 示例
     - 参考代码
-        - [src/syntax/insert_data/mustache.html](src/syntax/insert_data/mustache.html)
+        - [src/base_cmd/insert_data/mustache.html](src/base_cmd/insert_data/mustache.html)
     - 代码内容
         ```html
         <div id="app">
@@ -363,7 +374,7 @@
 
 - 示例
     - 参考代码
-        - [src/syntax/insert_data/v-once.html](src/syntax/insert_data/v-once.html)
+        - [src/base_cmd/insert_data/v-once.html](src/base_cmd/insert_data/v-once.html)
 
     - 代码内容
         ```html
@@ -404,7 +415,7 @@
 
 - 示例
     - 参考代码
-        - [src/syntax/insert_data/v-html.html](src/syntax/insert_data/v-html.html)
+        - [src/base_cmd/insert_data/v-html.html](src/base_cmd/insert_data/v-html.html)
 
     - 代码内容
         ```html
@@ -442,7 +453,7 @@
 
 - 示例
     - 参考代码
-        - [src/syntax/insert_data/v-text.html](src/syntax/insert_data/v-text.html)
+        - [src/base_cmd/insert_data/v-text.html](src/base_cmd/insert_data/v-text.html)
     - 代码内容
         ```html
         <div id="app">
@@ -477,7 +488,7 @@
 
 - 示例
     - 参考代码
-        - [src/syntax/insert_data/v-text.html](src/syntax/insert_data/v-text.html)
+        - [src/base_cmd/insert_data/v-text.html](src/base_cmd/insert_data/v-text.html)
     - 代码内容
         ```html
         <div id="app">
@@ -517,7 +528,7 @@
 
 - 示例
     - 参考代码
-        - ![src/syntax/insert_data/v-cloak.html](src/syntax/insert_data/v-cloak.html)
+        - ![src/base_cmd/insert_data/v-cloak.html](src/base_cmd/insert_data/v-cloak.html)
     - 代码内容
         ```html
         <head>
@@ -550,7 +561,9 @@
 ### v-bind的基本用法
 [top](#catalog)
 - 功能
-    - 用于动态绑定一个或多个属性值，或者向另一个组件传递props值 ????
+    - 用于动态绑定一个或多个属性值
+    - 向某个组件的props值传递数据
+        - 参考: [props的设置与传值方法](#props的设置与传值方法)
 
 - 使用方法
     - 基本写法
@@ -574,7 +587,7 @@
 
 - 示例
     - 参考代码
-        - [src/syntax/v-bind/v-bind_base.html](src/syntax/v-bind/v-bind_base.html)
+        - [src/base_cmd/v-bind/v-bind_base.html](src/base_cmd/v-bind/v-bind_base.html)
     - 代码内容
         ```css
         .box01{
@@ -653,7 +666,7 @@
 
 - 示例
     - 参考代码
-        - [src/syntax/v-bind/bind_class_by_obj.html](src/syntax/v-bind/bind_class_by_obj.html)
+        - [src/base_cmd/v-bind/bind_class_by_obj.html](src/base_cmd/v-bind/bind_class_by_obj.html)
     - 代码内容
         ```css
         .text__active{
@@ -730,7 +743,7 @@
         ```
 - 示例
     - 参考代码
-        - [bind_class_by_list](src/syntax/v-bind/bind_class_by_list.html)
+        - [bind_class_by_list](src/base_cmd/v-bind/bind_class_by_list.html)
     - 代码内容
         ```css
         .bcbox{
@@ -802,7 +815,7 @@
         ```
 - 示例
     - 参考代码
-        - [v-bind_style](src/syntax/v-bind/bind_style_by_obj.html)
+        - [v-bind_style](src/base_cmd/v-bind/bind_style_by_obj.html)
     - 代码内容
         ```html
         <div id="app">
@@ -855,7 +868,7 @@
         ```
 - 示例
     - 参考代码
-        - [bind_style_by_list](src/syntax/v-bind/bind_style_by_list.html)
+        - [bind_style_by_list](src/base_cmd/v-bind/bind_style_by_list.html)
     - 代码内容
         ```html
         <div id="app">
@@ -892,7 +905,7 @@
 - 设置页面数据时，数据不是固定的，需要根据从服务器获取的数据来动态绑定
 - 示例：设置 多选checkbox
     - 参考代码
-        - [src/syntax/v-bind/v-bind_input.html](src/syntax/v-bind/v-bind_input.html)
+        - [src/base_cmd/v-bind/v-bind_input.html](src/base_cmd/v-bind/v-bind_input.html)
     - html代码
         ```html
         <div id="app">
@@ -964,7 +977,7 @@
 
 - 示例
     - 参考代码
-        - [src/syntax/v-on/v-on_base.html](src/syntax/v-on/v-on_base.html)
+        - [src/base_cmd/v-on/v-on_base.html](src/base_cmd/v-on/v-on_base.html)
     - html代码
         ```html
         <div id="app">
@@ -1034,7 +1047,7 @@
 
 - 示例
     - 参考代码
-        - [src/syntax/v-on/v-on_modifier.html](src/syntax/v-on/v-on_modifier.html)
+        - [src/base_cmd/v-on/v-on_modifier.html](src/base_cmd/v-on/v-on_modifier.html)
     - html代码
         ```html
         <div id="app">
@@ -1126,7 +1139,7 @@
     - 如果逻辑判读过多，应该选择使用 **计算属性**，来遮盖负责的逻辑，使html代码更加清晰
 - 示例
     - 参考代码
-        - [src/syntax/v-if/v-if.html](src/syntax/v-if/v-if.html)
+        - [src/base_cmd/v-if/v-if.html](src/base_cmd/v-if/v-if.html)
     - html代码
         ```html
         <div id="app">
@@ -1183,7 +1196,7 @@
         - vue底层在发现key不同时，不会复用元素
 
 - 参考代码
-    - [demo_login_switch](src/syntax/v-if/demo_login_switch.html)
+    - [demo_login_switch](src/base_cmd/v-if/demo_login_switch.html)
 - html代码
     ```html
     <div id="app">
@@ -1248,7 +1261,7 @@
 
 - 示例
     - 参考代码
-        - [src/syntax/v-show/v-show.html](src/syntax/v-show/v-show.html)
+        - [src/base_cmd/v-show/v-show.html](src/base_cmd/v-show/v-show.html)
     - 代码内容
         ```html
         <div id="app">
@@ -1312,7 +1325,7 @@
 
 - 示例
     - 参考代码
-        - [src/syntax/v-for/v-for_base.html](src/syntax/v-for/v-for_base.html)
+        - [src/base_cmd/v-for/v-for_base.html](src/base_cmd/v-for/v-for_base.html)
 
     - js代码
         ```js
@@ -1422,7 +1435,7 @@
     - 为每个元素绑定click事件，每次点击时修改 `selectedIndex`，保证每次只有被点击的元素是红色的
 
 - 参考代码
-    - [src/syntax/v-for/demo_show_list.html](src/syntax/v-for/demo_show_list.html)
+    - [src/base_cmd/v-for/demo_show_list.html](src/base_cmd/v-for/demo_show_list.html)
 - 代码内容
     ```html
     <ul>
@@ -1460,7 +1473,7 @@
     ```
 - 示例
     - 参考代码
-        - [src/syntax/v-model/v-model_base.html](src/syntax/v-model/v-model_base.html)
+        - [src/base_cmd/v-model/v-model_base.html](src/base_cmd/v-model/v-model_base.html)
     - html代码
         ```html
         <div id="app">
@@ -1502,7 +1515,7 @@
 
 - 示例
     - 参考代码
-        - [src/syntax/v-model/v-model_principle.html](src/syntax/v-model/v-model_principle.html)
+        - [src/base_cmd/v-model/v-model_principle.html](src/base_cmd/v-model/v-model_principle.html)
     - html代码
         ```html
         <div id="app">
@@ -1557,7 +1570,7 @@
 
 - 示例
     - 参考代码
-        - [src/syntax/v-model/v-model_radio.html](src/syntax/v-model/v-model_radio.html)
+        - [src/base_cmd/v-model/v-model_radio.html](src/base_cmd/v-model/v-model_radio.html)
     - html代码
         ```html
         <div id="app">
@@ -1593,7 +1606,7 @@
     - 多选框，需要绑定一个数组型变量，并设置`value`属性
 - 示例
     - 参考代码
-        - [src/syntax/v-model/v-model_chekbox.html](src/syntax/v-model/v-model_chekbox.html)
+        - [src/base_cmd/v-model/v-model_chekbox.html](src/base_cmd/v-model/v-model_chekbox.html)
     - html代码
         ```html
         <div id="app">
@@ -1633,7 +1646,7 @@
 
 - 示例
     - 参考代码
-        - [src/syntax/v-model/v-model_select.html](src/syntax/v-model/v-model_select.html)
+        - [src/base_cmd/v-model/v-model_select.html](src/base_cmd/v-model/v-model_select.html)
     - html代码
         ```html
         <div id="app">
@@ -1683,7 +1696,7 @@
 
 - 示例
     - 参考代码
-        - [src/syntax/v-model/modifier.html](src/syntax/v-model/modifier.html)
+        - [src/base_cmd/v-model/modifier.html](src/base_cmd/v-model/modifier.html)
     - html内容
         ```html
         <div id="app">
@@ -1732,7 +1745,7 @@
     - 当所有图书被删除后，不显示界面，只显示一行文字: 购物车为空
 - 实现内容
     - 参考代码
-        - [src/syntax/exercise/demo_shopping_cart.html](src/syntax/exercise/demo_shopping_cart.html)
+        - [src/base_cmd/exercise/demo_shopping_cart.html](src/base_cmd/exercise/demo_shopping_cart.html)
     - html代码
         ```html
         <div id='shoppingCart'>
@@ -1911,7 +1924,7 @@
 [top](#catalog)
 - 基本使用
     - 参考代码
-        - [src/syntax/computed/computed_base.html](src/syntax/computed/computed_base.html)
+        - [src/base_cmd/computed/computed_base.html](src/base_cmd/computed/computed_base.html)
 
     - 代码内容
         ```html
@@ -1955,7 +1968,7 @@
 - 一个**必须使用计算属性的场景**
     - 数据是数组类型的，需要显示数值的合计
     - 参考代码
-        - [src/syntax/computed/must_use_computed.html](src/syntax/computed/must_use_computed.html)
+        - [src/base_cmd/computed/must_use_computed.html](src/base_cmd/computed/must_use_computed.html)
     - 代码内容
         ```html
         <div id="app">
@@ -1986,7 +1999,7 @@
 ### 计算属性getter和setter的示例
 [top](#catalog)
 - 参考代码
-    - [src/syntax/computed/getter_setter.html](src/syntax/computed/getter_setter.html)
+    - [src/base_cmd/computed/getter_setter.html](src/base_cmd/computed/getter_setter.html)
 
 - 代码内容
     - html内容
@@ -2050,7 +2063,7 @@
     - 当计算属性中使用的某个变量发生变化时，计算属性会重新计算
 - 示例
     - 参考代码
-        - [src/syntax/computed/computed_cache.html](src/syntax/computed/computed_cache.html)
+        - [src/base_cmd/computed/computed_cache.html](src/base_cmd/computed/computed_cache.html)
 
     - html代码
         ```html
@@ -2144,7 +2157,7 @@
 
 - 示例
     - 参考代码
-        - [src/syntax/filter/filter_base.html](src/syntax/filter/filter_base.html)
+        - [src/base_cmd/filter/filter_base.html](src/base_cmd/filter/filter_base.html)
     - js代码
         ```js
         const app = new Vue({
@@ -2176,13 +2189,14 @@
         </div>
         ```
 
-# 组件化开发
+# 组件化开发--基础
 ## Vue组件简介
 [top](#catalog)
 - Vue的组件化
     - Vue组件化提供一种抽象，使开发者可以开发出可复用的组件来构成复杂的应用
-    - 任何的应用都会被抽象成一颗**组件树**
-        - [图](?????)
+    - 任何的应用都会被抽象成一颗: **组件树**
+        - ![conponent_tree](imgs/component/conponent_tree.png)
+
     - 通过组件化，可以让代码便于组织和管理，扩展型更强
 
 - 组件化的应用
@@ -2211,17 +2225,10 @@
 
 - 示例
     - 参考代码
-        - [src/syntax/component/base.html](src/syntax/component/base.html)
+        - [src/component/base/base.html](src/component/base/base.html)
     - 代码内容
-        ```html
-        <div id="app">
-            <!-- 3. 在Vue实例的作用范围，多次内使用组件 -->
-            <new-cpn></new-cpn>
-            <new-cpn></new-cpn>
-        </div>
-        <script type='text/javascript' src='../js/vue.js'></script>
-        <script type='text/javascript'>
-            // 1. 创建组件构造器
+        1. 创建组件构造器
+            ```js
             const cpn = Vue.extend({
                 template:`
                     <div>
@@ -2231,16 +2238,23 @@
                     </div>
                 `
             });
-
-            // 2. 注册组件
-            // Vue.component('组件名', 组件构造器对象);
+            ```
+        2. 注册组件
+            ```js
             Vue.component('new-cpn', cpn);
 
             const app = new Vue({
                 el: '#app'
             });
-        </script>
-        ```
+            ```
+        3. 使用组件
+            ```html
+            <div id="app">
+                <!-- 3. 在Vue实例的作用范围，多次内使用组件 -->
+                <new-cpn></new-cpn>
+                <new-cpn></new-cpn>
+            </div>
+            ```
 
 ## 全局组件和局部组件
 [top](#catalog)
@@ -2267,28 +2281,10 @@
 
 - 示例
     - 参考代码
-        - [src/syntax/component/global_loacl.html](src/syntax/component/global_loacl.html)
+        - [src/component/base/global_loacl.html](src/component/base/global_loacl.html)
     - 代码内容
-        ```html
-        <!-- 3. Vue实例1 -->
-        <div id="app1">
-            <div>---------this is app1---------</div>
-            <!-- 使用全局组件 -->
-            <global-cpn></global-cpn>
-            <!-- 使用局部组件 -->
-            <local-cpn></local-cpn>
-        </div>
-
-        <!-- 4. Vue实例2 -->
-        <div id="app2">
-            <div>---------this is app2---------</div>
-            <!-- 使用全局组件 -->
-            <global-cpn></global-cpn>
-            <!-- 使用 app1 的局部组件。（浏览器无法识别标签，无法渲染 ）-->
-            <local-cpn></local-cpn>
-        </div>
-        <script type='text/javascript' src='../js/vue.js'></script>
-        <script type='text/javascript'>
+        - js代码
+            ```js
             // 1. 创建全局组件，并注册
             const globalCpn = Vue.extend({
                 template:`
@@ -2318,8 +2314,27 @@
             const app2 = new Vue({
                 el: '#app2'
             });
-        </script>
-        ```
+            ```
+        - html代码
+            ```html
+            <!-- 3. Vue实例1 -->
+            <div id="app1">
+                <div>---------this is app1---------</div>
+                <!-- 使用全局组件 -->
+                <global-cpn></global-cpn>
+                <!-- 使用局部组件 -->
+                <local-cpn></local-cpn>
+            </div>
+
+            <!-- 4. Vue实例2 -->
+            <div id="app2">
+                <div>---------this is app2---------</div>
+                <!-- 使用全局组件 -->
+                <global-cpn></global-cpn>
+                <!-- 使用 app1 的局部组件。（浏览器无法识别标签，无法渲染 ）-->
+                <local-cpn></local-cpn>
+            </div>
+            ```
 
 ## 父组件和子组件
 [top](#catalog)
@@ -2338,14 +2353,7 @@
 
 - 示例
     - 参考代码
-        - [src/syntax/component/parent_child/base.html](src/syntax/component/parent_child/base.html)
-    - html代码
-        ```html
-        <div id="app">
-            <!-- 使用父组件 -->
-            <parent-cpn></parent-cpn>
-        </div>
-        ```
+        - [src/component/base/parent_child.html](src/component/base/parent_child.html)
     - js代码
         ```js
         // 创建一个子组件
@@ -2382,19 +2390,26 @@
             }
         });
         ```
+    - html代码
+        ```html
+        <div id="app">
+            <!-- 使用父组件 -->
+            <parent-cpn></parent-cpn>
+        </div>
+        ```
 
 ## 组件的注册方法
 [top](#catalog)
 - 两种注册方法
     1. 原生方法：创建构造器对象--> 注册
         ```js
-        // 创建构造器对象
-        const cpn1 = Vue.extend({
+        // 创建组件构造器对象
+        const 组件构造器对象 = Vue.extend({
             template: `...`,
             ...
         })
         // 注册
-        Vue.component('组件名', cpn1)
+        Vue.component('组件名', 组件构造器对象)
         ```
     2. `Vue.component` 的语法糖：直接将`extend()` 方法中的对象作为参数注册组件
         - 底层使用的仍然是 `Vue.extend()`
@@ -2432,19 +2447,7 @@
 
 - 示例
     - 参考代码
-        - [src/syntax/component/registe_component.html](src/syntax/component/registe_component.html)
-    - html代码
-        ```html
-        <div id="app">
-            <!-- 原生方法创建并注册组件 -->
-            <cpn1></cpn1>
-            <!-- 使用语法糖注册的全局组件 -->
-            <cpn2></cpn2>
-
-            <!-- 使用在Vue实例内部注册的局部组件 -->
-            <main-cpn></main-cpn>
-        </div>
-        ```
+        - [src/component/base/registe_component.html](src/component/base/registe_component.html)
     - js代码
         ```js
         // 1. 原生方法创建并注册组件
@@ -2492,6 +2495,18 @@
             }
         })
         ```
+    - html代码
+        ```html
+        <div id="app">
+            <!-- 原生方法创建并注册组件 -->
+            <cpn1></cpn1>
+            <!-- 使用语法糖注册的全局组件 -->
+            <cpn2></cpn2>
+
+            <!-- 使用在Vue实例内部注册的局部组件 -->
+            <main-cpn></main-cpn>
+        </div>
+        ```
 
 ## 组件模板抽离
 [top](#catalog)
@@ -2507,7 +2522,7 @@
             })
         </script>
         ```
-    - 使用 template 标签
+    - 使用 template 标签，**推荐使用**
         ```html
         <template id='模板id'>
             模板内容...
@@ -2520,7 +2535,7 @@
         ```
 - 示例
     - 参考代码
-        - [src/syntax/component/exract_template.html](src/syntax/component/exract_template.html)
+        - [src/component/base/exract_template.html](src/component/base/exract_template.html)
     - 代码内容
         ```html
         <div id="app">
@@ -2573,7 +2588,7 @@
 
 - 示例
     - 参考代码
-        - [src/syntax/component/data/component_data.html](src/syntax/component/data/component_data.html)
+        - [src/component/data/component_data.html](src/component/data/component_data.html)
     - 代码内容
         ```html
         <div id="app">
@@ -2630,7 +2645,7 @@
 
 - 示例
     - 参考代码
-        - [src/syntax/component/data/component_data_must_function.html](src/syntax/component/data/component_data_must_function.html)
+        - [src/component/data/component_data_must_function.html](src/component/data/component_data_must_function.html)
     - 代码内容
         ```html
         <div id="app">
@@ -2667,8 +2682,8 @@
         </script>
         ```
 
-## 父子组件通信
-### 父子组件通信的方法与应用场景
+# 组件化开发--父子组件通信
+## 父子组件通信的方法与应用场景
 [top](#catalog)
 - 父子组件通信 的应用场景
     - 组件的数据一般是来自网络或者向服务器请求
@@ -2690,15 +2705,19 @@
         ```
 - 在实际开发中，Vue实例与子组件(局部组件)通信、父组件和子组件的通信过程是一样的
 
+## props--父级向子级传递
 ### props基本介绍
 [top](#catalog)
 - 在组件中，使用选项: `props`，来声明需要从父组件接收的数据
-- 在模版中，可以使用插值语法插入某个props；可以在计算属性中，通过 `this.props属性名` 来使用接收的数据
 - props的值有两种方式
     1. 字符串数组
         - 每个字符串都是传递参数时的名称
     2. 对象
         - 最常用的方式，主要用于设置数据的验证方式
+
+- props的使用方式
+    - 在模版中，可以使用插值语法插入某个props
+    - 通过 `this.props属性名` 来使用接收的数据
 
 ### props的设置与传值方法
 [top](#catalog)
@@ -2763,7 +2782,7 @@
     - 每个字符串都是传递参数时的名称
 - 示例
     - 参考代码
-        - [src/syntax/component/parent_child/props_string_array.html](src/syntax/component/parent_child/props_string_array.html)
+        - [src/component/props/props_string_array.html](src/component/props/props_string_array.html)
     - 代码内容
         1. 在模版中定义需要使用的props
             ```html
@@ -2881,7 +2900,7 @@
 
 - 示例
     - 参考代码
-        - [src/syntax/component/parent_child/props_obj.html](src/syntax/component/parent_child/props_obj.html)
+        - [src/component/props/props_obj.html](src/component/props/props_obj.html)
     - 说明内容
         1. 在模版中定义需要使用的props
             ```html
@@ -2945,7 +2964,7 @@
 - 子组件中用驼峰命名的 props名，通过 `v-bind` 传递数据时，需要**将驼峰分解，并用 `-` 连接**
 - 示例
     - 参考代码
-        - [src/syntax/component/parent_child/props_camel.html](src/syntax/component/parent_child/props_camel.html)
+        - [src/component/props/props_camel.html](src/component/props/props_camel.html)
     - 代码内容
         1. 创建子组件模板
             ```html
@@ -2993,10 +3012,10 @@
             </div>
             ```
 
-### 自定义事件--子级向父级传递
+## emit自定义事件--子级向父级传递
 [top](#catalog)
 - 什么时候需要自定义事件
-    - 最常见的传递，子组件产生的事件，希望父组件能够监听到，并响应
+    - 最常见的传递：子组件产生某个事件时，希望父组件能够监听到，并响应
     - 子组件需要向父组件传递数据
 
 - 如何自定义事件
@@ -3009,6 +3028,8 @@
         <子组件 v-on:自定义事件名='组件的响应函数'></子组件>
     </div>
     ```
+
+- <label style='color:red'>在不通过Vue脚手架，而是手写代码时，`自定义事件名` 不要使用驼峰命名，应该分解命名并使用 `-` 连接</label>
 
 - 基本使用步骤
     1. 在子组件中的某个方法中，创建自定义事件。（方法可以是子组件的某个事件监听函数）
@@ -3038,7 +3059,7 @@
 
 - 示例
     - 参考代码
-        - [src/syntax/component/parent_child/emit_event.html](src/syntax/component/parent_child/emit_event.html)
+        - [src/component/emit/emit_event.html](src/component/emit/emit_event.html)
     - 代码内容
         1. 定义子组件的模板
             ```html
@@ -3089,7 +3110,7 @@
                 }
             });
             ```
-        4. 使用子组件并监听子组件的时间
+        4. 使用子组件并监听子组件的事件
             ```html
             <div id="app">
                 <!-- 父组件通过 v-on 监听子组件发射的事件 -->
@@ -3098,6 +3119,441 @@
             </div>
             ```
 
+## props与emit的综合使用
+### props属性与双向绑定
+[top](#catalog)
+- **不能直接对 `props` 做双向绑定。修改数据时，控制台会报错**
+- `props` 属性值做双向绑定的方法
+    1. 方法1: 将属性值设置到 `data` 里的属性，在对data中的属性做双向绑定
+    2. 方法2: 使用计算属性，并同时设置getter和setter，来操作 props中的数据
+
+- 绑定过程的示意图
+    - ![props_vmodel](imgs/component/props_vmodel.png)
+
+- 示例
+    - 参考代码
+        - [src/component/props/vmodel_of_props.html](src/component/props/vmodel_of_props.html)
+    - 代码内容
+        1. 在父组件中设置数据
+            ```js
+            const app = new Vue({
+                el: '#app',
+                data:{
+                    param1:'1234',
+                    param2:'5678',
+                },
+                components:{
+                    child: childCpn
+                }
+            });
+            ```
+        2. 在父组件将数据传递到子组件的 props 中
+            ```html
+            <div id="app">
+                <child :num1='param1' :num2='param2'></child>
+            </div>
+            ```
+        3. 在子组件中，将 props 的数据设置到data中
+            ```js
+            const childCpn = {
+                template: '#child-template',
+                props:{
+                    num1: String,
+                    num2: String,
+                },
+                data(){
+                    return {
+                        dnum1:this.num1,
+                        dnum2:this.num2,
+                    }
+                }
+            }
+            ```
+        4. 在子组件模板中，双向绑定属性
+            ```html
+            <template id='child-template'>
+                <div>
+                    <!-- 0. 如果直接对 props属性 做双向绑定，修改数据时，控制台会报错 -->
+                    <!-- <p>num1: {{num1}}</p> -->
+                    <!-- <input type="text" name="num1" id="num1" v-model="num1"> -->
+                    <!-- <p>num2: {{num2}}</p> -->
+                    <!-- <input type="text" name="num2" id="num2" v-model="num2"> -->
+
+                    <!-- 2. 通过 data 属性的双向绑定，来操作父组件传给props的数据 -->
+                    <p>num1: {{dnum1}}</p>
+                    <input type="text" name="num1" id="num1" v-model="dnum1">
+                    <p>num2: {{dnum2}}</p>
+                    <input type="text" name="num2" id="num2" v-model="dnum2">
+                </div>
+            </template>
+            ```
+
+### props双向绑定同步修改父组件数据--手动实现
+[top](#catalog)
+- props双向绑定修改父组件数据的方法
+    1. 在子组件中，将 v-model 拆分成 v-bind 和 v-on
+        - `v-bind` 负责初期事件绑定
+        - 在 `v-on` 的监听事件中，修改组件内和父组件的数据
+            ```html
+            <input type='...' :value="data中的属性名" @input='响应函数名'>
+            ```
+    2. 在响应函数中，将修改后的数据同步更新到: 当前组件内部 和 父组件
+        ```js
+        methods:{
+            响应函数名(event){
+                // 1. 将数据同步到当前组件内部
+                this.data中的属性名 = event.target.value;
+                // 2. 发射 emit 事件，将数组作为事件参数，同步到父组件中
+                this.$emit('emit事件名', this.data中的属性名);
+            },
+        }
+        ```
+    3. 在父组件中，监听子组件的emit事件
+        ```html
+        <div id="app">
+            <子组件 :props名='父组件中的数据' @emit事件名='emit事件响应函数'></子组件>
+        </div>
+        ```
+    4. 在父组件中设置子组件emit事件的响应函数，将数据同步到父组件的 data 中
+        ```js
+        methods: {
+            emit事件响应函数( [子组件发射的数据] ){
+                // ...
+            },
+        }
+        ```
+
+- 绑定过程的示意图
+    - ![props_vmodel_data_sync](imgs/component/props_vmodel_data_sync.png)
+
+- 示例
+    - 参考代码
+        - [src/component/props/vmodel_of_props&emit.html](src/component/props/vmodel_of_props&emit.html)
+    - 代码内容
+        1. 在子组件中，将 v-model 拆分成 v-bind 和 v-on
+            ```html
+                <template id='child-template'>
+                <div>
+                    <!-- 1. 在子组件中，将 v-model 拆分成 v-bind 和 v-on
+                        在 v-on 的监听事件中，修改组件内和父组件的数据
+                    -->
+                    <p>num1: {{dnum1}}</p>
+                    <input type="text" name="num1" id="num1" :value="dnum1" @input='num1Change'>
+                    <p>num2: {{dnum2}}</p>
+                    <input type="text" name="num2" id="num2" :value="dnum2" @input='num2Change'>
+                </div>
+            </template>
+            ```
+        2. 在响应函数中，将修改后的数据同步更新到: 当前组件内部 和 父组件
+            ```js
+            const childCpn = {
+                template: '#child-template',
+                props:{
+                    num1: Number,
+                    num2: Number,
+                },
+                // 将 props数据设置到 data 中，通过双向绑定来操作数据
+                data(){
+                    return {
+                        dnum1:this.num1,
+                        dnum2:this.num2,
+                    }
+                },
+                methods:{
+                    // 2. 监听输入框修改事件，将修改后的数据同步更新到当前组件内部 和 父组件
+                    num1Change(event){
+                        // 同步组件内部的数据
+                        this.dnum1 = event.target.value;
+                        // 发射 emit 事件，将数组同步到父组件
+                        this.$emit('num1-change', this.dnum1);
+                    },
+                    num2Change(event){
+                        this.dnum2 = event.target.value;
+                        this.$emit('num2-change', this.dnum2);
+                    },
+                }
+            }
+            ```
+        3. 在父组件中，监听子组件的emit事件
+            ```html
+            <div id="app">
+                <p>param1: {{param1}}</p>
+                <p>param2: {{param2}}</p>
+                <!-- 3. 在父组件中，监听子组件的emit事件 -->
+                <child :num1='param1' :num2='param2'
+                    @num1-change='param1Change' @num2-change='param2Change'>
+                </child>
+            </div>
+            ```
+        4. 在父组件中设置子组件emit事件的响应函数，将数据同步到父组件的 data 中
+            ```js
+            const app = new Vue({
+                el: '#app',
+                data:{
+                    param1: 1234,
+                    param2: 5678,
+                },
+                components:{
+                    child: childCpn
+                },
+                methods: {
+                    // 4. 在父组件中设置子组件emit事件的响应函数
+                    // 事件接受到的是字符串，需要手动执行类型转换
+                    param1Change(data){
+                        this.param1 = parseFloat(data);
+                    },
+                    param2Change(data){
+                        this.param2 = parseFloat(data);
+                    },
+                }
+            });
+            ```
+- 示例扩展
+    - 需求: 两个变量: `dnum1`、`dnum2` 互为倍数关系，一个值被修改时，需要同步修改另一个变量
+    - 参考代码
+
+        - [src/component/props/vmodel_of_props&emit_data_sync.html](src/component/props/vmodel_of_props&emit_data_sync.html)
+    - 扩展部分的代码
+        ```js
+        // 子组件构造器
+        const childCpn = {
+            template: '#child-template',
+            props:{
+                num1: Number,
+                num2: Number,
+            },
+            data(){
+                return {
+                    dnum1:this.num1,
+                    dnum2:this.num2,
+                }
+            },
+            // 2. 监听输入框修改事件，将修改后的数据同步更新到当前组件内部 和 父组件
+            methods:{
+                num1Change(event){
+                    this.dnum1 = event.target.value;
+                    this.$emit('num1-change', this.dnum1);
+
+                    // 同时修改另一个变量的值
+                    this.dnum2 = this.dnum1/100;
+                    this.$emit('num2-change', this.dnum2);
+                },
+                num2Change(event){
+                    this.dnum2 = event.target.value;
+                    this.$emit('num2-change', this.dnum2);
+
+                    // 同时修改另一个变量的值
+                    this.dnum1 = this.dnum2 * 100;
+                    this.$emit('num1-change', this.dnum1);
+                },
+            }
+        }
+        ```
+
+### props双向绑定同步修改父组件数据--watch属性实现
+[top](#catalog)
+- 通过 `v-model` 和 组件构造器中设置的`watch`属性，可以直接监听view层发生的变化，并同步到父元素
+- 使用方法
+    1. 在子组件的`watch`中，创建和 `data` 属性同名的方法，来监听数据的修改，并发射 emit事件
+        ```js
+        const 子组件构造器 = {
+            template: '...',
+            data(){
+                return {
+                    属性名1: ...
+                }
+            },
+
+            // 在watch中创建和data中属性同名的方法
+            watch:{
+                // 每个方法可以有两个参数，分别表示：修改后的数据、修改前的数据
+                属性名1(newValue [, oldValue]){
+                    // 业务操作
+                    // 发射emit事件，将数据发送到父组件的响应函数
+                    this.$emit('emit事件名', newValue);
+                }
+            }
+        };
+        ```
+    2. 在组件模板中，通过 `v-model` 来绑定数据
+        ```html
+        <input type="..." v-model='属性名1'>
+        ```
+
+- watch 的执行流程
+    - ?????
+
+- 示例
+    - 参考代码
+        - [src/component/props/props_watch.html](src/component/props/props_watch.html)
+    - 代码内容
+        1. 在子组件模板中，使用 v-model 完成数据的双向绑定
+            ```html
+            <template id='child-template'>
+                <div>
+                    <p>dnum1: {{dnum1}}</p>
+                    <input type="text" name="dnum1" id="dnum1" v-model='dnum1'>
+                    <p>dnum2: {{dnum2}}</p>
+                    <input type="text" name="dnum2" id="dnum2" v-model='dnum2'>
+                </div>
+            </template>
+            ```
+        2. 在watch中创建和data中属性同名的方法
+            ```js
+            const childCpn = {
+                template: '#child-template',
+                props:{
+                    num1:Number,
+                    num2:Number,
+                },
+                data(){
+                    return {
+                        dnum1: this.num1,
+                        dnum2: this.num2,
+                    }
+                },
+
+                // 2. 在watch中创建和data中属性同名的方法
+                watch:{
+                    dnum1(newValue){
+                        console.log('this is dnum1');
+                        this.dnum2 = newValue / 100;
+                        this.$emit('num1-change', newValue);
+                        // 每次修改时，会输出:  ?????
+                        // this is dnum1
+                        // this is dnum2
+                        // this is dnum1
+                    },
+                    dnum2(newValue){
+                        console.log('this is dnum2');
+                        this.dnum1 = newValue * 100;
+                        this.$emit('num2-change', newValue);
+                    }
+                }
+            };
+            ```
+        3. 在父组件中，监听子组件的emit事件
+            ```html
+            <div id="app">
+                <p>param1: {{param1}}</p>
+                <p>param2: {{param2}}</p>
+                <child :num1='param1' :num2='param2'
+                    @num1-change='param1Change' @num2-change='param2Change'
+                ></child>
+            </div>
+        4. 在父组件中设置子组件emit事件的响应函数，将数据同步到父组件的 data 中
+            ```js
+            const app = new Vue({
+                el: '#app',
+                data:{
+                    param1: 12345,
+                    param2: 23456,
+                },
+                components:{ child: childCpn},
+                // 4. 在父组件中设置子组件emit事件的响应函数，将数据同步到父组件的 data 中
+                methods:{
+                    param1Change(newValue){
+                        this.param1 = parseFloat(newValue);
+                    },
+                    param2Change(newValue){
+                        this.param2 = parseFloat(newValue);
+                    }
+                }
+            });
+            ```
+
+## 父子组件间的访问
+### 父子组件访问的本质
+[top](#catalog)
+- 获取父、子组件的实例对象
+- 通过实例对象调用其自身的方法，或属性
+
+### 父组件访问子组件--$children与$refs
+[top](#catalog)
+- 访问方式
+
+    |访问方式/属性|类型|获取指定子组件|备注|
+    |-|-|-|-|
+    |`this.$children`|数组|`this.$children[子组件的索引]`|**不推荐**使用该属性<br>只能通过索引来获取具体的子组件。当组件顺序发生变化时，会增加维护的难度|
+    |`this.$refs`|对象（默认为空对象）|`this.$refs.子组件的refs属性值`|只有添加 `ref` 属性的子组件才能通过该属性获取|
+
+
+- 示例
+    - 参考代码
+        - [src/component/visit/$children&$refs.html](src/component/visit/$children&$refs.html)
+    - 子组件
+        ```js
+        const childCpn = {
+            template: '#child-template',
+            data(){
+                return {
+                    id: Math.round(Math.random()*10),
+                }
+            },
+            methods:{
+                // 1. 创建子组件的方法
+                showId(){
+                    console.log('this is childCpn, childId = ' + this.id);
+                }
+            }
+        };
+        ```
+    - 父组件，在父组件中获取子组件，并调用其方法和属性
+        ```html
+        <div id="app">
+            <!-- 分别声明各个组件的 ref 属性 -->
+            <child ref='child01'></child>
+            <child ref='child02'></child>
+            <child ref='child03'></child>
+            <button @click='callChildren'>show by children</button>
+            <button @click='callRefs'>show child02 by refs</button>
+        </div>
+        ```
+        ```js
+        const app = new Vue({
+            el: '#app',
+            components: { child: childCpn },
+            methods:{
+                callChildren(){
+                    for(let c of this.$children){   // 获取所有的子组件并遍历
+                        console.log(c.showId());    // 调用子组件的方法
+                        console.log(c.id);          // 访问子组件的属性
+                    }
+                },
+                callRefs(){
+                    // 通过 ref属性值 访问指定的子组件
+                    console.log(this.$refs.child02.showId());
+
+                    // 输出属性本身：{child01: VueComponent, child02: VueComponent, child03: VueComponent}
+                    console.log(this.$refs);
+                }
+            }
+        });
+        ```
+
+### 子组件访问父组件--$parent与$root
+[top](#catalog)
+- 开发中很少使用到这个功能，并且也不推荐子组件访问父组件
+- 子组件访问父组件的缺点
+    - 使子组件与父组件产生耦合
+    - 降低子组件的复用性
+        - 如果子组件中调用了父组件中的某个方法或属性，当换成其他父组件时，这个子组件就不适用了
+
+- 访问方式
+
+    |访问方式|访问内容|返回值类型|
+    |-|-|-|
+    |`this.$parent`|上一级的父组件|<ul>  <li>`Vue`<ul><li>父组件是Vue实例</li></ul></li>   <li>`VueComponent`<ul><li>父组件是普通组件</li></ul></li>  </ul>|
+    |`this.$root`|根组件，即最外层的Vue实例对象|`Vue`|
+
+- 全局组件的父组件与父组件类型
+    - 需要根据全局组件**所处的环境**来判断父组件即父组件的类型
+    - 如果所在环境是**普通组件**，则 `this.$parent` 是 `VueComponent` 类型
+    - 如果所在环境是**Vue实例对象**，则 `this.$parent` 是 `Vue` 类型
+
+- 示例
+    - 参考代码
+        - [src/component/visit/$parent.html](src/component/visit/$parent.html)
 
 [top](#catalog)
 

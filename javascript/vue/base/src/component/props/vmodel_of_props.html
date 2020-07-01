@@ -1,0 +1,59 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta charset='UTF-8'>
+        <title>props属性--双向绑定的基本用法</title>
+    </head>
+    <body>
+        <!-- 2. 在父组件将数据传递到子组件的 props 中 -->
+        <div id="app">
+            <child :num1='param1' :num2='param2'></child>
+        </div>
+
+        <!-- 4. 子组件模板，双向绑定属性 -->
+        <template id='child-template'>
+            <div>
+                <!-- 0. 如果直接对 props属性 做双向绑定，修改数据时，控制台会报错 -->
+                <!-- <p>num1: {{num1}}</p> -->
+                <!-- <input type="text" name="num1" id="num1" v-model="num1"> -->
+                <!-- <p>num2: {{num2}}</p> -->
+                <!-- <input type="text" name="num2" id="num2" v-model="num2"> -->
+
+                <!-- 2. 通过 data 属性的双向绑定，来操作父组件传给props的数据 -->
+                <p>num1: {{dnum1}}</p>
+                <input type="text" name="num1" id="num1" v-model="dnum1">
+                <p>num2: {{dnum2}}</p>
+                <input type="text" name="num2" id="num2" v-model="dnum2">
+            </div>
+        </template>
+        <script type='text/javascript' src='../js/vue.js'></script>
+        <script type='text/javascript'>
+            // 3. 在子组件中，将 props 的数据设置到data中
+            const childCpn = {
+                template: '#child-template',
+                props:{
+                    num1: String,
+                    num2: String,
+                },
+                data(){
+                    return {
+                        dnum1:this.num1,
+                        dnum2:this.num2,
+                    }
+                }
+            }
+
+            // 1. 在父组件中设置数据
+            const app = new Vue({
+                el: '#app',
+                data:{
+                    param1:'1234',
+                    param2:'5678',
+                },
+                components:{
+                    child: childCpn
+                }
+            });
+        </script>
+    </body>
+</html>

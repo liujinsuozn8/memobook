@@ -1,0 +1,110 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta charset='UTF-8'>
+        <title>子组件访问父组件 - $parent</title>
+    </head>
+    <body>
+        <!-- 5. 在Vue实例中使用子组件 -->
+        <div id="app">
+            <!-- 使用第 1 个子组件 -->
+            <p>1. first component--------------------</p>
+            <child></child>
+            <br>
+            <!-- 第 1 个子组件的输出
+                - 【child btn】输出：Vue {...}
+             -->
+
+            <!-- 使用第 2 个子组件 -->
+            <p>2. second component--------------------</p>
+            <child2></child2>
+            <br>
+            <!-- 第 2 个子组件的输出
+                - 【child2 btn】输出: Vue {...}
+                - 【globalCpn btn】输出：VueComponent {...}
+                    - 因为当前全局组件在一个普通的组件中，所以父组件类型是btn】输出：VueComponent 
+                - 【child btn】输出：VueComponent {...}
+             -->
+
+            <!-- 使用全局子组件 -->
+            <p>3. global component--------------------</p>
+            <global-cpn></global-cpn>
+            <!-- 全局子组件的输出
+                - 【globalCpn btn】输出：Vue{...}
+                - 【child btn】输出：VueComponent {...}
+            -->
+        </div>
+
+        <!-- 4. 创建组件模板 -->
+        <!-- 子组件模板 -->
+        <template id='child-template'>
+            <div>
+                <p>this is child</p>
+                <button @click='btnClick'>child btn</button>
+            </div>
+        </template>
+
+        <!-- 子组件模板2 -->
+        <template id='child2-template'>
+            <div>
+                <p>this is child 2</p>
+                <button @click='btnClick'>child2 btn</button>
+                <global-cpn></global-cpn>
+            </div>
+        </template>
+
+        <!-- 全局组件模板 -->
+        <template id='globalCpn-template'>
+            <div>
+                <p>this is globalCpn</p>
+                <button @click='btnClick'>globalCpn btn</button>
+                <!-- 使用子组件 -->
+                <child></child>
+            </div>
+        </template>
+
+        <script type='text/javascript' src='../js/vue.js'></script>
+        <script type='text/javascript'>
+            // 1. 创建子组件
+            // 1.1 创建第 1 个子组件
+            const childCpn = {
+                template: '#child-template',
+                methods:{
+                    btnClick(){
+                        console.log(this.$parent);
+                    }
+                }
+            }
+
+            // 1.2 创建第 2 个子组件
+            const child2Cpn = {
+                template:'#child2-template',
+                methods:{
+                    btnClick(){
+                        console.log(this.$parent);
+                    }
+                }
+            }
+
+            // 2. 创建全局组件
+            const globalCpn = {
+                template: '#globalCpn-template',
+                // 注册子组件1
+                components:{ child: childCpn },
+                methods:{
+                    btnClick(){
+                        console.log(this.$parent);
+                    }
+                }
+            }
+            Vue.component('global-cpn', globalCpn);
+
+            // 3. 创建Vue实例，并注册两个子组件
+            const app = new Vue({
+                el: '#app',
+                components:{ child: childCpn, child2:child2Cpn},
+
+            });
+        </script>
+    </body>
+</html>
