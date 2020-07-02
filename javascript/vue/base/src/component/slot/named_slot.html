@@ -1,0 +1,56 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta charset='UTF-8'>
+        <title>具名插槽的使用方法</title>
+    </head>
+    <body>
+        <!-- 2. 在父组件中，注入插槽的替换内容 -->
+        <div id="app">
+            <p>------------1. 向插槽注入自定义内容------------</p>
+            <cpn01>
+                <!-- 2.1 注入具名查插槽的内容 -->
+                <button slot='left'>leftBtn</button>
+                <input  slot='center' type=text name='inbox' style='width: 100px;'>
+                <button slot='right'>rightBtn</button>
+
+                <!-- 2.2 注入普通插槽的内容 -->
+                <button>btn01</button>
+                <button>btn02</button>
+            </cpn01>
+
+            <p>------------2. 使用插槽的默认内容------------</p>
+            <cpn01></cpn01>
+        </div>
+
+        <!-- 1. 在子组件中定义插槽 -->
+        <template id='cpn01-template'>
+            <div>
+                <!-- 1.1 定义具名插槽 -->
+                <slot name='left'>
+                    <p>left</p>
+                </slot>
+                <slot name='center'>
+                    <p>center</p>
+                </slot>
+                <slot name='right'>
+                    <p>right</p>
+                </slot>
+
+                <!-- 1.2 定义普通插槽 -->
+                <slot><p>default slot</p></slot>
+            </div>
+        </template>
+        <script type='text/javascript' src='../js/vue.js'></script>
+        <script type='text/javascript'>
+            const cpn01Constructor = {
+                template: '#cpn01-template'
+            };
+
+            const app = new Vue({
+                el: '#app',
+                components:{ cpn01: cpn01Constructor }
+            });
+        </script>
+    </body>
+</html>

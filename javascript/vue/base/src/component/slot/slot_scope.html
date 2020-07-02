@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>作用域插槽</title>
+</head>
+<body>
+    <!-- 2. 在父组件中使用 作用域插槽 -->
+    <div id="app">
+        <p>----- 1. 使用插槽的默认展示方式-----</p>
+        <child></child>
+
+        <p>----- 2. 使用子组件数据，自定义展示方式-----</p>
+        <child>
+            <!-- 通过 slot-scope 属性，获取作用域对象，并通过该对象使用插槽数据 -->
+            <div slot='showBar' slot-scope='cdx'>
+                <span >{{cdx.slist.join(' | ')}}</span>
+            </div>
+        </child>
+    </div>
+
+    <!-- 1. 创建子组件 -->
+    <template id='child-template'>
+        <div>
+            <!-- 将子组件数据绑定到插槽数据: slist 中，同时暴露给外部使用 -->
+            <slot name='showBar' :slist='dataList'>
+                <ul>
+                    <li v-for='item in dataList'>{{item}}</li>
+                </ul>
+            </slot>
+        </div>
+    </template>
+
+    <script type='text/javascript' src='../js/vue.js'></script>
+    <script type='text/javascript'>
+        const childCpn = {
+            template: '#child-template',
+            data(){
+                return {
+                    dataList:['aaa', 'bbb', 'ccc', 'ddd']
+                }
+            }
+        };
+
+        const app = new Vue({
+            el: '#app',
+            components: { child: childCpn },
+        });
+    </script>
+</body>
+</html>

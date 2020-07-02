@@ -6,16 +6,16 @@
 </head>
 <body>
     <div id="app">
-        <input type="radio" v-model='type' value='0'>type0
-        <input type="radio" v-model='type' value='1'>type1
-        <input type="radio" v-model='type' value='2'>type2
-        <input type="radio" v-model='type' value='3'>type3
+        <input type="radio" name='type' v-model='type' value='0'>type0
+        <input type="radio" name='type' v-model='type' value='1'>type1
+        <input type="radio" name='type' v-model='type' value='2'>type2
+        <input type="radio" name='type' v-model='type' value='3'>type3
         <br>
         <div>selectedType: {{type}}</div>
         <br>
 
-        <input type="radio" v-model='sex' value='male'>male
-        <input type="radio" v-model='sex' value='female'>female
+        <input type="radio" name='sex' v-model='sex' value='male'>male
+        <input type="radio" name='sex' v-model='sex' value='female'>female
         <br>
         <div>selectedSex: {{sex}}</div>
     </div>

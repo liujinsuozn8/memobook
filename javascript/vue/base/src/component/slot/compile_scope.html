@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>编译作用域</title>
+</head>
+<body>
+    <div id="app">
+        <!-- 2. 当前模板属于 Vue实例 的作用域 -->
+        <div>
+            <p>this is app</p>
+            <!-- isShow将会使用 Vue实例 中的数据 -->
+            <child v-show='isShow'></child>
+        </div>
+    </div>
+
+    <template id='child-template'>
+        <!-- 3. 当前模板属于 组件child 的作用域 -->
+        <div>
+            <p>this is child cpn</p>
+            <!-- isShow将会使用组件构造器 childCpn 中返回数据 -->
+            <button v-show='isShow'>childBtn</button>
+        </div>
+    </template>
+
+    <script type='text/javascript' src="../js/vue.js"></script>
+    <script type='text/javascript'>
+        // 1. 创建子组件构造器 和 一个Vue实例，两者都包含一个数据: isShow
+        const childCpn = {
+            template: '#child-template',
+            data(){
+                return { isShow:false }
+            }
+        };
+
+        const app = new Vue({
+            el: '#app',
+            data: { isShow:true },
+            components: { child: childCpn }
+        });
+    </script>
+</body>
+</html>

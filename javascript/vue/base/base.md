@@ -77,6 +77,12 @@
         - [父子组件访问的本质](#父子组件访问的本质)
         - [父组件访问子组件--$children与$refs](#父组件访问子组件--$children与$refs)
         - [子组件访问父组件--$parent与$root](#子组件访问父组件--$parent与$root)
+- [组件化开发--插槽slot](#组件化开发--插槽slot)
+    - [插槽slot简介](#插槽slot简介)
+    - [插槽的基本使用](#插槽的基本使用)
+    - [具名插槽](#具名插槽)
+    - [编译作用域](#编译作用域)
+    - [作用域插槽](#作用域插槽)
 - [](#)
 - [](#)
 - [](#)
@@ -1565,8 +1571,9 @@
 ### v-model与radio结合使用
 [top](#catalog)
 - 与 单选按钮 radio 结合
-    - 默认情况下需要将多个 radio 的 `name`属性相同，才能成组
-    - 使用 `v-model` 绑定**相同变量**后，可以省略 `name` 属性，多个按钮会自动成组
+    - 默认情况下需要将多个 radio 的 `name` 属性相同，才能成组
+    - 使用 `v-model` 绑定**相同变量**后，多个按钮会自动成组
+        - 为了在submit时，能够将数据发送到服务端，`name` 仍需要保留
 
 - 示例
     - 参考代码
@@ -1574,16 +1581,16 @@
     - html代码
         ```html
         <div id="app">
-            <input type="radio" v-model='type' value='0'>type0
-            <input type="radio" v-model='type' value='1'>type1
-            <input type="radio" v-model='type' value='2'>type2
-            <input type="radio" v-model='type' value='3'>type3
+            <input type="radio" name='type' v-model='type' value='0'>type0
+            <input type="radio" name='type' v-model='type' value='1'>type1
+            <input type="radio" name='type' v-model='type' value='2'>type2
+            <input type="radio" name='type' v-model='type' value='3'>type3
             <br>
             <div>selectedType: {{type}}</div>
             <br>
 
-            <input type="radio" v-model='sex' value='male'>male
-            <input type="radio" v-model='sex' value='female'>female
+            <input type="radio" name='sex' v-model='sex' value='male'>male
+            <input type="radio" name='sex' v-model='sex' value='female'>female
             <br>
             <div>selectedSex: {{sex}}</div>
         </div>
@@ -3482,6 +3489,13 @@
     - 参考代码
         - [src/component/visit/$children&$refs.html](src/component/visit/$children&$refs.html)
     - 子组件
+        ```html
+        <template id='child-template'>
+            <div>
+                <p>child: {{id}}</p>
+            </div>
+        </template>
+        ```
         ```js
         const childCpn = {
             template: '#child-template',
@@ -3554,6 +3568,358 @@
 - 示例
     - 参考代码
         - [src/component/visit/$parent.html](src/component/visit/$parent.html)
+
+
+
+# 组件化开发--插槽slot
+## 插槽slot简介
+[top](#catalog)
+- 组件插槽的作用
+    - 使组件更具有扩展性，防止组件部分的硬编码
+    - 让使用者决定组件内部的一些内容
+
+- 如何封装 插槽slot 和 组件component
+    - 抽取通用部分，封装为组件component
+    - 将一个组件中会经常发生变化，或可能会发生变化的部分向外暴露为插槽slot
+
+## 插槽的基本使用
+[top](#catalog)
+- 插槽的使用方法
+    1. 定义插槽
+        - 在组件模板中定义插槽
+            ```html
+            <template>
+                <div>
+                    <!-- 定义插槽 -->
+                    <slot></slot>
+                </div>
+            </template>
+            ```
+    2. 注入插槽的替换内容
+        - 在父组件模板中，向子组件注入组件/html标签。注入的内容会自动替换插槽
+            - 可以注入一个，也可以注入多个
+            - 注入的内容会被视为一个整体替换插槽标签
+        - 使用时，如果没有注入任何内容，则`<slot></slot>`不会被解析成html代码
+            ```html
+            <子组件名>
+                <!-- 注入一个或多个 -->
+                <需要注入的其他组件></需要注入的其他组件>
+                <需要注入的html标签></需要注入的html标签>
+            </子组件名>
+            ```
+    4. 设置插槽的默认内容
+        - 声明插槽时，可以设置默认组件/html标签
+        - 如果注入了自定义的组件/html标签，会使用注入内容
+        - 如果没有注入，将使用默认组件/html标签
+            ```html
+            <template>
+                <div>
+                    <!-- 定义插槽 -->
+                    <slot>
+                        <默认组件/html标签></默认组件/html标签>
+                    </slot>
+                </div>
+            </template>
+            ```
+
+- 这种基本定义方式的缺点
+    - 对于子组件: 多插槽无法区分替换内容
+        - 如果有多个插槽，在注入时，无法区分希望替换哪一个插槽
+        - 最终注入内容会视为一个整体，替换所有的插槽
+    - 对于父组件: 无法指定具体替换那个插槽
+
+- 示例
+    - 参考代码
+        - [src/component/slot/slot_base.html](src/component/slot/slot_base.html)
+    - 代码内容
+        1. 定义插槽
+            ```html
+            <template id='cpn01-template'>
+                <div>
+                    <p>this is cpn01</p>
+                    <slot><button>defaultBtn</button></slot>
+                    <!-- <slot></slot> -->
+                </div>
+            </template>
+            ```
+
+            ```js
+            const cpn01Constructor = {
+                template: '#cpn01-template',
+            };
+            ```
+
+        2. 使用组件，并注入相关内容
+            ```html
+            <div id="app">
+                <p>------1. 向插槽中注入一个按钮----------</p>
+                <cpn01><button>testBtn</button></cpn01>
+
+                <p>------2. 向插槽中注入多个组件/标签-----</p>
+                <cpn01>
+                    <p>multi 01</p>
+                    <p>multi 02</p>
+                    <p>multi 03</p>
+                </cpn01>
+
+                <p>------3. 使用插槽的默认组件------------</p>
+                <cpn01></cpn01>
+            </div>
+            ```
+
+            ```js
+            const app = new Vue({
+                el: '#app',
+                components: { cpn01: cpn01Constructor, }
+            });
+            ```
+
+## 具名插槽
+[top](#catalog)
+- 什么是具名插槽？
+    - 声明插槽时，添加`name`属性，来区分不同的插槽
+    - 使用时，可以通过`name`指定需要替换的插槽
+- 具名插槽的使用方法
+    1. 定义插槽
+        ```html
+        <template>
+            <div>
+                <!-- 定义具名插槽 -->
+                <slot name='插槽名1'></slot>
+                <slot name='插槽名2'></slot>
+                ...
+                <!-- 普通插槽 -->
+                <slot></slot>
+            </div>
+        </template>
+        ```
+    2. 通过插槽名向插槽注入内容
+        ```html
+        <子组件名>
+            <!-- 注入一个或多个 -->
+            <注入内容 slot='插槽名1'></注入内容>
+            <注入内容 slot='插槽名2'></注入内容>
+            ...
+            <!-- 不指定插槽名，会自动替换普通插槽 -->
+            <注入内容></注入内容>
+        </子组件名>
+        ```
+
+- 示例
+    - 参考代码
+        - [src/component/slot/named_slot.html](src/component/slot/named_slot.html)
+    - 代码内容
+        1. 在子组件中定义插槽
+            ```html
+            <template id='cpn01-template'>
+                <div>
+                    <!-- 1.1 定义具名插槽 -->
+                    <slot name='left'>
+                        <p>left</p>
+                    </slot>
+                    <slot name='center'>
+                        <p>center</p>
+                    </slot>
+                    <slot name='right'>
+                        <p>right</p>
+                    </slot>
+
+                    <!-- 1.2 定义普通插槽 -->
+                    <slot><p>default slot</p></slot>
+                </div>
+            </template>
+            ```
+            ```js
+            const cpn01Constructor = {
+                template: '#cpn01-template'
+            };
+            ```
+
+        2. 在父组件中，注入插槽的替换内容
+            ```html
+            <div id="app">
+                <p>------------1. 向插槽注入自定义内容------------</p>
+                <cpn01>
+                    <!-- 2.1 注入具名查插槽的内容 -->
+                    <button slot='left'>leftBtn</button>
+                    <input  slot='center' type=text name='inbox' style='width: 100px;'>
+                    <button slot='right'>rightBtn</button>
+
+                    <!-- 2.2 注入普通插槽的内容 -->
+                    <button>btn01</button>
+                    <button>btn02</button>
+                </cpn01>
+
+                <p>------------2. 使用插槽的默认内容------------</p>
+                <cpn01></cpn01>
+            </div>
+            ```
+            ```js
+            const app = new Vue({
+                el: '#app',
+                components:{ cpn01: cpn01Constructor }
+            });
+            ```
+
+## 编译作用域
+[top](#catalog)
+- 什么是编译作用域
+    - 每个组件都有自己的作用域，只会到自己的实例对象中搜索数据和方法
+    - 每个组件**不会主动跨作用域**，不会主动到子组件中搜索任何内容
+        - 可以通过 `$children`、`$refs`，手动获取子组件实例对象，并使用子组件的数据或方法
+
+- 示例
+    - 参考代码
+        - [src/component/slot/compile_scope.html](src/component/slot/compile_scope.html)
+    - 代码内容
+        1. 创建子组件构造器 和 一个Vue实例，两者都包含一个数据: `isShow`
+            ```js
+            const childCpn = {
+                template: '#child-template',
+                data(){
+                    return { isShow:false }
+                }
+            };
+
+            const app = new Vue({
+                el: '#app',
+                data: { isShow:true },
+                components: { child: childCpn }
+            });
+            ```
+        2. Vue实例模板
+            ```html
+            <div id="app">
+                <!-- 2. 当前模板属于 Vue实例 的作用域 -->
+                <div>
+                    <p>this is app</p>
+                    <!-- isShow将会使用 Vue实例 中的数据 -->
+                    <child v-show='isShow'></child>
+                </div>
+            </div>
+            ```
+        3. Vue组件模板
+            ```html
+            <template id='child-template'>
+                <!-- 3. 当前模板属于 组件child 的作用域 -->
+                <div>
+                    <p>this is child cpn</p>
+                    <!-- isShow将会使用组件构造器 childCpn 中返回数据 -->
+                    <button v-show='isShow'>childBtn</button>
+                </div>
+            </template>
+            ```
+
+## 作用域插槽
+[top](#catalog)
+- 什么是作用域插槽
+    - 两个要点
+        1. 数据由子组件提供
+        2. 数据的使用方式由父组件提供，编译后替换插槽
+    - 与一般的使用方式完全相反，一般的方式是:
+        - 父组件提供数据，子组件提供数据的使用方式
+        - 父组件需要通过 `v-bind` 向子组件的 `props` 传递数据
+    - 为了完成这种使用方式，需要在父组件的作用域中获取子组件的数据
+
+- 使用场景示例
+    - 子组件中包含一些数据，如：`dataList:['aaa', 'bbb', 'ccc']`
+    - 需要在多个界面进行展示子组件的数据，但是展示方式不同
+        - 某些界面是水平方向展示的
+        - 某些界面是列表形式展示的
+        - 某些界面直接显示数组对象的字符串
+    - 内容在子组件，需要父组件提供展示方式
+        - 可以使用 `作用域插槽` 来实现
+
+- 作用域插槽的使用方法
+    1. 在子组件中创建作用域插槽
+        - 最好使用具名插槽
+        - 通过插槽向外部暴露数据
+            1. 使用 `v-bind` 将子组件的数据绑定到 **插槽的某个属性**
+            2. 绑定后就可以在父组件中使用子组件的数据
+            ```html
+            <template id='子组件模板id'>
+                <div>
+                    <slot name='插槽名' :插槽数据名='子组件数据名'>
+                        <!-- 可以提供默认的插槽实现 -->
+                    </slot>
+                </div>
+            </template>
+            ```
+    2. 在父组件模板中，使用作用域插槽
+        - 作用域插槽是Vue 2.5.x之后出现的，所以最好使用 `<template>` 包裹自定义内容
+            - `<template>` 和 `<div>` 都可以使用，但是 `<template>` 的兼容性更好
+        - 使用具名插槽时，需要通过 `slot` 属性指定插槽名；如果使用普通插槽，不需要该属性
+        - `自定义作用域对象名`，可以随意设置
+
+            ```html
+            <div id="app">
+                <!-- 使用子组件的默认实现 -->
+                <子组件></子组件>
+
+                <子组件>
+                    <!-- 使用 template 标签包裹，并获取插槽暴露的数据 -->
+                    <template slot='插槽名' slot-scope='自定义作用域对象名'>
+                        <!-- 使用插槽数据 -->
+                        自定义作用域对象名.插槽数据名
+                    </template>
+                </子组件>
+            </div>
+            ```
+
+- 数据传递关系图
+    - ![slot_scope_dataflow](imgs/component/slot_scope_dataflow.png)
+
+- 示例
+    - 参考代码
+        - [src/component/slot/slot_scope.html](src/component/slot/slot_scope.html)
+    - 代码内容
+        1. 在子组件中创建作用域插槽
+            ```html
+            <!-- 1. 创建子组件 -->
+            <template id='child-template'>
+                <div>
+                    <!-- 将子组件数据绑定到插槽数据: slist 中，同时暴露给外部使用 -->
+                    <slot name='showBar' :slist='dataList'>
+                        <ul>
+                            <li v-for='item in dataList'>{{item}}</li>
+                        </ul>
+                    </slot>
+                </div>
+            </template>
+            ```
+            ```js
+            const childCpn = {
+                template: '#child-template',
+                data(){
+                    return {
+                        dataList:['aaa', 'bbb', 'ccc', 'ddd']
+                    }
+                }
+            };
+            ```
+        2. 在父组件模板中，使用作用域插槽
+            ```html
+            <!-- 2. 在父组件中使用 作用域插槽 -->
+            <div id="app">
+                <p>----- 1. 使用插槽的默认展示方式-----</p>
+                <child></child>
+
+                <p>----- 2. 使用子组件数据，自定义展示方式-----</p>
+                <child>
+                    <!-- 通过 slot-scope 属性，获取作用域对象，并通过该对象使用插槽数据 -->
+                    <div slot='showBar' slot-scope='cdx'>
+                        <span >{{cdx.slist.join(' | ')}}</span>
+                    </div>
+                </child>
+            </div>
+            ```
+            ```js
+            const app = new Vue({
+                el: '#app',
+                components: { child: childCpn },
+            });
+            ```
+
 
 [top](#catalog)
 

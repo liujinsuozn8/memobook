@@ -1,0 +1,44 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta charset='UTF-8'>
+        <title>插槽的基本使用</title>
+    </head>
+    <body>
+        <!-- 2. 在父组件中，向子组件中注入插槽的替换内容 -->
+        <div id="app">
+            <p>------1. 向插槽中注入一个按钮----------</p>
+            <cpn01><button>testBtn</button></cpn01>
+
+            <p>------2. 向插槽中注入多个组件/标签-----</p>
+            <cpn01>
+                <p>multi 01</p>
+                <p>multi 02</p>
+                <p>multi 03</p>
+            </cpn01>
+
+            <p>------3. 使用插槽的默认组件------------</p>
+            <cpn01></cpn01>
+        </div>
+
+        <!-- 1. 在子组件中定义插槽 -->
+        <template id='cpn01-template'>
+            <div>
+                <p>this is cpn01</p>
+                <slot><button>defaultBtn</button></slot>
+                <!-- <slot></slot> -->
+            </div>
+        </template>
+        <script type='text/javascript' src='../js/vue.js'></script>
+        <script type='text/javascript'>
+            const cpn01Constructor = {
+                template: '#cpn01-template',
+            };
+
+            const app = new Vue({
+                el: '#app',
+                components: { cpn01: cpn01Constructor, }
+            });
+        </script>
+    </body>
+</html>
