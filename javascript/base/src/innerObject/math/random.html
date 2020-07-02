@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Math随机函数的实际应用</title>
+    <script type='text/javascript'>
+        function rangeRandom(min, max){
+            // 如果最大最小值都省略了，则返回0
+            if (!min && !max){
+                return 0;
+            }
+            // 如果省略了max，则返回 [0, min] 区间的随机数
+            if (!max){
+                max = min;
+                min = 0;
+            }
+            return Math.floor(Math.random() * (max - min + 1) + min);
+        }
+
+        console.log( "[,] = " + rangeRandom() );
+        console.log( "[0, 5] = " + rangeRandom(5) );
+        console.log( "[6, 20] = " + rangeRandom(6, 20) );
+
+    </script>
+</head>
+<body>
+</body>
+</html>

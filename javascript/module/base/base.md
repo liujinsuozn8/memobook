@@ -60,7 +60,7 @@
         - 页面中引入的js文件大大增加，导致页面需要发送大量请求
         - 之前需要引入1个js文件，模块之后可能会引入多个
     - 依赖模糊
-        - 如果模块之间有依赖，则引入的顺序不能错，否则模块无法生效
+        - 如果模块之间有依赖，则导入的顺序不能错，否则模块无法生效
     - 维护难度增加（整体页面上的维护）
 
 ## 模块化演进的细节
@@ -215,6 +215,10 @@
     - 服务器端实现: 最终的代码通过指令运行在服务器上
     - 浏览器端实现: 最终的代码通过浏览器运行在页面中
 
+- 模块化规范主要解决的问题
+    1. 如何导出模块
+    2. 如何导入模块
+
 ## CommonJS规范
 ### CommonJS规范说明
 [top](#catalog)
@@ -223,14 +227,14 @@
     - 在服务端：运行时以同步的方式加载
     - 在浏览器端：模块需要**提前编译打包**处理
         - 防止页面长时间等待
-        - 对于模块引入方式: `var 包名 = require('模块标识')`，前端页面无法识别`require`关键字，需要提前编译
+        - 对于模块导入方式: `var 包名 = require('模块标识')`，前端页面无法识别`require`关键字，需要提前编译
 - 语法
     - 导出模块:
         - 导出方式
             - `exports.xxx = value`，可以多次设置
             - `module.exports = {...}`，多次设置会覆盖
         - 模块导出的本质: 设置`exports`对象
-    - 引入模块: 
+    - 导入模块: 
         - 全部导入
             - `let 模块名 = require('模块标识')`
         - 部分导入
@@ -246,7 +250,7 @@
     - 在 `app.js` 中聚合模块
     - 通过 node 指令来调用  `app.js`
 
-- 参考开发示例: [src\commonjs_sample\nodejs](src\commonjs_sample\nodejs)
+- 参考开发示例: [src/commonjs_sample/nodejs](src/commonjs_sample/nodejs)
 - 示例
     1. 目录结构
         ```
@@ -334,7 +338,7 @@
     6. 在页面中引入 `app.js` 编译后生成的文件路径
     7. 启动页面，自动执行js
 
-- 参考开发示例: [src\commonjs_sample\browserify](src\commonjs_sample\browserify)
+- 参考开发示例: [src/commonjs_sample/browserify](src/commonjs_sample/browserify)
 
 - 示例
     1. 使用 npm 安装 Browserify。并且需要**同时进行全局和局部安装**
@@ -450,9 +454,9 @@
                 return 导出模块
             })
             ```
-    - 引入模块
+    - 导入模块
         - 参考: https://requirejs.org/docs/api.html#jsfiles
-        - 引入方式
+        - 导入方式
             ```js
             requirejs.config({
                 baseUrl: 'js/lib', //模块搜索的起点
@@ -472,7 +476,7 @@
             })
             ```
 
-        - 一般会将引入的代码添加到IIFE中
+        - 一般会将导入的代码添加到IIFE中
             ```js
             (function(
                 requirejs.config({
@@ -487,7 +491,7 @@
             ))()
             ```
         - 对于第三方模块的配置方法相同，也需要在requirejs的配置中添加模块名与路径的映射关系
-        - 模块引入后 `requirejs` 将会自动检查依赖关系
+        - 模块导入后 `requirejs` 将会自动检查依赖关系
 
 - 页面引入语法
     ```html
@@ -605,27 +609,27 @@
                 ```
             4. 默认导出
                 - 可以导出任意数据类型
-                - 导出什么，引入时就接收到什么
+                - 导出什么，导入时就接收到什么
                 - 一个模块只能使用一次默认导出。多次默认导出会报错
                 - 写法
                     ```js
                     export default {...}
                     ```
 
-    - 引入模块: `import`
+    - 导入模块: `import`
         - 模块的标识：与`require("模块的标识")`相同
             - 本地模块使用地址，以`./`、`../`开头
             - 第三方模块、内置模块，使用模块名
 
-        - 引入默认导出的内容
+        - 导入默认导出的内容
             ```js
             import 模块名 from "模块标识"
             ```
-        - 引入其他导出方式的内容。必须使用**解构赋值**的方式，才能获取模块中导出的内容
+        - 导入其他导出方式的内容。必须使用**解构赋值**的方式，才能获取模块中导出的内容
             ```js
             import {模块内容1, 模块内容2,...} from "模块标识"
             ```
-        - 全部引入
+        - 全部导入
             ```js
             import * as 别名 from "模块标识"
             // 调用方法
@@ -652,7 +656,7 @@
         |-|-|-|
         |babel-cli|`npm i babel-cli -g`|babel命令行接口，只需要全局安装，使babel的命令可以使用|
         |babel-preset-es2015|`npm i babel-preset-es2015 --save-dev`|只添加开发依赖，运行页面时不需要|
-        |browserify|`npm i browserify -g`<br>`npm i browserify --save-dev`|需要**同时进行全局和局部安装**
+        |browserify|`npm i browserify -g`<br>`npm i browserify --save-dev`|需要**同时进行全局和局部安装**|
 
     2. 创建 `.babelrc` 文件，并在文件内部指定代码转换的目标
         - babel执行前会读取该配置文件，获取代码转换的目标版本
@@ -665,7 +669,7 @@
     3. 创建开发目录
     4. 编写模块
     5. 聚合模块
-        - 如果模块中的内容是统一导出，或多次导出时，需要使用解构赋值的方式来引入： `import {xxx, yyy} from "模块路径"`
+        - 如果模块中的内容是统一导出，或多次导出时，需要使用解构赋值的方式来导入： `import {xxx, yyy} from "模块路径"`
     6. 编译代码
         1. `babel <代码目录> -d <编译结果目录>`
             - 使用 Babel 将**所有的**ES6代码编译为ES5代码（但是会包含CommonJS语法）
@@ -769,13 +773,13 @@
             - [src/es6_sample/babel_browserify/js/src/main.js](src/es6_sample/babel_browserify/js/src/main.js)
         - 代码内容
             ```js
-            // 无法通过模块名引入
+            // 无法通过模块名导入
             // import module1 from "./module1"
             // import module2 from "./module2"
 
             // console.log(module1,module2)
 
-            // 使用解构赋值的方式来引入
+            // 使用解构赋值的方式来导入
             import {foo as foo1, bar as bar1} from "./module1"
             // 使用别名解决命名冲突
             import {foo as foo2, bar as bar2, obj} from "./module2"

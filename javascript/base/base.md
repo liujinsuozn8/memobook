@@ -59,6 +59,9 @@
     - [数组的遍历](#数组的遍历)
 - [内建对象-Date](#内建对象-Date)
 - [内建对象-Math](#内建对象-Math)
+    - [Math对象简介](#Math对象简介)
+    - [Math中的方法](#Math中的方法)
+    - [Math随机函数的实际应用](#Math随机函数的实际应用)
 - [内建对象-正则表达式](#内建对象-正则表达式)
 - [内建对象-String](#内建对象-String)
     - [String的基本原理和基本方法](#String的基本原理和基本方法)
@@ -634,15 +637,16 @@
             |Boolean|false|0|
             |Null|null|0|
             |Undefined|undefined|`NaN`|
-    
+
     - 方式2：字符串转换专用函数：`parseInt(字符串 [, 进制])`、`parseFloat(字符串 [, 进制])`
         - `Number()`的问题
             - 函数需要字符串是数字字符串，有其他字符就无法正常转换
             - 实际开发中经常会从html中取值，如像素大小：`"100px"`，就无法直接使用`Number()`
         - `parseInt(字符串)` 从左到右读取数字，直到读取到一个数字之外的字符，并将数字转换为**整数**
+            - <label style='color:red'>如果是小数，会向下取整</label>
         - `parseFloat(字符串)` 从左到右读取数字，直到读取到一个数字之外的字符，并将数字转换为**浮点数**
         - 如果对非String类型数据使用这两个方法，会先转换为String，然后再操作
-    
+
     - 方式3：对一个非 Number型 变量执行 ：`变量 - 0`、`变量 * 1`、`变量 / 1`，来将类型转换为 Number
         - 底层使用`Number()` 函数执行类型转换
         - 参考：[二元算数运算符](#二元算数运算符)
@@ -3019,9 +3023,159 @@ console.log("a = ", a);
         ```
 
 # 内建对象-Math
+## Math对象简介
 [top](#catalog)
 - Math不是一个构造函数，它是一个工具类
 - Math中分装了与数学运算相关的属性和方法
+
+## Math中的方法
+[top](#catalog)
+- 常用方法
+
+    |方法|功能|备注|
+    |-|-|-|
+    |`ceil(x)`|向上取整||
+    |`floor(x)`|向下取整|`parseInt`也有相同的功能|
+    |`round(x)`|四舍五入||
+    |`random()`|返回 `[0, 1)` 区间的一个随机数||
+    |`abs(x)`|取x的绝对值||
+    |`max(x,y)`|返回 x 和 y 中的最大值||
+    |`min(x,y)`|返回 x 和 y 中的最小值||
+
+- 数学计算
+
+    - 幂运算、对数运算
+        |方法|功能|
+        |-|-|
+        |`pow(x,y)`|求 `x^y`|
+        |`sqrt(x)`|求x的平方根|
+        |`exp(x)`|求`e^x`|
+        |`log(x)`|求x的自然对数，即:`log_e_X`|
+
+    - 三角函数
+        |方法|功能|
+        |-|-|
+        |`sin(x)`|x的正弦|
+        |`cos(x)`|x的余弦|
+        |`tan(x)`|x的正切|
+        |`acos(x)`|	x的反余弦值|
+        |`asin(x)`|	x的反正弦值|
+        |`atan(x)`|	以介于 -PI/2 与 PI/2 弧度之间的数值来返回 x 的反正切值|
+        |`atan2(y,x)`|	返回从 x 轴到点 (x,y) 的角度（介于 -PI/2 与 PI/2 弧度之间）|
+
+- 示例
+    - 参考代码
+        - [src/innerObject/math/method.html](src/innerObject/math/method.html)
+    - 代码内容
+        ```js
+        // 常用方法
+        // 1. Math.ceil(x) 向上取整
+        let a01 = Math.ceil(2.5);
+        console.log('a01 = ' + a01);    // 输出: a01 = 3
+        let a02 = Math.ceil(2.4);
+        console.log('a02 = ' + a02);    // 输出: a02 = 3
+
+        // 2. Math.floor(x) 向下取整
+        let b01 = Math.floor(2.5);
+        console.log('b01 = ' + b01);    // 输出: b01 = 2
+        let b02 = Math.floor(2.4);
+        console.log('b02 = ' + b02);    // 输出: b02 = 2
+
+        // 3. Math.round(x) 四舍五入
+        let c01 = Math.round(2.5);
+        console.log('c01 = ' + c01);    // 输出: c01 = 3
+        let c02 = Math.round(2.4);
+        console.log('c02 = ' + c02);    // 输出: c02 = 2
+
+        // 4 Math.random() 返回 [0, 1) 区间的一个随机数
+        let d01 = Math.random();
+        console.log('d01 = ' + d01);
+
+        // 5. Math.abs(x) 返回x的绝对值
+        let e01 = Math.abs(2);
+        console.log('e01 = ' + e01);    // 输出: e01 = 2
+        let e02 = Math.abs(0);
+        console.log('e02 = ' + e02);    // 输出: e02 = 0
+        let e03 = Math.abs(-3);
+        console.log('e03 = ' + e03);    // 输出: e03 = 3
+
+        // 6. Math.max(x,y) 返回 x 和 y 中的最大值
+        let f01 = Math.max(100, 20);
+        console.log('f01 = ' + f01);    // 输出: f01 = 100
+
+        // 7. Math.min(x,y) 返回 x 和 y 中的最小值
+        let g01 = Math.min(100, 20);
+        console.log('g01 = ' + g01);    // 输出: g01 = 20
+        ```
+
+## Math随机函数的实际应用
+[top](#catalog)
+- 参考：https://www.cnblogs.com/starof/p/4988516.html
+
+- 随机函数的基本应用方法
+    - 应用方法
+
+        |应用方法|功能|备注|
+        |-|-|-|
+        |`Math.ceil(Math.random()*10)`|均衡获取 `[1, 10]` 间的随机整数|<ul><li>因为使用了向下取整，所以不会取10</li><li>有取0的可能，但是概率极小</li></ul>|
+        |`Math.round(Math.random())`|均衡获取 `[0, 1]` 间的随机整数||
+        |`Math.floor(Math.random()*10)`<br>`parseInt(Math.random()*10, 10)`|均衡获取 `[0, 9]` 间的随机整数|<ul><li>因为使用了向下取整，所以不会取10</li> <li>每个`[i, i+1)`区间的概率相等所以是均衡的</li></ul>|
+        |`Math.round(Math.random()*10)`|基本均衡获取 `[0, 10]`间的随机整数|获取 `0`、`10` 的几率比其他整数少一半|
+
+    - `Math.round(Math.random()*10)` 中，`0`、`10` 的几率比其他整数少一半的原因
+        - 数字的分布区间
+            - `0: [0,0.5)`
+            - `10: [9.5, 10)`
+            - 其他数字，如 `1: [0.5, 1.5]`
+        - 0、10 的分布区间只有其他数字的一般，所以几率会少一半
+
+    - 获取随机数时，`Math.floor()` 更有优势
+        1. 比`Math.round`更加均衡，每个整数的概率都相同
+        2. 比`Math.ceil`更容易处理上下区间
+
+- 应用：获取区间中的随机数
+    - 获取 `[min, max]` 区间的随机整数
+        - 获取方式
+            - `Math.floor(Math.random() * (max - min + 1) + min)`
+            - `parseInt(Math.random() * (max - min + 1) + min)`
+        - 计算步骤
+            1. `Math.random()`，获取 `[0, 1)` 的随机数
+            2. `Math.random() * (max - min + 1)`，计算在随机数 `[min, max]` 区间上的一个偏移量
+            3. `Math.random() * (max - min + 1) + min`，从最小值开始，移动随机偏移量的长度，即获得区间内的随机数
+            4. 通过向下取整:`Math.floor()`，将区间固定在 `[min, max]`
+    - 获取 `[0, max]` 区间的随机整数
+        - `Math.floor(Math.random() * (max+1))`
+            - 相当于: `Math.floor(Math.random() * (max - 0 + 1) + 0)`
+    - 获取 `[1, max]` 区间的随机整数
+        - `Math.floor(Math.random() * max + 1)`
+            - 相当于: `Math.floor(Math.random() * (max - 1 + 1) + 1)`
+        - `Math.ceil(Math.random() * max)`
+            - `Math.ceil()` 会将默认的左区间 `0` 去掉，自动变成`1`，所以不需哟啊特殊的处理
+
+- 应用示例
+    - 获取指定范围的随机数
+        - 参考代码
+            - [src/innerObject/math/random.html](src/innerObject/math/random.html)
+        - 代码内容
+            ```js
+            function rangeRandom(min, max){
+                // 如果最大最小值都省略了，则返回0
+                if (!min && !max){
+                    return 0;
+                }
+                // 如果省略了max，则返回 [0, min] 区间的随机数
+                if (!max){
+                    max = min;
+                    min = 0;
+                }
+                return Math.floor(Math.random() * (max - min + 1) + min);
+            }
+
+            console.log( "[,] = " + rangeRandom() );
+            console.log( "[0, 5] = " + rangeRandom(5) );
+            console.log( "[6, 20] = " + rangeRandom(6, 20) );
+            ```
+
 
 # 内建对象-正则表达式
 [top](#catalog)

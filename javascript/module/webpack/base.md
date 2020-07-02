@@ -225,10 +225,10 @@
 ## 两种模块化开发规范共存
 [top](#catalog)
 
-    |目录/文件|规范|原因|
-    |-|-|-|
-    |src|ES6|使用ES6方便开发|
-    |webpack.config.js|commonjs |通过nodejs启动webpack进行编译时使用的文件，所以只能使用commonjs规范|
+|目录/文件|规范|原因|
+|-|-|-|
+|src|ES6|使用ES6方便开发|
+|webpack.config.js|commonjs |通过nodejs启动webpack进行编译时使用的文件，所以只能使用commonjs规范|
 
 ## webpack的5个核心概念
 [top](#catalog)
@@ -282,7 +282,7 @@
     Time: 263ms
     Built at: 2020-05-19 10:49:20
     Asset       Size  Chunks             Chunk Names
-    built.js  946 bytes       0  [emitted]  main    <<<<< 压缩率比开发环境更高
+    built.js  946 bytes       0  [emitted]  main    <<<<< 文件更小、压缩率比开发环境更高
     Entrypoint main = built.js
     [0] ./src/index.js 94 bytes {0} [built]
     ```
@@ -299,7 +299,7 @@
         import <自定义导入名> from '<json文件路径>'
         ```
     - 打包方式
-        1. 读取json文件，并`json字符串`写入编译结果
+        1. 读取json文件，并将 `json字符串` 写入编译结果
         2. 在编译结果中添加代码：`e.exports = JSON.parse(json字符串)`
     - 不需要配置loader
 
@@ -333,7 +333,7 @@
                     plugins: [new HtmlWebpackPlugin()]
                 }
                 ```
-        - 方式2: 指令html路径
+        - 方式2: 指定html路径
             - 打包时，将会复制指定的html，并自动引入打包生成的所有资源
             - 配置内容
                 ```js
