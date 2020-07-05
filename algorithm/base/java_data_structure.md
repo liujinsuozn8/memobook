@@ -47,6 +47,12 @@
         - [中缀表达式转后缀表达式的方法](#中缀表达式转后缀表达式的方法)
         - [中缀表达式转后缀表达式的实现](#中缀表达式转后缀表达式的实现)
         - [后缀表达式计算器的实现](#后缀表达式计算器的实现)
+- 数据结构-哈希表
+    - [哈希表简介](#哈希表简介)
+    - [哈希表-引入问题及其实现](#哈希表-引入问题及其实现)
+- 数据结构-树
+    - [树简介](#树简介)
+    - [二叉树简介](#二叉树简介)
 - [](#)
 - [](#)
 - [](#)
@@ -2387,3 +2393,253 @@
             assert (result == 101);
         }
         ```
+
+# 数据结构-哈希表
+## 哈希表简介
+[top](#catalog)
+- 什么是哈希表？
+    - 哈希表也称为散列表，HashTable
+    - 底层结构：
+        - 数组
+        - 数组的每个元素保存一个链表
+    - 存储方式
+        1. 将关键字的码值映射到数组的某个index
+        2. 将数据保存到这个index的链表中
+    - 使用方式
+        1. 将关键字的码值映射到数组的某个index
+        2. 通过index获取链表，然后通过关键字在链表中搜索数据
+    - 设计数组操作的两个概念
+        - 散列函数: 从关键字码值到数组index的映射函数
+        - 散列表: 就是底层保存数据的数组
+- 哈希表示例图
+    - ![hashtable_demo](imgs/data_structure/hashtable/hashtable_demo.png)
+
+## 哈希表-引入问题及其实现
+[top](#catalog)
+- 需求
+    - 有一个公司，当有新员工来报道时，需要添加员工的信息
+    - 当输入员工id时，要求查找到该员工的所有信息
+    - 不能使用数据库
+    - 查询的速度越快越好
+    - 添加时，按照id的属性，从低到高插入
+
+- 需求实现
+    - `Employee`
+        - 用于保存某个员工信息
+    - `EmpLinkedList`
+        - 用链表保存多个员工信息，提供增删改查的基本功能
+        - 没有头指针 head，每个结点都是一个有效的`Employee` 
+    - `EmpHashTable`
+        - 本身是一个数组，每个元素保存一个`EmpLinkedList`
+        - 用户通过 `HashTable` 来操作内部的链表，需要提供对应的链表的功能
+            - `put`， 增加元素
+            - `list`，遍历链表的雇员信息
+            - `get`，获取元素
+            
+        - 提供一个散列函数，来确定数据保存在哪个index下的链表中
+
+- 实现代码
+    - 参考代码
+        - [/algorithm/src/java-algorithm/datastructure/src/main/java/com/ljs/learn/datastructure/hashtable/demo1/Employee.java](/algorithm/src/java-algorithm/datastructure/src/main/java/com/ljs/learn/datastructure/hashtable/demo1/Employee.java)
+        - [/algorithm/src/java-algorithm/datastructure/src/main/java/com/ljs/learn/datastructure/hashtable/demo1/EmpLinkedList.java](/algorithm/src/java-algorithm/datastructure/src/main/java/com/ljs/learn/datastructure/hashtable/demo1/EmpLinkedList.java)
+        - [/algorithm/src/java-algorithm/datastructure/src/main/java/com/ljs/learn/datastructure/hashtable/demo1/EmpHashTable.java](/algorithm/src/java-algorithm/datastructure/src/main/java/com/ljs/learn/datastructure/hashtable/demo1/EmpHashTable.java)
+    - 链表结点
+        ```java
+        public class Employee {
+            private String name;
+            int id;
+            Employee next;
+        
+            public Employee(int id, String name) {
+                this.id = id;
+                this.name = name;
+            }
+        
+            // toString()
+            // equals(Object o)
+        }
+        ```
+    - 链表
+        ```java
+        public class EmpLinkedList {
+            private Employee head;
+        
+            // 向链表中添加或修改元素
+            public void add(Employee node) {
+                if (head == null) {
+                    head = node;
+                } else {
+                    Employee temp = head;
+                    while (temp.next != null) {
+                        temp = temp.next;
+                    }
+        
+                    temp.next = node;
+                }
+            }
+        
+            // 遍历输出链表
+            public void list() {
+                if (head == null) return;
+                Employee temp = head;
+                while (temp != null) {
+                    System.out.println(temp);
+                    temp = temp.next;
+                }
+            }
+        
+            // 获取元素
+            public Employee get(int id) {
+                if (head == null) return null;
+                Employee temp = head;
+                while (temp != null) {
+                    if (id == temp.id) {
+                        return temp;
+                    }
+                }
+        
+                // 如果没有找到，则返回null
+                return null;
+            }
+        }
+        ```
+    - 哈希表
+        ```java
+        public class EmpHashTable {
+            // 数组的最大长度
+            private int size;
+            // 保存链表的数组
+            private EmpLinkedList[] rows;
+        
+            public EmpHashTable(int size) {
+                this.size = size;
+                rows = new EmpLinkedList[size];
+                // 创建数组后，初始化每个链表
+                for (int i = 0; i < size; i++) {
+                    rows[i] = new EmpLinkedList();
+                }
+            }
+        
+            // 提供一个hash函数，来将id映射为数组索引
+            private int hash(int id) {
+                return id % size;
+            }
+        
+            // 添加元素
+            public void add(Employee node) {
+                // 确定添加到哪条链表中
+                int idx = hash(node.id);
+                // 执行添加
+                rows[idx].add(node);
+            }
+        
+            // 遍历元素，遍历每个链表
+            public void list(){
+                for (EmpLinkedList row : rows) {
+                    row.list();
+                }
+            }
+        
+            // 获取元素，如果没有找到则返回 null
+            public Employee get(int id){
+                // 确定元素在哪条链表中
+                int idx = hash(id);
+                // 从链表中获取元素
+                return rows[idx].get(id);
+            }
+        }
+        ```
+
+- 测试内容
+    - 参考代码
+        - [/algorithm/src/java-algorithm/datastructure/src/test/java/com/ljs/learn/datastructure/hashtable/demo1/EmpHashTableTest.java](/algorithm/src/java-algorithm/datastructure/src/test/java/com/ljs/learn/datastructure/hashtable/demo1/EmpHashTableTest.java)
+    - 测试代码
+        ```java
+        // 添加测试
+        @Test
+        public void testAdd(){
+            EmpHashTable empHashTable = new EmpHashTable(5);
+            empHashTable.add(new Employee(1,"aaa"));
+            empHashTable.add(new Employee(7,"erth"));
+            empHashTable.add(new Employee(2,"sdf"));
+            empHashTable.add(new Employee(3,"bbb"));
+            empHashTable.add(new Employee(6,"ccc"));
+
+            empHashTable.list();
+            // 输出
+            // Employee{name=aaa, id=1}
+            // Employee{name=ccc, id=6}
+            // Employee{name=erth, id=7}
+            // Employee{name=sdf, id=2}
+            // Employee{name=bbb, id=3}
+        }
+
+        // 查询测试
+        @Test
+        public void testGet(){
+            EmpHashTable empHashTable = new EmpHashTable(5);
+            empHashTable.add(new Employee(1,"aaa"));
+            empHashTable.add(new Employee(7,"erth"));
+            empHashTable.add(new Employee(2,"sdf"));
+            empHashTable.add(new Employee(3,"bbb"));
+            empHashTable.add(new Employee(6,"ccc"));
+
+            assert empHashTable.get(2).equals( new Employee(2,"sdf") );
+
+            assert empHashTable.get(4) == null;
+        }
+        ```
+
+# 数据结构-树
+## 树简介
+[top](#catalog)
+- 数组存储的优缺点
+    - 优点
+        - 通过下标方式访问元素，速度快
+        - 对于有序数组，可以使用二分查找、插值查找的方法提高检索速度
+    - 缺点
+        - 如果要检索某个值，或者将数据插入到某个位置，会使数组部分元素产生移动，效率低
+        - 如果数组容量不足，需要扩容
+- 链式存储的优缺点
+    - 优点
+        - 优化了数组的存储方式，不需要扩容
+        - 插入、删除的效率更高，只要修改next的执行即可
+    - 缺点
+        - 检索效率比较低，需要从头开始比较搜索
+- 树存储
+    - 树能够提高数据存储、读取的效率
+    - 如果利用二叉排序树，既可以保证数据检索速度，又可以保证数据的插入、删除、修改速度
+
+- 树的常用术语
+    - 节点
+    - 根节点
+    - 父节点
+    - 叶节点: 没有任何子节点的节点
+    - 节点的权: 节点的值
+    - 路径: 从根节点找到该节点的路线
+    - 层
+    - 子树
+    - 树的高度: 树的最大层数
+    - 森林: 多棵子树构成森林
+- 树的示意图
+    - ![tree_sketch](imgs/data_structure/tree/tree_sketch.png)
+
+## 二叉树简介
+[top](#catalog)
+- 每个节点最多只能有两个子节点的树称为二叉树
+- 二叉树的子节点分为：左子节点、右子节点
+- 满二叉树
+    - 所有叶子节点都在最后一层
+    - 结点总数为 `2^n - 1`， n为层数
+    - 示例
+        - ![full_binary_tree](imgs/data_structure/tree/binary_tree/full_binary_tree.png)
+- 完全二叉树
+    - 所有叶子结点都在最后一次或倒数第二层
+    - 最后一层的叶子节点在左边**连续**
+    - 倒数第二层的叶子结点在右边**连续**
+    - 示例
+        - 如果删除了F，会导致倒数第二层的右侧不连续，则不是完全二叉树
+        - 如果删除了I，会导致倒数第一层的右侧不连续，则不是完全二叉树
+        - ![complete_binary_tree](imgs/data_structure/tree/binary_tree/complete_binary_tree.png)
+
+[top](#catalog)

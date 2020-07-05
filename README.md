@@ -4,8 +4,10 @@
             - 配套代码：[designPattern/dplearn](designPattern/dplearn)
     - 算法与数据结构
         - [数据结构基础(基于java)](algorithm/base/base_java.md)
-            - 配套代码：[algorithm/src/java-algorithm](algorithm/src/java-algorithm)
-        
+            - 配套代码：[algorithm/src/java-algorithm/datastructure](algorithm/src/java-algorithm/datastructure)
+        - [算法基础(基于java)](algorithm/base/java_algorithm.md)
+            - 配套代码：[algorithm/src/java-algorithm/myalgorithm](algorithm/src/java-algorithm/myalgorithm)
+
 - DevOps
     - [服务器软件的概念与比较](devops/server/base/serverCompare.md)
     - git

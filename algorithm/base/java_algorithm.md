@@ -18,7 +18,9 @@
         - [八皇后问题的算法分析](#八皇后问题的算法分析)
         - [八皇后问题的实现](#八皇后问题的实现)
 - [排序算法](#排序算法)
-- [排序算法--冒泡排序](#排序算法-冒泡排序)
+    - [排序算法简介](#排序算法简介)
+    - [排序算法对比](#排序算法对比)
+- [排序算法--冒泡排序](#排序算法--冒泡排序)
     - [冒泡排序基本思想](#冒泡排序基本思想)
     - [冒泡排序的实现](#冒泡排序的实现)
 - [排序算法--选择排序](#排序算法--选择排序)
@@ -41,11 +43,26 @@
 - [排序算法--归并排序](#排序算法--归并排序)
     - [归并排序的思想](#归并排序的思想)
     - [归并排序的实现](#归并排序的实现)
+- [排序算法--基数排序](#排序算法--基数排序)
+    - [基数排序简介](#基数排序简介)
+    - [基数排序的思想](#基数排序的思想)
+    - [基数排序的分步求解](#基数排序的分步求解)
+    - [基数排序算法实现](#基数排序算法实现)
+- [查找算法--顺序查找](#查找算法--顺序查找)
+- [查找算法--二分查找](#查找算法--二分查找)
+    - [二分查找基本思想](#二分查找基本思想)
+    - [二分查找的基本实现](#二分查找的基本实现)
+    - [二分查找的扩展--查找所有相同的值](#二分查找的扩展--查找所有相同的值)
+- [查找算法--插值查找](#查找算法--插值查找)
+    - [插值查找的基本思想](#插值查找的基本思想)
+    - [插值查找的基本实现](#插值查找的基本实现)
+- [查找算法--斐波那契查找](#查找算法--斐波那契查找)
+    - [斐波那契数列与黄金分割点](#斐波那契数列与黄金分割点)
+    - [斐波那契查找的基本思路](#斐波那契查找的基本思路)
+    - [斐波那契查找的注意事项](#斐波那契查找的注意事项)
+    - [斐波那契查找的基本实现](#斐波那契查找的基本实现)
 - [](#)
 - [](#)
-- [](#)
-- [](#)
-
 
 # 算法复杂度
 ## 如何分析算法复杂度
@@ -216,19 +233,6 @@
 - 最坏时间复杂度
     - 一般讨论的时间复杂度都是最坏时间复杂度
     - 最坏时间复杂度是算法在任何输入实例上运行的界限，保证了算法的运行时间不会比最坏的情况更长
-- 常见排序算法中平均时间与最坏时间
-
-    |排序方法|平均时间|最差时间|稳定度|额外空间|备注|
-    |-|-|-|-|-|-|
-    |冒泡|`O(n^2)`|`O(n^2)`|稳定|`O(1)`|n小时较好|
-    |交换|`O(n^2)`|`O(n^2)`|不稳定|`O(1)`|n小时较好|
-    |选择|`O(n^2)`|`O(n^2)`|不稳定|`O(1)`|n小时较好|
-    |插入|`O(n^2)`|`O(n^2)`|稳定|`O(1)`|大部分已排序时较好|
-    |基数|`O(log_R_B)`|`O(log_R_B)`|稳定|`O(n)`|B是真数(0-9)<br>R是基数(个十百)|
-    |Shell|`O(nlogn)`|`O(n^s) 1<s<2`|不稳定|`O(n)`||
-    |快速|`O(nlogn)`|`O(n^2)`|不稳定|`O(nlogn)`|n大时较好|
-    |归并|`O(nlogn)`|`O(nlogn)`|稳定|`O(1)`|n大时较好|
-    |堆|`O(nlogn)`|`O(nlogn)`|不稳定|`O(1)`|n大时较好|
 
 ## 空间复杂度
 [top](#catalog)
@@ -463,12 +467,15 @@
         ```
 
 # 排序算法
+## 排序算法简介
 [top](#catalog)
-- 排序算法分类
-    - 内部排序
-        - 将需要处理的所有数据都加载到内存中进行排序
-    - 外部排序
-        - 数据量过大，无法全部加载到没存，需要借助外部存储进行排序
+- 排序算法中的相关概念
+    - 稳定性
+        - 稳定：`a = b`，并且排序前 a 在 b前，排序之后 a 仍然在 b 之前
+        - 不稳定：`a = b`，并且排序前 a 在 b前，排序之后 a 可能在 b 之后
+    - 排序算法分类
+        - 内排序：所有排序操作都在内存中完成
+        - 外排序：由于数据量过大，将数据放在磁盘中。排序需要通过磁盘和内存的数据传输才能完成
 - 常见的排序算法分类
     - 内部排序（使用内存）
         - 插入排序
@@ -483,6 +490,26 @@
         - 归并排序
         - 基数排序
     - 外部排序（使用内存和外存结合）
+
+## 排序算法对比
+[top](#catalog)
+- 相关概念
+    - in-place，不占用额外内存
+    - out-place，占用额外内存
+- 常见排序算法的对比
+
+    |排序方法|平均时间|最差时间|稳定度|空间复杂度|排序方式|备注|
+    |-|-|-|-|-|-|-|
+    |冒泡|`O(n^2)`|`O(n^2)`|稳定|`O(1)`|in-place|n小时较好|
+    |选择|`O(n^2)`|`O(n^2)`|不稳定|`O(1)`|in-place|n小时较好|
+    |插入|`O(n^2)`|`O(n^2)`|稳定|`O(1)`|in-place|大部分已排序时较好|
+    |交换|`O(n^2)`|`O(n^2)`|不稳定|`O(1)`|???|n小时较好|
+    |Shell|`O(nlogn)`|`O(n^s) 1<s<2`|不稳定|`O(n)`|in-place||
+    |快速|`O(nlogn)`|`O(n^2)`|不稳定|`O(nlogn)`|in-place|n大时较好|
+    |归并|`O(nlogn)`|`O(nlogn)`|稳定|`O(1)`|out-place|n大时较好|
+    |基数|`O(n x k)`|`O(n x k)`|稳定|`O(n+k)`|out-place|k是桶的数量|
+    |堆|`O(nlogn)`|`O(nlogn)`|不稳定|`O(1)`|in-place|n大时较好|
+
 
 # 排序算法--冒泡排序
 ## 冒泡排序基本思想
@@ -1417,5 +1444,689 @@
             }
             ```
 
+# 排序算法--基数排序
+## 基数排序简介
+[top](#catalog)
+- 基数排序属于: **分配式排序**，也称为**桶排序**
+- 基数排序属于稳定性的排序，是一种高效的稳定性排序
+- 基数排序是桶排序的扩展，速度很快
+- 基数排序通过键值的每个数位的值，将要排序的元素分配到某些**桶**中，完成排序
+- 因为执行过程中需要使用到桶，所以会消耗很多的空间
+- 基数排序本身是一种: 用空间换时间的策略
+- 优缺点
+    - 优点
+        - 速度快
+        - 是稳定性的排序
+    - 缺点
+        - 占用内存比较大，对海量数据排序时，容易造成内存溢出
+        - 不能很好的处理**负数** ?????
+
+## 基数排序的思想
+[top](#catalog)
+- 基本思想
+    1. 将所有待比较的数值统一为同样的数位长度
+        - 数位短的，在数的前面补0
+    2. 将整数按位数切割成不同的数字，然后按每个位数分别比较
+    2. 从最低位开始比较，依次在每个数位上进行一次排序
+    3. 从最低一直排序到最高位完成后，序列就有序了
+    
+- 实现方式
+    1. 创建10个桶，即10个一维数组，并进行标号(0-9)，分别代表一个数字
+        - 可以使用一个二维数组替换
+        - 为了防止每个一维数组溢出，需要使用一个较大的数字，如: `序列.length`
+    2. 将每个元素的个位数取出，按照数值保存到对应标号的桶中
+        - 为了记录每个桶中保存了多少数据，需要定义一个一维数组 `bucketElemCount` 来保存
+    3. 按照桶的标号(0-9)顺序，分别遍历桶，依次取出数据，放入原来的数组
+    4. 将 `bucketElemCount` 数组清空，桶不需要清空，下一轮直接从 `index=0` 开始覆盖
+    5. 重复2-4，分别取出更高位的数值进行比较，最后会得到一个有序的序列
+        - 重复的次数 = 序列中，数值最大的数值的位数
+    
+- 说明示例
+    - ![sort_flow.png](imgs/algorithm/sort/radixsort/sort_flow.png)
+
+## 基数排序的分步求解
+[top](#catalog)
+- 分步求解实现
+    - 参考代码
+        - [/algorithm/src/java-algorithm/myalgorithm/src/main/java/com/ljs/learn/myalgorithm/sort/RadixSort.java](/algorithm/src/java-algorithm/myalgorithm/src/main/java/com/ljs/learn/myalgorithm/sort/RadixSort.java)
+    - 实现代码
+        ```java
+        // 分步求解
+        public static void sortStep(int[] array){
+            // 创建桶
+            int[][] bucket = new int[10][array.length];
+            // 创建一个一维数组，保存各个桶的元素个数
+            int[] bucketElemCount = new int[10];
+    
+            // 1. 第1轮，遍历个位数
+            // 1.1 遍历序列，比根据【个位】的值，放入不同的桶中
+            int digit = 0; // 记录当前元素的某个数位的值
+            for (int e : array) {
+                // 计算个位的值
+                digit = e%10;
+                // 保存到桶中，同时记录桶中元素的个数
+                bucket[digit][bucketElemCount[digit]] = e;
+                bucketElemCount[digit]++;
+            }
+    
+            // 1.2 遍历所有的桶，并将桶中的数据按顺序拷贝到原始数组
+            int originIndex = 0;    // 记录将数据拷贝到原始数组时的索引
+            for (int i = 0; i < 10; i++) {
+                // 如果桶中没有数据，就跳过
+                if (bucketElemCount[i] <= 0) continue;
+                // 如果桶中有数据，就进行拷贝
+                for (int j = 0; j < bucketElemCount[i]; j++) {
+                    array[originIndex] = bucket[i][j];
+                    originIndex++;
+                }
+                // 清空记录数量
+                bucketElemCount[i] = 0;
+            }
+    
+            System.out.println("第1轮，个位: " + Arrays.toString(array));
+    
+            // 2. 第2轮，遍历十位数
+            // 2.1 遍历序列，比根据【十位】的值，放入不同的桶中
+            digit = 0; // 记录当前元素的某个数位的值
+            for (int e : array) {
+                // 计算十位的值
+                digit = e/ 10 % 10;         // <<<<<<<<<<<<<<<<<<<< 发生修改的代码
+                // 保存到桶中，同时记录桶中元素的个数
+                bucket[digit][bucketElemCount[digit]] = e;
+                bucketElemCount[digit]++;
+            }
+    
+            // 2.2 遍历所有的桶，并将桶中的数据按顺序拷贝到原始数组
+            originIndex = 0;    // 记录将数据拷贝到原始数组时的索引
+            for (int i = 0; i < 10; i++) {
+                // 如果桶中没有数据，就跳过
+                if (bucketElemCount[i] <= 0) continue;
+                // 如果桶中有数据，就进行拷贝
+                for (int j = 0; j < bucketElemCount[i]; j++) {
+                    array[originIndex] = bucket[i][j];
+                    originIndex++;
+                }
+                // 清空记录数量
+                bucketElemCount[i] = 0;
+            }
+    
+            System.out.println("第2轮，十位: " + Arrays.toString(array));        // 2. 第1轮，遍历百位数
+    
+            // 3. 第3轮，遍历百位数
+            // 3.1 遍历序列，比根据【百位】的值，放入不同的桶中
+            digit = 0; // 记录当前元素的某个数位的值
+            for (int e : array) {
+                // 计算百位的值
+                digit = e/ 100 % 10;         // <<<<<<<<<<<<<<<<<<<< 发生修改的代码
+                // 保存到桶中，同时记录桶中元素的个数
+                bucket[digit][bucketElemCount[digit]] = e;
+                bucketElemCount[digit]++;
+            }
+    
+            // 3.2 遍历所有的桶，并将桶中的数据按顺序拷贝到原始数组
+            originIndex = 0;    // 记录将数据拷贝到原始数组时的索引
+            for (int i = 0; i < 10; i++) {
+                // 如果桶中没有数据，就跳过
+                if (bucketElemCount[i] <= 0) continue;
+                // 如果桶中有数据，就进行拷贝
+                for (int j = 0; j < bucketElemCount[i]; j++) {
+                    array[originIndex] = bucket[i][j];
+                    originIndex++;
+                }
+                // 清空记录数量
+                bucketElemCount[i] = 0;
+            }
+    
+            System.out.println("第3轮，百位: " + Arrays.toString(array));
+        }
+        ```
+- 测试内容
+    - 参考代码
+        - [/algorithm/src/java-algorithm/myalgorithm/src/test/java/com/ljs/learn/myalgorithm/sort/RadixSortTest.java](/algorithm/src/java-algorithm/myalgorithm/src/test/java/com/ljs/learn/myalgorithm/sort/RadixSortTest.java)
+    - 测试内容
+        ```java
+        @Test
+        public void testSortStep(){
+            int[] array = {246, 57, 83, 4, 345, 78};
+            RadixSort.sortStep(array);
+    
+            // 输出：
+            // 第1轮，个位: [83, 4, 345, 246, 57, 78]
+            // 第2轮，十位: [4, 345, 246, 57, 78, 83]
+            // 第3轮，百位: [4, 57, 78, 83, 246, 345]
+        }
+        ```
+
+## 基数排序算法实现
+[top](#catalog)
+- 实现内容
+    - 参考代码
+        - [/algorithm/src/java-algorithm/myalgorithm/src/main/java/com/ljs/learn/myalgorithm/sort/RadixSort.java](/algorithm/src/java-algorithm/myalgorithm/src/main/java/com/ljs/learn/myalgorithm/sort/RadixSort.java)
+    - 实现代码
+        ```java
+        public static void sort(int[] array){
+            // 获取最大值的位数
+            int max = array[0];
+            for (int e : array) {
+                if (max < e) { max = e; }
+            }
+            // 将数字转换位字符串，再计算字符串的长度，即为最大值的位数
+            int maxDigit = (max + "").length();
+    
+            // 创建桶
+            int[][] bucket = new int[10][array.length];
+            // 创建一个一维数组，保存各个桶的元素个数
+            int[] bucketElemCount = new int[10];
+            // 保存当前元素的某个数位的值
+            int digit = 0;
+            // 保存将数据拷贝到原始数组时的索引
+            int originIndex = 0;
+    
+            // 遍历各个位数，同时计算获取所需位数需要除掉的值
+            for (int d = 0, n = 1; d < maxDigit; d++, n*=10) {
+                // 1 遍历序列，比根据各个数位的值，放入不同的桶中
+                for (int e : array) {
+                    // 计算个位的值
+                    digit = e / n %10;
+                    // 保存到桶中，同时记录桶中元素的个数
+                    bucket[digit][bucketElemCount[digit]] = e;
+                    bucketElemCount[digit]++;
+                }
+    
+                // 2 遍历所有的桶，并将桶中的数据按顺序拷贝到原始数组
+                originIndex = 0;
+                for (int i = 0; i < 10; i++) {
+                    // 如果桶中没有数据，就跳过
+                    if (bucketElemCount[i] <= 0) continue;
+                    // 如果桶中有数据，就进行拷贝
+                    for (int j = 0; j < bucketElemCount[i]; j++) {
+                        array[originIndex] = bucket[i][j];
+                        originIndex++;
+                    }
+                    // 清空记录数量
+                    bucketElemCount[i] = 0;
+                }
+            }
+        }
+        ```
+- 测试内容
+    - 参考代码
+        - [/algorithm/src/java-algorithm/myalgorithm/src/test/java/com/ljs/learn/myalgorithm/sort/RadixSortTest.java](/algorithm/src/java-algorithm/myalgorithm/src/test/java/com/ljs/learn/myalgorithm/sort/RadixSortTest.java)
+    - 测试内容
+        ```java
+        @Test
+        public void testSort(){
+            int[] array = {246, 57, 83, 4, 345, 78};
+            RadixSort.sort(array);
+            System.out.println(Arrays.toString(array));
+            // 输出: [4, 57, 78, 83, 246, 345]
+        }
+        ```
+
+# 查找算法--顺序查找
+[top](#catalog)
+- 顺序查找就是依次遍历序列每个元素，并返回其索引。如果没有找到，则返回 `-1`
+- 实现
+    - 参考代码
+        - [/algorithm/src/java-algorithm/myalgorithm/src/main/java/com/ljs/learn/myalgorithm/search/SeqSearch.java](/algorithm/src/java-algorithm/myalgorithm/src/main/java/com/ljs/learn/myalgorithm/search/SeqSearch.java)
+    - 代码内容
+        ```java
+        public class SeqSearch {
+            // 依次遍历序列的每个元素查找指定值的索引
+            public static int search (int[] array, int target){
+                for (int i = 0; i<array.length; i++){
+                    if (target == array[i]){
+                        return i;
+                    }
+                }
+                return -1;
+            }
+        }
+        ```
+
+# 查找算法--二分查找
+## 二分查找基本思想
+[top](#catalog)
+- 二分查找的前提：序列**已有序**
+    - 如果序列无需，需要先对序列进行排序，然后才能应用二分查找
+- 实现思路
+    1. 确定数组中间的下标: `mid = (left + right)/2`
+    2. 需要查找的数 `findVal` 与`arr[mid]`比较
+        1. 如果 `findVal > arr[mid]`，则目标值在 mid右侧，需要向右递归查找
+        2. 如果 `findVal < arr[mid]`，则目标值在 mid左侧，需要向左递归查找
+        3. 如果 `findVal == arr[mid]`，找到了目标值，返回索引值
+- 递归时的退出条件
+    1. `findVal == arr[mid]`，即找到了目标值
+    2. `left > right`，递归完但是没有找到
+
+- 优化方法
+    - 添加递归的退出条件
+        1. `left > right`，递归完但是没有找到
+        2. `findVal < arr[left]`，即目标值比第一个值还要小
+        3. `findVal > arr[right]`，即目标值比最后一个值还要大
+
+    
+## 二分查找的基本实现
+[top](#catalog)
+- 实现内容
+    - 参考代码
+        - [/algorithm/src/java-algorithm/myalgorithm/src/main/java/com/ljs/learn/myalgorithm/search/BinarySearch.java](/algorithm/src/java-algorithm/myalgorithm/src/main/java/com/ljs/learn/myalgorithm/search/BinarySearch.java)
+    - 实现代码
+        ```java
+        // 启动基本的升序二分查找
+        public static int search(int[] array, int findVal){
+            return searchASC(array, 0, array.length - 1, findVal);
+        }
+        
+        /** 对升序序列进行二分查找--基本实现
+         * 
+         * @param array     有序的升序序列
+         * @param left      左侧索引
+         * @param right     右侧索引
+         * @param findVal   需要超找的值
+         * @return          目标值的索引，没有找到返回-1
+         */
+        public static int searchASC(int[] array, int left, int right, int findVal){
+            // 检查是否遍历完，如果遍历完，则没有找到，返回 -1
+            if (left > right || findVal < array[left] || findVal > array[right]){ return -1; }
+
+            // 计算中间位置
+            int mid = (left + right) / 2;
+            int midVal = array[mid];
+    
+            // 需要查找的值与中间值比较
+            if (findVal < midVal){
+                // 继续向左递归
+                return searchASC(array, left, mid -1, findVal);
+            } else if (findVal > midVal){
+                // 继续向右递归
+                return searchASC(array, mid + 1, right, findVal);
+            } else {
+                // 找到目标值，返回
+                return mid;
+            }
+        }
+        ```
+      
+- 测试内容
+    - 参考代码
+        - [/algorithm/src/java-algorithm/myalgorithm/src/test/java/com/ljs/learn/myalgorithm/search/BinarySearchTest.java](/algorithm/src/java-algorithm/myalgorithm/src/test/java/com/ljs/learn/myalgorithm/search/BinarySearchTest.java)
+    - 测试代码
+        ```java
+        @Test
+        public void testSearch(){
+            // 创建一个有序的升序序列
+            int[] array = {1,2,3,4,5,6,7,8,9};
+            assert BinarySearch.search(array, 3) == 2;
+    
+            assert BinarySearch.search(array, 0) == -1;
+        }
+        ```
+
+## 二分查找的扩展--查找所有相同的值
+[top](#catalog)
+- 需求
+    - 有如下的序列：`[1,2,3,4,5,5,5,5,6,7,8]`
+    - 查找5，并且要找到所有值是5的索引
+- 实现思路
+    1. 与基本实现相同，搜索目标值的位置
+    2. 如果搜索到目标值的元素索引`mid`，先不立刻返回
+    3. 向 `mid` 的左侧扫描，将所有与目标值相同的元素索引保存到集合中
+    4. 将 `mid` 保存到集合中
+    4. 向 `mid` 的右侧扫描，将所有与目标值相同的元素索引保存到集合中
+    5. 将索引集合返回
+    
+- 实现内容
+    - 参考代码
+        - [/algorithm/src/java-algorithm/myalgorithm/src/main/java/com/ljs/learn/myalgorithm/search/BinarySearch.java](/algorithm/src/java-algorithm/myalgorithm/src/main/java/com/ljs/learn/myalgorithm/search/BinarySearch.java)
+    - 实现代码
+        ```java
+        // 2. 启动扩展的升序二分查找
+        public static List<Integer> searchAll(int[] array, int findVal){
+            return searchASCAll(array, 0, array.length - 1, findVal);
+        }
+    
+        // 2. 升序二分查找的扩展--查找所有相同的值
+        public static List<Integer> searchASCAll(int[] array, int left, int right, int findVal){
+            // 如果已经遍历完没有找到，则返回空对象
+            if (left > right || findVal < array[left] || findVal > array[right]){ return null; }
+
+            // 计算中间索引
+            int mid = (left + right) / 2;
+            int midVal = array[mid];
+    
+            // 需要超找的值与中间值比较
+            if (findVal < midVal){
+                // 继续向左递归
+                return searchASCAll(array, left, mid - 1, findVal);
+            } else if (findVal > midVal){
+                // 继续向右递归
+                return searchASCAll(array, mid + 1, right, findVal);
+            } else {
+                // 已经找到目标值
+                List<Integer> idxList = new ArrayList<>();
+
+                // 1. 向左侧(包括当前mid)搜索所有与目标值相等的元素索引
+                // 先搜索，后保存，保证结果有序
+                int temp = mid;
+                while(temp >= 0 && array[temp] == findVal) temp--;
+
+                // 将 [temp+1～mid]的index保存到数组，会同时保存mid
+                for ( temp++; temp <= mid; temp++){
+                    idxList.add(temp);
+                }
+
+                // 2. 向右侧搜索所有与目标值相等的元素索引
+                for (temp = mid + 1; mid < array.length; temp++){
+                    if (array[temp] == findVal){
+                        idxList.add(temp);
+                    } else {
+                        //如果值不同，说明已经没有相同元素了，终止左侧的遍历
+                        break;
+                    }
+                }
+
+                return idxList;
+            }
+        }
+        ```
+- 测试内容
+    - 参考代码
+        - [/algorithm/src/java-algorithm/myalgorithm/src/test/java/com/ljs/learn/myalgorithm/search/BinarySearchTest.java](/algorithm/src/java-algorithm/myalgorithm/src/test/java/com/ljs/learn/myalgorithm/search/BinarySearchTest.java)
+    - 测试代码
+        ```java
+        @Test
+        public void testSearchAll(){
+            int[] array = {1,2,3,4,5,5,5,5,6,7,8};
+            List<Integer> idxList = BinarySearch.searchAll(array, 5);
+            System.out.println(idxList);
+            // 输出: [4, 5, 6, 7]
+        }
+        ```
+
+# 查找算法--插值查找
+## 插值查找的基本思想
+[top](#catalog)
+- 二分查找的问题
+    - 如，有序列: `[1, 2, 3, 4, 5, 6, 7]`
+    - 搜索 `1` 时，一共需要递归3次。
+    - `1` 就在第一位，二分查找的查找方式浪费了性能
+
+- 插值查找的原理
+    - 插值插值类似于二分查找
+    - 需要序列有序
+    - 插值查找每次会从**自适应的mid（插值索引）**开始查找，而不是完全依靠mid查找
+
+- 插值查找的前提：序列**已有序**
+    - 如果序列无需，需要先对序列进行排序，然后才能应用
+
+- **插值查找的注意事项**
+    - 对于数据量较大、关键字分布比较均匀的查找表，采用插值插值**速度较快**
+    - 如果关键字分布不均匀，插值查找不一定比折半查找要好
+
+- 自适应的mid（插值索引）的计算方法
+    - `mid = left + (right - left) x (findVal - arr[left]) / (arr[right] - a[left])`
+    - 原始的mid公式及其变形
+        - 原始的mid公式: `mid = (left + right) / 2`
+        - 公式变形结果: `mid = left + (right - left) x 1/2` 
+    - 变形后的原始公式与自适应mid公式整体相同，不同的是 `(right - left)` 的系数不同
+        - 插值查找的本质就是调整这个系数
+
+- 插值查找如何快速解决 首尾 元素的搜索问题
+    - 如，有100个元素的序列：`[1, 2, 3, 4, ..., 100]`
+    - 搜索`1`时的过程
+        1. `left = 0, right = 99, findVal = 1`
+        2. 计算 `mid = 0 + (99 - 0) x (1 - 1)/(100 - 1) = 0`
+        3. 一次运算就找到了
+    - 搜索`100`时的过程
+        1. `left = 0, right = 99, findVal = 100`
+        2. 计算 `mid = 0 + (99 - 0) x (100 - 1)/(100 - 1) = 99`
+        3. 一次运算就找到了
+    - 所以插值查找可以快速解决目标值在序列首尾的问题
+
+## 插值查找的基本实现
+[top](#catalog)
+- 实现内容
+    - 参考代码
+        - [/algorithm/src/java-algorithm/myalgorithm/src/main/java/com/ljs/learn/myalgorithm/search/InsertSearch.java](/algorithm/src/java-algorithm/myalgorithm/src/main/java/com/ljs/learn/myalgorithm/search/InsertSearch.java)
+    - 代码内容
+        ```java
+        // 启动插值查找的基本实现
+        public static int search(int[] array, int findVal){
+            return searchASC(array, 0, array.length - 1, findVal);
+        }
+
+        /** 1. 对升序序列进行插值查找--基本实现
+        *
+        * @param array     有序的升序序列
+        * @param left      左侧索引
+        * @param right     右侧索引
+        * @param findVal   需要超找的值
+        * @return          目标值的索引，没有找到返回-1
+        */
+        public static int searchASC(int[] array, int left, int right, int findVal){
+            if (left > right || findVal < array[left] || findVal > array[right]){
+                return -1;
+            }
+
+            int mid = left + (right - left) * (findVal - array[left]) / (array[right] - array[left]);
+            int midVal = array[mid];
+
+            if(findVal < midVal){
+                return searchASC(array, left, mid -1, findVal);
+            } else if (findVal > midVal){
+                return searchASC(array, mid + 1, right, findVal);
+            } else {
+                return mid;
+            }
+        }
+        ```
+
+- 测试代码
+    - 参考代码
+        - [/algorithm/src/java-algorithm/myalgorithm/src/test/java/com/ljs/learn/myalgorithm/search/InsertSearchTest.java](/algorithm/src/java-algorithm/myalgorithm/src/test/java/com/ljs/learn/myalgorithm/search/InsertSearchTest.java)
+    - 测试代码
+        ```java
+        @Test
+        public void testSearch(){
+            // 创建一个有序的升序序列
+            int[] array = {1,2,3,4,5,6,7,8,9};
+            assert InsertSearch.search(array, 3) == 2;
+
+            assert InsertSearch.search(array, 0) == -1;
+        }
+        ```
+
+# 算法算法--斐波那契查找
+## 斐波那契数列与黄金分割点
+[top](#catalog)
+- 斐波那契查找也称为**黄金分割点查找**
+- 黄金分割点
+    - 指将一条线段 A 分割为两部分 x 和 y，`x/A = y/x`
+    - 黄金分割点一般取比值的前三位近似值：`0.618`
+    - 黄金分割点也称为: `中外比`
+
+- 斐波那契数列
+    - 数列为: `{1, 1, 2, 3, 5, 8, 13, x=N(x-1) + N(x-2)}`
+    - 数列中两个相邻数的比例无限接近黄金分割值 `0.618`
+    
+## 斐波那契查找的基本思路
+[top](#catalog)
+- 斐波那契查找与二分查找、插值查找类似，只是改变了`mid`的计算方式
+- 斐波那契查找的前提：序列**已有序**
+    - 如果序列无需，需要先对序列进行排序，然后才能应用
+- 斐波那契查找的mid计算方式
+    - `mid = left + [ F(k - 1) - 1 ]`
+    - `F`是斐波那契数列
+
+- `F(k - 1) - 1` 的理解
+    - 为什么会有减 1?
+        - `F(k)` 相当于 `arr.length`，如果要参与计算，需要减1
+    - 计算方法
+        - 斐波那契数列计算公式: `F(k) = F(k-1) + F(k-2)`
+        - `F(k) - 1 = [ F(k-1) - 1 ] + [ F(k-2) - 1 ] + 1`
+        - 上式说明: 当序列的 `right` 为 `F(k) - 1` 时， 可以将序列分割为两段，长度分别为:
+            - `F(k-1) - 1`
+            - `F(k-2) - 1`
+    - 计算原理图
+        - 初始值
+            - `left = 0`
+            - `right = arr.length - 1`
+        - ![compute_principle](imgs/algorithm/search/fibonacci_search/compute_principle.png)
+        
+    - 长度不足时的处理
+        - 当序列右侧 `right` 不等于 `F(k) - 1` 时，需要将序列从 `right` 增加至 `F(k) - 1`
+        - `k`值只要能使 `F(k) - 1 >= right` 即可
+        - 序列长度增加后，新位置: `[right+1, F(k)-1]` 都赋值为 right 位置的值即可
+
+- 实现方式
+    1. 初始状态下，从斐波那契数列中搜索能够覆盖序列长度的第 `k` 个值
+        ```java
+        while(right > F(k) - 1){
+            k++;
+        } 
+        ```
+    2. 检查 right 和 `F(k) - 1`的大小，如果 right不足，则扩展序列的长度
+    3. 计算mid
+        - `mid = left + [ F(k - 1) - 1 ]`
+    4. 比较 findVal 和 mid处的值
+        - `findVal < arr[mid]`，向左搜索
+            - 整体长度变为前半段的长度，即从 `F(k) - 1` 变为 `F(k-1) - 1`
+            - 需要调整 `k = k - 1`
+        - `findVal > arr[mid]`，向右搜索
+            - 整体长度变为后半段的长度，即从 `F(k) - 1` 变为 `F(k-2) - 1`
+            - 需要调整 `k = k - 2`
+        - `findVal = arr[mid]`，找到目标值
+            - 需要确定返回哪一个值
+                1. 如果 `mid <= arr.length - 1`
+                    - 表示mid仍然在原始数组的长度范围内，直接返回 mid
+                2. 如果 `mid > arr.length - 1`
+                    - 表示 mid 的值处在扩充位置中
+                    - 扩充位置的值都是原始数组 的最后一个元素，所以返回 arr 的最后一个index
+
+## 斐波那契查找的注意事项
+[top](#catalog)
+- `F(k)` 本身相当于 length，想要参与数组运算，必须 `F(k) - 1`
+- 在第一个值和最后一个值的查找效率上，不如插入查找
+- 序列必须有序
+
+## 斐波那契查找的基本实现
+[top](#catalog)
+- 实现内容
+    - 参考代码
+        - [/algorithm/src/java-algorithm/myalgorithm/src/main/java/com/ljs/learn/myalgorithm/search/FibonacciSearch.java](/algorithm/src/java-algorithm/myalgorithm/src/main/java/com/ljs/learn/myalgorithm/search/FibonacciSearch.java)
+    - 实现代码
+        ```java
+        public class FibonacciSearch {
+            public static int fibMaxSize = 20;
+        
+            // 依照数列最大长度创建数列
+            public static int[] fib() {
+                int[] f = new int[20];
+                f[0] = 1;
+                f[1] = 2;
+        
+                for (int i = 2; i < fibMaxSize; i++) {
+                    f[i] = f[i - 1] + f[i - 2];
+                }
+                return f;
+            }
+        
+            /**
+             * 斐波那契查找算法
+             *
+             * @param array   序列
+             * @param findVal 目标值
+             * @return 目标值所在下标。如果未找到，则返回 -1
+             */
+            public static int search(int[] array, int findVal) {
+                int left = 0;
+                int right = array.length - 1;
+                int[] f = fib();
+        
+                // 1. 搜索能够覆盖 right 的最小斐波那契数列值
+                int k = 0;
+                while (f[k] < right) k++;
+        
+                // 2. 检查 right 和 f[k] 的大小，如果 right的长度不足，则扩充数组
+                int[] searchArray;
+                if (right == f[k]) {
+                    searchArray = array;
+                } else {
+                    // 扩充数组
+                    searchArray = Arrays.copyOf(array, f[k]);
+                    // 将扩充部分的值设置为原始数组的right位置的值
+                    for (int i = right + 1; i < f[k]; i++) {
+                        searchArray[i] = array[right];
+                    }
+                }
+        
+                // 3. 按照斐波那契数列的值来搜索
+                int mid;
+                int midVal;
+                while (left <= right) {
+                    mid = left + f[k - 1] - 1;
+                    midVal = searchArray[mid];
+        
+                    if (findVal < midVal) {
+                        // 向左搜索
+                        right = mid - 1;
+        
+                        // 将整体长度调整为 F(K - 1) - 1
+                        k--;
+                    } else if (findVal > midVal) {
+                        // 向右搜索
+                        left = mid + 1;
+        
+                        // 将整体长度调整为 F(K - 2) - 1
+                        k -= 2;
+                    } else {
+                        // 找到了目标值，需要检查返回哪个值
+                        // mid 与 原始数组的最大值比较
+                        if (mid <= array.length - 1) {
+                            // 小于等于，表示mid仍然在原始数组的长度范围内，直接返回 mid
+                            return mid;
+                        } else {
+                            // 大于，表示mid的值处在扩充位置中
+                            // 扩充位置的值都是原始数组 的最后一个元素，
+                            // 所以返回 原始数组的最后一个index
+                            return array.length - 1;
+                        }
+                    }
+                }
+        
+                return -1;
+            }
+        }
+        ```
+- 测试内容
+    - 参考代码
+        - [/algorithm/src/java-algorithm/myalgorithm/src/test/java/com/ljs/learn/myalgorithm/search/FibonacciSearchTest.java](/algorithm/src/java-algorithm/myalgorithm/src/test/java/com/ljs/learn/myalgorithm/search/FibonacciSearchTest.java)
+    - 测试代码
+        ```java
+        @Test
+        public void testSearch(){
+            int[] array = {1, 8, 10,12, 89, 1000, 1234};
+            int result = FibonacciSearch.search(array, 89);
+    
+            assert result == 4;
+        }
+    
+        @Test
+        public void testLastVal(){
+            int[] array = {1, 8, 10,12, 89, 1000, 1234};
+            int result = FibonacciSearch.search(array, 1234);
+    
+            assert result == 6;
+        }
+    
+        @Test
+        public void testFirstVal(){
+            int[] array = {1, 8, 10,12, 89, 1000, 1234};
+            int result = FibonacciSearch.search(array, 1);
+    
+            assert result == 0;
+        }
+        ```
 
 [top](#catalog)
