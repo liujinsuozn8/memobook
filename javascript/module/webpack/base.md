@@ -71,7 +71,7 @@
 
 - 运行指令
     - 参考: [webpack的编译与启动](#webpack的编译与启动)
-    - 不依赖与配置文件运行
+    - 不依赖于配置文件运行
 
         |环境|指令|
         |-|-|
@@ -253,7 +253,7 @@
 ## webpack的编译与启动
 [top](#catalog)
 - 运行指令
-    - 不依赖与配置文件运行
+    - 不依赖于配置文件运行
 
         |环境|指令|
         |-|-|
@@ -914,15 +914,14 @@
     ```js
     "eslintConfig":{
         // 其他配置
-
-        // 
+        // ...
+        
         "env": {
             "browser": true,    //支持浏览器全局变量
             "node": true        //支持nodejs全局变量
         }
     }
     ```
-
 
 ### js的兼容性处理
 [top](#catalog)
@@ -1391,13 +1390,13 @@
 - 文件分割主要针对 js 文件
 
 - 三种配置方式
-        - js入口文件内部，使用impot动态导入其他js模块
+    - js入口文件内部，使用impot动态导入其他js模块
 
-    |No|`webpack.config.js`配置|js入口文件的配置|
-    |-|-|-|
-    |配置方式1|多入口配置|-|
-    |配置方式2|<ul><li>单入口配置/多入口配置</li><li>`optimization`  <ul><li>自动分析多文件中的node_modules公共引用</li><li>将公共引用单独打包为一个chunk</li></ul> </li></ul>|-|
-    |配置方式3<br>推荐使用|<ul><li>单入口配置/多入口配置</li><li>`optimization`  <ul><li>自动分析多文件中的node_modules公共引用</li><li>将公共引用单独打包为一个chunk</li></ul> </li></ul>|使用 `import` 动态引入其他js模块|
+        |No|`webpack.config.js`配置|js入口文件的配置|
+        |-|-|-|
+        |配置方式1|多入口配置|-|
+        |配置方式2|<ul><li>单入口配置/多入口配置</li><li>`optimization`  <ul><li>自动分析多文件中的node_modules公共引用</li><li>将公共引用单独打包为一个chunk</li></ul> </li></ul>|-|
+        |配置方式3<br>推荐使用|<ul><li>单入口配置/多入口配置</li><li>`optimization`  <ul><li>自动分析多文件中的node_modules公共引用</li><li>将公共引用单独打包为一个chunk</li></ul> </li></ul>|使用 `import` 动态引入其他js模块|
 
 - 配置方式1
     - 配置内容
@@ -1673,7 +1672,7 @@
 ### 性能优化目标--开发环境
 [top](#catalog)
 - 优化打包速度
-    - HRM，模块热替换
+    - HMR，模块热替换
         - 只会重新编译发生修改的js模块，没有修改的js模块不参与编译，提升编译速度
 - 优化调试功能
     - source-map
@@ -1766,6 +1765,8 @@
                 filename: 'js/[name].[contenthash:10].js'
             },
             // 其他配置
+            // ...
+
             optimization:{
                 splitChunks:{
                     chunks: 'all'
@@ -1847,7 +1848,7 @@
     |缓存内容|目的|
     |-|-|
     |babel缓存|让第二次打包的速度更快|
-    |已加载的资源的缓存|<ul><li>客户端可以通过缓存提升访问速度</li><li>让代码在维护后可以跳过缓存，重新获取</li></ul>|
+    |已加载的资源的缓存|<ul><li>客户端可以通过缓存提升访问速度</li><li>但是需要一些方法，让代码在维护后可以跳过缓存，重新获取</li></ul>|
 
 - babel缓存
     - 使用缓存的目的：一个js模块发生修改，只重新编译这一个，其他模块不变
@@ -1883,7 +1884,7 @@
         |hash类型|能否解决问题|作用范围|hahs值的问题|
         |-|-|-|-|
         |`[hash:位数]`|不能|所有资源共享一个hash值|<ul><li>webpack打包时，所有资源共享一个hash值</li><li>修改某个资源并重新打包后，会更新hash值，**所有**使用了hash值的资源的缓存失效（资源还在缓存中，只是不再被html使用了）</li></ul>|
-        |`[chunkhash:位数]`|不能|一个chunck下的资源共享一个hash值|<ul><li>js 和 css 的hash值仍然相同</li>  <ul><li>因为css是在js中被引入的，属于同一个chunk</li></ul> </ul>|
+        |`[chunkhash:位数]`|不能|一个chunck下的资源共享一个hash值|<ul><li>js 和 css 的hash值仍然相同</li>  <ul><li>因为css是在js中被引入的，属于同一个chunk，修改任意一个都会同时发生改变</li></ul> </ul>|
         |`[contenthash:位数]`|能|根据文件内容生成hash值||
 
     - 什么是chunk
@@ -1929,7 +1930,8 @@
     - 配置内容
         ```js
         module.exports={
-            // ... 其他配置
+            // 其他配置
+            // ... 
 
             output:{
                 path: resolve( __dirname, 'build'),
@@ -1982,7 +1984,8 @@
                     filename:'css/built.[contenthash:10].css'
                 }),
             ],
-            // ... 其他配置
+            // 其他配置
+            // ...
         }
         ```
 
@@ -1994,12 +1997,12 @@
     1. 必须使用ES6模块化
     2. 必须是生产环境  `mode: 'production'`
 
-- webpack 默认对**所有类型资源**都执行 tree shaking 操作
+- webpack 默认对**所有类型资源**都执行 `tree shaking` 操作
 
 - 副作用文件处理
     - 在某些版本下，css等文件会被 tree shaking 处理当作副作用文件，导致文件不参与打包
     - `package.json` 文件中的属性: `sideEffects`
-        - `"sideEffects": false`
+        - 默认值: `"sideEffects": false`
             - 表示: **所有代码都没有副作用，都可以进行 tree shaking**
             - 此时一些文件会被当作副作用文件，包括
                 - css
@@ -2030,6 +2033,8 @@
                 filename: 'js/[name].[contenthash:10].js'
             },
             // 其他配置
+            // ...
+
             optimization:{
                 splitChunks:{
                     chunks: 'all'
@@ -2130,7 +2135,9 @@
     - 文件分割配置
         ```js
         module.exports = {
-            //... 其他配置
+            // 其他配置
+            // ...
+            
             // 14.3 公共引用打包
             optimization:{
                 splitChunks:{
@@ -2162,7 +2169,10 @@
 
         module.exports={
             // 其他配置
+            // ...
+
             plugins: [
+                // 该插件会在打包时生成一个 service-worker.js 配置文件
                 new WorkboxWebpackPlugin.GenerateSW({
                     // 删除旧的 serviceworker，使用最新的
                     clientsClaim:true,
@@ -2183,8 +2193,7 @@
             }
         },
         ```
-    3. 生成一个 serviceworker 的配置文件
-    4. 在js入口文件中注册 serviceWorker
+    3. 在js入口文件中注册 serviceWorker
         ```js
         // 处理兼容性问题：
         //    如果浏览器有 serviceWorker 属性就配置，没有就不配置
@@ -2192,7 +2201,7 @@
             // 在所有资源加载完成之后，配置 serviceWorker
             window.addEventListener('load', () => {
                 navigator.serviceWorker
-                .register('/service-worker.js')
+                .register('/service-worker.js')      // 该文件会由插件生成
                 .then(() => {
                     console.log('sw regist success'); // 配置成功
                 })
@@ -2202,6 +2211,7 @@
             });
         }
         ```
+    4. 执行打包，会生成一个 serviceworker 的配置文件
 
 - 启动PWA
     1. 启动服务器
@@ -2213,24 +2223,28 @@
     5. 在Network中，将页面设为 offline 后，在访问时，一些资源会从 serviceWorker中获取
 
 - 示例
-    1. 启动服务器
-        - 服务器代码: [src/product/server.js](src/product/server.js)
-        - 启动服务: `node server.js`
-    2. 执行webpack打包
-    3. 通过浏览器访问: http://localhost:9999/
-    4. 查看 Application/Service Workers 中的注册结果
-        - ![application_service_workers](imgs/base/service_workers/application_service_workers.png)
+    - 配置参考
+        - [src/product/src/js/index.js](src/product/src/js/index.js)
+        - [src/product/webpack.config.js](src/product/webpack.config.js)
+    - 示例的使用流程
+        1. 启动服务器
+            - 服务器代码: [src/product/server.js](src/product/server.js)
+            - 启动服务: `node server.js`
+        2. 执行 webpack 打包
+        3. 通过浏览器访问: http://localhost:9999/
+        4. 查看 `Application/Service Workers` 中的注册结果
+            - ![application_service_workers](imgs/base/service_workers/application_service_workers.png)
 
-    5. 查看 Application/Cache/Cache Storage 下缓存的资源
-        - ![application_cache_storage](imgs/base/service_workers/application_cache_storage.png)
+        5. 查看 `Application/Cache/Cache Storage` 下缓存的资源
+            - ![application_cache_storage](imgs/base/service_workers/application_cache_storage.png)
 
-    6. 第一次访问页面，会获取 页面资源与ServiceWorkers相关的资源
-        - ![browser_first_access](imgs/base/service_workers/browser_first_access.png)
-    7. 再次访问，一部分资源会从缓存中获取
-        - [browser_second_access](imgs/base/service_workers/browser_second_access.png)
+        6. 第一次访问页面，会获取 页面资源与 `ServiceWorkers` 相关的资源
+            - ![browser_first_access](imgs/base/service_workers/browser_first_access.png)
+        7. 再次访问，一部分资源会从缓存中获取
+            - ![browser_second_access](imgs/base/service_workers/browser_second_access.png)
 
-    8. 将页面切换为 `offline`，刷新页面，将会从缓存和ServiceWorkers中获取资源
-        - ![browser_offline](imgs/base/service_workers/browser_offline.png)
+        8. 将页面切换为 `offline`，刷新页面，将会从缓存和ServiceWorkers中获取资源
+            - ![browser_offline](imgs/base/service_workers/browser_offline.png)
 
 
 ### 多进程打包
@@ -2292,6 +2306,8 @@
     ```js
     module.exports={
         // 其他配置
+        // ...
+
         exteranls: {
             // 忽略的库名: "npm包名"
             jquery: "jQuery"
@@ -2422,8 +2438,8 @@
             - 结果打包到 dll目录
                 ```
                 dll
-                  ├── jquery.js
-                  └── manifest.json
+                  ├── jquery.js         <<<<<<< 第三方包的打包结果
+                  └── manifest.json     <<<<<<< 引用名与编译结果的映射文件
                 ```
             - 在打包生成的 jquery.js 文件中，会将对象赋值给 `output.library` 中指定的以 `[name]_[hash:10]` 方式命名的对象
                 ```js
@@ -2476,7 +2492,7 @@
 
                     // 在打包时，将某个文件输出到打包结果中，并在html中自动引入该文件
                     new AddAssetHtmlWebpackPlugin({
-                        filepath: resolve(__dirname, 'dll/jquery.js')   // 自动映入dll打包结果
+                        filepath: resolve(__dirname, 'dll/jquery.js')   // 自动引入dll打包结果
                     })
                 ],
                 mode:'production',
