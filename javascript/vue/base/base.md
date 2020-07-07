@@ -83,6 +83,13 @@
     - [具名插槽](#具名插槽)
     - [编译作用域](#编译作用域)
     - [作用域插槽](#作用域插槽)
+- [在webpack中使用Vue](#在webpack中使用Vue)
+    - [Vue的webpack配置](#Vue的webpack配置)
+    - [Vue构建的一些知识](#Vue构建的一些知识)
+    - [webpack打包Vue后的错误](#webpack打包Vue后的错误)
+    - [app代码到template的转换](#app代码到template的转换)
+        - [开发与转换的基本规则](#开发与转换的基本规则)
+        - [app代码到template的演进过程](#app代码到template的演进过程)
 - [](#)
 - [](#)
 - [](#)
@@ -126,8 +133,10 @@
     - 开发环境: https://vuejs.org/js/vue.js
     - 生产环境: https://vuejs.org/js/vue.min.js
 
-- NPM安装管理
-    - ?????
+- NPM安装
+    - 安装包: `npm i vue --save`
+    - 一般vue需要在页面中使用，是**运行时依赖**，所以直接安装到 `dependencies` 下
+
 
 # helloworld程序
 ## helloworld
@@ -3917,6 +3926,291 @@
             const app = new Vue({
                 el: '#app',
                 components: { child: childCpn },
+            });
+            ```
+
+# 在webpack中使用Vue
+## Vue的webpack配置
+[top](#catalog)
+- 需要下载loader
+    - `npm i vue-loader -D`
+    - `npm i vue-style-loader -D`
+    - `npm i vue-template-compiler -D`
+
+- 添加基本配置
+    ```js
+    const VueLoader = require('vue-loader');
+    module.exports = {
+        // 其他配置
+        // ...
+
+        // 配置loader
+        module: {
+            rules: [
+                {
+                    test: /\.vue$/,
+                    loader: 'vue-loader',
+                },
+            ]
+        },
+
+        // 添加插件
+        plugins: [
+            new VueLoader.VueLoaderPlugin()
+        ],
+
+        resolve: {
+            alias: {
+                // 指定使用 `import Vue from 'vue'` 时，引入哪一个版本
+                vue$: 'vue/dist/vue.esm.js',    // 引入 runtime-compiler 版本
+            }
+        }
+    }
+    ```
+
+## Vue构建的一些知识
+[top](#catalog)
+- Vue在构建最终的发布版本时，会构建两类版本
+    - `runtime-only`
+        - 该版本下，不能有任何的 `template`
+        - 这个版本表示: **只有运行时内容，对于如何编译 `template` 内容，是会略的**
+    - `runtime-compiler`
+        - 该版本下，可以有 `template`
+            - 因为有 `complier`模块，可以编译 `template`
+
+- Vue编译时，被视为 `template` 的内容
+    - `<template>` 标签中的内容
+    - 对于普通的Vue实例对象，`el`属性挂载的目标，也算作 `template`
+        - 如:
+            ```html
+            <div id='app'>
+                ...
+            </div>
+            ```
+
+## webpack打包Vue后的错误
+[top](#catalog)
+- 默认情况下，不做特殊配置，直接使用Vue，两个模式都会产生异常。在开发模式下会有如下的错误
+    ```
+    [Vue warn]: You are using the runtime-only build of Vue where the template compiler is not available. Either pre-compile the templates into render functions, or use the compiler-included build.
+
+    (found in <Root>)
+    ```
+- 该异常表示正在使用 `runtime-only` 版本的代码，无法编译 `template`
+- 解决方法
+    - 在 `webpack.config.js` 中，添加配置。生成模式、开发模式都有效
+        ```js
+        resolve: {
+            alias: {
+                vue$: 'vue/dist/vue.esm.js',
+            }
+        }
+        ```
+    - 配置的目的: **指定使用 `import Vue from 'vue'` 时，引入node_models/vue包下的哪一个版本**
+
+
+## app代码到template的转换
+### 开发与转换的基本规则
+[top](#catalog)
+1. 开发过程中，`#app` 部分的html代码不能随意修改，基本上只保留标签部分
+    ```html
+    <div id="app"></div>
+    ```
+2. Vue实例绑定 `#app` 后，添加 `template` 属性
+    - 需要显示的内容全部写在 `template` 属性中
+    - 发生代码修改时，也只修改 `template` 中的内容
+
+3. `template` 中的内容如何显示？
+    - 编译时，`template` 的内容会被拷贝到 `#app` 中
+
+### app代码到template的演进过程
+[top](#catalog)
+- 演进过程
+    1. 基本写法，所有内容写在html中，Vue实例负责提供数据和方法
+    2. 从 `#app` 中抽取代码，保存到Vue实例的 `template` 属性中
+    3. app组件化
+        - 组件化方法
+            1. 从Vue实例中，将 `template` 代码、数据、方法等抽取到一个组件中
+            2. 在Vue实例中注册组件
+            3. 在Vue实例的 `template` 中，使用组件
+            4. 编译后，Vue实例 `template` 属性中的组件html会被拷贝到 `#app` 中
+    4. app组件代码从`index.js`中剥离，形成模块
+        - 将组件化的代码从 `index.js` 中抽取出来，单独做成一个模块，并将组件对象导出
+        - 组件代码剥离后，再发生代码修改，只会修改模块，不会涉及到`index.js`
+    5. **将应用模块改造成 `*.vue` 文件，进行组件化开发**
+        - 将组件使用的html、js代码、css代码，分别细化到`*.vue` 文件的不同标签中
+        - 将子组件也写入vue文件中，并且可以在主模块中引用
+
+- 示例
+    1. 基本写法，所有内容写在html中，Vue实例负责提供数据和方法
+        - 参考代码
+            - [src/vue-in-webpack/app-to-template/src/js/index_bk01.js](src/vue-in-webpack/app-to-template/src/js/index_bk01.js)
+
+    2. 从 `#app` 中抽取代码，保存到Vue实例的 `template` 属性中
+        - 参考代码
+            - [src/vue-in-webpack/app-to-template/src/js/index_bk02.js](src/vue-in-webpack/app-to-template/src/js/index_bk02.js)
+        - 代码内容
+            ```js
+            // 2. 从 #app 中抽取代码，保存到Vue实例的 template属性中
+            new Vue({
+                el: '#app',
+                template:`
+                <div>
+                    msg: <p>{{msg}}</p>
+                    <button @click='btnClick'>btn</button>
+                </div>
+                `,
+                data: { msg: 'webpack test msg' },
+                methods:{
+                    btnClick(){
+                        console.log('btn click');
+                    }
+                }
+            });
+            ```
+    3. app组件化
+        - 参考代码
+            - [src/vue-in-webpack/app-to-template/src/js/index_bk03.js](src/vue-in-webpack/app-to-template/src/js/index_bk03.js)
+        - 
+            ```js
+            // 1. 从Vue实例中，将 `template` 代码、数据、方法等抽取到一个组件中
+            const App = {
+                template:`
+                <div>
+                    msg: <p>{{msg}}</p>
+                    <button @click='btnClick'>btn</button>
+                </div>
+                `,
+                data(){
+                    return { msg: 'webpack test msg' }
+                },
+                methods:{
+                    btnClick(){
+                        console.log('btn click')
+                    }
+                }
+            }
+
+            new Vue({
+                el: '#app',
+                // 2. 在Vue实例中注册组件
+                components:{ App},
+
+                // 3. 在Vue实例的 `template` 中，使用组件
+                template: `<App></App>`
+            });
+            ```
+
+    4. app组件代码从`index.js`中剥离，形成模块
+        - 参考代码
+            - [src/vue-in-webpack/app-to-template/src/js/app/app.js](src/vue-in-webpack/app-to-template/src/js/app/app.js)
+            - [src/vue-in-webpack/app-to-template/src/js/index_bk04.js](src/vue-in-webpack/app-to-template/src/js/index_bk04.js)
+        - 组件模块 `app.js`
+            ```js
+            // 将组件从 index.js 中剥离
+            export default {
+                template:`
+                <div>
+                    msg: <p>{{msg}}</p>
+                    <button @click='btnClick'>btn</button>
+                </div>
+                `,
+                data(){
+                    return { msg: 'webpack test msg' }
+                },
+                methods:{
+                    btnClick(){
+                        console.log('btn click');
+                    }
+                }
+            }
+            ```
+        - Vue实例 `index.js`
+            ```js
+            import Vue from 'vue';
+            import App from './app/app'; // 引入组件模块
+
+            new Vue({
+                el: '#app',
+                // 2. 在Vue实例中注册组件
+                components:{ App },
+
+                // 3. 在Vue实例的 `template` 中，使用组件
+                template: `<App></App>`
+            });
+            ```
+    5. **将应用模块改造成 `*.vue` 文件，进行组件化开发**
+        - 参考代码
+            - [src/vue-in-webpack/app-to-template/src/js/vue/App.vue](src/vue-in-webpack/app-to-template/src/js/vue/App.vue)
+            - [src/vue-in-webpack/app-to-template/src/js/vue/Cpn.vue](src/vue-in-webpack/app-to-template/src/js/vue/Cpn.vue)
+            - [src/vue-in-webpack/app-to-template/src/js/index.js](src/vue-in-webpack/app-to-template/src/js/index.js)
+        - 子组件 `Cpn.vue`
+            ```html
+            <template>
+                <div>
+                    <p>this is Cpn</p>
+                    <p>{{data}}</p>
+                </div>
+            </template>
+
+            <script>
+            export default {
+                name:'Cpn',
+                data(){
+                    return { data:'test data' };
+                }
+            }
+            </script>
+            ```
+        - App组件 `App.vue`
+            ```html
+            <!-- 将模版、js、样式分离 -->
+            <template>
+                <div class="msgbox">
+                    msg: <p>{{msg}}</p>
+                    <button @click='btnClick'>btn</button>
+
+                    <!-- 使用子组件 -->
+                    <child/>
+                </div>
+            </template>
+
+            <script>
+            // 引入其他的组件
+            import Cpn from './Cpn.vue'
+            export default {
+                name:'App',
+                data(){
+                    return { msg: 'webpack test msg' }
+                },
+                methods:{
+                    btnClick(){
+                        console.log('btn click')
+                    }
+                },
+                // 注册子组件
+                components:{ child:Cpn }
+            }
+            </script>
+
+            <style>
+            .msgbox{
+                color:#47e;
+            }
+            </style>
+            ```
+        - Vue实例 `index.js`
+            ```js
+            import Vue from 'vue';
+            import App from './vue/App.vue'; // 引入vue模块
+
+            new Vue({
+                el: '#app',
+                // 2. 在Vue实例中注册组件
+                components:{ App },
+
+                // 3. 在Vue实例的 `template` 中，使用组件
+                template: `<App></App>`
             });
             ```
 
