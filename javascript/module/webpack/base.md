@@ -63,6 +63,9 @@
     - [resolve](#resolve)
     - [devServer](#devServer)
     - [optimization](#optimization)
+- [其他](#其他)
+    - [懒加载预加载与文件分割方式三的区别](#懒加载预加载与文件分割方式三的区别)
+- [](#)
 - [](#)
 
 
@@ -486,7 +489,9 @@
     - 自动刷新页面
 - devServer的**打包结果都保存在内存中**，本地目录中不会有任何输出
 - 需要下载包: `npm i webpack-dev-server -D`
-- 启动指令: `npx webpack-dev-server`
+- 启动指令: 
+    - `npx webpack-dev-server`
+    - `webpack-dev-server --open`，启动后，自动在浏览器中打开页面
 - 每次修改 `webpack.config.js` 文件后，**必须重新启动才能生效**
 
 - 在 `webpack.config.js` 中添加配置
@@ -1656,6 +1661,7 @@
             return x + y;
         }
         console.log(add(5, 3));
+        ```
     - 编译结果
         - 公共引入jquery被单独打包成一个chunk
         - test和main分别被打包成两个chunk
@@ -2088,7 +2094,7 @@
             ```
 
 - 预加载
-    - 预加载的兼容性比较差，需要谨慎使用
+    - 预加载的**兼容性比较差，需要谨慎使用**
     - 一般会和懒加载一起使用，减少第一次加载的时间
     - 在js模块中配置预加载的方法
         - 配置标识： `webpackPrefetch: true`
@@ -3074,6 +3080,47 @@
             },
         }
     }
+    ```
+
+# 其他
+## 懒加载预加载与文件分割方式三的区别
+[top](#catalog)
+- 两者的区别在于 `import` 的执行时间不同
+    - 懒加载预加载
+        - `import` 在某个事件的处理函数中执行
+    - 文件分割方式三
+        - `import` 在打包时就执行
+
+- 懒加载预加载
+    ```js
+    // 在事件响应函数内执行 import
+    document.querySelector('#lazybtn').onclick=function(){
+        import(/* webpackChunkName: 'lazybtn', webpackPrefetch: true */'./lazybtn').then(
+            ({lazyBtnPrint})=>{
+                lazyBtnPrint()
+            }
+        )
+    }
+    ```
+- 文件分割方式三
+    ```js
+    import $ from 'jquery'
+    import {others} from './others'
+    console.log($)
+    others()
+    // 在打包时执行 import，完成文件分割
+    import(/* webpackChunkName: 'test' */'./test') // 手动命名
+        .then(({mul, minus})=>{
+            // 执行包内部的方法
+            console.log(mul(1, 2))
+            console.log(minus(3, 4))
+        }).catch(()=>{
+        console.log('import test failure')
+        })
+    function add(x, y) {
+        return x + y;
+    }
+    console.log(add(5, 3));
     ```
 
 [top](#catalog)
