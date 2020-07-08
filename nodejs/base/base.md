@@ -33,7 +33,7 @@
     - [url模块](#url模块)
 - [其他](#其他)
     - [事件绑定方法](#事件绑定方法)
-- [](#)
+    - [nodejs执行某个js文件](#nodejs执行某个js文件)
 - [](#)
 
 # Nodejs安装
@@ -47,7 +47,7 @@
             1. nodejs的根目录
                 - `/node-v12.16.3-win-x64`
             2. node-global 目录
-                - `\node-v12.16.3-win-x64\node-global`
+                - `/node-v12.16.3-win-x64/node-global`
 - mac安装
     - ?????
 
@@ -155,6 +155,7 @@
     |`npm init`|初始化nodejs的开发环境||
     |`npm list`|查看当前工程下已安装的包||
     |`npm config set registry <地址>`|设置镜像源||
+    |`npm cache clean --force`|清理缓存||
 
 - `npm install` 指令的注意事项
     - 执行时为了保证正确安装，需要在执行指令的目录下存在 `package.json` 文件
@@ -271,7 +272,6 @@
             ```js
             export.数据别名 = 变量/函数
             ```
-
 
 - 模块执行分析
     - 每个js文件运行前都会自动添加外层函数
@@ -931,3 +931,7 @@
 - on: 绑定的事件一直有效
 - once: 绑定一次性事件
 
+## nodejs执行某个js文件
+[top](#catalog)
+- 执行js文件的指令
+    - `node <文件名.js>`
