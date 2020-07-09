@@ -102,6 +102,11 @@
     - [vue-cli3](#vue-cli3)
         - [cli3与cli2的区别](#cli3与cli2的区别)
         - [vue-cli3创建项目与结果分析](#vue-cli3创建项目与结果分析)
+        - [vue-cli3的配置](#vue-cli3的配置)
+- [Vue-Router](#Vue-Router)
+    - [创建项目时的路由选项](#创建项目时的路由选项)
+    - [路由的实现方式](#路由的实现方式)
+
 - [](#)
 
 
@@ -4588,6 +4593,81 @@
     |`package.json`||
     |`README.md`||
 
+### vue-cli3的配置
+[top](#catalog)
+- vue-cli3的配置如何管理
+    - 由 `@vue/cli-service` 负责管理打包工具及配置
+    - `package.json` 的配置内容会减少很多
+
+- vue-cli3 中，配置文件的保存位置
+    1. `node_modules/@vue/cli-service/webpack.config.js`
+        - 打包时，会使用该配置文件，并读取`./lib/Service` 下的更多配置内容
+            ```js
+            if (!service || process.env.VUE_CLI_API_MODE) {
+            const Service = require('./lib/Service')
+            service = new Service(process.env.VUE_CLI_CONTEXT || process.cwd())
+            service.init(process.env.VUE_CLI_MODE || process.env.NODE_ENV)
+            }
+            ```
+    2. `node_modules/@vue/cli-service/lib/Service.js`
+
+
+- vue-cli3修改配置的方法
+    - 方法1: 启动配置服务器，并在浏览器中修改
+        - 通过 `vue ui` 指令启动服务器
+        - 该指令可以在任意目录下执行，它与某个具体的项目无关
+        - 查看某个项目的配置
+            1. 启动后选择导入
+            2. 选择目标项目
+            3. 点击导入项目按钮
+            4. 在左侧的工具栏选择管理哪些内容
+                - plugin，管理插件
+                - 依赖，管理运行时依赖与开发依赖
+                - 项目配置，管理webpack的一些配置
+    - 方法2:在项目内，自定义配置文件
+        - 在项目目录下，创建文件 `vue.config.js`
+            - 文件名固定，不能随意修改
+        - 在文件中通过 `module.exports` 将自定义配置导出
+        - 打包时，会自动合并自定义配置
+
+# Vue-Router
+## 创建项目时的路由选项
+[top](#catalog)
+- 创建项目时，需要选择使用 `Vue-Router`
+- Vue-Router 的创建选项
+    - 选项信息
+        ```sh
+        ? Use history mode for router? (Requires proper server setup for index fallback in production) (Y/n)
+        ```
+    - 该选项确认: 路由是否使用历史模式
+        - 历史模式会使用 `history.pushState API` 实现 URL 跳转，不会重新加载页面
+
+## 路由的实现方式
+[top](#catalog)
+- 前端路由的核心
+    - url改变，但是页面不做整体刷新
+    - 维护一套路由映射规则:
+        - 前端事件产生的url与页面组件的映射关系
+
+- `url改变，但是页面不做整体刷新` 应该如何实现？
+    - 三种方案
+        1. URL的hash
+            - URL的hash就是锚点，本质上是改变 `window.location` 的 href 属性
+            - 可以直接通过**地址赋值**操作来改变href，但不刷新页面
+                 ```js
+                 window.location.hash = 目标url
+                 ```
+        2. html5 的 `history.pushState`，将url操作压入栈中
+            ```js
+            history.pushState({}, '', 'test')
+            ```
+        3. html5 的 `history.replaceState`，直接替换url，相当于刷新了栈顶
+            ```js
+            history.replaceState({}, '', 'test')
+            ```
+
+- router**默认使用 hash 方式，可以选择 history**
+
 # 其他
 [top](#catalog)
 -  组件的搜索与渲染过程
@@ -4625,7 +4705,6 @@
         ```sh
         vue create <project_name>
         ```
-
 
 Vue程序的运行过程????? 图
 npm run dev/build 运行流程图
