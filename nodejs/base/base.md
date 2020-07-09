@@ -8,6 +8,7 @@
     - [包的基本知识](#包的基本知识)
     - [包管理工具npm及其指令](#包管理工具npm及其指令)
     - [包管理工具cnpm](#包管理工具cnpm)
+    - [npm换源](#npm换源)
     - [包的搜索与导入流程](#包的搜索与导入流程)
     - [package.json](#package.json)
     - [依赖中版本号的标识符](#依赖中版本号的标识符)
@@ -33,21 +34,29 @@
     - [url模块](#url模块)
 - [其他](#其他)
     - [事件绑定方法](#事件绑定方法)
-    - [nodejs执行某个js文件](#nodejs执行某个js文件)
+- [](#)
 - [](#)
 
 # Nodejs安装
 - windows安装
     - zip包安装
-        1. 下载zip包
-            - 官网下载页面：https://nodejs.org/en/download/
-            - 选择：Windows Binary (.zip)
-        - 在某个目录解压zip包
-        - 添加环境变量，两个目录
-            1. nodejs的根目录
-                - `/node-v12.16.3-win-x64`
-            2. node-global 目录
-                - `/node-v12.16.3-win-x64/node-global`
+        - 安装流程
+            1. 下载zip包
+                - 官网下载页面：https://nodejs.org/en/download/
+                - 选择：Windows Binary (.zip)
+            2. 在某个目录解压zip包
+            3. 添加环境变量，两个目录
+                1. nodejs的根目录
+                    - `/node-v12.16.3-win-x64`
+                2. node-global 目录
+                  - `/node-v12.16.3-win-x64/node-global`
+        - 不设置环境变量，直接使用 cmd 指令设置临时的环境变量
+            ```bat
+            echo off
+            set path=%path%;<nodejs根目录>;<nodejs-global目录>
+            cmd /k echo.
+            ```
+
 - mac安装
     - ?????
 
@@ -135,7 +144,7 @@
 - npm的用途
     - 第三方模块的发布、安装、依赖
 - 安装node时，会自动安装npm
-- npm常用指令
+- npm常用管理指令
 
     |指令|描述|备注|
     |-|-|-|
@@ -144,7 +153,6 @@
     |`npm install <包名>`|下载包，并保存在当前工程的node_module目录|简写：`npm i 包名`|
     |`npm install <包名>@<版本号>`|下载指定版本的包||
     |`npm install <包名> 本地文件路径`|从本地安装某个包||
-    |`npm install <包名> -registry=地址`|从镜像源安装||
     |`npm install <包名> -g`|全局模式安装包|一般都用来安装一些工具|
     |`npm install <包名> --save`|安装包，依赖添加到：`dependencies`||
     |`npm install <包名> --save-dev`|安装包，依赖添加到：`devDependencies`||
@@ -154,8 +162,6 @@
     |`npm remove <包名>`|删除包|简写：`npm r 包名`|
     |`npm init`|初始化nodejs的开发环境||
     |`npm list`|查看当前工程下已安装的包||
-    |`npm config set registry <地址>`|设置镜像源||
-    |`npm cache clean --force`|清理缓存||
 
 - `npm install` 指令的注意事项
     - 执行时为了保证正确安装，需要在执行指令的目录下存在 `package.json` 文件
@@ -176,9 +182,29 @@
 [top](#catalog)
 - npm直接下载比较慢，也有可能无法访问远程仓库
 - 使用国内镜像替代原始服务
-- 添加 cnpm 指令
-    - `npm install -g cnpm --registry=https://registry.npm.taobao.org`
+- 安装 cnpm 指令
+    ```sh
+    npm install -g cnpm --registry=https://registry.npm.taobao.org
+    ```
 
+- cnpm与npm换源
+    - 使用 cnpm **全局安装**一些**指令或插件**时，cnpm肯出现无法解决的bug
+    - 更推荐通过 [npm换源](#npm换源) 的方式，重设镜像地址，并仍使用 npm
+
+## npm换源
+[top](#catalog)
+- 相关指令
+
+    |指令|描述|备注|
+    |-|-|-|
+    |`npm config set registry <地址>`|设置镜像源||
+    |`npm config get registry`|设置镜像源|默认为: https://registry.npmjs.org/|
+    |`npm install <包名> --registry=地址`|指定镜像源来安装包||
+
+- 设置阿里镜像
+    ```sh
+    npm config set registry https://registry.npm.taobao.org
+    ```
 
 ## 包的搜索与导入流程
 [top](#catalog)
@@ -930,8 +956,3 @@
 [top](#catalog)
 - on: 绑定的事件一直有效
 - once: 绑定一次性事件
-
-## nodejs执行某个js文件
-[top](#catalog)
-- 执行js文件的指令
-    - `node <文件名.js>`
