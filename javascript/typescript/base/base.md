@@ -21,6 +21,11 @@
         - [null、undefined与其他类型混合使用](#null、undefined与其他类型混合使用)
     - [void类型](#void类型)
     - [never类型](#never类型)
+- [函数](#函数)
+    - [函数声明](#函数声明)
+    - [函数参数](#函数参数)
+    - [函数重载](#函数重载)
+    - [箭头函数](#箭头函数)
 - [](#)
 
 
@@ -80,7 +85,7 @@
         ```
 
     3. 启动ts文件的即时编译
-        - <label style='color:red'>直接通过指定启动</label>
+        - <label style='color:red'>直接通过指令启动</label>
             ```sh
             tsc -p <开发目录>/tsconfig.json --watch
             ```
@@ -552,3 +557,219 @@
             throw new Error('test err');
         })();
         ```
+
+# 函数
+## 函数声明
+[top](#catalog)
+- 参考示例
+    - [src/syntax/function/fun_define.ts](src/syntax/function/fun_define.ts)
+- 声明方式
+    1. 具名函数
+        ```ts
+        function fun01(): string{
+            return 'abc';
+        }
+        ```
+    2. 匿名函数
+        ```ts
+        let fun03 = function(): string{
+            return '123abc';
+        }
+        ```
+    3. 没有返回值的函数
+        ```ts
+        function print(info: string): void{
+            console.log(info);
+        }
+        ```
+## 函数参数
+[top](#catalog)
+- 参考示例
+    - [src/syntax/function/fun_params.ts](src/syntax/function/fun_params.ts)
+
+- 定义有参函数
+    ```ts
+    function info2Str(name:string, age:number): string{
+        return `name=${name}, age=${age}`;
+    }
+    console.log( info2Str('testName', 22) );
+    // 实参与形参类型不一致，ts编译异常
+    // console.log( info2Str('testName', "22") );
+    ```
+
+- 可选参数， `参数名?:类型`
+    - es里方法的实参和形参数量可以不同，但是在ts中必须相同。如果不同，必须配置可选参数
+    - 可选参数必须配置到参数的最后
+    - 示例
+        ```ts
+        function getInfo(name:string, address?:string): string{
+            // 判断可选参数是否传值
+            if (address){
+                return `name=${name}, address=${address}`;
+            } else {
+                return `name=${name}, address=null`;
+            }
+        }
+        ```
+    - 编译结果
+        - 编译结果与普通js没有差别，只是通过ts编译器限制了类型
+        ```js
+        function getInfo(name, address) {
+            // 判断可选参数是否传值
+            if (address) {
+                return "name=" + name + ", address=" + address;
+            }
+            else {
+                return "name=" + name + ", address=null";
+            }
+        }
+        ```
+
+- 默认参数，`参数名:类型=默认值`
+    - 示例
+        ```ts
+        function getInfo02(name:string, age:number=22):string{
+            return `name=${name}, age=${age}`;
+        }
+        console.log( getInfo02('testName') ); // 使用默认值
+        console.log( getInfo02('testName', 33) );
+        ```
+    - 编译结果
+        ```js
+        function getInfo02(name, age) {
+            // 如果参数是undefined，则使用默认值
+            if (age === void 0) { age = 22; }
+            return "name=" + name + ", age=" + age;
+        }
+        ```
+
+- 可变参数，`...参数名:类型[]`
+    - 本质就是利用解构运算符 `...` 将所有实参传递到一个数组中
+    - **可变参数需要放在参数的最后，且只能有一个**
+    - 示例
+        ```ts
+        // 1. 只有可变参数
+        function sum(...params:number[]):number{
+            let result: number = 0;
+            for(let i=0; i < params.length; i++){
+                result += params[i];
+            }
+            return result;
+        }
+        console.log( sum() );
+        console.log( sum(1,2,3,4,5) );
+
+        // 2. 包含一个普通参数，剩余参数需要放到最后
+        function sum02(a:number, ...others:number[]):number{
+            for(let i=0; i< others.length; i++){
+                a += others[i];
+            }
+            return a;
+        }
+        console.log( sum(1) );
+        console.log( sum(1,2,3,4,5) );
+        ```
+    - 编译结果
+        ```js
+        // 1. 只有可变参数
+        function sum() {
+            // 从 argument 中获取所有的可变参数
+            var params = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                params[_i] = arguments[_i];
+            }
+            var result = 0;
+            for (var i = 0; i < params.length; i++) {
+                result += params[i];
+            }
+            return result;
+        }
+
+        // 2. 包含一个普通参数，可变参数需要放到最后
+        // 普通参数仍然保留
+        function sum02(a) {
+
+            // 从 argument 中获取所有的可变参数
+            var others = [];
+            for (var _i = 1; _i < arguments.length; _i++) {
+                others[_i - 1] = arguments[_i];
+            }
+            for (var i = 0; i < others.length; i++) {
+                a += others[i];
+            }
+            return a;
+        }
+        ```
+
+## 函数重载
+[top](#catalog)
+- ts为了兼容es5、es6，重载的写法与其他语言不同
+- ts的重载只是利用编译器对函数的使用方式做约束，在编译结果中仍然是普通的函数
+- 重载方式1: 参数数量相同，类型不同
+    - 示例
+        ```ts
+        function makeInfo(name:string):string;   // 重载声明
+        function makeInfo(age:number):string;    // 重载声明
+        function makeInfo(info:any):string{      // 重载实现
+            // 通过参数类型判断是哪个重载
+            if (typeof info === 'string'){
+                return `name = ${info}`;
+            } else {
+                return `age = ${info}`;
+            }
+        }
+        console.log(makeInfo('testName'));
+        console.log(makeInfo(22));
+        // 无法找到匹配的重载
+        // makeInfo(true);
+        ```
+    - 编译结果
+        ```js
+        function makeInfo(info) {
+            // 通过参数类型判断是哪个重载
+            if (typeof info === 'string') {
+                return "name = " + info;
+            }
+            else {
+                return "age = " + info;
+            }
+        }
+        ```
+
+- 重载方式2: 参数数量不同
+    - 示例
+        ```ts
+        function formatInfo(name:string):string;                // 重载声明
+        function formatInfo(name:string, age:number):string;    // 重载声明
+        function formatInfo(name:string, age?:number):string{   // 重载实现
+            // 通过判断age是否为空，来判断使用了哪个重载
+            if (age){
+                return `name=${name}, age=${age}`;
+            } else {
+                return `name=${name}`;
+            }
+        }
+
+        console.log( formatInfo('testName', 22) );
+        console.log( formatInfo('testName02') );
+        // 无法找到匹配的重载
+        // console.log( formatInfo(123) );
+        ```
+    - 编译结果
+        ```js
+        // 保持了参数最多的声明，然后根据形参的值来做具体处理
+        function formatInfo(name, age) {
+            // 通过判断age是否为空，来判断使用了哪个重载
+            if (age) {
+                return "name=" + name + ", age=" + age;
+            }
+            else {
+                return "name=" + name;
+            }
+        }
+        ```
+
+## 箭头函数
+[top](#catalog)
+- ts默认支持 es6 的箭头函数
+- 所有规范与 es6 相同
