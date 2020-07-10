@@ -1,0 +1,63 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta charset='UTF-8'>
+        <title>h5 history API pushState& replaceState 测试</title>
+    </head>
+    <body>
+        <script>
+            /*
+                参考:
+                https://developer.mozilla.org/zh-CN/docs/Web/API/Window/onpopstate
+            */
+
+            window.onpopstate = function(event) {
+                console.log('location: ' + document.location + ', state: ' + JSON.stringify(event.state));
+                // alert('location: ' + document.location + ', state: ' + JSON.stringify(event.state));
+                // console.log(event);
+            };
+
+            // 1. 添加并激活第 1 个历史记录
+            history.pushState({page: 1}, 'title 1', '?page=1');
+            console.log('pushState 01, href = ' + location.href);   // 输出url: .../push_replace_state.html?page=1
+            // 2.1 添加并激活第 2 个历史记录
+            history.pushState({page: 2}, 'title 2', '?page=2');
+            console.log('pushState 02, href = ' + location.href);   // 输出url: .../push_replace_state.html?page=2
+            /*
+                2.2 修改当前激活的历史记录，将 ?page=2 修改为 ?page=3
+                    此时历史记录中一共有 2 个
+                    1. page=1; 2. page=3
+            */
+            history.replaceState({page: 3}, 'title 3', '?page=3');
+            console.log('pushState 03, href = ' + location.href);   // 输出url: .../push_replace_state.html?page=3
+
+            /*
+                3. 添加并激活第 3 个历史记录
+                    此时历史记录中一共有 3 个
+                    1. page=1; 2. page=3; 3. page=4
+            */
+            history.pushState({page:4}, 'title4', '?page=4');
+            console.log('pushState 04, href = ' + location.href);   // 输出url: .../push_replace_state.html?page=4
+
+            // 4. 执行后退
+            // 第 1 次后退，从 page=4 后退到 page=3，触发 page=3 的 popstate 事件
+            history.back(); // 输出: location: .../push_replace_state.html?page=3, state: {"page":3}
+
+            // 第 2 次后退，从 page=3 后退到 page=1，触发 page=1 的 popstate 事件
+            history.back(); // 输出: location: .../push_replace_state.html?page=1, state: {"page":1}
+
+            // 第 3 次后退，从 page=1 后退到 push_replace_state.html ，触发 push_replace_state.html 的 popstate 事件
+            history.back(); // 输出: location: .../push_replace_state.html, state: null
+
+            // IE 执行
+            // history.go(2);
+
+            // chrome 执行
+            setTimeout(() => {
+                console.log('timeout');
+                history.go(2);  // 输出: location: .../push_replace_state.html?page=3, state: {"page":3}
+            }, 1000);
+
+        </script>
+    </body>
+</html>

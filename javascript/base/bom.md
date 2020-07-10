@@ -8,11 +8,13 @@
 - [BOM概述](#BOM概述)
 - [Navigator对象](#Navigator对象)
 - [History对象](#History对象)
+    - [History对象简介](#History对象简介)
+    - [History对象的基本属性与方法](#History对象的基本属性与方法)
+    - [h5中的History_API](#h5中的History_API)
 - [Location对象](#Location对象)
 - [localStorage](#localStorage)
     - [localStorage的基本知识](#localStorage的基本知识)
     - [localStorage的CRUD操作](#localStorage的CRUD操作)
-- [](#)
 - [定时器Interval](#定时器Interval)
     - [定时器的基本使用方法](#定时器的基本使用方法)
     - [定时器应用-颜色自动切换](#定时器应用-颜色自动切换)
@@ -109,6 +111,7 @@
         ```
 
 # History对象
+## History对象简介
 [top](#catalog)
 - History对象代表浏览器的历史记录
 - 通过 History对象 可以操作浏览器的历史记录
@@ -118,16 +121,26 @@
 - 如何检查页面出现了历史记录？
     - 浏览器的回退按钮/前进按钮可用
 
+## History对象的基本属性与方法
+[top](#catalog)
 - History对象属性
     - `length`，返回当期页面历史列表中的URL数量
 
-- History对象方法
+- History对象基本方法
 
-    |方法|功能|备注|
-    |-|-|-|
-    |`back()`|回到上一个页面，作用和浏览器的后退按钮相同||
-    |`forward()`|跳转到下一个页面，作用和浏览器的前进按钮相同|如果没有下一个页面，则该操作无效|
-    |`go(整数)`|可以跳转到指定页面|正数：跳转到下n个页面，负数：跳转到上n个页面<br>|
+    |方法|功能|同步/异步|备注|
+    |-|-|-|-|
+    |`go(整数)`|可以跳转到指定页面|<ul> <li>IE: 异步</li> <li>Chrome: 同步</li> </ul>|<ul> <li>正数：跳转到下n个页面</li> <li>负数：跳转到上n个页面</li> <li>`go(0)` 相当于刷新当前页面</li> </ul>|
+    |`back()`|回到上一个页面，与后退按钮相同|异步|相当于 `history.go(-1)`|
+    |`forward()`|跳转到下一个页面，与前进按钮相同|异步|相当于 `history.go(1)`|
+
+- 注意事项
+    - 返回上n页时，通常从浏览器缓存中重新加载页面，不会与服务器发生请求交互
+    - 如果函数跳转的位置已经超出了历史记录中记录的范围，跳转会失败，但是不会抛出异常
+
+    - `go()` 在不同浏览器中的性质不同，
+        - 在ie中，和 `back()`、`forward()` 同时使用时，不会有顺序问题
+        - 在chrome中，和 `back()`、`forward()` 同时使用时，需要注意延迟执行 `go()`
 
 - 示例
     - 参考代码
@@ -145,7 +158,7 @@
         6. 如果是从 test03回退到的 history，在history 点击 forward 按钮，回到 test03
         7. 在history 点击 go 按钮，跳转到上2个页面，回退到test01
         8. 在history 点击 showLength 按钮，在提示框中显示历史列表中的URL数量
-    
+
     - 控制hisitory对象的页面：[history.html](/javascript/base/src/bom/history/history.html)
         - html内容
             ```html
@@ -186,6 +199,167 @@
             };
             ```
 
+## h5中的History_API
+[top](#catalog)
+- `window.history.pushState(state, title [, targetURL]);`
+    - 功能
+        - 改变url地址
+            - 与`location.hash`不同，不会从`/#...`开始，会直接附加到当前url的后面
+        - 将url的变化添加到历史记录
+        - 不会刷新页面，也不会检查目标页面是否存在，但是不能跨域
+    - 参数说明
+        - state，状态对象
+            - 与当前url相关的状态对象
+                - 可以是任何类型的数据，不限于 Object 类型
+                - 如果不需要，可以设置为null
+            - `popstate` 事件触发时，该对象会传入回调函数，并通过 `event.state` 获取
+        - title，页面标题
+        - targetURL，目标url
+            - 不会检查url是否存在，但是不能跨域
+            - 如果参数缺省，则默认为当前url
+- `window.history.replaceState(state, title [, targetURL]);`
+    - 功能
+        - 修改当前url
+        - 不会添加历史记录，会修改最后一条历史记录中保存的数据: `state`, `title`, `targetURL`
+        - 不会刷新页面，也不会检查目标页面是否存在，但是不能跨域
+    - 参数说明
+        - state，状态对象
+            - 与当前url相关的状态对象
+                - 可以是任何类型的数据，不限于 Object 类型
+                - 如果不需要，可以设置为null
+            - `popstate` 事件触发时，该对象会传入回调函数，并通过 `event.state` 获取
+        - title，页面标题
+        - targetURL，目标url
+            - 不会检查url是否存在，但是不能跨域
+            - 如果参数缺省，则默认为当前url
+
+- `state` 参数的功能
+    - 多用于在前进、后退页面时，使页面保持离开时的状态
+    - 相当于一个缓存
+
+- 相关事件: `window.onpopstate`
+    - 触发时机
+        - 执行 history基本事件: `go`, `back`, `forward` 时，都会触发该事件
+        - 点击浏览器的前进、后退按钮也会发挥僧
+    - 该事件默认为 `null`, 需要手动设置响应函数
+    - 可以通过 `event.state` 获取设置历史记录时的数据
+    - 可以通过该事件来复原页面，使页面能够保持离开时的状态
+
+- 检查浏览器对 History API 的兼容性
+    ```js
+    if (window.history && history.pushState){
+        // 支持
+    } else {
+        // 不支持
+    }
+    ```
+
+- 示例
+    - 基本使用
+        - 参考代码
+            - [src/bom/history/push_replace_state.html](src/bom/history/push_replace_state.html)
+        - 代码内容
+            ```js
+            /*
+                参考:
+                https://developer.mozilla.org/zh-CN/docs/Web/API/Window/onpopstate
+            */
+
+            window.onpopstate = function(event) {
+                console.log('location: ' + document.location + ', state: ' + JSON.stringify(event.state));
+                // alert('location: ' + document.location + ', state: ' + JSON.stringify(event.state));
+                // console.log(event);
+            };
+
+            // 1. 添加并激活第 1 个历史记录
+            history.pushState({page: 1}, 'title 1', '?page=1');
+            console.log('pushState 01, href = ' + location.href);   // 输出url: .../push_replace_state.html?page=1
+            // 2.1 添加并激活第 2 个历史记录
+            history.pushState({page: 2}, 'title 2', '?page=2');
+            console.log('pushState 02, href = ' + location.href);   // 输出url: .../push_replace_state.html?page=2
+            /*
+                2.2 修改当前激活的历史记录，将 ?page=2 修改为 ?page=3
+                    此时历史记录中一共有 2 个
+                    1. page=1; 2. page=3
+            */
+            history.replaceState({page: 3}, 'title 3', '?page=3');
+            console.log('pushState 03, href = ' + location.href);   // 输出url: .../push_replace_state.html?page=3
+
+            /*
+                3. 添加并激活第 3 个历史记录
+                    此时历史记录中一共有 3 个
+                    1. page=1; 2. page=3; 3. page=4
+            */
+            history.pushState({page:4}, 'title4', '?page=4');
+            console.log('pushState 04, href = ' + location.href);   // 输出url: .../push_replace_state.html?page=4
+
+            // 4. 执行后退
+            // 第 1 次后退，从 page=4 后退到 page=3，触发 page=3 的 popstate 事件
+            history.back(); // 输出: location: .../push_replace_state.html?page=3, state: {"page":3}
+
+            // 第 2 次后退，从 page=3 后退到 page=1，触发 page=1 的 popstate 事件
+            history.back(); // 输出: location: .../push_replace_state.html?page=1, state: {"page":1}
+
+            // 第 3 次后退，从 page=1 后退到 push_replace_state.html ，触发 push_replace_state.html 的 popstate 事件
+            history.back(); // 输出: location: .../push_replace_state.html, state: null
+
+            // IE 执行
+            // history.go(2);
+
+            // chrome 执行
+            setTimeout(() => {
+                console.log('timeout');
+                history.go(2);  // 输出: location: .../push_replace_state.html?page=3, state: {"page":3}
+            }, 1000);
+            ```
+    - 应用实例
+        - 参考代码
+            - [src/bom/history/push_replace_state_inaction.html](src/bom/history/push_replace_state_inaction.html)
+        - html内容
+            ```html
+            <!-- 0. 点击按钮后刷新内容，页面前进、后退时复原离开时的页面内容 -->
+            <div id="msg">
+                msgbox
+            </div>
+            <br><br>
+            <!-- 0. 点击按钮，添加历史记录，并刷新 msgbox -->
+            <button class="msgBtn">page1</button>
+            <button class="msgBtn">page2</button>
+            <button class="msgBtn">page3</button>
+            ```
+        - js内容
+            ```js
+            // 3. 刷新msg
+            function showMsg(el, msg) {
+                el.innerHTML = msg
+            }
+
+            // 2. 前进后退时，取出url对应的数据，并复原离开时的页面
+            window.addEventListener('popstate', function (e) {
+                if (!e.state) return;
+                showMsg(
+                    document.getElementById('msg'),
+                    e.state
+                );
+            });
+
+            // 1. 每个按钮点击时，修改box的显示信息，添加并激活一条历史记录
+            const msgBtns = document.querySelectorAll('.msgBtn');
+            for (btn of msgBtns){
+                // 为按钮绑定属性
+                btn.onclick = function (e) {
+                    let msg = e.target.innerHTML;
+                    showMsg(
+                        document.getElementById('msg'),
+                        msg
+                    );
+
+                    // 设置历史记录，只能设置为 `?参数`，`/参数`会有跨域问题
+                    history.pushState(msg, '', '?page=' + msg);
+                }
+            }
+            ```
+
 # Location对象
 [top](#catalog)
 - Location 代表当期浏览器的地址栏信息
@@ -196,13 +370,26 @@
     - 页面跳转后，**会生成历史记录**
         - 如果加载的是当前页面的路径，则不会生成新的历史记录，即无法回退到当前页面之气的状态?????
 
-- Location对象的常用方法
-    
+- Location对象的方法
+
     |方法|功能|备注|
     |-|-|-|
     |`assign("URL")`|加载新的文档，即跳转到其他页面|<ul><li>与直接使用URL字符串修改Location对象相同</li><li>跳转页面后会生成历史记录，但是跳转到当前页面时不会生成新的历史记录</li></ul>|
     |`reload([true])`|重新加载当前文档|与 F5/刷新按钮的功能相同|使用：`reload(true)`，在刷新页面时，会强制情况缓存|
     |`replace()`|用新的文档替换当前文档，即跳转到其他页面|<ul><li>与直接使用URL字符串修改Location对象相同</li><li>跳转页面后<label style="color:red">不会生成当前页面的历史记录</label></li></ul>|
+
+- Location对象的属性
+
+    |属性|可以<label style='color:red'>设置或返回</label>的内容|是否刷新页面|
+    |-|-|-|
+    |hash|从井号 (#) 开始的 URL（锚）|N (会产生历史记录)|
+    |host|主机名/IP地址 + 端口号|Y|
+    |hostname|主机名/IP地址|Y|
+    |href|完整的 URL|Y|
+    |pathname|当前 URL 的路径部分|Y|
+    |port|当前 URL 的端口号|Y|
+    |protocol|当前 URL 的协议<br>返回的结果中会包含冒号，如: `http:`、`file:`|-|
+    |search|从问号 (?) 开始的 URL（查询部分）|Y|
 
 - 示例
     - 参考代码
@@ -217,7 +404,7 @@
         <input type="text"> <button id="clearReload">强制情况缓存刷新页面</button> <br>
         <button id="replaceBtn">页面替换</button> <br>
         ```
-    
+
     - js内容
         ```js
         // 1. 手动修改 Location对象
@@ -232,7 +419,7 @@
         assignBtn.onclick = function(){
             location.assign("https://www.baidu.com");
         };
-        
+
         // 3. 加载自身
         var assignSelf = document.getElementById("assignSelf");
         assignSelf.onclick = function(){
@@ -375,7 +562,7 @@
             var k = localStorage.key(i);
             var v = localStorage.getItem(k);
             console.log("localStorage.key("+ i + ") = " + k, ", localStorage.getItem(" + k + ") = " + v);
-            
+
             // localStorage.key(0) = b , localStorage.getItem(b) = 1234
             // localStorage.key(1) = c , localStorage.getItem(c) = 23456
             // localStorage.key(2) = a , localStorage.getItem(a) = this is a
@@ -486,14 +673,14 @@
 - 示例
     - 参考代码
         - [/javascript/base/src/bom/timer/interval/autoChangeColor.html](/javascript/base/src/bom/timer/interval/autoChangeColor.html)
-    
+
     - html内容
         ```html
         <div id="box01"></div>
         <button id="startBtn">start</button>
         <button id="endBtn">end</button>
         ```
-    
+
     - css内容
         ```css
         #box01{
@@ -502,7 +689,7 @@
             background-color: #bfa;
         }
         ```
-    
+
     - js内容
         ```js
         // 使用全局变量来保存定时器
@@ -510,7 +697,7 @@
         var colorList = ["#bfa", "#47e", "#ccc", "#eda"]
         var colorIndex = 0;
         var box01 = document.getElementById("box01");
-        
+
         // 每次点击都会创建一个定时器，多次点击按钮后，就会创建多个定时器，
         // 导致图片切换加速
         // 但是timer只会保存最新的定时器，所以点击关闭按钮时，也只能关闭最新的定时器，
@@ -524,7 +711,6 @@
         //     }, 500);
         // };
 
-        
         var startBtn = document.getElementById("startBtn");
         startBtn.onclick = function(){
             // 点击开始按钮后，先关闭当前元素中的上一个定时器
@@ -564,12 +750,12 @@
 - 示例
     - 参考代码
         - [/javascript/base/src/bom/timer/interval/moveElemByKeydown.html](/javascript/base/src/bom/timer/interval/moveElemByKeydown.html)
-    
+
     - html内容
         ```html
         <div id="box01"></div>
         ```
-    
+
     - css内容
         ```css
         #box01{
@@ -595,14 +781,14 @@
             clearInterval(timer);
             // 每30毫秒进行移动
             timer = setInterval(moveBox01, 30);
-            
+
             // 2. 松开键盘，清除定时器，同时清除松开键盘的事件
             document.onkeyup = function(event){
                 clearInterval(timer);
                 document.onkeyup = null;
             }
         }
-        
+
         function moveBox01(){
             switch (direction) {
                 case 37: // 左
@@ -631,4 +817,3 @@
 - 延时器与定时器互相转化
     - 连续多次调用延时器 = 定时器
     - 定时器只调用一次，然后被清除 = 延时器
-

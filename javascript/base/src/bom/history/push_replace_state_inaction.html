@@ -1,0 +1,51 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta charset='UTF-8'>
+        <style type="text/css">
+        </style>
+    </head>
+    <body>
+        <!-- 0. 点击按钮后刷新内容，页面前进、后退时复原离开时的页面内容 -->
+        <div id="msg">
+            msgbox
+        </div>
+        <br><br>
+        <!-- 0. 点击按钮，添加历史记录，并刷新 msgbox -->
+        <button class="msgBtn">page1</button>
+        <button class="msgBtn">page2</button>
+        <button class="msgBtn">page3</button>
+
+        <script type="text/javascript">
+            // 3. 刷新msg
+            function showMsg(el, msg) {
+                el.innerHTML = msg
+            }
+
+            // 2. 前进后退时，取出url对应的数据，并复原离开时的页面
+            window.addEventListener('popstate', function (e) {
+                if (!e.state) return;
+                showMsg(
+                    document.getElementById('msg'),
+                    e.state
+                );
+            });
+
+            // 1. 每个按钮点击时，修改box的显示信息，添加并激活一条历史记录
+            const msgBtns = document.querySelectorAll('.msgBtn');
+            for (btn of msgBtns){
+                // 为按钮绑定属性
+                btn.onclick = function (e) {
+                    let msg = e.target.innerHTML;
+                    showMsg(
+                        document.getElementById('msg'),
+                        msg
+                    );
+
+                    // 设置历史记录，只能设置为 `?参数`，`/参数`会有跨域问题
+                    history.pushState(msg, '', '?page=' + msg);
+                }
+            }
+        </script>
+    </body>
+</html>
