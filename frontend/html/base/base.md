@@ -477,16 +477,20 @@
     1. `_self`，默认值，在当前页面中打开超链接
     2. `_blank`，在一个新的页面中打开超链接
 
-- `href`属性指定跳转目标的路径，包括
-    1. web应用的外部资源
-    2. web应用的内部资源
-    3. **锚点**: 跳转到当前页面的其他位置
-        - 回到顶部：`herf="#"`
-        - 跳转到指定位置：`herf="#元素id"`
-    4. <label style="color:red">无动作的占位符，常用于开发中无法确定跳转目标的情况</label>
-        - `href="javascript:;"`
+- `href` 属性
+    - `href`属性指定跳转目标的路径，包括
+        1. web应用的外部资源
+        2. web应用的内部资源
+        3. **锚点**: 跳转到当前页面的其他位置
+            - 回到顶部：`herf="#"`
+            - 跳转到指定位置：`herf="#元素id"`
+        4. <label style="color:red">无动作的占位符，常用于开发中无法确定跳转目标的情况</label>
+            - `href="javascript:;"`
 
-- 如果没有添加`href`属性，则与普通的文本相似
+    - 如果没有添加`href`属性，则与普通的文本相似
+
+- `title` 属性
+    - 鼠标放在链接上时，显示的提示信息
 
 - 示例
     - 参考：[/frontend/html/base/src/structure.html](/frontend/html/base/src/structure.html)

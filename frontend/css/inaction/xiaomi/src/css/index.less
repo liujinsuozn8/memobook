@@ -1,0 +1,220 @@
+@topbar_height:40px;
+@shadow_color:rgba(0,0,0,.3);
+// 顶部导航条
+.topbar{
+    background-color: #333;
+    height: @topbar_height;
+    line-height: @topbar_height;
+
+    // 居左的内容
+    &__sub-bar--left{
+        float: left;
+    }
+    // 居右的内容
+    &__sub-bar--right{
+        float: right;
+    }
+
+    // 链接按钮
+    &__link-btn{
+        display: block;
+        height: @topbar_height;
+        color: #B0B0B0;
+        float: left;            // 设置浮动使按钮水平排列
+        &:hover{
+            color: #fff;        // 设置鼠标移入的状态
+        }
+    }
+    // 分割线
+    &__line{
+        display: block;
+        float: left;        // 设置浮动使按钮水平排列
+        color:#424242;
+        margin: 0 6px;
+    }
+}
+
+//二维码
+.qrcode{
+    position: relative;     // 开启相对定位，来微调容器中的内容
+    z-index: 9999;          // 尽量将层级提高到最大，防止被其他元素覆盖
+    text-align: center;     // 使文字内容居中
+
+    &__contrainer{
+        display: block;
+        font-size: 14px;
+        color: #424242;
+        width: 130px;
+        // height: 160px;            // 测试--属性
+        height: 0px;            // 默认情况下不显示
+        position: absolute;       // 开启绝对定位，相对于 & 定位
+        top:@topbar_height;      // 将二维码位置定位到导航条的下边
+        // bottom:0px;            // 使用bottom只能显示容器考下的一部分内容，剩余部分会因为所处位置而无法显示
+        left: -$width/2 + 25;       // ????? 如何自动计算
+        background-color: white;
+        line-height: 1;             // 设置行高为文字大小
+        box-shadow: 0 0 10px @shadow_color; // 没有阴影偏移，直接显示
+        overflow: hidden;       // 超出height的部分隐藏。在默认状态下可以隐藏容器中的内容
+
+        transition: height .3s linear;  // 设置高度的线性渐变
+    }
+
+    &:hover &__contrainer{      // 当二维码被选中时，显示容器部分
+        height: 160px;
+    }
+
+    &:hover::before{            // 设置上方的三角形
+        content: '';
+        width: 0;               // 不设置宽高，只设置边框
+
+        position: absolute;     // 开启绝对定位，相对于 & 定位
+        bottom: 0;              // 定位到 & 的底部
+
+        // 设置自动居中
+        left: 0;
+        right: 0;
+        margin:auto;
+
+        // 设置三角形
+        border: transparent 10px solid; // 整体没有颜色只设置大小和边框类型
+        border-bottom-color: white;   // 只设置下边框有颜色，即显示三角形
+
+        // 提升层级，覆盖二维码上边框的阴影
+        z-index: 9999;
+    }
+
+    &__img{
+        display: block;
+        width: 100px;
+        margin: 16px auto;
+    }
+}
+
+// 购物车
+.shopping-cart-btn{
+    width: 120px;
+    background-color: #424242;
+    text-align: center;     // 当前元素文字居中，子元素也居中
+    position: relative;
+    
+    &:hover{
+        // background-color: #fff;
+        color: #ff6700;
+    }
+
+    &__text{
+        position: relative;
+        z-index: 500;
+    }
+    
+    &:hover &__text{
+        background-color: white;    // 必须手动设置颜色，否则无法显示遮盖 &__detail
+    }
+    
+    &__detail{
+        width: 160px;
+        height: 0px;
+        background-color: white;
+        box-shadow: 0 0 10px @shadow_color;
+        overflow: hidden;   // 超出height的部分隐藏。在默认状态下可以隐藏容器中的内容
+        color: #ff6700;
+        
+        // 开启绝对定位
+        position: absolute;
+        top:@topbar_height;    // 将元素移动到导航条的正下方
+        right: 0;              // 居右显示
+        z-index: 100;
+        
+        transition: height .2s linear;
+    }
+    &:hover &__detail{
+        height: 100px;
+    }
+}
+
+// 头部导航条
+@header_height:100px;
+@header_content_heigth:55px;
+.header-bar{
+    height: @header_height;
+    position: relative;
+    // background-color: #bfa; // 测试颜色
+    border-bottom: black 2px solid; // 测试底边框
+}
+
+// 头部logo
+.header-logo{
+    @logo_h:@header_content_heigth;
+    @logo_w:@header_content_heigth;
+
+    // background-color: red;  // 测试背景色
+    margin-top: ( @header_height - @logo_h ) / 2; // 居中显示
+    float: left;
+    position: relative;     // 开启绝对定位，来微调图片的位置
+    height: @logo_h;
+    width: @logo_w;
+
+    overflow: hidden;       // 隐藏超出范围的 `::before`
+
+    // 图片1
+    &::before{
+        content: '';
+        position: absolute;
+        left: -$width;
+        background: url(../img/logo/home.png) center center/contain ;
+        width: @logo_h;
+        height: @logo_w;
+        transition: left .2s linear;
+    }
+    // 鼠标移入时，图片向右移动
+    &:hover::before{
+        left: 0;
+    }
+    
+    // 图片2
+    &::after{
+        content: '';
+        position: absolute;
+        background: url(../img/logo/mi.png) center center/contain ;
+        width: @logo_h;
+        height: @logo_w;
+        left: 0;
+        transition: left .2s linear;
+    }
+    // 鼠标移入时，图片向右移动
+    &:hover::after{
+        left: @logo_w;
+    }
+}
+
+// 头部导航条--主列表
+.header-nav{
+    position: relative;
+    float: left;    // 开启浮动，使得 &__list 不会被挤下去
+    width: 850px;   // 固定宽度
+    // background-color: #bfa; // 测试颜色
+
+    @item_height:@header_content_heigth;
+    @link_font_size: 16px;
+    @space_height:20px;
+    &__list{           // 固定列表部分的整体位置
+        height: @header_height - @space_height;
+        padding: @space_height 30px 0px 40px;
+        font-size: @link_font_size;
+        line-height: @link_font_size;
+    }
+
+    &__item{
+        float:left; // 开启浮动，使所有列表项水平排列
+    }
+
+    &__link{
+        display: block;
+        // 扩展链接部分的可选择范围，字符以上的部分只有部分可选，字符以下的部分全部都可选
+        padding: 20px 10px @header_height - @link_font_size - @space_height - 20;
+    }
+
+    &__link:hover{
+        color:#ff6700;
+    }
+}

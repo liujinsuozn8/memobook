@@ -7,6 +7,8 @@
             - 配套代码：[algorithm/src/java-algorithm/datastructure](algorithm/src/java-algorithm/datastructure)
         - [算法基础(基于java)](algorithm/base/java_algorithm.md)
             - 配套代码：[algorithm/src/java-algorithm/myalgorithm](algorithm/src/java-algorithm/myalgorithm)
+    - http
+        - [基本知识](http/memo.md)
 
 - DevOps
     - [服务器软件的概念与比较](devops/server/base/serverCompare.md)
@@ -41,15 +43,6 @@
     - Swagger-API框架
         - [基本使用](java/swagger/base/base.md)
 
-- 数据库
-    - mysql
-        - [基本知识](database/mysql/base/base.md)
-    - oracle
-        - oracle基础
-            - [oracle体系结构](database/oracle/base/structure.md)
-    - redis
-        - [基本知识](database/redis/base/base.md)
-
 - 开发语言
     - java
         - [基本知识](java/base/memo.md)
@@ -65,23 +58,6 @@
             - [基本原理](/java/rpc/base.md)
         - jdk源码分析
             - [集合框架](java/jdkAnalyze/collection.md)
-    - javascript
-        - js基础
-            - [基本知识](javascript/base/base.md)
-            - [dom操作](javascript/base/dom.md)
-            - [bom操作](javascript/base/bom.md)
-        - [js高级原理](javascript/underlyingPrinciple/base.md)
-        - es标准
-            - [es5、es6、es7](javascript/es/567.md)
-        - 模块化开发
-            - [模块化标准- commonjs、AMD、ES6](javascript/module/base/base.md)
-            - webpack
-                - [webpack的基本使用方法](javascript/module/webpack/base.md)
-        - typescirpt
-            - [ts基本语法](javascript/typescript/base/base.md)
-        - js开发框架
-            - Vue
-                - [Vue的基本使用](javascript/vue/base/base.md)
     - go
         - [基本知识](go/base.md)
         - [并发](go/multithreading/multithreading.md)
@@ -101,13 +77,42 @@
             - [弹性盒子](frontend/css/base/flex.md)
         - css预处理器
             - [less](frontend/css/less/base.md)
+        - css开发架构
+            - [BEM: Block ELement Modifier](frontend/css/BEM/base/base.md)
+        - css实战
+            - 小米官网
+                - [开发过程、内容](frontend/css/inaction/xiaomi/xiaomi.md)
+                - [参考代码:frontend/css/inaction/xiaomi/src](frontend/css/inaction/xiaomi/src)
+    - javascript
+        - js基础
+            - [基本知识](javascript/base/base.md)
+            - [dom操作](javascript/base/dom.md)
+            - [bom操作](javascript/base/bom.md)
+        - [js高级原理](javascript/underlyingPrinciple/base.md)
+        - es标准
+            - [es5、es6、es7](javascript/es/567.md)
+        - 模块化开发
+            - [模块化标准- commonjs、AMD、ES6](javascript/module/base/base.md)
+            - webpack
+                - [webpack的基本使用方法](javascript/module/webpack/base.md)
+        - typescirpt
+            - [ts基本语法](javascript/typescript/base/base.md)
+        - js开发框架
+            - Vue
+                - [Vue的基本使用](javascript/vue/base/base.md)
     - nodejs
         - [基本知识](nodejs/base/base.md)
         - [nodejs应用](nodejs/inaction/base.md)
         - [koa](nodejs/koa/base.md)
 
-- http
-    - [基本知识](http/memo.md)
+- 数据库
+    - mysql
+        - [基本知识](database/mysql/base/base.md)
+    - oracle
+        - oracle基础
+            - [oracle体系结构](database/oracle/base/structure.md)
+    - redis
+        - [基本知识](database/redis/base/base.md)
 
 - 开发工具
     - jetbrains

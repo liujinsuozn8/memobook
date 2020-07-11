@@ -20,13 +20,14 @@
 
 # 过渡
 [top](#catalog)
-- 通过过渡可以指定一个属性发生变化时的切换方式
-- 通过过渡可以创建一些效果，来提升用户的体验
+- 过渡可以指定一个属性发生变化时的切换方式
+- 过渡可以创建一些效果，来提升用户的体验
 - 哪些属性支持过渡？
     - 大部分属性都支持过渡
 - 过渡的注意事项
+    - 过渡效果只会在**属性大小发生变化时**发生
     - 过渡必须是从一个有效值向另一个有效值过渡
-    - 如果一个值是`auto`，则无法过渡
+        - 如果一个值是`auto`，则无法过渡
 
 - 相关属性
     - `transition-property: 属性1, 属性2, ...`: 指定执行过渡的属性
@@ -59,16 +60,16 @@
         - `transition: 过渡属性1 相关参数... , 过渡属性2 相关参数..., ... `
 
 - 产生过渡效果的两个必要属性
-    - transition-property
-    - transition-duration
+    - `transition-property`，过渡属性
+    - `transition-duration`，过渡时间
 
 - 示例
     - 基本示例
         - 参考代码
-            - [src/animation/base.html](src/animation/base.html)
+            - [src/animation/transition/base.html](src/animation/transition/base.html)
     - 使用雪碧图制作动画效果
         - 参考代码
-            - [src/animation/demo01.html](src/animation/demo01.html)
+            - [src/animation/transition/demo01.html](src/animation/transition/demo01.html)
         - 代码内容
             ```css
             .box1{
@@ -78,7 +79,7 @@
                 margin: 0 auto;
                 background-image: url("./transition_test_img.png");
                 
-                /* 分3次移动，制造动画效果 */
+                /* 分3次移动背景的位置，制造动画效果 */
                 transition: background-position 0.4s steps(3);
             }
 
@@ -95,7 +96,7 @@
         - 动画与过渡类似，都可以实现一些动态的效果
     - 不同点
         - 过渡需要在某个属性发生变化时才会触发
-        - 动画自动触发动态效果
+        - 动画**自动触发**动态效果
 - 关键帧
     - 设置动画效果必须先设置一个关键帧
     - 关键帧设置了动画执行的每一个步骤
@@ -105,10 +106,10 @@
             @keyframes 关键帧的名字 {
                 /* 动画的开始位置，也可以使用0%{}*/
                 from{
-                    css属性:属性值;
+                    css属性: 属性值;
 
                     /* 也可以设置动画效果的相关属性 */
-                    animation-xxxx:xxx; 
+                    animation-属性名: 属性值; 
                 }
 
                 /* 动画的结束位置，也可以使用100%{}*/
@@ -134,7 +135,7 @@
     - `animation-delay`，指定关键帧的延迟时间
     - `animation-timing-function`，指定关键帧的执行方式
     - `animation-iteration-count`，指定动画执行次数
-        - `animation-iteration-count: infinity;`，连续执行无限次
+        - `animation-iteration-count: infinite;`，连续执行无限次
     - `animation-direction`，指定关键帧的执行方向
         - normal，默认值，从from到to
         - reverse，从to到from
@@ -267,6 +268,7 @@
 - 变形是指通过css来改变元素的形状或位置
 - 变形<label style="color:red">不会影响页面布局</label>，可以用来微调元素
 - 通过 `transform: 变形函数1() 变形函数2(),...` 来设置变形效果
+- 通过过渡 `transition: transform 相关参数, ...` 来启动变形效果
 
 ## 变形的原点
 [top](#catalog)
@@ -277,9 +279,9 @@
 ## 平移的基本用法
 [top](#catalog)
 - 平移方法
-    - `transformX(长度)`，沿x轴平移
-    - `transformY(长度)`，沿y轴平移
-    - `transformZ(长度)`，沿z轴平移
+    - `translateX(长度)`，沿x轴平移
+    - `translateY(长度)`，沿y轴平移
+    - `translateZ(长度)`，沿z轴平移
 - 如果长度使用百分比，百分比是相对于自身计算的
 
 - 示例
@@ -447,7 +449,7 @@
 - 注意事项
     - 旋转是围绕当前元素的中心点变换的，直接使用旋转无法实现表针的效果
 - 表针绕中心转动的方式
-    - 将表针部分装在一个外部容器中，长度为外部容器的一般
+    - 将表针部分装在一个外部容器中，长度为外部容器的一半
     - 由外部容器进行旋转，看起来就像表针在转动
     - 示例
         ```html
@@ -525,6 +527,7 @@
             width: 50%;
             /* background-color: #bfa; */
             /* animation: run 3600s linear infinite; */
+            animation: run 3600s step(60) infinite;
         }
 
         .hour{
@@ -580,7 +583,7 @@
 - 设置3d变形效果：`transform-style:preserve-3d`
 - 示例: 3d旋转效果
     - 设置方法
-        1. 通过旋转和平移分别设置6各面的图片
+        1. 通过旋转和平移分别设置6个面的图片
         2. 开启父元素的3d变形效果
         3. 平移旋转父元素
     - 参考代码
