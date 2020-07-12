@@ -130,9 +130,6 @@
 
 ## 头部导航条--导航列表
 [top](#catalog)
-
-## 头部导航条--搜索框
-[top](#catalog)
 - 需要的样式
     - `.header-nav`，用于固定宽度，开启定位
         - `.header-nav__list`，固定列表部分居中
@@ -147,7 +144,44 @@
     - `<a>` 是行内元素，垂直方向的 `padding` 不会生效
     - 需要通过 `display:block` 将 `<a>` 设置为块元素，使垂直方向的属性生效
 
-- text-indent：首行缩进
+## 头部导航条--搜索框
+[top](#catalog)
+- 需要的样式
+    - `search`
+        - `search__form`
+            - `search__input`，搜索框
+            - `search__btn`，搜索按钮
+            - `search__keyword-list`，搜索关键字提示列表
+                - `search__keyword-link`
+- 搜索框部分需要靠右显示，所以需要设置 `float:right`
+- 输入框
+    - `<input>`默认会包含 `padding`，需要手动去除
+    - `<input>`默认有轮廓线 `outline`，需要手动去除
+    - 无法继承父元素的高度，需要手动设置
+- 搜索按钮
+    - `<button>`默认会包含 `padding`、`border`，需要手动去除
+    - 无法继承父元素的高度，需要手动设置
+- 输入框和搜索按钮之间的空白
+    - html内容格式
+        ```html
+        <input>
+        <button></button>
+        ```
+    - 空白是因为 `<input>` 和 `<button>` 之间有换行才产生的，删除空行即可
+    - 也可以将 `<input>` 和 `<button>` 同时开启 `float:left`，让两个部分水平排列
+
+- 边框线的颜色变化有两种方式，都需要设置
+    1. `search__form` 被鼠标移入时，输入框和按钮需要变色
+    2. `search__input` 被点击后，按钮、输入框需要变色，同时弹出关键字提示表
+
+- 关键字列表项的设置方式
+    - html代码
+        ```html
+        <li><a href='javascript:;' class='search_ketword-link'>key1</a></li>
+        ```
+    - 链接写在了`<li>` 的内部，每个列表项的鼠标移入，变化背景色的属性，只能设置在 `<a>`
+        - 如果设置在`<li>`，没有效果
+    - 为了保证鼠标移入时的背景色变化效果，能够进行整行的变化，需要将 padding、width 属性都设置在 `<a>` 中
 - input 有 默认的padding和border
 - button 的box-size是 border-sizing，也有默认的padding和border
 - 垂直方向出问题，用行高
