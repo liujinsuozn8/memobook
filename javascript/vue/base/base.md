@@ -106,6 +106,8 @@
 - [Vue-Router](#Vue-Router)
     - [创建项目时的路由选项](#创建项目时的路由选项)
     - [路由的实现方式](#路由的实现方式)
+    - [vue-router简介](#vue-router简介)
+    - [](#)
 
 - [](#)
 
@@ -159,7 +161,7 @@
 [top](#catalog)
 - 需要从 https://vuejs.org/js/vue.js 下载开发环境的vuejs
 - 参考代码
-    - [src/base/helloworld/hello.html](src/base/helloworld/hello.html)
+    - [src/helloworld/hello.html](src/helloworld/hello.html)
 - html内容
     - 在控制台，通过 `app.message`、`app.name`，修改数据后，即可通过双向绑定立刻显示到页面中
     ```html
@@ -192,7 +194,7 @@
 [top](#catalog)
 - 需要从 https://vuejs.org/js/vue.js 下载开发环境的vuejs
 - 参考代码
-    - [src/base/helloworld/show_list.html](src/base/helloworld/show_list.html)
+    - [src/helloworld/show_list.html](src/helloworld/show_list.html)
 - html内容
     ```html
     <!DOCTYPE HTML>
@@ -239,7 +241,7 @@
 [top](#catalog)
 - 需要从 https://vuejs.org/js/vue.js 下载开发环境的vuejs
 - 参考代码
-    - [src/base/helloworld/counter.html](src/base/helloworld/counter.html)
+    - [src/helloworld/counter.html](src/helloworld/counter.html)
 - html内容
     ```html
     <!DOCTYPE HTML>
@@ -4666,7 +4668,17 @@
             history.replaceState({}, '', 'test')
             ```
 
+## vue-router简介
+[top](#catalog)
 - router**默认使用 hash 方式，可以选择 history**
+- vue-router是由Vue.js官方提供的，与vue.js深度集成，适合构建单页面应用
+- vue-router 是基于路由和组件的
+    - 路由用于设置、保存访问路径和组件的映射
+    - 在 vue-router 的单页面应用中，页面路径的改变就是组件间的切换
+
+## vue-router的使用方法
+[top](#catalog)
+
 
 # 其他
 [top](#catalog)
