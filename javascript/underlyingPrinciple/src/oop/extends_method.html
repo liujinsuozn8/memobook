@@ -1,0 +1,93 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta charset='UTF-8'>
+        <title>通用继承关系设定方法</title>
+        <script type='text/javascript'>
+            // 1. 为子类绑定父类中的静态方法
+            function extendStatics (sub, parent) {
+
+                // 简写: 参考 typescript 的 extends 关键字的编译结果
+                // let fn = Object.setPrototypeOf ||
+                //     ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+                //     function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+
+                if ( Object.setPrototypeOf ){
+                    // 1.1 方式1: 相当于 sub.__proto__ = parent 的封装
+                    Object.setPrototypeOf(sub, parent);
+                } else {
+                    //  如果没有 setPrototypeOf，则创建兼容方法
+
+                    // 1.2 方式2: 手动设置 隐式原型
+                    if (sub.__proto__){
+                        sub.__proto__ = parent;
+                    } else{
+                        // 1.3 方式3: 搜索父类的静态方法并设置到子类中
+                        for (let p in parent){
+                            if (parent.hasOwnProperty(p)){
+                                sub[p] = parent[p];
+                            }
+                        }
+                    }
+                }
+            };
+
+            // 2. 设置继承关系
+            function extend(sub, parent){
+                // 2.1. 将父类中的静态方法设置到子类中
+                extendStatics(sub, parent);
+
+                // 2.2. 创建寄生类
+                function Super(){
+                    // 相当于在创建寄生类对象的同时，
+                    // 执行: 子类.prototype.constructor = 子类
+                    this.constructor = sub;
+                }
+
+                // 2.3. 根据 父类 设置子类的原型
+                if ( parent === null){
+                    // 如果父类是空，则实例化一个原型是空的对象，作为子类的原型
+                    sub.prototype = Object.create(null);
+                } else {
+                    // 实例化一个寄生类对象，并设置为子类的原型
+                    // 设置寄生类的原型
+                    Super.prototype = parent.prototype;
+                    sub.prototype = new Super();
+                    // 子类.prototype.constructor = 子类; 这个操作在寄生类内部已经执行完成
+                }
+            }
+
+
+            // 3. 测试部分
+            // 3.1 父类
+            function Person(name, age){
+                this.name = name
+                this.age = age
+            }
+            // 父类的静态方法
+            Person.run = function(){ console.log('this is a person'); }
+            // 父类的原型方法
+            Person.prototype.showSelf = function(){
+                console.log('name ='+ this.name + ', age =' + this.age)
+            };
+
+            // 3.2 子类
+            function Student(name, age, price){
+                Person.call(this, name, age)
+                this.price = price
+            }
+
+            // 3.3 设置继承关系
+            extend(Student, Person);
+
+            // 3.4 通过子类调用静态方法
+            Student.run();  // 输出: this is a person
+
+            // 3.5 实例化子类对象，并调用原型上的方法
+            var student = new Student("aaa", 20, 100)
+            student.showSelf();  // 输出: name =aaa, age =20
+        </script>
+    </head>
+    <body>
+    </body>
+</html>

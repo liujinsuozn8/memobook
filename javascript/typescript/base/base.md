@@ -26,6 +26,11 @@
     - [函数参数](#函数参数)
     - [函数重载](#函数重载)
     - [箭头函数](#箭头函数)
+- [类](#类)
+    - [定义类](#定义类)
+    - [类的继承](#类的继承)
+    - [类属性的修饰符](#类属性的修饰符)
+    - [静态属性与静态方法](#静态属性与静态方法)
 - [](#)
 
 
@@ -85,7 +90,7 @@
         ```
 
     3. 启动ts文件的即时编译
-        - <label style='color:red'>直接通过指令启动</label>
+        - <label style='color:red'>直接通过指定启动</label>
             ```sh
             tsc -p <开发目录>/tsconfig.json --watch
             ```
@@ -562,7 +567,10 @@
 ## 函数声明
 [top](#catalog)
 - 参考示例
-    - [src/syntax/function/fun_define.ts](src/syntax/function/fun_define.ts)
+    - 示例代码
+        - [src/syntax/function/fun_define.ts](src/syntax/function/fun_define.ts)
+    - 编译结果
+        - [src/syntax/js/function/fun_define.js](src/syntax/js/function/fun_define.js)
 - 声明方式
     1. 具名函数
         ```ts
@@ -585,7 +593,10 @@
 ## 函数参数
 [top](#catalog)
 - 参考示例
-    - [src/syntax/function/fun_params.ts](src/syntax/function/fun_params.ts)
+    - 示例代码
+        - [src/syntax/function/fun_params.ts](src/syntax/function/fun_params.ts)
+    - 编译结果
+        - [src/syntax/js/function/fun_params.js](src/syntax/js/function/fun_params.js)
 
 - 定义有参函数
     ```ts
@@ -705,6 +716,13 @@
 [top](#catalog)
 - ts为了兼容es5、es6，重载的写法与其他语言不同
 - ts的重载只是利用编译器对函数的使用方式做约束，在编译结果中仍然是普通的函数
+
+- 参考示例
+    - 示例代码
+        - [src/syntax/function/fun_overload.ts](src/syntax/function/fun_overload.ts)
+    - 编译结果
+        - [src/syntax/js/function/fun_overload.js](src/syntax/js/function/fun_overload.js)
+
 - 重载方式1: 参数数量相同，类型不同
     - 示例
         ```ts
@@ -771,5 +789,435 @@
 
 ## 箭头函数
 [top](#catalog)
-- ts默认支持 es6 的箭头函数
-- 所有规范与 es6 相同
+- ts编译器默认支持 es6 的箭头函数，所有规范与 es6 相同
+- 对于 `this` 对象，ts编译器的规范与es6相同
+    - 即编译时，箭头函数的 this 对象就已经确定
+    - this 不是函数的调用者，而是函数所属的作用域，是静态的
+- 箭头函数的编译结果
+    - 箭头函数的编译结果仍然是**用function声明的普通函数**
+    - `this` 的处理
+        - ts编译器在编译时，会捕获 `this` 所在的作用域，并将其设置为 `_this = this`
+        - 如果箭头函数中使用了 `this` 对象，编译后的代码中都会改为使用 `_this`
+        - 虽然箭头函数的编译结果是 普通函数，但是 `this` 的规则与 es6 保持一致
+- 示例
+    - 在ts中使用箭头函数
+        - 参考代码
+            - [src/syntax/function/fun_arrow.ts](src/syntax/function/fun_arrow.ts)
+        - 代码内容
+            ```ts
+            // 1. 捕获局部的this
+            // 在函数内部声明的箭头函数，默认函数的上下文this
+            function funX(){
+                // 编译异常: error TS7041: The containing arrow function captures the global value of 'this'.
+                let x = ()=>console.log(this);
+                x();
+            }
+
+            // 2. 捕获全局的this
+
+            // 2.1 全局的箭头函数
+            // 编译异常: error TS7041: The containing arrow function captures the global value of 'this'.
+            let globalArrowFun = ()=> ()=>console.log(this);
+
+            // 2.2 对象内部的属性是箭头函数时，默认使用的是全局的this，在页面中是window
+            let objA:any = {
+                // objA中没有this，继续向外搜索，使用的是全局的this
+                // 编译异常: error TS7041: The containing arrow function captures the global value of 'this'.
+                fn1:()=>console.log(this),
+                fn2(){
+                    console.log(this);
+                },
+            }
+            ```
+    - 编译结果
+        - 参考代码
+            - [src/syntax/js/function/fun_arrow_bk.js](src/syntax/js/function/fun_arrow_bk.js)
+        - 编译内容
+            ```js
+            "use strict";
+            var _this = this;   // <<<<<<<<<<<<< 捕获了全局this
+            // 1. 捕获局部的this
+            function funX() {
+                var _this = this;   // <<<<<<<<<<<<< 捕获了函数内的this
+                var x = function () { return console.log(_this); }; // 使用 _this
+                x();
+            }
+            // 2. 捕获全局的this
+            // 2.1 全局的箭头函数
+            var globalArrowFun = function () { return function () { return console.log(_this); }; };
+            // 2.2 对象内部的属性是箭头函数时，默认使用的是全局的this，在页面中是window
+            var objA = {
+                fn1: function () { return console.log(_this); }, // 使用 _this
+                fn2: function () {
+                    console.log(this);
+                },
+            };
+            ```
+
+# 类
+## 定义类
+[top](#catalog)
+- 参考示例
+    - 参考代码
+        - [src/syntax/class/define.ts](src/syntax/class/define.ts)
+    - 编译结果
+        - [src/syntax/js/class/define.js](src/syntax/js/class/define.js)
+- 定义类
+    - 注意事项
+        - 私有属性，在外部无法直接使用，需要通过 getter、setter 方法来使用
+        - 如果某个属性没有设置默认值，或者在构造器中没有初始化，会有编译异常
+            ```sh
+            error TS2564: Property 'address' has no initializer and is not definitely assigned in the constructor.
+            ```
+    - 定义方法
+        ```ts
+        class Person{
+            name: String;               // 默认省略public关键字
+            public age:number = 20;     // 为属性设置默认值
+            private address: String;    // 设置私有后苏醒
+
+            // 构造函数
+            constructor(name:String){
+                // 需要为属性设置，否则会有编译异常
+                this.name = name;
+                this.address = '';
+            }
+
+            printInfo(): void {
+                console.log(`name=${this.name}, age=${this.age}, address=${this.address}`);
+            }
+
+            // 为 address 添加getter
+            getAddress():String{
+                return this.address;
+            }
+            setAddress(value:String){
+                this.address = value;
+            }
+
+        }
+
+        // 实例化对象
+        let person = new Person('testName');
+        person.printInfo();                     // 输出: name=testName, age=20, address=
+        person.setAddress('abcdefg');
+        console.log(person.getAddress());       // 输出: abcdefg
+        person.age=22;
+        person.printInfo();                     // 输出: name=testName, age=22, address=abcdefg
+
+        // 无法直接访问 private 变量
+        // 编译异常
+        // error TS2341: Property 'address' is private and only accessible within class 'Person'.
+        // console.log(person.address);
+        ```
+
+
+- 编译结果
+    - 编译的本质
+        - 通过IIFE创建类
+        - 类的创建方式与 es5 相同
+            - 通过构造函数创建类
+            - 通过在原型上添加方法来添加类方法
+        - ts中的约束只是编译约束，在编译结果中没有特殊体现
+    - 编译后的代码
+        ```js
+        var Person = /** @class */ (function () {
+            // 构造函数
+            function Person(name) {
+                this.age = 20; // 为属性设置默认值
+                // 需要为属性设置，否则会有编译异常
+                this.name = name;
+                this.address = '';
+            }
+            Person.prototype.printInfo = function () {
+                console.log("name=" + this.name + ", age=" + this.age + ", address=" + this.address);
+            };
+            // 为 address 添加getter
+            Person.prototype.getAddress = function () {
+                return this.address;
+            };
+            Person.prototype.setAddress = function (value) {
+                this.address = value;
+            };
+            return Person;
+        }());
+        ```
+
+## 类的继承
+[top](#catalog)
+- 参考示例
+    - 参考代码
+        - [src/syntax/class/extends.ts](src/syntax/class/extends.ts)
+    - 编译结果
+        - [src/syntax/js/class/extends.js](src/syntax/js/class/extends.js)
+- 继承的语法
+    - 注意事项
+        - 需要同时使用 `extends` 和 `super` 两个关键字才能完成继承
+    - 继承后可以有类自己的方法，也可以重写父类方法
+    - 语法示例
+        ```ts
+        // 1. 通过 extends 关键字继承某个类
+        class Student extends BasePerson{
+            constructor(name:string){
+                // 2. 通过super调用父类
+                super(name);
+            }
+
+            // 定义 Student 自己的方法
+            study():void{
+                console.log(`${this.name} is studying`)
+            }
+
+            // 重写父类的方法
+            printInfo():void{
+                console.log(`Student name = ${this.name}`)
+            }
+        }
+        ```
+
+- 编译结果
+    ```js
+    // 将父类函数中的静态方法设置到子类函数中
+    var __extends = (this && this.__extends) || (function () {
+        var extendStatics = function (d, b) {
+            // Object.setPrototypeOf 及其 polyfill
+            // 为子类构造函数绑定父类中的【静态方法】
+            extendStatics = Object.setPrototypeOf ||
+                ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+                function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            return extendStatics(d, b);
+        };
+
+        // 设置父类、子类的继承关系
+        return function (d, b) {
+            // 1. 将父类函数中的静态方法设置到子类函数中
+            extendStatics(d, b);
+
+            // 2. 使用寄生组合继承，构建继承关系
+            // 2.1. 创建一个寄生类
+            function __() { this.constructor = d; }
+            // 2.2 将寄生类的原型设置为父类的原型
+            // 2.3 实例化寄生类对象，并将该对象作为子类的原型
+            d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+        };
+    })();
+
+    // 1. 父类。通过IIFE使用function创建普通的类
+    var BasePerson = /** @class */ (function () {
+        function BasePerson(name) {
+            this.name = name;
+        }
+        BasePerson.prototype.printInfo = function () {
+            console.log("name=" + this.name);
+        };
+        return BasePerson;
+    }());
+
+    /*
+        2. 子类。通过IIFE使用function创建普通的类
+
+        extends 关键字
+            - 被转换为继承关系设置函数 __extends
+            - 通过 __extends 函数完成 父类、子类原型链的设置、constructor的设置、父类静态方法的设置
+        - super 关键字
+            - 转换为注入到IIFE 的函数对象，即 父类 _super 参数
+            - 然后在函数中，调用 call 方法被调用
+
+        super 与 __extends 相当于 js 中的组合继承
+    */
+    var Student = /** @class */ (function (_super) {
+        // 1. 设置继承关系
+        __extends(Student, _super);
+        function Student(name) {
+            // 2. 通过super调用父类
+            return _super.call(this, name) || this;
+        }
+        // 定义 Student 自己的方法
+        Student.prototype.study = function () {
+            console.log(this.name + " is studying");
+        };
+        // 重写父类的方法
+        Student.prototype.printInfo = function () {
+            console.log("Student name = " + this.name);
+        };
+        return Student;
+    }(BasePerson));
+    ```
+
+## 类属性的修饰符
+[top](#catalog)
+- 3种修饰符及访问范围
+
+    |修饰符|访问范围|
+    |-|-|
+    |`public`|在任何位置都可以访问|
+    |`protected`|同包、不同包?????的子类内部|
+    |`private`|当前类内部|
+
+- 属性不加修饰符，默认为 `public`
+- 修饰符的本质
+    - 修饰符只是 ts 编译器的一种约束手段，只在编译器有效
+    - 在编译结果中，所有的属性都是普通属性，没有特殊的处理
+
+- 示例
+    - 代码位置
+        - 参考代码
+            - [src/syntax/class/extends.ts](src/syntax/class/extends.ts)
+        - 编译结果
+            - [src/syntax/js/class/extends.js](src/syntax/js/class/extends.js)
+    - 示例代码
+        ```ts
+        class Tool{
+            name:string;
+            protected introduction:string;
+            private executedTime:number = 0;
+
+            constructor(name:string, introduction:string){
+                this.name = name;
+                this.introduction = introduction
+            }
+
+            run():void{
+                console.log(`${this.name} is run, executedTime=${this.executedTime}`);
+                this.addExecutedTime();
+            }
+
+            stop():void {
+                console.log(`${this.name} is stop`);
+                this.clearExecutedTime();
+            }
+
+            protected clearExecutedTime():number{
+                return this.executedTime = 0;
+            }
+
+            private addExecutedTime():void{
+                this.executedTime += 10;
+            }
+        }
+
+        let tool = new Tool('computer', 'this is a computer');
+        // 调用 public 方法
+        tool.run();
+        tool.run();
+        tool.stop();
+        tool.run();
+
+        // 无法调用 protected 方法，会有编译异常
+        // error TS2445: Property 'clearExecutedTime' is protected and only accessible within class 'Tool' and its subclasses.
+        // tool.clearExecutedTime();
+
+        // 无法调用 private 方法，会有编译异常
+        // error TS2341: Property 'addExecutedTime' is private and only accessible within class 'Tool'.
+        // tool.addExecutedTime();
+        ```
+    - 编译结果
+        - 全部被编译为普通js函数，没有特殊处理
+            ```js
+            var Tool = /** @class */ (function () {
+                function Tool(name, introduction) {
+                    this.executedTime = 0;
+                    this.name = name;
+                    this.introduction = introduction;
+                }
+                Tool.prototype.run = function () {
+                    console.log(this.name + " is run, executedTime=" + this.executedTime);
+                    this.addExecutedTime();
+                };
+                Tool.prototype.stop = function () {
+                    console.log(this.name + " is stop");
+                    this.clearExecutedTime();
+                };
+                Tool.prototype.clearExecutedTime = function () {
+                    return this.executedTime = 0;
+                };
+                Tool.prototype.addExecutedTime = function () {
+                    this.executedTime += 10;
+                };
+                return Tool;
+            }());
+            var tool = new Tool('computer', 'this is a computer');
+            tool.run();
+            tool.run();
+            tool.stop();
+            tool.run();
+            ```
+
+## 静态属性与静态方法
+[top](#catalog)
+- 通过 `static` 关键字声明静态属性和静态方法
+- 静态方法中无法调用非静态的属性和方法
+- 静态内容的调用
+    - 需要通过类来调用
+    - <label style='color:red'>在静态方法内部调用静态属性，也需要通过类来获取静态属性</label>
+- 编译结果
+    - 静态属性和静态方法，是直接挂在类构造函数上的方法
+    - 普通的属性和方法，是挂在构造函数原型对象上的方法
+
+- 示例
+    - 代码位置
+        - 参考代码
+            - [src/syntax/class/static.ts](src/syntax/class/static.ts)
+        - 编译结果
+            - [src/syntax/js/class/static.js](src/syntax/js/class/static.js)
+    - 代码内容
+        ```ts
+        class Fruit{
+            // 声明静态方法与静态变量
+            static type = 'xxxxx';
+            static print(){
+                console.log('this is Fruit');
+
+                // 在静态方法中调用静态属性时，需要通过类来调用
+                console.log(`type = ${Fruit.type}`);
+
+                // 无法调用非静态方法和变量，编译异常
+                // error TS2304: Cannot find name 'getName'.
+                // getName();
+            }
+
+            // 声明普通变量和方法
+            name:string;
+            constructor(name:string){
+                this.name = name;
+            }
+            getName():string{
+                return this.name;
+            }
+        }
+
+        // 调用类的静态方法
+        Fruit.print();
+        // 调用类的静态函数
+        console.log(Fruit.type);
+        ```
+    - 编译结果
+        ```js
+        var Fruit = /** @class */ (function () {
+            function Fruit(name) {
+                this.name = name;
+            }
+
+            // 声明静态方法
+            Fruit.print = function () {
+                console.log('this is Fruit');
+                console.log("type = " + Fruit.type);
+            };
+
+            // 普通方法
+            Fruit.prototype.getName = function () {
+                return this.name;
+            };
+
+            // 声明静态属性
+            Fruit.type = 'xxxxx';
+            return Fruit;
+        }());
+
+        // 调用类的静态方法
+        Fruit.print();
+        // 调用类的静态函数
+        console.log(Fruit.type);
+        ```
+
+[top](#catalog)

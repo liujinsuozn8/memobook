@@ -17,19 +17,21 @@
         - [回调函数](#回调函数)
         - [立即执行函数IIFE](#立即执行函数IIFE)
         - [函数中的this对象](#函数中的this对象)
+- [提升](#提升)
+    - [变量提升与函数提升](#变量提升与函数提升)
+    - [与提升相关的问题](#与提升相关的问题)
 - [函数](#函数)
     - [原型与原型链](#原型与原型链)
         - [原型prototype](#原型prototype)
         - [显式原型与隐式原型](#显式原型与隐式原型)
         - [原型链](#原型链)
-        - [原型中的特殊点](#原型中的特殊点)
+        - [原型中的几个特殊性](#原型中的几个特殊性)
         - [自定义函数、Function、Object之间的原型关系](#自定义函数、Function、Object之间的原型关系)
         - [原型的继承](#原型的继承)
-        - [属性问题](#属性问题)
+        - [属性设置与原型链的访问](#属性设置与原型链的访问)
         - [instanceof原理](#instanceof原理)
         - [与原型相关的问题](#与原型相关的问题)
     - [执行上下文与执行上下文栈](#执行上下文与执行上下文栈)
-        - [变量提升与函数提升](#变量提升与函数提升)
         - [执行上下文](#执行上下文)
         - [执行上下文栈](#执行上下文栈)
         - [与执行上下文相关的问题](#与执行上下文相关的问题)
@@ -54,6 +56,9 @@
         - [原型链继承](#原型链继承)
         - [借用构造函数继承](#借用构造函数继承)
         - [组合继承](#组合继承)
+        - [寄生组合继承](#寄生组合继承)
+        - [保留父类的静态方法](#保留父类的静态方法)
+        - [构建通用的继承关系设定方法](#构建通用的继承关系设定方法)
 - [线程机制与事件机制](#线程机制与事件机制)
     - [浏览器中的进程与线程](#浏览器中的进程与线程)
     - [定时器的问题](#定时器的问题)
@@ -359,7 +364,7 @@
     - 函数表达式 : `var 变量名 = function(){};`
 
 - 如何调用/执行函数
-    
+
     |调用方式|说明|
     |-|-|
     |`test()`|直接调用|
@@ -395,7 +400,7 @@
         ```js
         (function(){
             console.log(new Date());
-        })()    
+        })()
         ```
     - 错误的调用方法
         - 错误示例
@@ -504,6 +509,191 @@
         // fn2 this = Window
         ```
 
+# 提升
+## 变量提升与函数提升
+[top](#catalog)
+- 变量的提升
+    - 使用`var 变量` 声明变量
+        - 这种方式创建的变量会被提升到当前作用域的起始位置，执行**声明**，然后在赋值代码处执行赋值
+        - 在变量声明之前使用变量
+            - 因为变量的提升，只有声明，没有具体的值，所以只能输出undefined
+                ```js
+                console.log(param);
+                // 输出：undefined
+                var param = 1234;
+                ```
+    - 不使用 `var` 关键字声明变量
+        - 如果声明变量时，没有使用`var` 关键字，则变量不会提升
+        - <label style="color:red">所有没有使用 `var` 声明的变量，无论代码写在什么位置，都会变为全局变量，相当于做了：`window.变量 = 变量值` </label>
+        - 在变量声明之前使用变量，会引发异常
+            - 因为变量没有被提升，所以在变量声明之前使用时，会引发变量未定义的异常
+                ```js
+                // Uncaught ReferenceError: param is not defined
+                console.log(param);
+                param = 1234;
+                ```
+
+- 函数的提升
+    - 使用**函数声明** `function 函数名([参数列表]){...}`创建的函数
+        - 函数声明<label style="color:red">会提升</label>，在当前作用域的起始位置被**声明并创建**
+        - 因为存在函数提升，所以可以在函数声明之前使用函数
+        - 在声明之前使用函数
+            - 在执行前，整个函数对象被提升并创建，所以可以正常执行
+                ```js
+                func();
+                // 输出：this is func
+
+                function func (){
+                    console.log("this is func");
+                }
+                ```
+
+    - 使用**函数表达式** `var 变量名 = function([参数列表]){...}`创建的函数
+        - 函数表达式<label style="color:red">不会提升</label>，所以不要函数表达式声明之前使用函数
+        - 两个阶段
+            1. 这样创建的函数，在执行前，只有变量部分：`var 变量名` 会被提升
+            2. 执行函数表达式时，才会将函数赋值给变量
+        - 在声明之前执行函数，会引发异常
+            - func不是一个函数，因为只有变量名被提升了，函数对象还没有创建，所以执行时无法识别
+                ```js
+                // Uncaught TypeError: func is not a function
+                func();
+
+                var func = function(){
+                    console.log("this is func");
+                }
+                ```
+
+- 示例分析
+    - 全局作用域与函数作用域的变量重名
+        1. 函数作用域中不使用`var` 关键字声明变量
+            ```js
+            var a = 10;
+            function test(){
+                // 1. 因为内部的变量a没有使用 var声明，所以函数内部没有提升后的变量a
+
+                // 2. 此处使用的是全局作用域中的a，所以输出10
+                console.log("inner =", a);//输出：inner = 10
+
+                // 3. 此处使用的是全局作用域中的a，a被该成了20
+                a = 20;
+            }
+
+            test();
+
+            // 4. a在test()内部被修改了，所以输出20
+            console.log("outter = ", a); //输出：outter =  20
+            ```
+        2. 函数作用域中使用`var` 关键字声明变量
+            ```js
+            var a = 10;
+            function test(){
+                // 1. 因为内部的变量a 使用 var声明，所以此处会有提升
+                // var a;       // 被提升的 变量a
+
+                // 2. 输出时，在当前函数作用域找到了变量a，但是变量a只有声明还没有赋值
+                // 所以输出：undefined
+                console.log("inner =", a);//输出：inner = undefined
+
+                // 3. 此处使用的是当前函数作用域内部的 变量a，所以不会影响全局作用域中的变量
+                var a = 20;
+            }
+
+            test();
+
+            // 4. 全局变量a 没有被函数修改，所以输出的仍然是a
+            console.log("outter = ", a); //输出：outter =  10
+            ```
+        3. 函数参数与全局变量重名
+            ```js
+            var a = 10;
+
+            function test(a){
+                // 2. 函数参数 相当于在函数作用域中声明的变量，所以当前作用域中有 变量a
+                // var a;           // 函数参数的效果
+
+                // 3. 调用函数时，没有传递参数，所以 a=undefined
+                console.log("inner =", a);//输出：inner = undefined
+
+                // 4. 此处修改函数作用域内部的变量a
+                a = 20;
+            }
+
+            // 1. 函数参数与全局变量重名，并且不输入任何参数
+            test();
+
+            // 5. 函数内部没有修改变量a，所以输出的仍然是 10
+            console.log("outter = ", a); //输出：outter =  10
+            ```
+
+    - 在函数内部不使用 `var` 声明变量
+        ```js
+        var a = 10;
+        function test(){
+            // 1. 函数内部没有 变量a 的声明，所以使用全局变量
+
+            // 2. 输出全局变量 a
+            console.log("inner =", a);//输出：inner = 10
+
+            // 3. 没有使用 var 声明变量，相当于 window.b = 20;
+            // 创建了全局变量 b
+            b = 20;
+        }
+
+        test();
+
+        // 4. 在函数中创建了全局变量 b，此处输出 20
+        console.log("outter = ", b); //输出：outter =  20
+        ```
+
+## 与提升相关的问题
+[top](#catalog)
+- 经典问题：代码输出什么?
+    - 代码内容
+        ```js
+        var a = 3
+        function fn(){
+            console.log(a)
+            var a = 4;
+        }
+
+        fn()
+
+        console.log(b)
+        var b = 10
+
+        console.log(c)
+        c = 20
+
+        fn2()
+        function fn2(){
+            console.log("this is fn2")
+        }
+
+        fn3()
+        var fn3 = function fn3(){
+            console.log("this is fn3")
+        }
+        ```
+    - 输出结果：
+        1. `fn()`: undefined
+        2. `console.log(b)`: undefined
+        3. `console.log(c)`: 异常，未定义
+        4. `fn2()`: this is fn2
+        5. `fn3()`: 异常，TypeError: fn3 is not a function
+    - 输出分析
+        1. `fn()`
+            - fn函数内使用了 `var` 声明变量a，代码执行时，a 会被提升
+            - 输出 a 时，fn的函数作用域中已经存在 a 的定义，但是还没有赋值，所以输出 undefined
+        2. `console.log(b)`
+            - 在全局作用域内，使用 var 声明变量b，所以可以在 window 对象中找到，但是只有定义还未赋值，所以是undefined
+        3. `console.log(b)`
+            - 变量c 未使用 var 声明，所以不会有提升，window对象中不会有该对象，所以出现异常
+        4. `fn2()`
+            - 使用函数声明的方式创建函数，js执行时，会自动提升。fn2在执行前已经被创建完成，所以可以正常输出
+        5. `fn3()`
+            - 使用函数表达式的方式创建函数，js执行时，只有变量 fn3部分被提升，并且只有定义部分，值是undefined，所以无法执行函数
+
 # 函数
 ## 原型与原型链
 ### 原型prototype
@@ -534,10 +724,10 @@
         console.log(fn.prototype.constructor === fn);
         // 输出：true
         ```
-    
+
     - 属性关系图：constructor 与其 类型相互引用
         ```
-        ┌─────────────────┐      
+        ┌─────────────────┐
         │       Type      │ <<───────────────────────────┐
         ├───┬─────────┬───┤      ┌───────────────────┐   │
         │   │prototype├───┼───>> │ Prototype of Type │   │
@@ -566,7 +756,6 @@
         p2.print();
         // 输出：name = jery age = 20
         ```
-
 
 ### 显式原型与隐式原型
 [top](#catalog)
@@ -661,7 +850,7 @@
 
         Fn.prototype.test02 = function(){console.log("test02")}
         var myfn = new Fn();
-        
+
         console.log(Fn.prototype);
 
         // 搜索顺序：myfn 内部存在 -- > 直接使用
@@ -670,7 +859,7 @@
         // 搜索顺序：myfn 内部不存在 --> 原型对象Object中存在 --> 直接使用
         myfn.test02();
 
-        // 搜索顺序：myfn 内部不存在 --> 原型对象Object中不存在 
+        // 搜索顺序：myfn 内部不存在 --> 原型对象Object中不存在
         //           --> Object的原型对象中存在 --> 直接使用
         myfn.toString();
 
@@ -713,15 +902,15 @@
         │            │    │     ├──────────────────────┤       │ Method:           │     │
         │            │    │     │ __proto__:           │       │   test2=function()│     │
         │            │    │     │    0x0004      ───>>─┼────>> │                   │     │
-        │ ┌────────┐ │    │     ├──────────────────────┤       └───────────────────┘     │          
+        │ ┌────────┐ │    │     ├──────────────────────┤       └───────────────────┘     │
         │ │  myfn: │ │    │     │ Method:              │             0x0004              │
         │ │ 0x0007 ├─┼────┼──>> │   test01()=function()│                                 │
-        │ └────────┘ │    │     └──────────────────────┘                                 │    
+        │ └────────┘ │    │     └──────────────────────┘                                 │
         │   0x0008   │    │           0x0007                                             │
         └────────────┘    └──────────────────────────────────────────────────────────────┘
         ```
 
-### 原型中的特殊点
+### 原型中的几个特殊性
 [top](#catalog)
 - 函数对象的特殊性
     - 函数对象中分别包含了显式原型和隐式原型
@@ -767,8 +956,6 @@
     - 由于这个特殊性，需要修改 prototype 的定义
         - <label style="color:red">每个函数对象都有一个prototype属性，默认指向一个空的Object实例对象，即原型对象。但是Object不满足</label>
 
-
-
 ### 自定义函数、Function、Object之间的原型关系
 [top](#catalog)
 - 自定义函数、Function、Object之间的原型关系图
@@ -784,22 +971,22 @@
     │var f1 = new Foo ├──────────────────────────────┐
     └─────────────────┘                              │
                                                      V
-          ┌───────────┐      prototype      ┌────────────────────────┐       
+          ┌───────────┐      prototype      ┌────────────────────────┐
           │ function  │   ───────────────>> │ Foo.prototype          │
     ┌──<<─┤ Foo()     │   <<─────────────── │ (Object Null Instance) │
     │     └───────────┘      constructor    └──────────────┬─────────┘
     │                                                      │
-    V                                                      │ 
+    V                                                      │
     V                                           __proto__  │
-    │                                                      │        
-    │                                                      │          
+    │                                                      │
+    │                                                      │
     │     ┌──────────────────────┐  __proto__              │         null
     │     │var obj = new Object()├──────────────────┐      │          ^
     │     └──────────────────────┘                  │      │          │
     │                                               │      │          │
-    │                                               V      V      __proto__      
+    │                                               V      V      __proto__
     │                                               V      V          ^
-    │     ┌───────────┐   [No.4]  prototype      ┌────────────┐       │ 
+    │     ┌───────────┐   [No.4]  prototype      ┌────────────┐       │
     │     │ function  │  ────────────────────>>  │ Object.    │       │
     │     │ Object()  │  <<────────────────────  │ prototype  ├───────┘
     │     └────┬──────┘         constructor      └────────────┘
@@ -844,7 +1031,6 @@
     console.log(Function instanceof Function) // true
 
     // 应用 隐式：No.5 + No.3 ，显式：No.4
-    // 
     console.log(Function instanceof Object) // true
     ```
 
@@ -853,18 +1039,26 @@
 - 构造函数的实例对象自动拥有构造函数原型对象的属性与方法
 - 继承的本质仍然是原型链的应用
 
-### 属性问题
+### 属性设置与原型链的访问
 [top](#catalog)
-- 只有读取对象属性时，会搜索原型链
-- 设置对象的属性值时，不会查找原型链，只在当前对象内部进行操作
-    - 如果对象内部有某个属性，则进行修改；如果没有则添加该属性
+- 原型链的访问时机
+    - 只有读取对象属性时，才会搜索原型链
+    - 设置对象的属性值时，不会查找原型链，**只在当前对象内部进行操作**
+        - 如果对象内部有某个属性，则进行修改；如果没有则添加该属性
+
+- 原型对象中，设置属性的问题
+    - 原型上的变量与方法是**类与实例对象**所**共享**的
+    - 如果通过某个对象修改了原型上的东西，会影响其他对象的使用
+
 - 由于属性的读写问题，引申出一个设计的原则
     - <label style="color:red">方法定义在原型中、属性在构造函数中设置</label>
+    - 如果
+
 - 示例
     ```js
     function Foo(){}
     Foo.prototype.param = "this is param";
-    
+
     var f1 = new Foo();
     console.log("f1.param =", f1.param);
     // 输出：f1.param = this is param
@@ -885,9 +1079,10 @@
 ### instanceof原理
 [top](#catalog)
 - `A instanceof B` 是如何处理的？
-    - 如果 B函数 的显式原型对象在 A对象 的原型链上，则返回 true，否则返回 false
-        - 本质上还是通过：构造函数的显式原型 === 实例对象的隐式原型这一标准来判断
-        - 构造函数和实例对象**唯一的关联便是原型对象的指向**，指向相同，则一定是对应的类与实例
+    - 如果 B函数 的**显式原型**对象在 A对象 的**原型链**上，则返回 true，否则返回 false
+- 本质上还是通过：`构造函数的显式原型 === 实例对象的隐式原型`这一标准来判断
+- 构造函数和实例对象**唯一的关联是原型对象的指向相同**
+    - 只要指向相同，则一定是对应的类与实例
 
 
 ### 与原型相关的问题
@@ -908,7 +1103,7 @@
     - 结果分析
         - 执行 `A.prototype = {n:2, m:3}` 时，只是修改了A的显式原型的指向，但是没有修改 b 的隐式原型的指向。所以 b.n仍然是 1，b.m是undefined
         - c 在 A 修改显式原型后创建，使用新的原型对象
-    
+
 2. 代码的输出内容是什么?
     - 代码
         ```js
@@ -920,12 +1115,12 @@
         Function.prototype.b = function(){
             console.log('b()')
         }
-        
+
         var f = new F()
-        f.a() 
-        f.b() 
-        F.a() 
-        F.b() 
+        f.a()
+        f.b()
+        F.a()
+        F.b()
         ```
     - 输出结果：
         - a()
@@ -933,58 +1128,7 @@
         - a()
         - b()
 
-
 ## 执行上下文与执行上下文栈
-### 变量提升与函数提升
-[top](#catalog)
-- 参考：[js基本知识提升](../base/base.md#提升)
-- 经典问题：代码输出什么?
-    - 代码内容
-        ```js
-        var a = 3
-        function fn(){
-            console.log(a)
-            var a = 4;
-        }
-
-        fn()
-
-        console.log(b)
-        var b = 10
-
-        console.log(c)
-        c = 20
-
-        fn2()
-        function fn2(){
-            console.log("this is fn2")
-        }
-
-        fn3()
-        var fn3 = function fn3(){
-            console.log("this is fn3")
-        }
-        ```
-    - 输出结果：
-        1. `fn()`: undefined
-        2. `console.log(b)`: undefined
-        3. `console.log(c)`: 异常，未定义
-        4. `fn2()`: this is fn2
-        5. `fn3()`: 异常，TypeError: fn3 is not a function
-    - 输出分析
-        1. `fn()`
-            - fn函数内使用了 `var` 声明变量a，代码执行时，a 会被提升
-            - 输出 a 时，fn的函数作用域中已经存在 a 的定义，但是还没有赋值，所以输出 undefined
-        2. `console.log(b)`
-            - 在全局作用域内，使用 var 声明变量b，所以可以在 window 对象中找到，但是只有定义还未赋值，所以是undefined
-        3. `console.log(b)`
-            - 变量c 未使用 var 声明，所以不会有提升，window对象中不会有该对象，所以出现异常
-        4. `fn2()`
-            - 使用函数声明的方式创建函数，js执行时，会自动提升。fn2在执行前已经被创建完成，所以可以正常输出
-        5. `fn3()`
-            - 使用函数表达式的方式创建函数，js执行时，只有变量 fn3部分被提升，并且只有定义部分，值是undefined，所以无法执行函数
-
-
 ### 执行上下文
 [top](#catalog)
 - 根据作用域进行代码分类
@@ -1365,7 +1509,6 @@
             - this.val*=2      ：通过this，使用 window.val，并设置为2
             - console.log(val) ：在当前作用域中没有找到val，使用全局作用域的val，输出2
             - console.log(this.val) ： ：通过this，使用 window.val，并设置为2
-            
 
 ## 闭包
 ### 利用闭包的示例-循环变量添加事件监听
@@ -1393,7 +1536,7 @@
             btns[i].onclick = function(){
                 console.log(this.index)
             }
-        }       
+        }
         ```
     - 实现方式2：通过IIFE利用闭包来实现
         ```js
@@ -1525,8 +1668,8 @@
     1. 延长局部变量/函数的生命周期
         - 使函数内部的 变量/函数 在函数执行完后，仍然保存在内存中
     2. 在函数外部 读写 函数内部的 变量/函数
-    
-- 示例说明 
+
+- 示例说明
     - 说明代码
         ```js
         function fn1(){
@@ -1769,12 +1912,12 @@
         function Supper(){
             this.supproperty = "this is super"
         }
-        
+
         // 2. 给父类型的原型添加方法
         Supper.prototype.showSupper = function(){
             console.log(this.supproperty)
         }
-        
+
         var supperObj = new Supper();
 
 
@@ -1782,7 +1925,7 @@
         function Sub(){
             this.subproperty = "this is sub"
         }
-        
+
         // 4. 重新构造子类型的原型关系
         // 4-1. 重新设置子类型的原型对象：创建父类型的对象赋值给子类型的原型对象
         Sub.prototype = supperObj;
@@ -1797,7 +1940,7 @@
 
         // 6. 创建子类型的对象：可以调用父类型的方法
         var subObj = new Sub();
-        
+
         subObj.showSub()
         subObj.showSupper()
         ```
@@ -1812,7 +1955,7 @@
         - 执行后，无论是在子类型构造函数还是父类型构造函数中，附加的属性、函数就都在 this对象上了
         - 但是<label style="color:red">父类型在原型上添加的属性与方法，子类型无法共享</label>
 
-- 这种方式的缺点
+- 缺点
     - 无法共享父类型原型对象上的方法
     - 不是真正的继承，及时借用父类型的构造函数来设置参数
 
@@ -1842,12 +1985,37 @@
         student.showSelf() // TypeError: student.showSelf is not a function
         ```
 
-
 ### 组合继承
 [top](#catalog)
 - 原型链 + 借用构造函数，两种方式的组合继承
     1. 利用原型链实现对父类型对象的方法**继承**
     2. 利用super()借用父类型构造函数**初始化相同属性**
+- 缺点
+    - 额外调用了一次父类的构造函数
+    - 如果父类的构造函数需要注入其他对象，或者内部有复杂的逻辑处理，可能会产生异常
+
+- 组合继承的原型链
+    ```
+    ┌───────────┐  prototype    ┌─────────────────────────────┐
+    │　　父类　　├────────────>> │       父类.prototype 　　　　│
+    └───────────┘               │    [Object Null Instance]   │
+                                └─────────────────────────────┘
+                                                ^
+                                                ^
+                                                │ __proto__
+                                                │
+                                ┌───────────────┴─────────────┐
+                                │          new 父类(); 　　　　│
+                                └──┬──────────────────────────┘
+                                   │   ^                  ^
+                                   │   ^                  ^
+                       constructor V   │ prototype        │ __proto__
+                                   V   │                  │
+                                ┌──────┴────┐     ┌───────┴──────────┐
+                                │　　子类　　│     │　　new 子类();　　│
+                                └───────────┘     └──────────────────┘
+    ```
+
 - 示例
     - 参考代码
         - [src/oop/compose_extends.html](src/oop/compose_extends.html)
@@ -1876,7 +2044,216 @@
         var student = new Student("aaa", 20, 100)
         student.showSelf()
         ```
-        
+
+### 寄生组合继承
+[top](#catalog)
+- 继承方法
+    1. 在组合继承的基础上进行修改
+    2. 创建一个空的构造函数，作为寄生类
+        ```js
+        var 寄生类 = function(){};
+        ```
+    3. 将寄生类的原型设置为父类的原型。
+        - 此时**寄生类几乎与父类相同**，与父类共享原型上的方法，只是没有父类中的初始化属性
+        - 设置方法
+            ```js
+            寄生类.prototype = 父类.prototype;
+            ```
+    4. 将子类的原型设置为寄生类的实例，然后再重置子类原型的 `constructor`
+        ```js
+        子类.prototype = new 寄生类();
+        子类.prototype.constructor = 子类;
+        ```
+    5. 在子类内部仍然需要调用父类，将父类中的属性添加在 `this` 对象中
+        ```js
+        function 子类(){
+            父类.call(this, [父类构造器参数]);
+        }
+        ```
+
+- 组合继承的原型链
+    ```
+    ┌───────────┐  prototype    ┌─────────────────────────────┐
+    │　　父类　　├────────────>> │       父类.prototype 　　　　│
+    └───────────┘       ┌────>> │    [Object Null Instance]   │
+                        │       └─────────────────────────────┘
+            prototype   │                    ^
+                        │                    ^
+                        │                    │ __proto__
+                        │                    │
+    ┌──────────────┐    │      ┌─────────────┴────────────────┐
+    │   　寄生类　　├────┘      │          new 寄生类();  　　　│
+    └──────────────┘           └──────────────────────────────┘
+                                    │  ^                  ^
+                                    │  ^                  ^
+                        constructor V  │ prototype        │ __proto__
+                                    V  │                  │
+                                ┌───────────┐     ┌──────────────────┐
+                                │　　子类　　│     │　　new 子类();　　│
+                                └───────────┘     └──────────────────┘
+    ```
+
+### 保留父类的静态方法
+[top](#catalog)
+- 通过设置子类的 `propertype` 只能使原型对象上的方法等到继承，但是父类自身的**静态方法无法被继承**
+    - 示例
+        ```js
+        function A(){}
+        A.test = function(){console.log('this is test')}
+
+        function B(){}
+
+        B.prototype = new A();
+
+        // 异常: Uncaught TypeError: B.test is not a function
+        B.test();
+        ```
+- 保留静态类的方法
+    - 参考: https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Object/setPrototypeOf
+    - 3中设置方法
+        1.  `Object.setPrototypeOf(子类, 父类)`
+            - 示例
+                ```js
+                function A(){}
+                A.test = function(){console.log('this is test')}
+
+                function B(){}
+
+                B.prototype = new A();
+                Object.setPrototypeOf(B, A);
+
+                B.test();  // 输出: this is test
+                ```
+        2. 兼容方法1 : `子类函数.__proto__ = 父类函数`
+
+            - 示例
+                ```js
+                function A(){}
+                A.test = function(){console.log('this is test')}
+
+                function B(){}
+
+                B.prototype = new A();
+                B.__proto__ = A;
+
+                B.test();  // 输出: this is test
+                ```
+        3. 兼容方法2: 使用 `hasOwnProperty(父类属性)` 遍历父类的所有属性，将静态方法（只属于父类自身的方法）添加到子类
+            - 示例
+                ```js
+                function A(){}
+                A.test = function(){console.log('this is test')}
+
+                function B(){}
+
+                B.prototype = new A();
+                for (let p in A){
+                    if (A.hasOwnProperty(p)){
+                        B[p] = A[p];
+                    }
+                }
+
+                B.test();  // 输出: this is test
+                ```
+
+### 构建通用的继承关系设定方法
+[top](#catalog)
+- 为了完成父类与子类之间的继承，需要同时完成两件工作
+    1. 将子类的显示原型对象设置为父类的实例对象
+    2. 将父类函数的静态方法绑定到子类函数
+        - 一般会使用 `Object.setPrototypeOf`，但是该方法有兼容性问题，需要有相应的兼容性处理
+
+- 示例
+    - 参考代码
+        - [src/oop/extends_method.html](src/oop/extends_method.html)
+    - 通用设定方法
+        ```js
+        // 1. 为子类绑定父类中的静态方法
+        function extendStatics (sub, parent) {
+
+            // 简写: 参考 typescript 的 extends 关键字的编译结果
+            // let fn = Object.setPrototypeOf ||
+            //     ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            //     function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+
+            if ( Object.setPrototypeOf ){
+                // 1.1 方式1: 相当于 sub.__proto__ = parent 的封装
+                Object.setPrototypeOf(sub, parent);
+            } else {
+                //  如果没有 setPrototypeOf，则创建兼容方法
+
+                // 1.2 方式2: 手动设置 隐式原型
+                if (sub.__proto__){
+                    sub.__proto__ = parent;
+                } else{
+                    // 1.3 方式3: 搜索父类的静态方法并设置到子类中
+                    for (let p in parent){
+                        if (parent.hasOwnProperty(p)){
+                            sub[p] = parent[p];
+                        }
+                    }
+                }
+            }
+        };
+
+        // 2. 设置继承关系
+        function extend(sub, parent){
+            // 2.1. 将父类中的静态方法设置到子类中
+            extendStatics(sub, parent);
+
+            // 2.2. 创建寄生类
+            function Super(){
+                // 相当于在创建寄生类对象的同时，
+                // 执行: 子类.prototype.constructor = 子类
+                this.constructor = sub;
+            }
+
+            // 2.3. 根据 父类 设置子类的原型
+            if ( parent === null){
+                // 如果父类是空，则实例化一个原型是空的对象，作为子类的原型
+                sub.prototype = Object.create(null);
+            } else {
+                // 实例化一个寄生类对象，并设置为子类的原型
+                // 设置寄生类的原型
+                Super.prototype = parent.prototype;
+                sub.prototype = new Super();
+                // 子类.prototype.constructor = 子类; 这个操作在寄生类内部已经执行完成
+            }
+        }
+        ```
+    - 测试方法
+        ```js
+        // 3. 测试部分
+        // 3.1 父类
+        function Person(name, age){
+            this.name = name
+            this.age = age
+        }
+        // 父类的静态方法
+        Person.run = function(){ console.log('this is a person'); }
+        // 父类的原型方法
+        Person.prototype.showSelf = function(){
+            console.log('name ='+ this.name + ', age =' + this.age)
+        };
+
+        // 3.2 子类
+        function Student(name, age, price){
+            Person.call(this, name, age)
+            this.price = price
+        }
+
+        // 3.3 设置继承关系
+        extend(Student, Person);
+
+        // 3.4 通过子类调用静态方法
+        Student.run();  // 输出: this is a person
+
+        // 3.5 实例化子类对象，并调用原型上的方法
+        var student = new Student("aaa", 20, 100)
+        student.showSelf();  // 输出: name =aaa, age =20
+        ```
+
+
 # 线程机制与事件机制
 ## 浏览器中的进程与线程
 [top](#catalog)
@@ -2366,7 +2743,7 @@
                 console.log(event.data)
             }
         }
-        ```    
+        ```
     - 分线程
         ```js
         function feibo(n){

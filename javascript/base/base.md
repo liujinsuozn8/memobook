@@ -6,6 +6,10 @@
 - [JS语法](#JS语法)
     - [基本语法规范](#基本语法规范)
     - [变量声明](#变量声明)
+    - [赋值语句](#赋值语句)
+        - [基本赋值语句](#基本赋值语句)
+        - [多行代码转换为一行代码执行并赋值](#多行代码转换为一行代码执行并赋值)
+        - [使用逻辑运算符的运算结果来赋值](#使用逻辑运算符的运算结果来赋值)
     - [代码块](#代码块)
     - [流程控制语句](#流程控制语句)
 - [数据类型](#数据类型)
@@ -50,7 +54,6 @@
     - [js作用域的基本概念](#js作用域的基本概念)
     - [全局作用域与window对象](#全局作用域与window对象)
     - [函数作用域](#函数作用域)
-- [提升](#提升)
 - [包装类](#包装类)
 - [内建对象-数组](#内建对象-数组)
     - [数组的基本知识](#数组的基本知识)
@@ -184,6 +187,108 @@
     var a = 1, b = 2, c = 3;
     ```
 
+## 赋值语句
+### 基本赋值语句
+[top](#catalog)
+- 示例
+    ```js
+    let param = 变量;
+    let param = 函数;
+    let param = 函数(); // 调用函数
+    ```
+
+### 多行代码转换为一行代码执行并赋值
+[top](#catalog)
+- 借助 `()` 和 逗号`,` , 将多行代码转换为一行，然后赋值
+    - 通过 逗号`,` 来分割多条语句
+    - 通过 `()` 来形成一个区块，防止编译异常，类似于 IIFE
+- 示例
+    ```js
+    let a = 1;
+    let b = 2;
+    let c =( a += 2, b += 3, a + b );
+    /*
+        相当于执行了:
+        a += 2;
+        b += 3;
+        let c = a + b;
+    */
+    console.log(c) // 输出: 8
+    ```
+
+### 使用逻辑运算符的运算结果来赋值
+[top](#catalog)
+- 运算之前，需要将逻辑运算符的左值和右值转换为 boolean 类型
+    - 参考: [其他类型转换为Boolean](#其他类型转换为Boolean)
+- 判断返回值的方法
+    - 判断的前提: js的与、或运算符都是**短路**的
+    - 返回值是左值、右值中，**最后一个计算**的boolean值的变量
+- 与运算 `A && B`
+
+    |运算过程|返回值|
+    |-|-|
+    |`false && false`|A|
+    |`false && true`|A|
+    |`true && false`|B|
+    |`true && true`|B|
+
+- 或运算 `A || B`
+
+    |运算过程|返回值|
+    |-|-|
+    |`false || false`|B|
+    |`false || true`|B|
+    |`true || false`|A|
+    |`true || true`|A|
+
+- 示例
+    - 参考代码
+        - [src/assignment/assign_by_logic.html](src/assignment/assign_by_logic.html)
+    - 代码内容
+        ```js
+        // 1.与运算符
+        var a1 = 0;
+        var b1 = '';
+        var c1 = a1 && a1;          // false && false
+        console.log('c1 = ' + c1);  // c1 = 0，返回的结果是 a1
+
+        var a2 = 0;
+        var b2 = 2;
+        var c2 = a2 && b2;          // false && true
+        console.log('c2 = ' + c2);  // c2 = 0，返回的结果是 a2
+
+        var a3 = 'aaa';
+        var b3 = 0;
+        var c3 = a3 && a3;          // true && false
+        console.log('c2 = ' + c2);  // c3 = 0，返回的结果是 b3
+
+        var a4 = 'aaa';
+        var b4 = 'bbb';
+        var c4 = a4 && b4;          // true && true
+        console.log('c4 = ' + c4);  // c4 = bbb，返回的结果是 b4
+
+
+        // 2.或运算符
+        var x1 = null;
+        var y1 = 0;
+        var z1 = x1 || y1;          // false || false
+        console.log('z1 = ' + z1);  // z1 = 0，返回的结果是 y1
+
+        var x2 = 0;
+        var y2 = 'yyy';
+        var z2 = x2 || y2;          // false || true;
+        console.log('z2 = ' + z2);  // z2 = yyy，返回的结果是 y2
+
+        var x3 = 'xxx';
+        var y3 = 0;
+        var z3 = x3 || y3;          // true || false;
+        console.log('z3 = ' + z3);  // z3 = xxx，返回的结果是 x3
+
+        var x4 = 'xxx';
+        var y4 = 'yyy';
+        var z4 = x4 || y4;          // true || true;
+        console.log('z4 = ' + z4);  // z4 = xxx ，返回的结果是 x4
+        ```
 
 ## 代码块
 [top](#catalog)
@@ -207,7 +312,7 @@
     if (表达式){
         ...
     }
-    
+
     if (表达式){
         ...
     } else {
@@ -237,7 +342,7 @@
             语句
             break;
         default:
-            语句   
+            语句
     }
     ```
 
@@ -503,7 +608,7 @@
             var a2 = a1.toString();
             ```
         - Number中的 `NaN` 和 `Infinity` 会被转换为String型的：`"NaN"` 和 `"Infinity"`
-        
+
         - `null`，`undefined`没有 `toString()` 方法，直接调用会导致异常：
             - `Uncaught TypeError: Cannot read property 'toString' of null`
             - `Uncaught TypeError: Cannot read property 'toString' of undefined`
@@ -650,7 +755,7 @@
     - 方式3：对一个非 Number型 变量执行 ：`变量 - 0`、`变量 * 1`、`变量 / 1`，来将类型转换为 Number
         - 底层使用`Number()` 函数执行类型转换
         - 参考：[二元算数运算符](#二元算数运算符)
-    
+
     - 方式4：对一个非 Number型 变量 使用**一元算数运算符**：`+`
         - 底层使用`Number()` 函数执行类型转换
         - 参考：[一元算数运算符](#一元算数运算符)
@@ -796,7 +901,7 @@
         console.log("i7 = ", i7, ", typeof i7 = ", typeof i7);
         // 输出：i7 =  undefined , typeof i7 =  string
         ```
-        
+
 ### 其他类型转换为Boolean
 [top](#catalog)
 - 几种转换方式
@@ -806,8 +911,8 @@
             |原始数据类型|数据内容|转换结果|
             |-|-|-|
             |Number|0、NaN|false|
-            |Number|非0数字、Infinity|ture|
-            |String|空字符串：`""`|false| 
+            |Number|非0数字、Infinity|true|
+            |String|空字符串：`""`|false|
             |String|非空字符串|true|
             |Null|null|false|
             |Undefined|undefined|false|
@@ -2166,7 +2271,7 @@
 - 立即执行函数 iife
     - 使用场景： 函数只会使用一次
     - 立即执行函数，在（匿名）函数定义完之后，立即被调用
-    
+
 - 示例
     - 参考代码
         - [/javascript/base/src/function/iief.html](/javascript/base/src/function/iief.html)
@@ -2396,143 +2501,6 @@
     2. 如果当前作用域没有，到上一级作用域中查找，直到全局作用域
     3. 如果全局作用域中也没有找到，则引发异常：`Uncaught ReferenceError: xxxx is not defined`
 - 在函数内部，如果需要直接访问全局作用域的变量，可以通过：`window.变量名` 的方式使用
-
-
-# 提升
-[top](#catalog)
-- 变量的提升
-    - 使用`var 变量` 声明变量
-        - 这种方式创建的变量会被提升到当前作用域的起始位置，执行**声明**，然后在赋值代码处执行赋值
-        - 在变量声明之前使用变量
-            - 因为变量的提升，只有声明，没有具体的值，所以只能输出undefined
-                ```js
-                console.log(param);
-                // 输出：undefined
-                var param = 1234;
-                ```
-    - 不使用 `var` 关键字声明变量
-        - 如果声明变量时，没有使用`var` 关键字，则变量不会提升
-        - <label style="color:red">所有没有使用 `var` 声明的变量，无论代码写在什么位置，都会变为全局变量，相当于做了：`window.变量 = 变量值` </label>
-        - 在变量声明之前使用变量，会引发异常
-            - 因为变量没有被提升，所以在变量声明之前使用时，会引发变量未定义的异常
-                ```js
-                // Uncaught ReferenceError: param is not defined
-                console.log(param);
-                param = 1234;
-                ```
-
-- 函数的提升
-    - 使用**函数声明** `function 函数名([参数列表]){...}`创建的函数
-        - 函数声明<label style="color:red">会提升</label>，在当前作用域的起始位置被**声明并创建**
-        - 因为存在函数提升，所以可以在函数声明之前使用函数
-        - 在声明之前使用函数
-            - 在执行前，整个函数对象被提升并创建，所以可以正常执行
-                ```js
-                func();
-                // 输出：this is func
-
-                function func (){
-                    console.log("this is func");
-                }
-                ```
-
-    - 使用**函数表达式** `var 变量名 = function([参数列表]){...}`创建的函数
-        - 函数表达式<label style="color:red">不会提升</label>，所以不要函数表达式声明之前使用函数
-        - 两个阶段
-            1. 这样创建的函数，在执行前，只有变量部分：`var 变量名` 会被提升
-            2. 执行函数表达式时，才会将函数赋值给变量
-        - 在声明之前执行函数，会引发异常
-            - func不是一个函数，因为只有变量名被提升了，函数对象还没有创建，所以执行时无法识别
-                ```js
-                // Uncaught TypeError: func is not a function
-                func();
-
-                var func = function(){
-                    console.log("this is func");
-                }
-                ```
-
-- 示例分析
-    - 全局作用域与函数作用域的变量重名
-        1. 函数作用域中不使用`var` 关键字声明变量
-            ```js
-            var a = 10;
-            function test(){
-                // 1. 因为内部的变量a没有使用 var声明，所以函数内部没有提升后的变量a
-
-                // 2. 此处使用的是全局作用域中的a，所以输出10
-                console.log("inner =", a);//输出：inner = 10
-
-                // 3. 此处使用的是全局作用域中的a，a被该成了20
-                a = 20;
-            }
-
-            test();
-
-            // 4. a在test()内部被修改了，所以输出20
-            console.log("outter = ", a); //输出：outter =  20
-            ```
-        2. 函数作用域中使用`var` 关键字声明变量
-            ```js
-            var a = 10;
-            function test(){
-                // 1. 因为内部的变量a 使用 var声明，所以此处会有提升
-                // var a;       // 被提升的 变量a
-                
-                // 2. 输出时，在当前函数作用域找到了变量a，但是变量a只有声明还没有赋值
-                // 所以输出：undefined
-                console.log("inner =", a);//输出：inner = undefined
-
-                // 3. 此处使用的是当前函数作用域内部的 变量a，所以不会影响全局作用域中的变量
-                var a = 20;
-            }
-
-            test();
-
-            // 4. 全局变量a 没有被函数修改，所以输出的仍然是a
-            console.log("outter = ", a); //输出：outter =  10
-            ```
-        3. 函数参数与全局变量重名
-            ```js
-            var a = 10;
-
-            function test(a){
-                // 2. 函数参数 相当于在函数作用域中声明的变量，所以当前作用域中有 变量a
-                // var a;           // 函数参数的效果
-
-                // 3. 调用函数时，没有传递参数，所以 a=undefined
-                console.log("inner =", a);//输出：inner = undefined
-
-                // 4. 此处修改函数作用域内部的变量a
-                a = 20;
-            }
-
-            // 1. 函数参数与全局变量重名，并且不输入任何参数
-            test();
-
-            // 5. 函数内部没有修改变量a，所以输出的仍然是 10
-            console.log("outter = ", a); //输出：outter =  10
-            ```
-
-    - 在函数内部不使用 `var` 声明变量
-        ```js
-        var a = 10;
-        function test(){
-            // 1. 函数内部没有 变量a 的声明，所以使用全局变量
-
-            // 2. 输出全局变量 a
-            console.log("inner =", a);//输出：inner = 10
-
-            // 3. 没有使用 var 声明变量，相当于 window.b = 20;
-            // 创建了全局变量 b
-            b = 20;
-        }
-
-        test();
-        
-        // 4. 在函数中创建了全局变量 b，此处输出 20
-        console.log("outter = ", b); //输出：outter =  20
-        ```
 
 # 内建对象-数组
 ## 数组的基本知识
@@ -3482,7 +3450,7 @@ console.log("a = ", a);
         console.log("resultA02 =", resultA02);
         // 输出：
 
-        // 2. search 
+        // 2. search
         // 2.1 search 字符串搜索
         var b01 = "abcdefg";
         var resultB01 = b01.search("de");
@@ -3543,7 +3511,7 @@ console.log("a = ", a);
 - 提示框：`alert("asdfg");`
     - `alert` 函数没有返回值
 - 可输入提示框：`var 接受输入值的参数 = prompt("提示信息");`
-    
+
 # 反射
 [top](#catalog)
 - `typeof 变量`：获取变量的类型，返回一个字符串
@@ -3570,7 +3538,7 @@ console.log("a = ", a);
 - json：JavaScript Object Notation，JS对象表示法
 - json的本质
     - json就是特殊格式的**字符串**，这个字符串可以被任意的语言所识别
-    
+
 - json的用途
     - 做为一种数据交换格式
         - js中的对象只有js语言自身能够识别，其他语言都无法识别。需要使用json，然后其他语言解析json并生成对象

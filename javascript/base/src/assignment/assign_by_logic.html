@@ -1,0 +1,53 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta charset='UTF-8'>
+        <title>使用逻辑运算符的结果来赋值</title>
+        <script type='text/javascript'>
+            // 1.与运算符
+            var a1 = 0;
+            var b1 = '';
+            var c1 = a1 && a1;          // false && false
+            console.log('c1 = ' + c1);  // c1 = 0，返回的结果是 a1
+
+            var a2 = 0;
+            var b2 = 2;
+            var c2 = a2 && b2;          // false && true
+            console.log('c2 = ' + c2);  // c2 = 0，返回的结果是 a2
+
+            var a3 = 'aaa';
+            var b3 = 0;
+            var c3 = a3 && a3;          // true && false
+            console.log('c2 = ' + c2);  // c3 = 0，返回的结果是 b3
+
+            var a4 = 'aaa';
+            var b4 = 'bbb';
+            var c4 = a4 && b4;          // true && true
+            console.log('c4 = ' + c4);  // c4 = bbb，返回的结果是 b4
+
+
+            // 2.或运算符
+            var x1 = null;
+            var y1 = 0;
+            var z1 = x1 || y1;          // false || false
+            console.log('z1 = ' + z1);  // z1 = 0，返回的结果是 y1
+
+            var x2 = 0;
+            var y2 = 'yyy';
+            var z2 = x2 || y2;          // false || true;
+            console.log('z2 = ' + z2);  // z2 = yyy，返回的结果是 y2
+
+            var x3 = 'xxx';
+            var y3 = 0;
+            var z3 = x3 || y3;          // true || false;
+            console.log('z3 = ' + z3);  // z3 = xxx，返回的结果是 x3
+
+            var x4 = 'xxx';
+            var y4 = 'yyy';
+            var z4 = x4 || y4;          // true || true;
+            console.log('z4 = ' + z4);  // z4 = xxx ，返回的结果是 x4
+        </script>
+    </head>
+    <body>
+    </body>
+</html>

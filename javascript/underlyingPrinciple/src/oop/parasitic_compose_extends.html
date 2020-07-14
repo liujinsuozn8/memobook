@@ -1,0 +1,45 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta charset='UTF-8'>
+        <title>寄生组合继承</title>
+        <script type='text/javascript'>
+            // 1. 父类
+            function Person(name, age){
+                this.name = name
+                this.age = age
+            }
+
+            Person.prototype.showSelf = function(){
+                console.log('name ='+ this.name + ', age =' + this.age)
+            };
+
+            // 2. 寄生类。一个临时类，在IIFE中执行即可
+            (function(){
+                // 创建一个空的函数对象作为寄生类
+                var _super = function(){};
+                // 将寄生类的原型设置为 父类的原型
+                _super.prototype = Person.prototype;
+
+                // 将子类的原型指向寄生类的实例对象
+                Student.prototype = new _super();
+
+                // 设置子类原型对象的 constructor
+                Student.prototype.constructor = Student;
+            })();
+
+            // 3. 子类
+            function Student(name, age, price){
+                // 2. 通过父类的构造函数，来初始化相同的属性
+                Person.call(this, name, age)
+                this.price = price
+            }
+
+            // 4. 实例化子类对象，并调用父类的方法
+            var student = new Student("aaa", 20, 100)
+            student.showSelf()
+        </script>
+    </head>
+    <body>
+    </body>
+</html>
