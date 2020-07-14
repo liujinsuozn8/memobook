@@ -1,29 +1,74 @@
 <span id="catalog"></span>
 
 ### 目录
+- [总结--注解与相关类](#总结--注解与相关类)
 - 组件注册注解
-    - [Configuration--创建配置类](#Configuration--创建配置类)
+    - [@Configuration--创建配置类](#@Configuration--创建配置类)
     - [向容器中注册组件的几种方法](#向容器中注册组件的几种方法)
-    - [Bean](#Bean)
-    - [ComponentScan--包扫描](#ComponentScan--包扫描)
-        - [ComponentScan的基本使用](#ComponentScan的基本使用)
+    - [@Bean](#@Bean)
+    - [@ComponentScan--包扫描](#@ComponentScan--包扫描)
+        - [@ComponentScan的基本使用](#@ComponentScan的基本使用)
         - [FilterType--指定扫描过滤规则](#FilterType--指定扫描过滤规则)
         - [TypeFilter--自定义包扫描过滤规则](#TypeFilter--自定义包扫描过滤规则)
-    - [Scope--定义bean的作用域](#Scope--定义bean的作用域)
-    - [Lazy--懒加载](#Lazy--懒加载)
-    - [Conditional--按条件注册bean](#Conditional--按条件注册bean)
-    - Import--向容器中导入组件
-        - [Import--快速导入](#Import--快速导入)
+    - [@Scope--定义bean的作用域](#@Scope--定义bean的作用域)
+    - [@Lazy--懒加载](#@Lazy--懒加载)
+    - [@Conditional--按条件注册bean](#@Conditional--按条件注册bean)
+    - @Import--向容器中导入组件
+        - [@Import--快速导入](#@Import--快速导入)
         - [ImportSelector接口--返回组件数组](#ImportSelector接口--返回组件数组)
         - [ImportBeanDefinitionRegistrar接口--手动注册某些组件](#ImportBeanDefinitionRegistrar接口--手动注册某些组件)
         - [Import示例](#Import示例)
     - [FactoryBean接口--工厂Bean](#FactoryBean接口--工厂Bean)
+- bean的生命周期
+    - [设置bean的生命周期的几种方法](#设置bean的生命周期的几种方法)
+    - [@Bean--注册日某个bean的初始化和销毁方法](#@Bean--注册日某个bean的初始化和销毁方法)
+    - [InitializingBean和DisposableBean接口--自定义某个bean的初始化和销毁方法](#InitializingBean和DisposableBean接口--自定义某个bean的初始化和销毁方法)
+    - [JSR250注解--自定义某个bean的初始化和销毁方法](#JSR250注解--自定义某个bean的初始化和销毁方法)
+    - [BeanPostProcessor接口--所有bean的后置处理器](#BeanPostProcessor接口--所有bean的后置处理器)
+    - [生命周期初始化的过程](#生命周期初始化的过程)
+        - [初始化的过程代码分析](#初始化的过程代码分析)
+        - [初始化的整体过程](#初始化的整体过程)
+    - [多个生命周期方法的执行顺序](#多个生命周期方法的执行顺序)
+        - [多个生命周期方法的执行顺序--说明](#多个生命周期方法的执行顺序--说明)
+        - [多个生命周期方法的执行顺序--测试](#多个生命周期方法的执行顺序--测试)
+    - [BeanPostProcessor接口在Spring底层的使用举例](#BeanPostProcessor接口在Spring底层的使用举例)
+        - [ApplicationContextAwareProcessor--将IOC容器注入到某个bean](#ApplicationContextAwareProcessor--将IOC容器注入到某个bean)
+        - [BeanValidationPostProcessor--数据校验处理](#BeanValidationPostProcessor--数据校验处理)
+        - [InitDestroyAnnotationBeanPostProcessor--JSR250注解的识别与方法调用](#InitDestroyAnnotationBeanPostProcessor--JSR250注解的识别与方法调用)
+        - [AutowiredAnnotationBeanPostProcessor--自动装配注解处理](#AutowiredAnnotationBeanPostProcessor--自动装配注解处理)
 - [](#)
 - [](#)
 
+# 总结--注解与相关类
+[top](#catalog)
+- @Configuration，创建配置类
+- @Scope，设置单实例bean、多实例bean
+- @Lazy，延迟加载。在获取bean时加载
+- 组件注册
+    - @Bean，注册bean
+    - @ComponentScan + @Component/@Controller/@Service/@Repository，扫描包
+        - FilterType，过滤规则
+        - TypeFilter，自定义过滤规则
+    - @Conditional + Condition，按照自定义条件注册bean
+    - @Import，快速导入
+        - ImportSelector接口，返回需要注册的组件数组
+        - ImportBeanDefinitionRegistrar接口，手动注册某些组件
+    - FactoryBean接口，用工厂方法返回bean
+- 生命周期
+    - @Bean(initMethod="初始化方法", destroyMethod="销毁方法")， 设置bean的初始化方法、销毁方法
+    - bean实现 `InitializingBean`和`DisposableBean`接口
+    - JSR250的注解
+        - `@PostConstruct`
+        - `@PreDestroy`
+    - `BeanPostProcessor`接口，在bean**初始化**前后执行一些操作
+    - 执行顺序
+        - BeanPostProcessor
+        - JSR250的注解
+        - bean实现 `InitializingBean`和`DisposableBean`接口
+        - @Bean(initMethod="初始化方法", destroyMethod="")
 
 # 组件注册注解
-## Configuration--创建配置类
+## @Configuration--创建配置类
 [top](#catalog)
 - `@Configuration` 的功能
     - 用于将一个普通类标识为Spring配置类
@@ -48,7 +93,7 @@
 
 ## 向容器中注册组件的几种方法
 [top](#catalog)
-1. 配置类的包扫描注解 `ComponentScan` + 组件标识注解 `@Component/@Service/@Controller/@Repository`
+1. 配置类的包扫描注解 `@ComponentScan` + 组件标识注解 `@Component/@Service/@Controller/@Repository`
 2. `@Bean`，导入第三方包中的组件
 3. `@Conditional`，按条件注册bean
 4. `Import`，向容器中快速导入一个组件
@@ -60,7 +105,7 @@
 5. 使用Spring提供的FactoryBean，即工厂bean
     - <label style='color:red'>与其他框架整合时</label>，该接口使用的非常多
 
-## Bean
+## @Bean
 [top](#catalog)
 - `@Bean(id="指定beanid")` 的功能
     - 用于向容器中注册一个Bean
@@ -122,8 +167,8 @@
             }
             ```
 
-## ComponentScan--包扫描
-### ComponentScan的基本使用
+## @ComponentScan--包扫描
+### @ComponentScan的基本使用
 [top](#catalog)
 - `@ComponentScan(value="指定要扫描的包")` 的功能
     - 配置扫描包的策略
@@ -144,7 +189,12 @@
         ```
     - `@ComponentScan.Filter` 过滤器配置方法
         - 参考: [FilterType--指定扫描过滤规则](#FilterType--指定扫描过滤规则)
-        
+        - 需要在bean中添加以下注解中的一个，保证 bean 可以被扫描到
+            - `@Component`
+            - `@Repository`
+            - `@Service`
+            - `@Controller`
+
 - 示例
     - exclude示例
         - 实现内容
@@ -344,7 +394,7 @@
         }
         ```
 
-## Scope--定义bean的作用域
+## @Scope--定义bean的作用域
 [top](#catalog)
 - 每个 bean 默认的 scope 为 singleton 单例的
 - scope 的可选值
@@ -363,6 +413,11 @@
 - `prototype` 对象的创建、保存、获取
     - ioc容器启动时，不会主动调用创建方法
     - 在从容器中获取对象时，才会调用创建方法。**每次调用都会创建新对象**
+
+- 注解使用位置
+    - 在配置类中的 `@bean` 上使用
+    - 在某个类的 `@Component` 上使用
+        - 在某个类上使用后，仍然可以在配置类中使用该类，并使用不同的`@Scope`，不会互相影响
 
 - 示例
     - scope设置
@@ -484,7 +539,7 @@
             }
             ```
 
-## Conditional--按条件注册bean
+## @Conditional--按条件注册bean
 [top](#catalog)
 - `@Conditional` 的功能
     - 按照一定的条件进行判断，满足条件时才注册bean
@@ -596,11 +651,12 @@
             }
             ```
 
-## Import--向容器中导入组件
-### Import--快速导入
+## @Import--向容器中导入组件
+### @Import--快速导入
 [top](#catalog)
 - 组件id 默认是组件的**全类名**
 - 需要组件具有**无参构造器**，否则会报错
+- 可以导入普通的bean，也可以导入其他的配置类
 - 可以导入一个，也可以导入多个，但是 `@Import` 注解只能用一次
 
 ### ImportSelector接口--返回组件数组
@@ -826,5 +882,967 @@
                 assert bean.getClass() == ColorFactoryBean.class;
             }
             ```
-       
+
+# bean的生命周期
+## 设置bean的生命周期的几种方法
+[top](#catalog)
+- 生命周期控制
+    - 生命周期指 bean 的：创建、初始化、销毁的过程
+    - 由容器管理bean的生命周期
+    - 可以**自定义初始化和销毁方法**，容器在进行到生命周期时，会调用自定义的初始化和销毁方法
+- 设置bean的生命周期的几种方法
+    1. bean的构造器
+    2. `@Bean(initMethod="初始化方法", destroyMethod="销毁方法")`
+        - 将bean内部的方法注册成初始化和销毁方法
+    3. 实现 `InitializingBean`和`DisposableBean`接口
+        - 容器启动和销毁时，自动调用接口方法
+        - 执行优先级比@Bean要高
+    4. 使用JSR250的注解
+        - `@PostConstruct`
+        - `@PreDestroy`
+    5. `BeanPostProcessor` 接口
+        - 在bean**初始化**前后执行一些操作
+
+## @Bean--注册日某个bean的初始化和销毁方法
+[top](#catalog)
+- 不同scope的生命周期
+    - 单实例bean
+        - 对象创建: 在容器启动的时候创建
+        - 初始化: 对象已创建、已赋值后，容器调用初始化方法 
+        - 销毁: 容器关闭时，容器调用销毁方法 
+    - 多实例bean
+        - 对象创建: 在每次获取的时候创建
+        - 初始化: 对象已创建、已赋值后，调用初始化方法 
+        - 销毁: 容器不会管理这个bean，容器不会主动调用销毁方法
+
+- 指定初始化和销毁方法
+    - xml配置文件
+        - bean标签中，指定`init-method`，`destroy-method`
+        - 指定的方法不能包含参数
+    - 注解
+        - `@Bean(initMethod="初始化方法", destroyMethod="销毁方法")`
+        - 指定的方法不能包含参数
+
+- 适用场景
+    - 数据源的开启和销毁
+
+- 示例
+    - 实现内容
+        - 参考代码
+            - [/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/lifecycle/initdestroy/bean/InitDestroyLifecycleConfig.java](/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/lifecycle/initdestroy/bean/InitDestroyLifecycleConfig.java)
+        - 实现内容
+            ```java
+            @Configuration
+            public class InitDestroyLifecycleConfig {
+                // 单实例bean
+                // 指定初始化和销毁方法
+                @Bean(initMethod = "init", destroyMethod = "destroy")
+                public Car singleCar(){
+                    return new Car();
+                }
+            
+                // 多实例bean
+                @Scope("prototype")
+                // 指定初始化和销毁方法
+                @Bean(initMethod = "init", destroyMethod = "destroy")
+                public Car prototypeCar(){
+                    return new Car();
+                }
+            }
+            ```
+    - 测试内容
+        - 参考代码
+            - [/java/mylearn/myspring-annotation/src/test/java/com/ljs/learn/myspringannotation/lifecycle/initdestroy/bean/InitDestroyLifecycleConfigTest.java](/java/mylearn/myspring-annotation/src/test/java/com/ljs/learn/myspringannotation/lifecycle/initdestroy/bean/InitDestroyLifecycleConfigTest.java)
+        - 测试内容
+            ```java
+            // 单例测试
+            @Test
+            public void car01() {
+                AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(InitDestroyLifecycleConfig.class);
+                System.out.println("容器创建完成");
+                System.out.println("---------car01----------");
+                Car car01 = (Car) context.getBean("singleCar");
+        
+                System.out.println("---------car02----------");
+                Car car02 = (Car) context.getBean("singleCar");
+        
+                System.out.println("关闭容器");
+                context.close();
+        
+                // 输出:
+                // car constructor
+                // car init
+                // 容器创建完成
+                // ---------car01----------
+                // ---------car02----------
+                // 关闭容器
+                // car destroy
+            }
+            // 多实例bean测试
+            @Test
+            public void car02() {
+                AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(InitDestroyLifecycleConfig.class);
+                System.out.println("容器创建完成");
+                System.out.println("---------car01----------");
+                Car car01 = (Car) context.getBean("prototypeCar");
+        
+                System.out.println("---------car02----------");
+                Car car02 = (Car) context.getBean("prototypeCar");
+        
+                System.out.println("关闭容器");
+                context.close();
+        
+                // 输出
+                // car constructor         <<<<<< singleCar的输出
+                // car init                <<<<<< singleCar的输出
+                // 容器创建完成
+                // ---------car01----------
+                // car constructor
+                // car init
+                // ---------car02----------
+                // car constructor
+                // car init
+                // 关闭容器
+                // car destroy             <<<<<< singleCar的输出
+            }
+            ```
+
+## InitializingBean和DisposableBean接口--自定义某个bean的初始化和销毁方法
+[top](#catalog)
+- InitializingBean接口分析
+    - 定义初始化方法
+    - 接口源码
+        ```java
+        public interface InitializingBean {
+            // bean已创建、已赋值后，会调用该方法
+            void afterPropertiesSet() throws Exception;
+        }
+        ```
+
+- DisposableBean接口分析
+    - 定义销毁方法
+    - 接口源码
+        ```java
+        public interface DisposableBean {
+            // 容器关闭时调用该方法
+            void destroy() throws Exception;
+        }
+        ```
+- InitializingBean接口、DisposableBean接口可以和 `@Bean(initMethod = "...", destroyMethod = "...")` 共存
+    - 执行的顺序
+        1. 接口方法
+        2. `@Bean` 中注册的方法
+
+- 示例
+    - 实现内容
+        - 参考代码
+            - [/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/lifecycle/initdestroy/interfaces/InterfacesConfig.java](/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/lifecycle/initdestroy/interfaces/InterfacesConfig.java)
+            - [/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/lifecycle/initdestroy/interfaces/Computer.java](/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/lifecycle/initdestroy/interfaces/Computer.java)
+            - [/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/lifecycle/initdestroy/interfaces/Car.java](/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/lifecycle/initdestroy/interfaces/Car.java)
+
+        - 实现接口的bean
+            - 同时实现初始化、销毁的接口 和 @Bean参数中的方法
+                ```java
+                public class Computer implements InitializingBean, DisposableBean {
+                    @Override
+                    public void afterPropertiesSet() throws Exception {
+                        System.out.println("computer afterPropertiesSet");
+                    }
+                
+                    @Override
+                    public void destroy() throws Exception {
+                        System.out.println("computer destroy");
+                    }
+                
+                    public void init(){
+                        System.out.println("computer init");
+                    }
+                    public void end(){
+                        System.out.println("computer end");
+                    }
+                }
+                ```
+            - 只实现初始化和销毁的接口
+                ```java
+                public class Car implements InitializingBean, DisposableBean {
+                    // InitializingBean 接口实现
+                    @Override
+                    public void afterPropertiesSet() throws Exception {
+                        System.out.println("car afterPropertiesSet");
+                    }
+                
+                    // DisposableBean 接口实现
+                    @Override
+                    public void destroy() throws Exception {
+                        System.out.println("car DisposableBean destroy");
+                    }
+                }
+                ```
+        - 配置类
+            ```java
+            @Configuration
+            public class InterfacesConfig {
+                // 只使用 InitializingBean接口、 DisposableBean接口
+                @Bean
+                public Car singleCar(){
+                    return new Car();
+                }
+            
+                // 单实例
+                // 同时使用 InitializingBean接口、 DisposableBean接口 和 bean的初始化和销毁的参数
+                @Bean(initMethod = "init", destroyMethod = "end")
+                public Computer singleComputer(){
+                    return new Computer();
+                }
+            
+                // 多实例 
+                // 同时使用 InitializingBean接口、 DisposableBean接口 和 bean的初始化和销毁的参数
+                @Scope("prototype")
+                @Bean(initMethod = "init", destroyMethod = "end")
+                public Computer prototypeComputer(){
+                    return new Computer();
+                }
+            }
+            ```
+    - 测试内容
+        - 参考代码
+            - [/java/mylearn/myspring-annotation/src/test/java/com/ljs/learn/myspringannotation/lifecycle/initdestroy/interfaces/InterfacesConfigTest.java](/java/mylearn/myspring-annotation/src/test/java/com/ljs/learn/myspringannotation/lifecycle/initdestroy/interfaces/InterfacesConfigTest.java)
+        - 测试代码
+            ```java
+            @Test
+            public void test01() {
+                AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(InterfacesConfig.class);
+                System.out.println("容器创建完成");
+                System.out.println("关闭容器");
+                context.close();
+        
+                // 输出
+                // car afterPropertiesSet
+                // computer afterPropertiesSet
+                // computer init
+                // 容器创建完成
+                // 关闭容器
+                // computer destroy
+                // computer end
+                // car DisposableBean destroy
+            }
+        
+            @Test
+            public void prototypeComputer(){
+                AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(InterfacesConfig.class);
+                System.out.println("容器创建完成");
+                Computer computer01 = (Computer) context.getBean("prototypeComputer");
+                Computer computer02 = (Computer) context.getBean("prototypeComputer");
+                // 输出
+                // car afterPropertiesSet       <<<< 单例对象的输出
+                // computer afterPropertiesSet  <<<< 单例对象的输出
+                // computer init                <<<< 单例对象的输出
+                // 容器创建完成
+                // computer afterPropertiesSet
+                // computer init
+                // computer afterPropertiesSet
+                // computer init
+            }
+            ```
+
+## JSR250注解--自定义某个bean的初始化和销毁方法
+[top](#catalog)
+- 使用JSR250 
+    - `@PostConstruct`
+        - 在bean创建完成，并且赋值完成后，执行初始化
+    - `@PreDestroy`
+        - 在容器销毁bean之前，进行清理工作
+
+- 示例
+    - 实现代码
+        - 参考代码
+            - [/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/lifecycle/initdestroy/jsr250/JSR250Config.java](/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/lifecycle/initdestroy/jsr250/JSR250Config.java)
+            - [/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/lifecycle/initdestroy/jsr250/Car.java](/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/lifecycle/initdestroy/jsr250/Car.java)
+        - bean
+            ```java
+            @Scope("prototype") // 多实例
+            @Component("prototypeCar")
+            public class Car {
+                String name = "prototypeCar";
+            
+                @PostConstruct
+                public void init(){
+                    System.out.println("car init, name=" + name);
+                }
+            
+                @PreDestroy
+                public void destroy(){
+                    System.out.println("car destroy, name=" + name);
+                }
+            }
+            ```
+        - 配置类
+            ```java
+            @Configuration
+            @ComponentScan(value = "com.ljs.learn.myspringannotation.lifecycle.initdestroy.jsr250")
+            public class JSR250Config {
+                // 扫描Car的多实例bean，注册一个Car的单实例bean
+                // 单实例
+                @Bean
+                public Car singleCar(){
+                    Car car = new Car();
+                    car.name = "singleCar";
+                    return car;
+                }
+            }
+            ```
+    - 测试内容
+        - 参考代码
+            - [/java/mylearn/myspring-annotation/src/test/java/com/ljs/learn/myspringannotation/lifecycle/initdestroy/jsr250/JSR250ConfigTest.java](/java/mylearn/myspring-annotation/src/test/java/com/ljs/learn/myspringannotation/lifecycle/initdestroy/jsr250/JSR250ConfigTest.java)
+        - 测试代码
+            ```java
+            @Test
+            public void test01(){
+                AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(JSR250Config.class);
+        
+                System.out.println("容器创建完成");
+        
+                System.out.println("获取单实例bean");
+                Object singleCar = context.getBean("singleCar");
+        
+                System.out.println("获取多实例bean");
+                Object prototypeCar1 = context.getBean("prototypeCar");
+                Object prototypeCar2 = context.getBean("prototypeCar");
+        
+                context.close();
+        
+                // 输出:
+                // car init, name=singleCar
+                // 容器创建完成
+                // 获取单实例bean
+                // 获取多实例bean
+                // car init, name=prototypeCar
+                // car init, name=prototypeCar
+                // car destroy, name=singleCar
+            }
+            ```
+
+## BeanPostProcessor接口--所有bean的后置处理器
+[top](#catalog)
+- `BeanPostProcessor`接口的功能
+    - 在**每个**bean示例化之后、初始化前执行一些操作，初始化后执行一些操作
+    - 用于设置一些通用的初始化操作
+- 接口实现类最好使用 `@Component` 来加入容器
+    - `@Bean` 会产生异常 ?????
+- 接口源码
+    ```java
+    public interface BeanPostProcessor {
+        /**
+         * 在bean实例创建后，调用任何初始化方法之前使用
+         * 如: 会在 InitializingBean.afterPropertiesSet 前调用
+         *
+  	     * @param bean 刚刚创建的bean实例
+  	     * @param beanName bean实例在容器中的名字
+       	 * @return 可以返回原始bean实例，也可以返回包装后的实例
+         */
+        @Nullable
+        default Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+            return bean;
+        }
+    
+        // 在bean实例创建后，并在其他初始化方法调用后执行
+        @Nullable
+        default Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+            return bean;
+        }
+    }
+    ```
+
+## 生命周期初始化的过程
+### 初始化的整体过程
+[top](#catalog)
+- 依照表格，从上到下顺序执行
+
+    |方法|功能|
+    |--:|:--|
+    |`AnnotationConfigApplicationContext`的构造器|| 
+    |`AbstractApplicationContext.refresh()`|加载配置，并完成所有单实例bean的初始化|
+    |`AbstractApplicationContext.finishBeanFactoryInitialization()`| 初始化所有的非懒加载的单实例bean|
+    |`DefaultListableBeanFactory.preInstantiateSingletons()`| 初始化所有单实例bean|
+    |`AbstractBeanFactory.getBean(String name)`|获取bean|
+    |`AbstractBeanFactory.doGetBean()`| 获取bean|
+    |`DefaultSingletonBeanRegistry.getSingleton(beanName, ObjectFactory接口的匿名对象)`|通过`ObjectFactory`接口实现类来尝试获取bean实例|
+    |`ObjectFactory接口的匿名对象.getObject()`| 尝试获取bean实例|
+    |`AbstractAutowireCapableBeanFactory.createBean()`| 尝试获取对象时，第一次会主动创建对象|
+    |`AbstractAutowireCapableBeanFactory.doCreateBean()`| 尝试创建bean实例，尝试创建bean实例，并启动初始化|
+    |`AbstractAutowireCapableBeanFactory.populateBean()`| 根据bean的名字和定义信息**为bean实例对象赋值**|
+    |`AbstractAutowireCapableBeanFactory.initializeBean()`| 对bean实例执行相关的初始化操作|
+    |`AbstractAutowireCapableBeanFactory.applyBeanPostProcessorsBeforeInitialization()`| 遍历所有的bean后置处理器的 postProcessBeforeInitialization 方法<br>如果处理器方法返回空，则立刻返回|
+    |`AbstractAutowireCapableBeanFactory.invokeInitMethods()`| 调用生命周期中的其他初始化方法<br>包括：InitializingBean接口，JSR250注解@PostConstruct，@Bean的initMethod|
+    |`AbstractAutowireCapableBeanFactory.applyBeanPostProcessorsAfterInitialization()`| 调用bean后置处理器的 postProcessAfterInitialization 方法|
+
+### 初始化的过程代码分析
+[top](#catalog)
+1. `AnnotationConfigApplicationContext` 的构造器
+    ```java
+    // 构造器
+    public AnnotationConfigApplicationContext(Class<?>... componentClasses) {
+        this();
+        register(componentClasses);
+        refresh();
+    }
+    ```
+2. `AbstractApplicationContext.refresh()`，加载配置，并完成所有单实例bean的初始化
+    ```java
+    @Override
+    public void refresh() throws BeansException, IllegalStateException {
+        synchronized (this.startupShutdownMonitor) {
+            // Prepare this context for refreshing.
+            prepareRefresh();
+
+            // Tell the subclass to refresh the internal bean factory.
+            ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
+
+            // Prepare the bean factory for use in this context.
+            prepareBeanFactory(beanFactory);
+
+            try {
+                // 其他代码
+                // ...
+
+                // Instantiate all remaining (non-lazy-init) singletons.
+                finishBeanFactoryInitialization(beanFactory); // <<<<<<<<<<<< 初始化所有的非懒加载的单实例对象
+
+                // Last step: publish corresponding event.
+                finishRefresh();
+            }
+    }
+    ```
+3. `AbstractApplicationContext.finishBeanFactoryInitialization()`，初始化所有的非懒加载的单实例bean
+    ```java
+    /**
+    * Finish the initialization of this context's bean factory,
+    * initializing all remaining singleton beans.
+    */
+    protected void finishBeanFactoryInitialization(ConfigurableListableBeanFactory beanFactory) {
+        // Initialize conversion service for this context.
+        if (beanFactory.containsBean(CONVERSION_SERVICE_BEAN_NAME) &&
+                beanFactory.isTypeMatch(CONVERSION_SERVICE_BEAN_NAME, ConversionService.class)) {
+            beanFactory.setConversionService(
+                    beanFactory.getBean(CONVERSION_SERVICE_BEAN_NAME, ConversionService.class));
+        }
+
+        // Register a default embedded value resolver if no bean post-processor
+        // (such as a PropertyPlaceholderConfigurer bean) registered any before:
+        // at this point, primarily for resolution in annotation attribute values.
+        if (!beanFactory.hasEmbeddedValueResolver()) {
+            beanFactory.addEmbeddedValueResolver(strVal -> getEnvironment().resolvePlaceholders(strVal));
+        }
+
+        // Initialize LoadTimeWeaverAware beans early to allow for registering their transformers early.
+        String[] weaverAwareNames = beanFactory.getBeanNamesForType(LoadTimeWeaverAware.class, false, false);
+        for (String weaverAwareName : weaverAwareNames) {
+            getBean(weaverAwareName);
+        }
+
+        // Stop using the temporary ClassLoader for type matching.
+        beanFactory.setTempClassLoader(null);
+
+        // Allow for caching all bean definition metadata, not expecting further changes.
+        beanFactory.freezeConfiguration();
+
+        // Instantiate all remaining (non-lazy-init) singletons.
+        beanFactory.preInstantiateSingletons();   // <<<<<<<<<<<< 初始化所有单实例bean
+    }
+    ```
+4. `DefaultListableBeanFactory.preInstantiateSingletons()`，初始化所有单实例bean
+    ```java
+    @Override
+    public void preInstantiateSingletons() throws BeansException {
+        if (logger.isTraceEnabled()) {
+            logger.trace("Pre-instantiating singletons in " + this);
+        }
+
+        // Iterate over a copy to allow for init methods which in turn register new bean definitions.
+        // While this may not be part of the regular factory bootstrap, it does otherwise work fine.
+        List<String> beanNames = new ArrayList<>(this.beanDefinitionNames);
+
+        // Trigger initialization of all non-lazy singleton beans...
+        for (String beanName : beanNames) {
+            RootBeanDefinition bd = getMergedLocalBeanDefinition(beanName);
+            if (!bd.isAbstract() && bd.isSingleton() && !bd.isLazyInit()) {
+                if (isFactoryBean(beanName)) {
+                    Object bean = getBean(FACTORY_BEAN_PREFIX + beanName);
+                    if (bean instanceof FactoryBean) {
+                        final FactoryBean<?> factory = (FactoryBean<?>) bean;
+                        boolean isEagerInit;
+                        if (System.getSecurityManager() != null && factory instanceof SmartFactoryBean) {
+                            isEagerInit = AccessController.doPrivileged((PrivilegedAction<Boolean>)
+                                            ((SmartFactoryBean<?>) factory)::isEagerInit,
+                                    getAccessControlContext());
+                        }
+                        else {
+                            isEagerInit = (factory instanceof SmartFactoryBean &&
+                                    ((SmartFactoryBean<?>) factory).isEagerInit());
+                        }
+                        if (isEagerInit) {
+                            getBean(beanName);
+                        }
+                    }
+                }
+                else {
+                    getBean(beanName); // <<<<<<<<<<<获取bean
+                }
+            }
+        }
+
+        // 其他处理
+        // ...
+    }
+    ```
+5. `AbstractBeanFactory.getBean(String name)`，获取bean
+    ```java
+    @Override
+    public Object getBean(String name) throws BeansException {
+        return doGetBean(name, null, null, false); //<<<<<<<<< 获取bean
+    }
+6. `AbstractBeanFactory.doGetBean()`，获取bean
+    ```java
+    protected <T> T doGetBean(final String name, @Nullable final Class<T> requiredType,
+                @Nullable final Object[] args, boolean typeCheckOnly) throws BeansException {
+
+        final String beanName = transformedBeanName(name);
+        Object bean;
+
+        // Eagerly check singleton cache for manually registered singletons.
+        Object sharedInstance = getSingleton(beanName);
+        if (sharedInstance != null && args == null) {
+            // 其他代码
+            // ...
+        }
+
+        else {
+            // 其他代码
+            // ...
+            // Create bean instance.
+            if (mbd.isSingleton()) {
+                //VVVVVVVVVVVVVVVVVVVVVVVVV 获取单实例bean，传入的是一个ObjectFactory接口的匿名对象，这是一个函数式接口
+                sharedInstance = getSingleton(beanName, () -> { // getSingleton内部会调用匿名类getObject方法尝试获取对象
+                    try {
+                        return createBean(beanName, mbd, args); // 尝试获取对象时，第一次会会主动创建对象
+                    }
+                    catch (BeansException ex) {
+                        // Explicitly remove instance from singleton cache: It might have been put there
+                        // eagerly by the creation process, to allow for circular reference resolution.
+                        // Also remove any beans that received a temporary reference to the bean.
+                        destroySingleton(beanName);
+                        throw ex;
+                    }
+                });
+                bean = getObjectForBeanInstance(sharedInstance, name, beanName, mbd);
+            }
+            // 其他代码
+            // ...
+        }
+    }
+    ```
+
+7. `DefaultSingletonBeanRegistry.getSingleton(beanName, ObjectFactory接口的匿名对象)`，通过`ObjectFactory`接口实现类来尝试获取bean实例
+    ```java
+    public Object getSingleton(String beanName, ObjectFactory<?> singletonFactory) {
+        Assert.notNull(beanName, "Bean name must not be null");
+            synchronized (this.singletonObjects) {
+                Object singletonObject = this.singletonObjects.get(beanName);
+                if (singletonObject == null) {
+                    // 其他代码
+                    // ...
+                    try {
+                        singletonObject = singletonFactory.getObject();  //<<<<<<< 尝试获取对象
+                        newSingleton = true;
+                    }
+                    // 其他代码
+                    // ...
+                }
+            }
+    }
+    ```
+8. `ObjectFactory接口的匿名对象.getObject()`，尝试获取bean实例
+    - 接口匿名对象
+        ```java
+        sharedInstance = getSingleton(beanName, () -> { // getSingleton内部会调用匿名类getObject方法尝试获取对象
+            try {
+                return createBean(beanName, mbd, args); // 尝试获取对象时，第一次会会主动创建对象
+            }
+            catch (BeansException ex) {
+                // Explicitly remove instance from singleton cache: It might have been put there
+                // eagerly by the creation process, to allow for circular reference resolution.
+                // Also remove any beans that received a temporary reference to the bean.
+                destroySingleton(beanName);
+                throw ex;
+            }
+        });
+        ```
+    - 接口定义
+        ```java
+        // ObjectFactory接口
+        @FunctionalInterface
+        public interface ObjectFactory<T> {
+
+            /**
+            * Return an instance (possibly shared or independent)
+            * of the object managed by this factory.
+            * @return the resulting instance
+            * @throws BeansException in case of creation errors
+            */
+            T getObject() throws BeansException;
+        }
+        ```
+9. `AbstractAutowireCapableBeanFactory.createBean()`，尝试获取对象时，第一次会主动创建对象
+    ```java
+    // 创建bean实例
+    @Override
+    protected Object createBean(String beanName, RootBeanDefinition mbd, @Nullable Object[] args)
+            throws BeanCreationException {
+        // 其他代码
+        // ...
+        try {
+            Object beanInstance = doCreateBean(beanName, mbdToUse, args);  //<<<<<<<<<<<<< 尝试创建bean实例
+            if (logger.isTraceEnabled()) {
+                logger.trace("Finished creating instance of bean '" + beanName + "'");
+            }
+            return beanInstance;
+        }
+        // 其他代码
+        // ...
+    }
+10. `AbstractAutowireCapableBeanFactory.doCreateBean()`，尝试创建bean实例，并启动初始化
+    ```java
+    // 开始创建
+    protected Object doCreateBean(final String beanName, final RootBeanDefinition mbd, final @Nullable Object[] args)
+            throws BeanCreationException {
+        final Object bean = instanceWrapper.getWrappedInstance();   // <<<<<<< 1. 获取实例对象
+        // 其他代码
+        // ...
+        Object exposedObject = bean;
+        try {
+            populateBean(beanName, mbd, instanceWrapper);   // <<<<<<<<<<<< 2. 根据bean的名字和定义信息为bean实例对象赋值
+            exposedObject = initializeBean(beanName, exposedObject, mbd); // <<<<<<<<< 3. 对bean实例执行相关的初始化操作
+        }
+    }
+    ```
+11. `AbstractAutowireCapableBeanFactory.populateBean()`，根据bean的名字和定义信息**为bean实例对象赋值**
+12. `AbstractAutowireCapableBeanFactory.initializeBean()`，对bean实例执行相关的初始化操作
+    ```java
+    // 初始化bean实例
+    protected Object initializeBean(final String beanName, final Object bean, @Nullable RootBeanDefinition mbd) {
+        if (System.getSecurityManager() != null) {
+            AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
+                invokeAwareMethods(beanName, bean);
+                return null;
+            }, getAccessControlContext());
+        }
+        else {
+            invokeAwareMethods(beanName, bean);
+        }
+
+        Object wrappedBean = bean;
+        // 完成初始化的前置处理、自定义初始化方法、初始化的后置处理，整体是一个个的切面
+        if (mbd == null || !mbd.isSynthetic()) {
+            // VVVVVVVVVVVV 1. 调用bean后置处理器的 postProcessBeforeInitialization 方法
+            wrappedBean = applyBeanPostProcessorsBeforeInitialization(wrappedBean, beanName);
+        }
+
+        try {
+            // VVVVVVVVVVVV 2. 调用生命周期中的其他初始化方法
+            // VVVVVVVVVVVV 包括：InitializingBean接口，JSR250注解@PostConstruct，@Bean的initMethod
+            invokeInitMethods(beanName, wrappedBean, mbd);
+        }
+        catch (Throwable ex) {
+            throw new BeanCreationException(
+                    (mbd != null ? mbd.getResourceDescription() : null),
+                    beanName, "Invocation of init method failed", ex);
+        }
+        if (mbd == null || !mbd.isSynthetic()) {
+            // VVVVVVVVVVVV 3. 调用bean后置处理器的 postProcessAfterInitialization 方法
+            wrappedBean = applyBeanPostProcessorsAfterInitialization(wrappedBean, beanName);
+        }
+
+        return wrappedBean;
+    }
+    ```
+13. `AbstractAutowireCapableBeanFactory.applyBeanPostProcessorsBeforeInitialization()`，遍历所有的bean后置处理器的 postProcessBeforeInitialization 方法。如果处理器方法返回空，则立刻返回
+    ```java
+    @Override
+    public Object applyBeanPostProcessorsBeforeInitialization(Object existingBean, String beanName)
+            throws BeansException {
+
+        Object result = existingBean;
+        for (BeanPostProcessor processor : getBeanPostProcessors()) {
+            // VVVVV 遍历bean的后置处理器对象，并调用前置初始化方法: postProcessBeforeInitialization
+            Object current = processor.postProcessBeforeInitialization(result, beanName);
+            if (current == null) {  // 如果处理器方法返回空，则立刻返回
+                return result;
+            }
+            result = current;
+        }
+        return result;
+    }
+    ```
+
+14. `AbstractAutowireCapableBeanFactory.invokeInitMethods()`，调用生命周期中的其他初始化方法
+    - 可调用的内容包括：InitializingBean接口，JSR250注解@PostConstruct，@Bean的initMethod
+15. `AbstractAutowireCapableBeanFactory.applyBeanPostProcessorsAfterInitialization()`，调用bean后置处理器的 postProcessAfterInitialization 方法
+    ```java
+    @Override
+	public Object applyBeanPostProcessorsAfterInitialization(Object existingBean, String beanName)
+			throws BeansException {
+
+		Object result = existingBean;
+        // VVVVV 遍历bean的后置处理器对象，并调用前置初始化方法: postProcessAfterInitialization
+		for (BeanPostProcessor processor : getBeanPostProcessors()) {
+			Object current = processor.postProcessAfterInitialization(result, beanName);
+			if (current == null) {  // 如果处理器方法返回空，则立刻返回
+				return result;
+			}
+			result = current;
+		}
+		return result;
+	}
+    ```
+
+## 多个生命周期方法的执行顺序
+### 多个生命周期方法的执行顺序--说明
+[top](#catalog)
+- 执行顺序
+    - 初始化
+        1. 为配置类调用 `BeanPostProcessor.applyBeanPostProcessorsBeforeInitialization`，`BeanPostProcessor.applyBeanPostProcessorsAfterInitialization`
+        2. 调用当前 bean 的构造器，创建对象
+            - 因为会先执行 `AbstractAutowireCapableBeanFactory.populateBean()`，创建bean的示例
+        3. 为当前 bean 调用`BeanPostProcessor.applyBeanPostProcessorsBeforeInitialization` 
+        4. 当前bean中标识了JSR250 `@PostConstruct` 接口的方法
+        5. 当前bean中实现的 `InitializingBean.afterPropertiesSet` 接口方法，
+        6. 当前bean在配置陪中注册的`@Bean(initMethod="初始化方法")`
+        3. 为当前 bean 调用`BeanPostProcessor.applyBeanPostProcessorsAfterInitialization` 
+    - 关闭容器时销毁
+        1. 当前bean中标识了JSR250 `@PreDestroy` 接口的方法
+        2. 当前bean中实现的 `DisposableBean.destroy` 接口方法
+        3. 当前bean在配置陪中注册的`@Bean(destroyMethod="销毁方法")`
+- 大体上的执行顺序是
+    1. bean的构造器
+    2. `BeanPostProcessor.applyBeanPostProcessorsBeforeInitialization` 接口方法
+    3. JSR250的注解: `@PostConstruct`、`@PreDestroy`
+    4. 实现 `InitializingBean` 和 `DisposableBean` 接口
+    2. `BeanPostProcessor.applyBeanPostProcessorsAfterInitialization` 接口方法
+    5. `@Bean(initMethod="初始化方法", destroyMethod="销毁方法")`
+
+### 多个生命周期方法的执行顺序--测试
+[top](#catalog)
+- 实现内容
+    - `BeanPostProcessor` 接口实现
+        - [/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/lifecycle/initdestroy/ordertest/MyBeanPostProcessor.java](/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/lifecycle/initdestroy/ordertest/MyBeanPostProcessor.java)
+    - bean实例，分别实现: 空构造器输出, JSR250注解标识方法, InitializingBean接口, DisposableBean接口, @Bean方法
+        - [/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/lifecycle/initdestroy/ordertest/Car.java](/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/lifecycle/initdestroy/ordertest/Car.java)
+    - 配置类
+        - [/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/lifecycle/initdestroy/ordertest/InitDestroyOrderConfig.java](/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/lifecycle/initdestroy/ordertest/InitDestroyOrderConfig.java)
+
+- 测试内容
+    - 参考代码
+        - [/java/mylearn/myspring-annotation/src/test/java/com/ljs/learn/myspringannotation/lifecycle/initdestroy/ordertest/InitDestroyOrderConfigTest.java](/java/mylearn/myspring-annotation/src/test/java/com/ljs/learn/myspringannotation/lifecycle/initdestroy/ordertest/InitDestroyOrderConfigTest.java)
+    - 测试代码
+        ```java
+        @Test
+        public void singleCar() {
+            AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(InitDestroyOrderConfig.class);
+            System.out.println("容器创建完成");
+            context.close();
+
+            /*
+            输出:
+            BeanPostProcessor.postProcessBeforeInitialization, name = initDestroyOrderConfig
+            BeanPostProcessor.postProcessAfterInitialization, name = initDestroyOrderConfig
+            car constructor
+            BeanPostProcessor.postProcessBeforeInitialization, name = singleCar
+            JSR250 PostConstruct
+            InitializingBean.afterPropertiesSet
+            @Bean InitMethod
+            BeanPostProcessor.postProcessAfterInitialization, name = singleCar
+            容器创建完成
+            JSR250 PreDestroy
+            DisposableBean.destroy
+            @Bean DestroyMethod
+            */
+        }
+        ```
+
+## Spring底层对BeanPostProcessor的使用举例
+### ApplicationContextAwareProcessor--将IOC容器注入到某个bean
+[top](#catalog)
+- 说明示例
+    - 实现代码
+        - [/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/lifecycle/initdestroy/underlying/Dog.java](/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/lifecycle/initdestroy/underlying/Dog.java)
+    - 配置类代码
+        - [/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/lifecycle/initdestroy/underlying/UnderlyingConfig.java](/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/lifecycle/initdestroy/underlying/UnderlyingConfig.java)
+    - 测试代码
+        - [/java/mylearn/myspring-annotation/src/test/java/com/ljs/learn/myspringannotation/lifecycle/initdestroy/underlying/UnderlyingConfigTest.java](/java/mylearn/myspring-annotation/src/test/java/com/ljs/learn/myspringannotation/lifecycle/initdestroy/underlying/UnderlyingConfigTest.java)
+- 对BeanPostProcessor的使用
+    1. bean需要实现 `ApplicationContextAware` 接口
+        ```java
+        @Component
+        public class Dog implements ApplicationContextAware {
+            private ApplicationContext context;
+            // 实现ApplicationContextAware接口，获取IOC容器
+            @Override
+            public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+                context = applicationContext;
+                System.out.println("set context");
+            }
+        }
+        ```
+    2. 在启动Spring之后，会调用一个`BeanPostProcessor`接口的实现类: `ApplicationContextAwareProcessor` 来处理
+        - 执行过程
+            1. 检查每个bean是否是指定接口的实现
+            2. 调用接口方法，注入IOC容器对象
+        - 源码分析
+            ```java
+            class ApplicationContextAwareProcessor implements BeanPostProcessor {
+                // IOC 容器对象
+                private final ConfigurableApplicationContext applicationContext;
+                private final StringValueResolver embeddedValueResolver;
+            
+                /**
+                 * Create a new ApplicationContextAwareProcessor for the given context.
+                 */
+                public ApplicationContextAwareProcessor(ConfigurableApplicationContext applicationContext) {
+                    // 当前对象实例化时，被注入IOC容器对象
+                    this.applicationContext = applicationContext;
+                    this.embeddedValueResolver = new EmbeddedValueResolver(applicationContext.getBeanFactory());
+                }
+            
+                // 1. 在初始化之前，执行一些操作
+                @Override
+                @Nullable
+                public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+                    // 1.1 判断bean是否实现了接口
+                    if (!(bean instanceof EnvironmentAware || bean instanceof EmbeddedValueResolverAware ||
+                            bean instanceof ResourceLoaderAware || bean instanceof ApplicationEventPublisherAware ||
+                            bean instanceof MessageSourceAware || bean instanceof ApplicationContextAware)){
+                                                               // 判断bean是否实现了接口 ^^^^^^^^^^^^^^^^^^^^
+                        return bean;   // <<<<<<< 如果没有实现则直接将当前bean返回
+                    }
+            
+                    AccessControlContext acc = null;
+            
+                    if (System.getSecurityManager() != null) {
+                        acc = this.applicationContext.getBeanFactory().getAccessControlContext();
+                    }
+            
+                    if (acc != null) {
+                        AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
+                            invokeAwareInterfaces(bean);  // <<<<<<<<< 1.2 向bean中装配IOC容器对象
+                            return null;
+                        }, acc);
+                    }
+                    else {
+                        invokeAwareInterfaces(bean);  // <<<<<<<<< 1.2 向bean中装配IOC容器对象
+                    }
+            
+                    return bean;
+                }
+            
+                // 2. 向bean中注入IOC容器对象
+                private void invokeAwareInterfaces(Object bean) {
+                    if (bean instanceof EnvironmentAware) {
+                        ((EnvironmentAware) bean).setEnvironment(this.applicationContext.getEnvironment());
+                    }
+                    if (bean instanceof EmbeddedValueResolverAware) {
+                        ((EmbeddedValueResolverAware) bean).setEmbeddedValueResolver(this.embeddedValueResolver);
+                    }
+                    if (bean instanceof ResourceLoaderAware) {
+                        ((ResourceLoaderAware) bean).setResourceLoader(this.applicationContext);
+                    }
+                    if (bean instanceof ApplicationEventPublisherAware) {
+                        ((ApplicationEventPublisherAware) bean).setApplicationEventPublisher(this.applicationContext);
+                    }
+                    if (bean instanceof MessageSourceAware) {
+                        ((MessageSourceAware) bean).setMessageSource(this.applicationContext);
+                    }
+                    if (bean instanceof ApplicationContextAware) { // <<<<<<<< 如果实现了接口，则为bean注入IOC容器对象
+                        ((ApplicationContextAware) bean).setApplicationContext(this.applicationContext);
+                    }
+                }
+            }
+            ```
+
+### BeanValidationPostProcessor--数据校验处理
+[top](#catalog)
+- BeanValidationPostProcessor 的功能
+    - 在初始化之前校验，或之后执行校验
+    - 检验的执行时间只能在 初始化之前、初始化之后，选择一个时间来执行
+        - 默认是**在初始化之前**，执行校验
+- 源码分析（主要代码）
+    ```java
+    public class BeanValidationPostProcessor implements BeanPostProcessor, InitializingBean {
+        @Nullable
+        private Validator validator;
+        // 控制校验的执行时间
+        // 表示是否在初始化完成之后，在执行数据校验
+        // 默认在初始化之前，执行校验
+        private boolean afterInitialization = false;
+        
+        // 设置执行数据校验的时间
+        public void setAfterInitialization(boolean afterInitialization) {
+            this.afterInitialization = afterInitialization;
+        }
+  
+        // 1. 检查是否需要校验，两个方法互斥，只能有一个方法执行校验
+        // 1.1 在初始化之前校验
+        public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+            if (!this.afterInitialization) {
+                this.doValidate(bean);
+            }
+    
+            return bean;
+        }
+        // 1.2 在初始化之后执行校验
+        public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+            if (this.afterInitialization) {
+                this.doValidate(bean);
+            }
+    
+            return bean;
+        }
+    }
+    ```
+
+### InitDestroyAnnotationBeanPostProcessor--JSR250注解的识别与方法调用
+[top](#catalog)
+- 执行流程
+    1. 扫描每个bean
+    2. 获取bean的与生命周期相关的元数据
+    3. 根据元数据调用JSR250注解的的方法
+- 源码分析（主要代码）
+    ```java
+    public class InitDestroyAnnotationBeanPostProcessor{
+        @Override
+    	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+            // 1. 获取bean的与生命周期相关的元数据
+    		LifecycleMetadata metadata = findLifecycleMetadata(bean.getClass());
+    		try {
+                // 2. 根据元数据调用JSR250注解的的方法
+    			metadata.invokeInitMethods(bean, beanName);
+    		}
+    		catch (InvocationTargetException ex) {
+    			throw new BeanCreationException(beanName, "Invocation of init method failed", ex.getTargetException());
+    		}
+    		catch (Throwable ex) {
+    			throw new BeanCreationException(beanName, "Failed to invoke init method", ex);
+    		}
+    		return bean;
+    	}
+        @Override
+        public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+            return bean;
+        }
+    }
+    ```
+
+### AutowiredAnnotationBeanPostProcessor--自动装配注解处理
+[top](#catalog)
+- ?????
+
 [top](#catalog)
