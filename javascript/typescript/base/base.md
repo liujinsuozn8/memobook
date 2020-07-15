@@ -24,6 +24,11 @@
 - [函数](#函数)
     - [函数声明](#函数声明)
     - [函数参数](#函数参数)
+        - [有参函数](#有参函数)
+        - [可选参数](#可选参数)
+        - [默认参数](#默认参数)
+        - [可变参数](#可变参数)
+        - [对象类型参数的属性及类型约束](#对象类型参数的属性及类型约束)
     - [函数重载](#函数重载)
     - [箭头函数](#箭头函数)
 - [类](#类)
@@ -31,6 +36,10 @@
     - [类的继承](#类的继承)
     - [类属性的修饰符](#类属性的修饰符)
     - [静态属性与静态方法](#静态属性与静态方法)
+    - [抽象类和抽象方法](#抽象类和抽象方法)
+- [接口](#接口)
+    - [属性接口](#属性接口)
+    - [函数类型接口](#函数类型接口)
 - [](#)
 
 
@@ -591,13 +600,8 @@
         }
         ```
 ## 函数参数
+### 有参函数
 [top](#catalog)
-- 参考示例
-    - 示例代码
-        - [src/syntax/function/fun_params.ts](src/syntax/function/fun_params.ts)
-    - 编译结果
-        - [src/syntax/js/function/fun_params.js](src/syntax/js/function/fun_params.js)
-
 - 定义有参函数
     ```ts
     function info2Str(name:string, age:number): string{
@@ -608,109 +612,255 @@
     // console.log( info2Str('testName', "22") );
     ```
 
-- 可选参数， `参数名?:类型`
+### 可选参数
+[top](#catalog)
+- 可选参数的定义方法
+    ```ts
+    function foo(参数名?:类型,...):返回值类型{}
+    ```
+- 注意事项
     - es里方法的实参和形参数量可以不同，但是在ts中必须相同。如果不同，必须配置可选参数
     - 可选参数必须配置到参数的最后
-    - 示例
-        ```ts
-        function getInfo(name:string, address?:string): string{
-            // 判断可选参数是否传值
-            if (address){
-                return `name=${name}, address=${address}`;
-            } else {
-                return `name=${name}, address=null`;
-            }
-        }
-        ```
-    - 编译结果
-        - 编译结果与普通js没有差别，只是通过ts编译器限制了类型
-        ```js
-        function getInfo(name, address) {
-            // 判断可选参数是否传值
-            if (address) {
-                return "name=" + name + ", address=" + address;
-            }
-            else {
-                return "name=" + name + ", address=null";
-            }
-        }
-        ```
 
-- 默认参数，`参数名:类型=默认值`
-    - 示例
-        ```ts
-        function getInfo02(name:string, age:number=22):string{
-            return `name=${name}, age=${age}`;
-        }
-        console.log( getInfo02('testName') ); // 使用默认值
-        console.log( getInfo02('testName', 33) );
-        ```
-    - 编译结果
-        ```js
-        function getInfo02(name, age) {
-            // 如果参数是undefined，则使用默认值
-            if (age === void 0) { age = 22; }
-            return "name=" + name + ", age=" + age;
-        }
-        ```
+- 编译结果
+    - 可选参数是 ts 编译器的编译约束，在编译结果中没有特殊处理
 
-- 可变参数，`...参数名:类型[]`
-    - 本质就是利用解构运算符 `...` 将所有实参传递到一个数组中
+- 示例
+    - 示例代码
+        - 参考代码
+            - [src/syntax/function/fun_params.ts](src/syntax/function/fun_params.ts)
+        - 代码内容
+            ```ts
+            function getInfo(name:string, address?:string): string{
+                // 判断可选参数是否传值
+                if (address){
+                    return `name=${name}, address=${address}`;
+                } else {
+                    return `name=${name}, address=null`;
+                }
+            }
+            ```
+    - 编译结果
+        - 参考代码
+            - [src/syntax/js/function/fun_params.js](src/syntax/js/function/fun_params.js)
+        - 编译代码
+            ```js
+            // 可选参数约束没有特殊处理
+            function getInfo(name, address) {
+                // 判断可选参数是否传值
+                if (address) {
+                    return "name=" + name + ", address=" + address;
+                }
+                else {
+                    return "name=" + name + ", address=null";
+                }
+            }
+            ```
+
+### 默认参数
+[top](#catalog)
+- 可选参数的定义方法
+    ```ts
+    function foo(参数名:类型=默认值):返回值类型{}
+    ```
+
+- 注意事项
+    - 默认参数是最后一个参数时，调用时可以省略
+    - 如果参数在中间，只能通过将实参设置为 `undefined` 来省略
+
+- 编译结果
+    - 在编译结果中会添加一行代码，根据参数是否为 `undefined`，来决定是否使用默认值
+        ```js
+        if (参数名 === void 0) { 参数名 = 默认值; }
+        ```
+- 示例
+    - 示例代码
+        - 参考代码
+            - [src/syntax/function/fun_params.ts](src/syntax/function/fun_params.ts)
+        - 代码内容
+            ```ts
+            // 3.1 默认参数是最后一个参数
+            function getInfo02(name:string, age:number=22):string{
+                return `name=${name}, age=${age}`;
+            }
+            console.log( getInfo02('testName') ); // 使用默认值
+            console.log( getInfo02('testName', 33) );
+
+            // 3.2 默认参数在中间
+            function getInfo03(name:string, age:number=22, address:string):string{
+                return `name=${name}, age=${age}, address=${address}`;
+            }
+            // 只能通过设置undefined来省略默认参数
+            console.log( getInfo03('testName1', undefined ,'aaabbbccc') );
+            console.log( getInfo03('testName2', 40 ,'ertyuu') );
+            ```
+    - 编译结果
+        - 参考代码
+            - [src/syntax/js/function/fun_params.js](src/syntax/js/function/fun_params.js)
+        - 编译代码
+            ```js
+            // 3.1 默认参数是最后一个参数
+            function getInfo02(name, age) {
+                // 如果参数是undefined，则使用默认值
+                if (age === void 0) { age = 22; }
+                return "name=" + name + ", age=" + age;
+            }
+            // 3.2 默认参数在中间
+            function getInfo03(name, age, address) {
+                // 如果参数是undefined，则使用默认值
+                if (age === void 0) { age = 22; }
+                return "name=" + name + ", age=" + age + ", address=" + address;
+            }
+            ```
+
+### 可变参数
+[top](#catalog)
+- 可变参数的定义方法
+    ```ts
+    function foo(...参数名:类型[]):返回值类型{}
+    ````
+- 可变参数的本质
+    - 利用解构运算符 `...` 将所有实参传递到一个数组中
+- 注意事项
     - **可变参数需要放在参数的最后，且只能有一个**
-    - 示例
-        ```ts
-        // 1. 只有可变参数
-        function sum(...params:number[]):number{
-            let result: number = 0;
-            for(let i=0; i < params.length; i++){
-                result += params[i];
-            }
-            return result;
-        }
-        console.log( sum() );
-        console.log( sum(1,2,3,4,5) );
-
-        // 2. 包含一个普通参数，剩余参数需要放到最后
-        function sum02(a:number, ...others:number[]):number{
-            for(let i=0; i< others.length; i++){
-                a += others[i];
-            }
-            return a;
-        }
-        console.log( sum(1) );
-        console.log( sum(1,2,3,4,5) );
-        ```
-    - 编译结果
+- 编译结果
+    - 编译后的函数的参数列表中只包含普通的参数，没有可变参数
+    - 可变参数会从 `arguments` 取出所有值，并添加到一个数组中，作为可变参数使用
         ```js
-        // 1. 只有可变参数
-        function sum() {
-            // 从 argument 中获取所有的可变参数
-            var params = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                params[_i] = arguments[_i];
-            }
-            var result = 0;
-            for (var i = 0; i < params.length; i++) {
-                result += params[i];
-            }
-            return result;
-        }
+        var 参数名 = [];
 
-        // 2. 包含一个普通参数，可变参数需要放到最后
-        // 普通参数仍然保留
-        function sum02(a) {
-
-            // 从 argument 中获取所有的可变参数
-            var others = [];
-            for (var _i = 1; _i < arguments.length; _i++) {
-                others[_i - 1] = arguments[_i];
-            }
-            for (var i = 0; i < others.length; i++) {
-                a += others[i];
-            }
-            return a;
+        // arguments 中包含所有的形参，所以需要计算普通参数的数量，
+        // 定位到可变参数的开始位置，然后将所有可变参数导出
+        for (var _i = 普通参数的数量; _i < arguments.length; _i++) {
+            参数名[_i] = arguments[_i];
         }
         ```
+- 示例
+    - 示例代码
+        - 参考代码
+            - [src/syntax/function/fun_params.ts](src/syntax/function/fun_params.ts)
+        - 代码内容
+            ```ts
+            // 1. 只有可变参数
+            function sum(...params:number[]):number{
+                let result: number = 0;
+                for(let i=0; i < params.length; i++){
+                    result += params[i];
+                }
+                return result;
+            }
+            console.log( sum() );
+            console.log( sum(1,2,3,4,5) );
+
+            // 2. 包含一个普通参数，剩余参数需要放到最后
+            function sum02(a:number, ...others:number[]):number{
+                for(let i=0; i< others.length; i++){
+                    a += others[i];
+                }
+                return a;
+            }
+            console.log( sum(1) );
+            console.log( sum(1,2,3,4,5) );
+            ```
+    - 编译结果
+        - 参考代码
+            - [src/syntax/js/function/fun_params.js](src/syntax/js/function/fun_params.js)
+        - 编译代码
+            ```js
+            // 1. 只有可变参数
+            function sum() {
+                // 从 argument 中获取所有的可变参数
+                var params = [];
+                for (var _i = 0; _i < arguments.length; _i++) {
+                    params[_i] = arguments[_i];
+                }
+                var result = 0;
+                for (var i = 0; i < params.length; i++) {
+                    result += params[i];
+                }
+                return result;
+            }
+
+            // 2. 包含一个普通参数，可变参数需要放到最后
+            // 普通参数仍然保留
+            function sum02(a) {
+
+                // 从 argument 中获取所有的可变参数
+                var others = [];
+                // 函数包含一个普通函数，所有将 `index` 定位到 1
+                for (var _i = 1; _i < arguments.length; _i++) {
+                    others[_i - 1] = arguments[_i];
+                }
+                for (var i = 0; i < others.length; i++) {
+                    a += others[i];
+                }
+                return a;
+            }
+            ```
+
+### 对象类型参数的属性及类型约束
+[top](#catalog)
+- 定义方法
+    ```ts
+    function foo( 参数名:{属性1:类型, 属性2:类型,....} ):返回值类型{}
+    ```
+- 注意事项
+    - 不同传参方式的问题
+        1. `foo({属性1:属性值, 属性2:属性值2,....})`
+            - 直接在调用时创建一个对象作为实参
+            - 注意内容
+                - <label style='color:red'>实参对象的属性数量、属性名、属性类型必须与函数定义匹配</label>
+        2. `let obj = {属性1:属性值, 属性2:属性值2,....}; foo(obj);`
+            - 先创建一个对象，然后将对象作为实参
+            - 注意内容
+                - <label style='color:red'>只要对象中包含函数定义中的属性，并且类型匹配即可</label>
+                - 对属性的数量没有要求
+    - 对象中属性声明的顺序没有要求
+
+- 编译结果
+    - 这种语法**只是编译约束**，在编译结果中没有特殊处理
+    - 编译结果只是普通的函数声明
+
+- 示例
+    - 示例代码
+        - 参考代码
+            - [src/syntax/function/fun_params.ts](src/syntax/function/fun_params.ts)
+        - 代码内容
+            ```ts
+            function printName(info:{name:string, age:number}):void{
+                console.log(`info.name = ${info.name} info.age = ${info.age}`);
+            }
+
+            // 5.1 直接在调用时创建一个对象作为实参
+            // 5.1.1 没有包含指定的属性，编译异常
+            // error TS2345: Argument of type '{ name: string; }' is not assignable to parameter of type '{ name: string; age: number; }'.
+            // printName({name:'testName'});
+
+            // 5.1.2 比函数定义中的属性多，编译异常
+            // Argument of type '{ name: string; age: number; adderss: string; }' is not assignable to parameter of type '{ name: string; age: number; }'.
+            // let testObj = {name:'testName', age:20, adderss:'asdfgh'}
+            // printName({name:'testName', age:20, adderss:'asdfgh'});
+
+            // 5.1.3 属性数量、属性名、属性类型与定义相同，顺序可以不同
+            printName({name:'testName1', age:20});
+            printName({age:33, name:'testName2'});
+
+            // 5.2 先创建一个对象，然后将对象作为实参
+            // 对属性的数量没有要求
+            let testObj = {name:'testName3', age:11, adderss:'zxcvbnm'}
+            printName(testObj);
+            ```
+    - 编译结果
+        - 参考代码
+            - [src/syntax/js/function/fun_params.js](src/syntax/js/function/fun_params.js)
+        - 编译代码
+            ```js
+            // 没有约束处理，只是普通的函数
+            function printName(info) {
+                console.log("info.name = " + info.name);
+            }
+            printName({ name: 'testName' });
+            ```
 
 ## 函数重载
 [top](#catalog)
@@ -800,7 +950,7 @@
         - 如果箭头函数中使用了 `this` 对象，编译后的代码中都会改为使用 `_this`
         - 虽然箭头函数的编译结果是 普通函数，但是 `this` 的规则与 es6 保持一致
 - 示例
-    - 在ts中使用箭头函数
+    - 示例代码
         - 参考代码
             - [src/syntax/function/fun_arrow.ts](src/syntax/function/fun_arrow.ts)
         - 代码内容
@@ -1060,60 +1210,61 @@
     - 在编译结果中，所有的属性都是普通属性，没有特殊的处理
 
 - 示例
-    - 代码位置
-        - 参考代码
-            - [src/syntax/class/extends.ts](src/syntax/class/extends.ts)
-        - 编译结果
-            - [src/syntax/js/class/extends.js](src/syntax/js/class/extends.js)
     - 示例代码
-        ```ts
-        class Tool{
-            name:string;
-            protected introduction:string;
-            private executedTime:number = 0;
+        - 参考代码
+            - [src/syntax/class/modifier.ts](src/syntax/class/modifier.ts)
+        - 代码内容
+            ```ts
+            class Tool{
+                name:string;
+                protected introduction:string;
+                private executedTime:number = 0;
 
-            constructor(name:string, introduction:string){
-                this.name = name;
-                this.introduction = introduction
+                constructor(name:string, introduction:string){
+                    this.name = name;
+                    this.introduction = introduction
+                }
+
+                run():void{
+                    console.log(`${this.name} is run, executedTime=${this.executedTime}`);
+                    this.addExecutedTime();
+                }
+
+                stop():void {
+                    console.log(`${this.name} is stop`);
+                    this.clearExecutedTime();
+                }
+
+                protected clearExecutedTime():number{
+                    return this.executedTime = 0;
+                }
+
+                private addExecutedTime():void{
+                    this.executedTime += 10;
+                }
             }
 
-            run():void{
-                console.log(`${this.name} is run, executedTime=${this.executedTime}`);
-                this.addExecutedTime();
-            }
+            let tool = new Tool('computer', 'this is a computer');
+            // 调用 public 方法
+            tool.run();
+            tool.run();
+            tool.stop();
+            tool.run();
 
-            stop():void {
-                console.log(`${this.name} is stop`);
-                this.clearExecutedTime();
-            }
+            // 无法调用 protected 方法，会有编译异常
+            // error TS2445: Property 'clearExecutedTime' is protected and only accessible within class 'Tool' and its subclasses.
+            // tool.clearExecutedTime();
 
-            protected clearExecutedTime():number{
-                return this.executedTime = 0;
-            }
-
-            private addExecutedTime():void{
-                this.executedTime += 10;
-            }
-        }
-
-        let tool = new Tool('computer', 'this is a computer');
-        // 调用 public 方法
-        tool.run();
-        tool.run();
-        tool.stop();
-        tool.run();
-
-        // 无法调用 protected 方法，会有编译异常
-        // error TS2445: Property 'clearExecutedTime' is protected and only accessible within class 'Tool' and its subclasses.
-        // tool.clearExecutedTime();
-
-        // 无法调用 private 方法，会有编译异常
-        // error TS2341: Property 'addExecutedTime' is private and only accessible within class 'Tool'.
-        // tool.addExecutedTime();
-        ```
+            // 无法调用 private 方法，会有编译异常
+            // error TS2341: Property 'addExecutedTime' is private and only accessible within class 'Tool'.
+            // tool.addExecutedTime();
+            ```
     - 编译结果
-        - 全部被编译为普通js函数，没有特殊处理
+        - 参考代码
+            - [src/syntax/js/class/modifier.js](src/syntax/js/class/modifier.js)
+        - 编译内容
             ```js
+            // 全部被编译为普通js函数，没有特殊处理
             var Tool = /** @class */ (function () {
                 function Tool(name, introduction) {
                     this.executedTime = 0;
@@ -1155,69 +1306,345 @@
     - 普通的属性和方法，是挂在构造函数原型对象上的方法
 
 - 示例
-    - 代码位置
+    - 示例代码
         - 参考代码
             - [src/syntax/class/static.ts](src/syntax/class/static.ts)
-        - 编译结果
-            - [src/syntax/js/class/static.js](src/syntax/js/class/static.js)
-    - 代码内容
-        ```ts
-        class Fruit{
-            // 声明静态方法与静态变量
-            static type = 'xxxxx';
-            static print(){
-                console.log('this is Fruit');
+        - 代码内容
+            ```ts
+            class Fruit{
+                // 声明静态方法与静态变量
+                static type = 'xxxxx';
+                static print(){
+                    console.log('this is Fruit');
 
-                // 在静态方法中调用静态属性时，需要通过类来调用
-                console.log(`type = ${Fruit.type}`);
+                    // 在静态方法中调用静态属性时，需要通过类来调用
+                    console.log(`type = ${Fruit.type}`);
 
-                // 无法调用非静态方法和变量，编译异常
-                // error TS2304: Cannot find name 'getName'.
-                // getName();
+                    // 无法调用非静态方法和变量，编译异常
+                    // error TS2304: Cannot find name 'getName'.
+                    // getName();
+                }
+
+                // 声明普通变量和方法
+                name:string;
+                constructor(name:string){
+                    this.name = name;
+                }
+                getName():string{
+                    return this.name;
+                }
             }
 
-            // 声明普通变量和方法
-            name:string;
-            constructor(name:string){
-                this.name = name;
-            }
-            getName():string{
-                return this.name;
-            }
-        }
-
-        // 调用类的静态方法
-        Fruit.print();
-        // 调用类的静态函数
-        console.log(Fruit.type);
-        ```
+            // 调用类的静态方法
+            Fruit.print();
+            // 调用类的静态函数
+            console.log(Fruit.type);
+            ```
     - 编译结果
-        ```js
-        var Fruit = /** @class */ (function () {
-            function Fruit(name) {
-                this.name = name;
+        - 参考代码
+            - [src/syntax/js/class/static.js](src/syntax/js/class/static.js)
+        - 编译结果
+            ```js
+            var Fruit = /** @class */ (function () {
+                function Fruit(name) {
+                    this.name = name;
+                }
+
+                // 声明静态方法
+                Fruit.print = function () {
+                    console.log('this is Fruit');
+                    console.log("type = " + Fruit.type);
+                };
+
+                // 普通方法
+                Fruit.prototype.getName = function () {
+                    return this.name;
+                };
+
+                // 声明静态属性
+                Fruit.type = 'xxxxx';
+                return Fruit;
+            }());
+
+            // 调用类的静态方法
+            Fruit.print();
+            // 调用类的静态函数
+            console.log(Fruit.type);
+            ```
+
+## 抽象类和抽象方法
+[top](#catalog)
+- 使用 `abstract` 关键字声明抽象类和抽象方法
+    ```ts
+    abstract class 类名{
+        abstract 方法名();
+    }
+    ```
+- 抽象类的特性
+    - 抽象类不能实例化对象，只能被子类继承
+    - 抽象类中如果没有抽象方法，则这个类没有实际意义
+- 抽象方法的特性
+    - 抽象方法只能定义在抽象类中
+    - 抽象方法没有具体的实现，只有声明。需要有子类提供实现
+        - 子类必须提供实现
+    - 抽象方法的参数和返回值类型，<label style='color:red'>无法约束子类中的方法实现</label>
+
+- 编译结果
+    - 抽象类和抽象方法只是 ts 编译器在编译时的约束，编译结果中不会有特殊处理
+    - 抽象方法不会有实际的编码内容
+    - 抽象方法的实现只是挂在原型对象上的普通方法
+
+- 示例
+    - 示例代码
+        - 参考代码
+            - [src/syntax/class/abstract.ts](src/syntax/class/abstract.ts)
+        - 代码内容
+            ```ts
+            // 1. 定义抽象类和抽象方法
+            abstract class Animal{
+                private name: string;
+                constructor(name:string){
+                    this.name = name;
+                }
+                // 1. 定义抽象方法
+                abstract run():any;
+                // 2. 定义普通方法
+                getName():string{
+                    return this.name;
+                }
             }
 
-            // 声明静态方法
-            Fruit.print = function () {
-                console.log('this is Fruit');
-                console.log("type = " + Fruit.type);
-            };
+            // 2.1 子类1
+            class Dog extends Animal{
+                constructor(name:string){
+                    super(name);
+                }
+                run():void{
+                    console.log(`dog: ${this.getName()} is running`);
+                }
+            }
 
-            // 普通方法
-            Fruit.prototype.getName = function () {
-                return this.name;
-            };
+            // 2.2 子类2
+            class Cat extends Animal{
+                constructor(name:string){
+                    super(name);
+                }
+                run():void{
+                    console.log(`cat: ${this.getName()} is running`);
+                }
+            }
 
-            // 声明静态属性
-            Fruit.type = 'xxxxx';
-            return Fruit;
-        }());
+            //3.  通过子类调用方法
+            let dog = new Dog('mydog');
+            dog.run();
 
-        // 调用类的静态方法
-        Fruit.print();
-        // 调用类的静态函数
-        console.log(Fruit.type);
+            let cat = new Cat('mycat');
+            cat.run();
+            ```
+    - 编译结果
+        - 参考代码
+            - [src/syntax/js/class/abstract.js](src/syntax/js/class/abstract.js)
+
+        - 编译内容
+            - 抽象类
+                ```js
+                // 只有普通方法的实现，没有抽象方法
+                var Animal = /** @class */ (function () {
+                    function Animal(name) {
+                        this.name = name;
+                    }
+                    // 2. 定义普通方法
+                    Animal.prototype.getName = function () {
+                        return this.name;
+                    };
+                    return Animal;
+                }());
+                ```
+            - 子类
+                ```js
+                // 抽象类的实现就是挂在原型对象上的普通方法
+                var Dog = /** @class */ (function (_super) {
+                    __extends(Dog, _super);
+                    function Dog(name) {
+                        return _super.call(this, name) || this;
+                    }
+                    Dog.prototype.run = function () {
+                        console.log("dog: " + this.getName() + " is running");
+                    };
+                    return Dog;
+                }(Animal));
+                ```
+
+# 接口
+## 属性接口
+[top](#catalog)
+- 什么是属性接口
+    - 属性接口就是对属性及其类型的封装
+    - 封装后，接口可以作为参数的约束来使用
+- 属性接口的定义方法
+    ```ts
+    interface 接口名{
+        属性1:类型;     // 必须属性，对象中必须有该属性
+        属性2:类型;     // 必须属性，对象中必须有该属性
+        属性3?:类型;    // 可选属性，对象中可以选择是否设置该属性
+        ...
+    }
+    ```
+- 属性接口的编译结果
+    - 在编译结果中不会有任何与接口相关的定义
+    - 接口只是 ts 编译器的编译约束
+- 适用场景
+    - 优化 [对象类型参数的属性及类型约束](#对象类型参数的属性及类型约束)
+        - 函数参数中的约束无法复用，可以通过属性接口，实现约束复用
+
+- 示例
+    1. 属性接口示例
+        - 示例代码
+            - 参考代码
+                - [src/syntax/interface/property.ts](src/syntax/interface/property.ts)
+            - 代码内容
+                ```ts
+                // 1. 定义属性接口
+                interface Info{
+                    name:string;
+                    age:number;
+                }
+
+                // 2. 在多个方法中复用属性接口
+                // 2.1 在方法的形参中使用接口
+                function printInfo(data:Info):void{
+                    console.log(`data.name = ${data.name}, data.age = ${data.age}`);
+                }
+
+                function printInfo02(data:Info):void{
+                    console.log(`name = ${data.name}, age = ${data.age}`);
+                }
+
+                // 2.2 直接在调用时创建一个对象作为实参
+                // 属性数量比结果多，编译异常
+                // error TS2345: Argument of type '{ name: string; age: number; address: string; }' is not assignable to parameter of type 'Info'.
+                // printInfo({name:'testName1', age:22, address:'qwertyu'});
+                printInfo({name:'testName1', age:22});
+                printInfo02({name:'testName2', age:33});
+
+                // 2.3 先创建一个对象，然后将对象作为实参
+                let info = { name:'testName3', age:11, address: 'asdfghjk' };
+                printInfo(info);
+                printInfo02(info);
+                ```
+        - 编译结果
+            - 参考代码
+                - [src/syntax/js/interface/property.js](src/syntax/js/interface/property.js)
+            - 编译内容
+                ```js
+                // 编译结果中只有函数部分，没有任何与接口相关的内容
+                function printInfo(data) {
+                    console.log("data.name = " + data.name + ", data.age = " + data.age);
+                }
+                function printInfo02(data) {
+                    console.log("name = " + data.name + ", age = " + data.age);
+                }
+                ```
+    2. 可选属性接口示例
+        - 示例代码
+            - 参考代码
+                - [src/syntax/interface/optional_property.ts](src/syntax/interface/optional_property.ts)
+            - 代码内容
+                ```ts
+                // 1. 定义属性接口
+                interface Info2{
+                    name:string;
+                    age:number;
+                    address?:string;    // 定义可选属性
+                }
+
+                // 2. 使用接口
+                function printInfo03(data: Info2): void{
+                    if (data.address){
+                        console.log(`name = ${data.name}, age= ${data.age}, address=${data.address}`);
+                    }else{
+                        console.log(`name = ${data.name}, age= ${data.age}`);
+                    }
+                }
+
+                // 3.1 参数中包含可选属性
+                let obj1={ name:'testName4', age:15, address:'asdfghj' };
+                printInfo03(obj1);
+
+                // 3.2 参数中不包含可选属性
+                let obj2={ name:'testName5', age:12 };
+                printInfo03(obj2);
+                ```
+        - 编译结果
+            - 参考代码
+                - [src/syntax/js/interface/optional_property.js](src/syntax/js/interface/optional_property.js)
+            - 编译内容
+                ```js
+                // 编译结果中只有函数部分，没有任何与接口相关的内容
+                function printInfo03(data) {
+                    if (data.address) {
+                        console.log("name = " + data.name + ", age= " + data.age + ", address=" + data.address);
+                    }
+                    else {
+                        console.log("name = " + data.name + ", age= " + data.age);
+                    }
+                }
+                ```
+
+## 函数类型接口
+[top](#catalog)
+- 函数类型接口的定义与实现
+    - 定义
+        ```ts
+        interface 接口名{
+            (参数1:类型, 参数2:类型, ...):返回值类型;
+        }
         ```
+    - 接口实现
+        ```ts
+        let fn:接口名 = function (参数1:类型, 参数2:类型, ...):返回值类型{
+            //...
+        };
+        ```
+- 注意事项
+    - 函数类型接口对接口实现具有强类型约束，参数、返回值的类型必须与定义相同
+- 编译结果
+    - 函数类型接口只是 ts 编译器的编译约束
+    - 编译结果中，不会有任何与接口相关的内容
+- 示例
+    - 示例代码
+        - 参考代码
+            - [src/syntax/class/abstract.ts](src/syntax/class/abstract.ts)
+        - 代码内容
+            ```ts
+            // 1. 声明函数类型接口
+            interface EntryFormat{
+                (key:string, value:any):string;
+            }
+
+            // 2. 接口实现
+            let formate01: EntryFormat = function(key:string, value:any):string{
+                return key + value;
+            };
+            let formate02: EntryFormat = function(key:string, value:any):string{
+                return `key = ${key}, value=${value}`;
+            };
+
+            console.log(formate01('aaa', 123)); // 输出: aaa123
+            console.log(formate02('aaa', 123)); // 输出: key = aaa, value=123
+            ```
+    - 编译结果
+        - 参考代码
+            - [src/syntax/js/class/abstract.js](src/syntax/js/class/abstract.js)
+        - 编译内容
+            ```js
+            // 只包含函数定义
+            var formate01 = function (key, value) {
+                return key + value;
+            };
+            var formate02 = function (key, value) {
+                return "key = " + key + ", value=" + value;
+            };
+            ```
 
 [top](#catalog)

@@ -107,7 +107,10 @@
     - [创建项目时的路由选项](#创建项目时的路由选项)
     - [路由的实现方式](#路由的实现方式)
     - [vue-router简介](#vue-router简介)
-    - [](#)
+    - [vue-router的基本使用方法](#vue-router的基本使用方法)
+    - [路由映射的配置方法](#路由映射的配置方法)
+    - [历史记录的模式](#历史记录的模式)
+    - [router-link的属性](#router-link的属性)
 
 - [](#)
 
@@ -4676,9 +4679,226 @@
     - 路由用于设置、保存访问路径和组件的映射
     - 在 vue-router 的单页面应用中，页面路径的改变就是组件间的切换
 
-## vue-router的使用方法
+## vue-router的基本使用方法
 [top](#catalog)
+- 构建 vue-router 的使用框架
+    1. 安装vue-router，vue-cli3以上可以忽略
+        ```sh
+        npm install vue-router --save
+        ```
+    2. 在模块化工程中使用 vue-router
+        - 因为 vue-router 是一个插件，所以可以通过 `Vue.use()` 来安装路由功能
+        - 使用步骤
 
+            |No|目的|操作|
+            |-|-|-|
+            |1|导入路由     |从包 `vue-router` 导入路由插件|
+            |2|安装路由     |调用 `Vue.use(VueRouter)` 方法，安装插件|
+            |3|创建路由实例 |创建**路由实例**，并传入<label style='color:red'>路由映射配置</label>|
+            |4|挂载路由     |在Vue实例中挂载 No.2 中创建的路由实例|
+
+- vue-router 的使用方法
+    1. 创建并**导出**路由所需的组件
+    2. 配置路由映射，即组件与路径的映射关系
+    3. 通过 `<router-link>`、`<router-view>` 标签，来使用路由
+        - `<router-link>`、`<router-view>` 是由 vue-router 注册的全局组件，可以直接使用
+        - `<router-link>` 会被渲染成 `<a>`，用于路径的跳转
+        - `<router-view>` 用于显示组件，决定组件在页面的显示位置
+
+- 路由一般配置在 `src/router/index.js` 下
+    - 引入时，直接通过 `router/` 目录引入即可，nodejs会自动读取 `index.js` 文件中的内容
+    - `src/router/index.js` 文件，在vue-cli3下会自动生成
+
+- 示例
+    - 主要工程结构
+        ```
+        ├── public
+        │      └── index.html       // 包含 #app，用于设置Vue实例
+        └── src
+              ├── router
+              │     └── index.js    // 导入vue-router，创建、配置路由对象，并导出
+              ├── view
+              │     ├── Home.vue    // 路由需要的组件，创建并导出
+              │     └── About.vue   // 路由需要的组件，创建并导出
+              ├── App.vue           // Vue实例组件，在 template 中使用路由
+              └── main.js           // 创建Vue实例，导入路由对象并挂在到Vue实例上
+        ```
+    - 构建vue-router使用环境
+        1. 在模块化工程中使用 vue-router，[src/router/index_bk01.js](src/router/router-demo01/src/router/index_bk01.js)
+            ```js
+            // 配置所有与路由相关的信息
+
+            import Vue from 'vue';
+            // 1. 导入路由
+            import VueRouter from 'vue-router';
+            /// 导入路由所需组件
+            import Home from '../views/Home.vue';
+            import About from '../views/About.vue';
+
+            // 2. 安装插件
+            Vue.use(VueRouter);
+
+            // 3. 创建路由实例
+            // 3.1 创建组件与url路径的映射关系
+            const routes = [
+                // 一个映射关系就是一个对象
+                {
+                    path: '/home',
+                    component: Home
+                },
+                {
+                    path: '/about',
+                    component: About
+                },
+            ];
+            const router = new VueRouter({
+                routes  // 设置路由映射
+            });
+
+            // 3.3 将路由导出
+            export default router;
+
+            // 4. 将路由挂载到Vue实例
+            // 在main.js 中导入路由对象，并挂载
+            ```
+        2. 在 Vue 实例中挂载路由对象，[src/main.js](src/router/router-demo01/src/main.js)
+            ```js
+            import Vue from 'vue'
+            import App from './App.vue'
+            // 4.1 导入自定义的路由对象
+            import router from './router'
+
+            Vue.config.productionTip = false
+
+            new Vue({
+                router, // 4.2 将路由挂在到Vue实例
+                render: h => h(App)
+            }).$mount('#app')
+            ```
+    - 使用 vue-router
+        1. 创建并导出路由所需的组件 `Home.vue`, `About.vue`
+            - [src/views/Home.vue](src/router/router-demo01/src/views/Home.vue)
+                ```js
+                // Home.vue
+                // 导出当前组件
+                export default {
+                    name: 'Home',
+                }
+                ```
+            - [src/views/About.vue](src/router/router-demo01/src/views/About.vue)
+                ```js
+                // About.vue
+                // 导出当前组件
+                export default {
+                    name: 'About',
+                }
+                ```
+        2. 配置路由映射:  [src/router/index.js](src/router/router-demo01/src/router/index.js)
+            ```js
+            // 导入路由所需组件
+            import Home from '../views/Home.vue';
+            import About from '../views/About.vue';
+
+            // 3.1 创建组件与url路径的映射关系
+            const routes = [
+                // 一个映射关系就是一个对象
+                {
+                    path: '/home',
+                    component: Home
+                },
+                {
+                    path: '/about',
+                    component: About
+                },
+            ];
+            ```
+        3. 使用路由，[src/App.vue](src/router/router-demo01/src/App.vue)
+            ```html
+            <template>
+            <div id="app">
+                <div id="nav">
+                <!-- 设置路由的路径 -->
+                <router-link to="/home">Home</router-link> |
+                <router-link to="/about">About</router-link>
+                <!-- 设置路由组件的显示位置 -->
+                <router-view/>
+                </div>
+            </div>
+            </template>
+            ```
+
+## 路由映射的配置方法
+[top](#catalog)
+- 创路由实例，并添加路由映射
+    ```js
+    // 创建组件与url路径的映射关系
+    const routes = [
+        // 一个映射关系就是一个对象
+
+        // 2. 设置路径重定向
+        // 尤其是初始化时，需要主动将路径重定向到主页
+        {
+            // path:'',          // 空字符串与 '/' 的路径相同
+            path:'/',
+            redirect: '/home'   // 设置重定向的路径，需要指定一个存在的路径
+        }
+        // 1. 组件及其映射
+        {
+            path: '/home',  // 配置跳转路径，在 router-link 中需要使用该路径
+            component: Home // 路径对应的组件，在 router-view 中被渲染
+        },
+        {
+            path: '/about',
+            component: About
+        },
+    ];
+    // 创建路由实例
+    const router = new VueRouter({
+        routes  // 设置路由映射
+    });
+    ```
+
+## 历史记录的模式
+[top](#catalog)
+- 历史记录的模式需要在创建 路由实例时指定
+- 使用 html5 的 history 对象
+    ```js
+    import VueRouter from 'vue-router';
+    const router = new VueRouter({
+        mode: 'history' // 使用 html5 的 history 对象
+        routes
+    });
+    ```
+- 默认使用 Location 对象来控制
+    - 该模式的路径会有 `#`，看起来不像标准路径，如: `http://localhost:8080/#/home`
+        ```js
+        import VueRouter from 'vue-router';
+        const router2 = new VueRouter({
+            // 默认使用 Location 对象来控制
+            routes
+        });
+        ```
+## router-link的属性
+[top](#catalog)
+- `to`
+    - 功能: 用于设置跳转的路径
+    - 属性值: 路由映射中**已存在**的 `path` 属性
+    - 示例
+        ```html
+        <router-link to="/home">Home</router-link>
+        ```
+- `tag`
+    - 功能: 指定渲染时，翻译成什么标签，默认翻译成 `<a>`
+    - 属性值: html标签名
+    - 示例
+        ```html
+        <router-link to="/home" tag='button'>Home</router-link>
+        ```
+- `replace`
+    - 功能: 路径跳转时，不会生成前一个路径的历史记录
+        - `history`模式下，调用了 `history.replaceState`，覆盖了上一个路径的历史记录
+        - 默认的`location`模式下，`location.replace`，覆盖了上一个路径的历史记录
+    - 无属性值属性
 
 # 其他
 [top](#catalog)

@@ -583,62 +583,106 @@
 [top](#catalog)
 - 依赖的模块需要打包处理
     - 对于低版本的浏览器，需要将ES6的语法转换成浏览器可以识别的版本
-- 语法
+- 导出导入的方法
     - 导出模块: `export`
-        - 3种导出方式
-            1. 多次导出
-                ```js
-                export function foo(){...}
-                export function bar(){...}
-                export let obj = {...}
-                ```
-            2. 统一导出，统一导出相当于多次导出
-                ```js
-                function foo(){...}
-                function bar(){...}
-                let obj = {...}
-                export {foo, bar, obj}
-                ```
-            3. 混合导出：多次导出和统一导出可以组合使用
-                ```js
-                function foo(){...}
-                function bar(){...}
-                export {foo, bar}
-
-                export let obj = {...}
-                ```
-            4. 默认导出
-                - 可以导出任意数据类型
-                - 导出什么，导入时就接收到什么
-                - 一个模块只能使用一次默认导出。多次默认导出会报错
-                - 写法
-                    ```js
-                    export default {...}
-                    ```
-
     - 导入模块: `import`
         - 模块的标识：与`require("模块的标识")`相同
             - 本地模块使用地址，以`./`、`../`开头
+                - 根据nodejs的规则，如果是目录，则需要目录下包含 `index.js` 文件作为导入的入口
             - 第三方模块、内置模块，使用模块名
+- 导入导出的几种情况
+    1. 多次导出
+        - 导出: 相当于多次执行了`module.exports.xxx = yyy`
+            ```js
+            // 导出多个函数、变量等内容
+            export function foo(){...}
+            export function bar(){...}
+            export let obj = {...}
+            ```
+        - 导入: 通过解构赋值的方式，引入指定内容。<label style='color:red'>变量名必须和导出的内容同名</label>
+            ```js
+            import {变量名1, 变量名2,...} from "模块标识"
+            ```
+    2. 统一导出
+        - 导出: 统一导出相当于多次导出
+            ```js
+            function foo(){...}
+            function bar(){...}
+            let obj = {...}
+            export {foo, bar, obj}
+            ```
+        - 导入: 通过解构赋值的方式，引入指定内容。<label style='color:red'>变量名必须和导出的内容同名</label>
+            ```js
+            import {变量名1, 变量名2,...} from "模块标识"
+            ```
+    3. 多次导出、统一导出一起使用
+        - 导出
+            ```js
+            function foo(){...}
+            function bar(){...}
+            export {foo, bar}   // 统一导出
+            export let obj = {...}  // 单独导出
+            ```
+        - 导入: 通过解构赋值的方式，引入指定内容。<label style='color:red'>变量名必须和导出的内容同名</label>
+            ```js
+            import {变量名1, 变量名2,...} from "模块标识"
+            ```
+    4. <label style='color:red'>默认导出</label>
+        - 导出
+            ```js
+            export default {...}    // 只能使用一次
+            ```
+        - 导入
+            ```js
+            import 任意名称 from "模块标识"
+            ```
+        - 注意事项
+            - 一个模块只能使用一次默认导出。多次默认导出会报错
+            - 可以导出任意数据类型
+            - 默认导出可以和其他导出共存
+        - 默认导出的本质
+            - 将导出的内容输出到 `default` 变量，所以**导入时可以任意命名**
+    5. <label style='color:red'>默认导出与其他导出结合</label>
+        - 导出
+            ```js
+            export default {...}    // 默认导出只能使用一次
 
-        - 导入默认导出的内容
-            ```js
-            import 模块名 from "模块标识"
+            function foo(){...}
+            function bar(){...}
+            export {foo, bar}       // 统一导出
+
+            export let obj = {...}  // 单独导出
             ```
-        - 导入其他导出方式的内容。必须使用**解构赋值**的方式，才能获取模块中导出的内容
+        - 导入
+            - 多种导出方式共存时，导入的写法是各写各的，不互相干扰
             ```js
-            import {模块内容1, 模块内容2,...} from "模块标识"
+            import 任意名称, {foo bar, obj} from "模块标识"
             ```
-        - 全部导入
+    6. 全部导入
+        - 通过 `*` 导入所有内容，通过给 `*` 附加别名来使用模块
+        ```js
+        import * as 模块别名 from "模块标识"
+        // 调用方法
+        模块别名.属性
+        ```
+    7. 使用别名解决命名冲突
+        ```js
+        import {a as A1} from "模块标识1"
+        import {a as A2} from "模块标识2"
+        ```
+    8. `export ... from ...`，导入即导出
+        - 适用场景
+            - 在高层的模块中，将底层的某块导出给用户使用。
+            - 用户在使用时，可以直接通过高层模块统一需要的内容，而不需要知道如何从底层导入、或者底层有什么
+        - 语法
             ```js
-            import * as 别名 from "模块标识"
-            // 调用方法
-            别名.属性
-            ```
-        - 使用别名解决命名冲突
-            ```js
-            import {a as A1} from "模块标识1"
-            import {a as A2} from "模块标识2"
+            // 从其他模块导入 A, B, C, D
+            export {A, B, C, D} from '其他模块'
+            // ----------------------------------------
+
+            // 相当于
+            import {A, B, C, D} from '其他模块'
+            export {A, B, C, D}
             ```
 
 - 实现方式
@@ -753,6 +797,20 @@
                         console.log("this is module3 default")
                     }
                 }
+
+                // 单次导出
+                export let person = {name:'testName', age:22};
+
+                function moduleFn01(){
+                    console.log('this is moduleFn01');
+                }
+
+                function moduleFn02(){
+                    console.log('this is moduleFn02');
+                }
+
+                // 统一导出
+                export {moduleFn01, moduleFn02};
                 ```
             - `module4.js`
                 ```js
@@ -773,17 +831,18 @@
             - [src/es6_sample/babel_browserify/js/src/main.js](src/es6_sample/babel_browserify/js/src/main.js)
         - 代码内容
             ```js
-            // 无法通过模块名导入
+            // 无法通过模块名引入
             // import module1 from "./module1"
             // import module2 from "./module2"
 
             // console.log(module1,module2)
 
-            // 使用解构赋值的方式来导入
+            // 使用解构赋值的方式来引入
             import {foo as foo1, bar as bar1} from "./module1"
             // 使用别名解决命名冲突
             import {foo as foo2, bar as bar2, obj} from "./module2"
-            import module3 from "./module3"
+            // 同时导入默认导出内容，和其他导出方式导出的内容
+            import module3, {person, moduleFn01, moduleFn02} from "./module3"
             import * as module4 from "./module4"
 
             foo1()
@@ -794,6 +853,10 @@
             module3.foo()
             module4.fun()
             module4.fun2()
+
+            console.log(person);
+            moduleFn01();
+            moduleFn02();
             ```
 
     6. 编译代码
@@ -819,6 +882,9 @@
             this is module3 default
             this is module4 fun
             this is module4 fun2
+            {name: "testName", age: 22}
+            this is moduleFn01
+            this is moduleFn02
             ```
 
 [top](#catalog)
