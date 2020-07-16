@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>值类型和引用类型表示数据的使用方式</title>
+    <script type="text/javascript">
+        var str = 'abcde';
+        var obj = new String(str);
+
+        function newToString(){
+            return 'hello world';
+        }
+        function func(val){
+            // 修改toString函数
+            val.toString = newToString;
+        }
+
+        // 使用值
+        func(str);
+        console.log(str); // 输出: abcde
+
+        // 使用引用
+        func(obj);
+        console.log(obj);   // [String: 'abcde'] { toString: [Function: newToString] }
+        console.log(String(obj)); // hello world
+    </script>
+    
+</head>
+<body>
+    
+</body>
+</html>
