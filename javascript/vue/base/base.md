@@ -109,10 +109,22 @@
     - [vue-router简介](#vue-router简介)
     - [vue-router的基本使用方法](#vue-router的基本使用方法)
     - [路由映射的配置方法](#路由映射的配置方法)
-    - [历史记录的模式](#历史记录的模式)
+        - [将路由配置添加到路由对象中](#将路由配置添加到路由对象中)
+        - [普通路由](#普通路由)
+        - [路由的重定向](#路由的重定向)
+        - [默认路由](#默认路由)
+        - [懒加载路由](#懒加载路由)
+        - [动态路由](#动态路由)
+        - [嵌套路由](#嵌套路由)
+    - [路由对象的参数设置](#路由对象的参数设置)
+        - [mode--历史记录的模式](#mode--历史记录的模式)
+        - [linkActiveClass--激活状态下的链接样式](#linkActiveClass--激活状态下的链接样式)
     - [router-link的属性](#router-link的属性)
-
+    - [通过代码手动跳转路由](#通过代码手动跳转路由)
+    - [动态路由的开发与使用](#动态路由的开发与使用)
+    - [嵌套路由的开发与使用](#嵌套路由的开发与使用)
 - [](#)
+
 
 
 # Vuejs概述
@@ -1879,7 +1891,7 @@
 [top](#catalog)
 - el
     - 类型: `String | HTMLElement`
-    - 作用: 将DOM对象挂在到一个Vue实例上，有Vue对象管理DOM对象
+    - 作用: 将DOM对象挂载到一个Vue实例上，有Vue对象管理DOM对象
 - data
     - 类型: `Object | Function`
     - 作用: Vue实例对应的数据对象
@@ -3637,7 +3649,7 @@
         - 使用时，如果没有注入任何内容，则`<slot></slot>`不会被解析成html代码
             ```html
             <子组件名>
-                <!-- 注入一个或多个 -->
+                <!-- 注入一个或多个。可以注入组件，也可以注入html标签 -->
                 <需要注入的其他组件></需要注入的其他组件>
                 <需要注入的html标签></需要注入的html标签>
             </子组件名>
@@ -4426,7 +4438,7 @@
               render: h => h(App),  // <<<<<<<<<< RuntimeOnly 使用Render函数替代了template和components属性
             });
             ```
-    - `src/main.js` 造成的**Vue运行过程**上的不同
+    - Vue运行 `src/main.js` 的过程不同，**Runtime-Only 需要执行的流程更少**
         - Runtime-Compiler
             1. (将template绑定到一个组件或实例后) <label style='color:red'>template被保存到Vue实例的options中</label>
             2. <label style='color:red'>解析template，并创建抽象语法树</label>
@@ -4439,7 +4451,7 @@
             3. 虚拟DOM被渲染成真实的DOM
     - 两种模式在代码量上的不同
         - `Runtime-Only代码量 < Runtime-Compiler代码量`
-        - Runtime-Only 大约少 6kb
+        - Runtime-Only 大约少 6kb--10kb
         - Runtime-Compiler 多了什么代码？
             - 多了template的设置与解析代码
             - 即 `node_modules/vue/src/compiler` 模块
@@ -4470,7 +4482,7 @@
             // 参数类型: 字符串，数组
             createElement('html标签名', [标签内容或子标签, ...])
 
-            // zhi
+            // 只创建标签
             createElement('html标签名')
             ```
         - 生成的内容会直接替换 `#app`，而不是加载到 `#app` 标签内部
@@ -4721,7 +4733,7 @@
               │     ├── Home.vue    // 路由需要的组件，创建并导出
               │     └── About.vue   // 路由需要的组件，创建并导出
               ├── App.vue           // Vue实例组件，在 template 中使用路由
-              └── main.js           // 创建Vue实例，导入路由对象并挂在到Vue实例上
+              └── main.js           // 创建Vue实例，导入路由对象并挂载到Vue实例上
         ```
     - 构建vue-router使用环境
         1. 在模块化工程中使用 vue-router，[src/router/index_bk01.js](src/router/router-demo01/src/router/index_bk01.js)
@@ -4771,12 +4783,13 @@
             Vue.config.productionTip = false
 
             new Vue({
-                router, // 4.2 将路由挂在到Vue实例
+                router, // 4.2 将路由挂载到Vue实例
                 render: h => h(App)
             }).$mount('#app')
             ```
     - 使用 vue-router
         1. 创建并导出路由所需的组件 `Home.vue`, `About.vue`
+            - <label style='color:red'>可以不用手动添加导出代码，编译后会自动导出</label>
             - [src/views/Home.vue](src/router/router-demo01/src/views/Home.vue)
                 ```js
                 // Home.vue
@@ -4828,37 +4841,111 @@
             ```
 
 ## 路由映射的配置方法
+### 将路由配置添加到路由对象中
 [top](#catalog)
-- 创路由实例，并添加路由映射
+- 一个对象就是一个路由，需要在对象中设置该路由的属性
+- 将多个路由配置组成数组，并添加到路由对象的选项中
     ```js
-    // 创建组件与url路径的映射关系
+    // 1. 创建组件与url路径的映射关系
     const routes = [
-        // 一个映射关系就是一个对象
-
-        // 2. 设置路径重定向
-        // 尤其是初始化时，需要主动将路径重定向到主页
         {
-            // path:'',          // 空字符串与 '/' 的路径相同
-            path:'/',
-            redirect: '/home'   // 设置重定向的路径，需要指定一个存在的路径
-        }
-        // 1. 组件及其映射
-        {
-            path: '/home',  // 配置跳转路径，在 router-link 中需要使用该路径
-            component: Home // 路径对应的组件，在 router-view 中被渲染
+            path: '/home',
+            component: Home
         },
         {
             path: '/about',
             component: About
         },
     ];
-    // 创建路由实例
     const router = new VueRouter({
-        routes  // 设置路由映射
+        routes  // 2.创建路由实例，并设置路由映射
     });
     ```
 
-## 历史记录的模式
+### 普通路由
+[top](#catalog)
+```js
+{
+    path: '/home',  // 配置跳转路径，在 router-link 中需要使用该路径
+    component: Home // 路径对应的组件，在 router-view 中被渲染
+},
+```
+
+### 路由的重定向
+[top](#catalog)
+```js
+{
+    path:'/xxxx',       // 当需要跳转到 /xxxx 时，自动重定向到指定的路径
+    redirect: '/home'   // 设置重定向的路径，需要指定一个存在的路径
+}
+```
+
+### 默认路由
+[top](#catalog)
+- 默认路由主要用于初始化时，主动将路径重定向到主页
+- 使用时，需要配合重定向，指定一个默认的路径
+    ```js
+    {
+        // path:'',          // 空字符串与 '/' 的路径相同
+        path:'/',
+        redirect: '/home'   // 设置重定向的路径，需要指定一个存在的路径
+    }
+    ```
+
+### 懒加载路由
+[top](#catalog)
+- 通过懒加载，在路由跳转时，加载所需的组件，减少第一次进入页面的等待时间
+- vue的路由懒加载的本质
+    - **就是webpack的懒加载，每个vue被当作一个chunk**
+- 路由懒加载的配置方式
+    ```js
+    // 将组件的引入改为函数，可以降低修改量。也可以直接写在配置对象中
+    const 组件 = () => import(/* webpackChunkName: "打包后的文件名" */ '组件路径')
+    const routes = [
+        {
+            path: '路径',
+            component: 组件
+        }
+    ]
+    ```
+
+### 动态路由
+[top](#catalog)
+```js
+{
+    path: '/固定路由/:参数名', // 通过 `:参数名` 的方式设置路由的动态部分
+    component: 组件                   // 设置动态路由需要的组件
+},
+```
+
+### 嵌套路由
+[top](#catalog)
+- 路由配置
+    ```js
+    {
+      path: '/父路由',          // 先配置父路由
+      component: 父路由的组件,
+      children:[                // 在 children 属性中，配置子路由
+        {
+          path: '子路由1',        // 路径中不需要写父路径
+          component: 子路由1的组件
+        },
+        {
+          path: '子路由2',
+          component: 子路由2的组件
+        },
+          //.....
+      ]
+    }
+    ```
+- 嵌套路由的调用路径
+    - 必须从父路径开始
+        ```html
+        <router-link to='/父路径/子路径'>xxx</router-link>
+        ```
+
+## 路由对象的参数设置
+### mode--历史记录的模式
 [top](#catalog)
 - 历史记录的模式需要在创建 路由实例时指定
 - 使用 html5 的 history 对象
@@ -4878,8 +4965,28 @@
             routes
         });
         ```
+
+### linkActiveClass--激活状态下的链接样式
+[top](#catalog)
+- `linkActiveClass` 属性可以统一设置所有 `router-link` 在激活状态下自动生成的样式名
+- 示例
+    - 参考代码
+        - [src/router/router-demo01/src/router/index.js](src/router/router-demo01/src/router/index.js)
+    - 代码内容
+        ```js
+        const router = new VueRouter({
+            mode: 'history',
+            routes,
+            // 统一设置 router-link 的 active-class 属性
+            linkActiveClass: 'activateState'
+        });
+        ```
+
 ## router-link的属性
 [top](#catalog)
+- 参考示例
+    - [src/router/router-demo01/src/App.vue](src/router/router-demo01/src/App.vue)
+
 - `to`
     - 功能: 用于设置跳转的路径
     - 属性值: 路由映射中**已存在**的 `path` 属性
@@ -4899,6 +5006,210 @@
         - `history`模式下，调用了 `history.replaceState`，覆盖了上一个路径的历史记录
         - 默认的`location`模式下，`location.replace`，覆盖了上一个路径的历史记录
     - 无属性值属性
+    - 示例
+        ```html
+         <router-link to="/home" replace>Home</router-link>
+        ```
+- `alive-class`
+    - 前提
+        - 当`<router-link>`对应的路由匹配成功时，自动为当前元素添加一个 class: `router-link-active`
+            - 通过该类可以设置连接激活状态的样式
+    - 功能
+        - 路由匹配成功时的样式默认为: `router-link-active`，可以通过`alive-class`来修改自动添加的样式名
+    - 属性值: 样式名
+    - 示例
+        ```html
+        <router-link to="/home" active-class='myactive'>Home</router-link>
+        ```
+        ```css
+        /* 自定义 alive-class 的样式 */
+        .myactive{
+        color:red;
+        font-size: 20px;
+        }
+        ```
+    - 该属性的缺点
+        - 需要手动为每个连接单独设置该属性，无法统一修改
+        - 可以通过路由器对象的 `linkActiveClass` 来统一设置该属性
+
+## 通过代码手动跳转路由
+[top](#catalog)
+- 注意事项
+    - 不要使用 history.pushState，或者 location.href 来控制路由跳转
+    - 所有的路由跳转都应该通过 `vue-router` 组件中的功能来来实现
+- 如何获取路由对象？
+    - `this.$router`，通过该属性获取路由对象
+    - `vue-router` 安装之后，会自动向每个组件中添加 `$router` 属性
+- `this.$router` 的路由跳转方法
+
+    |方法|功能|备注|
+    |-|-|-|
+    |`this.$router.push('路由映射中的路径')`|跳转路由，生成历史记录||
+    |`this.$router.replace('路由映射中的路径')`|跳转路由，不生成历史记录|相当于使用了 `replace`属性|
+
+- 手动实现路由的方法
+    1. 在标签中通过 `v-on` 监听某个事件
+    2. 在Vue实例的 `methods` 属性中注册事件响应函数
+    3. 在事件响应函数内部获取路由对象，并控制路由跳转
+
+- 手动跳转路由 与 `router-link` 及其相关属性的对应关系
+
+    |手写内容|`router-link`及其标签|
+    |-|-|
+    |手写的标签|`tag` 属性|
+    |事件监听方法 + `this.$router`对象|`to` 属性|
+    |`this.$router.replace`|`replace` 属性|
+
+- 示例
+    - 参考代码
+        - [src/router/router-demo01/src/App.vue](src/router/router-demo01/src/App.vue)
+    - 代码内容
+        1. 在标签中通过 `v-on` 监听某个事件
+            ```html
+            <button @click="foodClick">Food</button>
+            ```
+        2. 注册响应函数，并控制路由跳转
+            ```js
+            methods:{
+                // 2.在Vue实例的 `methods` 属性中注册事件响应函数
+                foodClick(){
+
+                // 3.在事件响应函数内部获取路由对象，并控制路由跳转
+                // this.$router.push('/food');     // 生成历史记录
+                this.$router.replace('/food');  // 不生成历史记录
+                }
+            }
+            ```
+
+## 动态路由的开发与使用
+[top](#catalog)
+- 什么是动态路由？
+    - `path`和`Component`的匹配关系，称为动态路由
+    - 即通过路由传递数据
+- 动态路由的适用场景
+    - 路径中的部分内容不确定
+    - 如不同用户通过用户id进入页面时，路径会不同
+        - 用户a: `/usr/aaa`
+        - 用户b: `/usr/bbb`
+    - 用户id相当于数据，需要通过路由传递到组件中，或者根据id判断使用什么样的组件
+- 动态路由的设置与使用步骤
+    1. 配置动态路由的映射
+        ```js
+        {
+          path: '/固定路由/:参数名', // 通过 `:参数名` 的方式设置路由的动态部分
+          component: 组件               // 设置动态路由需要的组件
+        },
+        ```
+    2. 在动态路由的目标组件中通过 `this.$route.params.路由参数` 来获取url中的参数
+    3. <label style='color:red'>如果需要在模板中使用数据，只能将路由参数绑定到计算属性</label>
+        - 为什么只能通过计算属性在模板中使用路由参数？
+            - 前提
+                - 动态路由的组件只会创建一次
+                - 动态路由的切换不会创建新的组件对象
+            - 如果通过`data`来使用路由参数
+                1. 因为只创建了一次组件，所以将会一直使用第一次跳转时的参数
+                2. 参数无法实时刷新
+                    - 因为没有重新创建路由对象
+                    - 因为没有实时更新参数的方法
+    4. 使用动态路由的页面，直接通过 `/固定路由/具体数据` 的方式执行跳转
+
+- 示例
+    - 参考代码
+        - [src\router\router-demo01\src\router\index.js](src\router\router-demo01\src\router\index.js)
+        - [src/router/router-demo01/src/views/ParamBar.vue](src/router/router-demo01/src/views/ParamBar.vue)
+        - [src/router/router-demo01/src/App.vue](src/router/router-demo01/src/App.vue)
+
+    - 代码内容
+        1. 配置动态路由的映射
+            ```js
+            // index.js
+            {
+              path: '/parambar/:dydata',
+              component: ParamBar
+            },
+            ```
+        2. 在动态路由的目标组件中通过 `this.$route.params.路由参数` 获取数据
+            ```html
+            <!-- ParamBar.vue -->
+            <template>
+                <div>
+                  <!-- 2. 通过计算属性在模板中使用路由参数 -->
+                  <p>param is {{dydata}}</p>
+                </div>
+            </template>
+
+            <script>
+            export default {
+              name:'ParamBar',
+              computed: {
+                dydata(){   // 1. 获取路由参数，并banding到计算属性
+                  return this.$route.params.dydata;
+                }
+              }
+            }
+            </script>
+            ```
+        3. 使用动态路由的页面，直接通过 `/固定路由/具体数据` 的方式执行跳转
+            ```html
+            <!-- App.vue -->
+            <router-link to='/parambar/testdata'>ParamBar-testdata</router-link> |
+            <router-link to='/parambar/12345'>ParamBar-12345</router-link> |
+            ```
+
+## 嵌套路由的开发与使用
+[top](#catalog)
+- 嵌套路由的实现步骤
+    1. 创建对应的子组件，并且父路由配置对象的 `children` 属性中配置子路由映射
+    2. 在组件内部使用 `<router-view/>` 来显示组件
+
+- 注意事项
+    - 配置子路由时， `path` 直接写子路径，不需要父路径，也不需要 `/`
+    - `<router-link/>`中，需要写完整的路径，即: `/父路径/嵌套的子路径`
+
+- 示例
+    - 参考代码
+        - [src/router/router-demo01/src/router/index.js](src/router/router-demo01/src/router/index.js)
+        - [src/router/router-demo01/src/views/UserList.vue](src/router/router-demo01/src/views/UserList.vue)
+    - 路由配置
+        ```js
+        {
+          path: '/userlist',        // 配置父路由
+          component: UserList,
+          children:[                // 配置嵌套路由
+            {
+              path: ':userid',      // 配置子路由 (动态路由)
+              component: UserInfo
+            },
+          ]
+        },
+        ```
+    - 父路径的写法
+        ```html
+        <ul>
+            <li v-for='userid in userList' :key='userid'>
+                <!-- 嵌套路由需要从父路径开始写 -->
+                <router-link :to='"/userlist/" + userid'>{{userid}}</router-link>
+            </li>
+        </ul>
+        ```
+
+## 路由中的参数传递
+[top](#catalog)
+- 参数传递的两种方式
+    1. params，动态路由传参
+    2. query
+- parmas 方式
+    - 路由路径配置: `/固定路径/:参数名`
+    - 参数传递的方式: 直接在路径中设定具体的值
+    - 参数传递时形成的路径: `/固定路径/具体数据`
+- query 方式
+    - 路由路径配置: `/路径名`，就是普通的配置
+    - 参数传递方式:
+        1. 在 `query对象` 中封装参数
+        2. 将 `query对象` 作为参数传递
+        3. 在目标页面获取 `query对象`，从该对象中获取数据
+    - 参数传递时形成的路径: `/路径名?key1=value1&key2=value2`
+
 
 # 其他
 [top](#catalog)

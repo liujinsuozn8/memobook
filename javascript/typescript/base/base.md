@@ -40,8 +40,11 @@
 - [接口](#接口)
     - [属性接口](#属性接口)
     - [函数类型接口](#函数类型接口)
+    - [可索引接口](#可索引接口)
+    - [类类型接口](#类类型接口)
+    - [接口间的继承](#接口间的继承)
+- [泛型](#泛型)
 - [](#)
-
 
 # Typescript简介
 [top](#catalog)
@@ -119,10 +122,10 @@
     ```js
     // 声明变量时，必须指定类型
     // 也可以使用 var 声明变量
-    let <变量名>:<类型> = 变量值;
+    let 变量名:类型 = 变量值;
 
     // 变量值为 undefined
-    let <变量名>:<类型>;
+    let 变量名:类型;
     ```
 - 如果类型已经确定，则变量类型不能被修改
 
@@ -186,10 +189,10 @@
 - 声明数组时，指定元素类型的两种方式
     ```ts
     // 方式1: 直接设置元素类型
-    let <变量名>:<类型>[] = 数组值;
+    let 变量名:类型[] = 数组值;
 
     // 方式2: 通过泛型的方式设置类型
-    let <变量名>:Array<<类型>> = 数组值;
+    let 变量名:Array<类型> = 数组值;
     ```
 - 示例
     - 参考代码
@@ -213,7 +216,7 @@
     - 元组每个位置的元素类型与该位置的声明类型必须相同
 - 声明方式
     ```ts
-    let a:[<类型1>, <类型2>, ....] = [<类型1的值>, <类型2的值>, ....]
+    let a:[类型1, 类型2, ....] = [ 类型1的值, 类型2的值, ....]
     ```
 - 编译时的处理
     - 元组在编译时，会检查每个元素的属性是否与声明的类型相同
@@ -286,7 +289,7 @@
 
 - 使用枚举类型赋值
     ```ts
-    let <变量名>:<枚举名> = <枚举名>.<标识符>
+    let 变量名:枚举名 = 枚举名.标识符
     ```
 
 - 示例
@@ -1103,6 +1106,7 @@
 - 继承的语法
     - 注意事项
         - 需要同时使用 `extends` 和 `super` 两个关键字才能完成继承
+        - ts 中<label style='color:red'>只能实现单继承</label>
     - 继承后可以有类自己的方法，也可以重写父类方法
     - 语法示例
         ```ts
@@ -1387,7 +1391,7 @@
     - 抽象方法只能定义在抽象类中
     - 抽象方法没有具体的实现，只有声明。需要有子类提供实现
         - 子类必须提供实现
-    - 抽象方法的参数和返回值类型，<label style='color:red'>无法约束子类中的方法实现</label>
+    - <label style='color:red'>抽象方法的参数和返回值类型，无法约束子类中的方法实现</label>
 
 - 编译结果
     - 抽象类和抽象方法只是 ts 编译器在编译时的约束，编译结果中不会有特殊处理
@@ -1478,18 +1482,21 @@
 # 接口
 ## 属性接口
 [top](#catalog)
-- 什么是属性接口
-    - 属性接口就是对属性及其类型的封装
+- 功能
+    - 封装属性及其类型
     - 封装后，接口可以作为参数的约束来使用
-- 属性接口的定义方法
-    ```ts
-    interface 接口名{
-        属性1:类型;     // 必须属性，对象中必须有该属性
-        属性2:类型;     // 必须属性，对象中必须有该属性
-        属性3?:类型;    // 可选属性，对象中可以选择是否设置该属性
-        ...
-    }
-    ```
+- 属性接口的定义与实现
+    - 定义方法
+        ```ts
+        interface 接口名{
+            属性1:类型;     // 必须属性，对象中必须有该属性
+            属性2:类型;     // 必须属性，对象中必须有该属性
+            属性3?:类型;    // 可选属性，对象中可以选择是否设置该属性
+            ...
+        }
+        ```
+    - 实现方法
+        - 只要一个对象中包含接口中声明的所有属性，并且类型相同，就实现了接口
 - 属性接口的编译结果
     - 在编译结果中不会有任何与接口相关的定义
     - 接口只是 ts 编译器的编译约束
@@ -1593,6 +1600,9 @@
 
 ## 函数类型接口
 [top](#catalog)
+- 功能:
+    - 封装函数定义
+    - 封装后，可以作为函数参数的约束
 - 函数类型接口的定义与实现
     - 定义
         ```ts
@@ -1614,7 +1624,7 @@
 - 示例
     - 示例代码
         - 参考代码
-            - [src/syntax/class/abstract.ts](src/syntax/class/abstract.ts)
+            - [src/syntax/interface/function.ts](src/syntax/interface/function.ts)
         - 代码内容
             ```ts
             // 1. 声明函数类型接口
@@ -1635,7 +1645,7 @@
             ```
     - 编译结果
         - 参考代码
-            - [src/syntax/js/class/abstract.js](src/syntax/js/class/abstract.js)
+            - [src/syntax/js/interface/function.js](src/syntax/js/interface/function.js)
         - 编译内容
             ```js
             // 只包含函数定义
@@ -1646,5 +1656,259 @@
                 return "key = " + key + ", value=" + value;
             };
             ```
+
+## 可索引接口
+[top](#catalog)
+- 功能
+    - 定义数组、对象的类型约束
+- 定义方法
+    ```ts
+    interface 接口名{
+        [index:索引类型]:值类型
+    }
+    ```
+- 注意事项
+    - <label style='color:red'>index 的类型只能是 number 或者 string 类型</label>
+
+- 数组约束
+    ```ts
+    interface 接口名{
+        [index:number]:值类型
+    }
+    ```
+- 对象约束
+    ```ts
+    interface 接口名{
+        [index:string]:值类型
+    }
+    ```
+
+- 编译结果
+    - 可索引接口只是 ts 编译器的编译约束
+    - 编译结果中，不会有任何与接口相关的内容
+
+- 示例
+    - 示例代码
+        - 参考代码
+            - [src/syntax/interface/indexable.ts](src/syntax/interface/indexable.ts)
+        - 代码内容
+            ```ts
+            // 1. 数组约束
+            interface MyArray{
+                [index:number]:string;
+            }
+
+            let arr01:MyArray = ['qwert', 'asdfg', 'zxcvb'];
+            console.log(arr01);
+
+            // 2. 对象约束
+            interface MyObj{
+                [index:string]:any;
+            }
+
+            let obj01:MyObj = {
+                name:'testName',
+                address:'asghdfgh'
+            }
+
+            console.log(obj01);
+
+            // 3. 其他类型无法约束
+            // index 的类型不对，编译异常
+            // error TS1023: An index signature parameter type must be either 'string' or 'number'.
+            // interface MyObj02{
+            //     [index:MyArray]:string;
+            // }
+            ```
+    - 编译结果
+        - 参考代码
+            - [src/syntax/js/interface/indexable.js](src/syntax/js/interface/indexable.js)
+        - 编译内容
+            ```js
+            // 编译结果中只有普通的数组和对象，没有与接口相关的内容
+            var arr01 = ['qwert', 'asdfg', 'zxcvb'];
+
+            var obj01 = {
+                name: 'testName',
+                address: 'asghdfgh'
+            };
+            ```
+
+## 类类型接口
+[top](#catalog)
+- 功能
+    - 整合属性接口和函数类型接口，并约束类的定义
+    - 类似于抽象类和抽象方法，但是功能更强大
+- 类类型接口的定义与实现
+    - 定义方法
+        ```ts
+        interface 接口名{
+            // 属性约束
+            属性名1:类型;
+            属性名2:类型;
+            ...
+
+            // 方法约束
+            方法名1(参数名1:类型, 参数名2:类型,...):返回值类型;
+            方法名2(参数名1:类型, 参数名2:类型,...):返回值类型;
+        }
+        ```
+    - 实现方法: <label style='color:red'>接口可以单实现，也可以多实现</label>
+        ```ts
+        class 类名 implements 接口名1, 接口名2{
+            // 1. 实现所有接口的属性约束
+            属性名1:类型;
+            属性名2:类型;
+            ...
+            constructor(...){
+                // 初始化属性
+            }
+
+            // 2. 实现所有接口的方法约束
+            方法名1(参数名1:类型, 参数名2:类型,...):返回值类型{
+                // 方法实现
+            }
+
+            方法名2(参数名1:类型, 参数名2:类型,...):返回值类型{
+                // 方法实现
+            }
+        }
+        ```
+- 编译结果
+    - 接口定义 以及 `implements` 关键字都是 ts 编译器的编译约束
+    - 编译结果中不包含任何与接口定义 和 `implements` 关键字相关的内容
+- 示例
+    - 示例代码
+        - 参考代码
+            - [src/syntax/interface/class.ts](src/syntax/interface/class.ts)
+        - 代码内容
+            ```ts
+            // 1. 定义两个接口
+            interface AnimalInterface{
+                name:string;
+                age:number;
+                getInfo():string;
+                eat(food:string):void;
+            }
+
+            interface Runnable{
+                run():void
+            }
+
+            // 2. 实现接口，同时实现多个
+            class Bird implements AnimalInterface, Runnable{
+                // 2.1 实现属性约束
+                name:string;
+                age:number;
+                constructor(name:string, age:number){
+                    this.name = name;
+                    this.age = age;
+                }
+                // 2.2 实现方法约束
+                // 2.2.1 AnimalInterface 接口的约束
+                getInfo():string{
+                    return `bird: name=${this.name}, age=${this.age}`;
+                }
+                eat(food:string):void{
+                    console.log(`bird: ${this.name} is eating ${food}`);
+                }
+
+                // 2.2.2 Runnable 接口的约束
+                run():void{
+                    console.log(`bird is running`);
+                }
+            }
+            ```
+    - 编译结果
+        - 参考代码
+            - [src/syntax/js/interface/class.js](src/syntax/js/interface/class.js)
+        - 编译内容
+            ```js
+            // 编译结果中，只有实现类的代码，没有接口与implement关键字的定义
+            var Bird = /** @class */ (function () {
+                function Bird(name, age) {
+                    this.name = name;
+                    this.age = age;
+                }
+                Bird.prototype.getInfo = function () {
+                    return "bird: name=" + this.name + ", age=" + this.age;
+                };
+                Bird.prototype.eat = function (food) {
+                    console.log("bird: " + this.name + " is eating " + food);
+                };
+                Bird.prototype.run = function () {
+                    console.log("bird is running");
+                };
+                return Bird;
+            }());
+            ```
+
+## 接口间的继承
+[top](#catalog)
+- 接口继承的定义
+    - <label style='color:red'>接口间可以单继承，也可以多继承</label>
+        ```ts
+        interface 接口 extends 接口1, 接口2,....
+        ```
+- 实现接口时，当前接口、父接口的所有方法和属性都需要实现
+- 编译结果
+    - 每个接口、`extends` 关键字都是 ts 编译器的编译约束
+    - 编译结果在没有任何与接口、`extends` 关键字相关的内容
+
+- 示例
+    - 示例代码
+        - 参考代码
+            - [src/syntax/interface/interface_extends.ts](src/syntax/interface/interface_extends.ts)
+        - 代码内容
+            ```ts
+            // 1. 创建2个接口
+            interface MyInterface01{
+                work():void;
+            }
+
+            interface MyInterface02{
+                run():void;
+            }
+            // 2. 多接口继承
+            interface MyInterface03 extends MyInterface01, MyInterface02{
+                fly():void;
+            }
+
+            //3. 实现接口，同实现所有的约束
+            class MyInstance implements MyInterface03{
+                work():void{
+                    console.log('instance is working');
+                }
+                run():void{
+                    console.log('instance is running');
+                }
+                fly():void{
+                    console.log('instance is flying');
+                }
+            }
+            ```
+    - 编译结果
+        - 参考代码
+            - [src/syntax/js/interface/interface_extends.js](src/syntax/js/interface/interface_extends.js)
+        - 编译内容
+            ```js
+            var MyInstance = /** @class */ (function () {
+                function MyInstance() {
+                }
+                MyInstance.prototype.work = function () {
+                    console.log('instance is working');
+                };
+                MyInstance.prototype.run = function () {
+                    console.log('instance is running');
+                };
+                MyInstance.prototype.fly = function () {
+                    console.log('instance is flying');
+                };
+                return MyInstance;
+            }());
+            ```
+
+# 泛型
+[top](#catalog)
 
 [top](#catalog)
