@@ -44,6 +44,9 @@
     - [类类型接口](#类类型接口)
     - [接口间的继承](#接口间的继承)
 - [泛型](#泛型)
+    - [泛型函数](#泛型函数)
+    - [泛型类](#泛型类)
+    - [泛型函数接口](#泛型函数接口)
 - [](#)
 
 # Typescript简介
@@ -1853,7 +1856,7 @@
 - 实现接口时，当前接口、父接口的所有方法和属性都需要实现
 - 编译结果
     - 每个接口、`extends` 关键字都是 ts 编译器的编译约束
-    - 编译结果在没有任何与接口、`extends` 关键字相关的内容
+    - 编译结果中没有任何与接口、`extends` 关键字相关的内容
 
 - 示例
     - 示例代码
@@ -1909,6 +1912,252 @@
             ```
 
 # 泛型
+## 泛型函数
 [top](#catalog)
+- 定义方法
+    ```ts
+    // T, S, A等 表示泛型，声明后，可以在参数、返回值、函数体中使用
+    function foo<T, S> (参数:T, 参数:S):A{
+        ///...
+    }
+    ```
+- 泛型函数的使用方法
+    ```ts
+    // 1. 使用时声明泛型的具体类型
+    foo<泛型的具体类型>(参数...);
+
+    // 2. 可以不做说明直接使用
+    foo(参数....);
+    ```
+- 编译结果
+    - 泛型部分只是 ts 编译器的编译约束
+    - 编译结果中不会包含与泛型相关的内容
+
+- 示例
+    - 示例代码
+        - 参考代码
+            - [src/syntax/generic/function.ts](src/syntax/generic/function.ts)
+
+        - 代码内容
+            ```ts
+            // 1. 定义泛型函数
+            function foo<T, S>(v1:T, v2:S):T{
+                console.log(v2);
+                return v1;
+            }
+            // 2. 使用泛型函数，使用时指定泛型的具体类型
+            console.log(foo<number, boolean>(1234, false));
+            console.log(foo<string, number>('12345', 23456));
+            console.log(foo<boolean, null>(true, null));
+            ```
+    - 编译结果
+        - 参考代码
+            - [src/syntax/js/generic/function.js](src/syntax/js/generic/function.js)
+        - 编译内容
+            ```js
+            // 编译结果只是普通函数，没有与泛型相关的内容
+            function foo(v1, v2) {
+                console.log(v2);
+                return v1;
+            }
+            console.log(foo(1234, false));
+            console.log(foo('12345', 23456));
+            console.log(foo(true, null));
+            ```
+
+## 泛型类
+[top](#catalog)
+- 定义方法
+    ```ts
+    // T, S, A等 表示泛型，声明后，可以在属性声明、构造器、函数声明中使用
+    class ClassName<T, S, A>{
+        data:S;
+
+        func (参数: T, 参数:S):A{
+            // ...
+        }
+    }
+    ```
+- 使用方法
+    ```ts
+        // 实例化类时，需要声明泛型的具体类型
+    let a = ClassName<泛型的具体类型>(参数...);
+    ```
+- 编译结果
+    - 泛型部分只是 ts 编译器的编译约束
+    - 编译结果中不会包含与泛型相关的内容
+- 示例
+    - 示例代码
+        - 参考代码
+            - [src/syntax/generic/class.ts](src/syntax/generic/class.ts)
+
+        - 代码内容
+            ```ts
+            // 1. 定义泛型类
+            class MyArrayList<T>{
+                private data:T[];
+                constructor(){
+                    this.data = [];
+                }
+
+                add(e:T):void{
+                    this.data.push(e);
+                }
+
+                toString():string{
+                    let str:string = '';
+                    for (let e of this.data){
+                        str += e + ' ,';
+                    }
+                    return str;
+                }
+            }
+
+            // 2. 实例化泛型类对象，并调用方法
+            let list = new MyArrayList<number>();
+            list.add(123);
+            list.add(3456);
+            list.add(334);
+            console.log(list.toString());
+            ```
+    - 编译结果
+        - 参考代码
+            - [src/syntax/js/generic/class.js](src/syntax/js/generic/class.js)
+        - 编译内容
+            ```js
+            // 只有类的声明部分，不包括与泛型相关的内容
+            var MyArrayList = /** @class */ (function () {
+                function MyArrayList() {
+                    this.data = [];
+                }
+                MyArrayList.prototype.add = function (e) {
+                    this.data.push(e);
+                };
+                MyArrayList.prototype.toString = function () {
+                    var str = '';
+                    for (var _i = 0, _a = this.data; _i < _a.length; _i++) {
+                        var e = _a[_i];
+                        str += e + ' ,';
+                    }
+                    return str;
+                };
+                return MyArrayList;
+            }());
+            ```
+
+## 泛型函数接口
+[top](#catalog)
+- 定义与实现
+    - 在接口定义中声明泛型
+        ```ts
+        // 1. 定义接口
+        interface 接口名<T, S, A>{
+            (v1:T, v2:S):A;
+        }
+
+        // 2. 实现接口
+        function 函数名<T, S, A>(v1:T, v2:S):A{
+            //...
+        }
+
+        // 3. 使用接口实现
+        函数名<泛型的具体类型>(...);
+        ```
+
+    - 在方法中声明泛型
+        ```ts
+        // 1. 定义接口
+        interface 接口名{
+            <T, S, A> (v1:T, v2:S):A;
+        }
+
+        // 2. 实现接口
+        function 函数名<T, S, A>(v1:T, v2:S):A{
+            //...
+        }
+
+        // 3. 使用接口实现
+        函数名<泛型的具体类型>(...);
+        ```
+
+- 编译结果
+    - 泛型部分只是 ts 编译器的编译约束
+    - 编译结果中不会包含与泛型相关的内容
+
+- 示例
+    - 参考代码
+        - 示例代码
+            - [src/syntax/generic/interface_func.ts](src/syntax/generic/interface_func.ts)
+        - 编译结果
+            - [src/syntax/js/generic/interface_func.js](src/syntax/js/generic/interface_func.js)
+    - 代码内容
+        1. 将泛型声明在接口定义中
+            - 代码实现
+                ```ts
+                // 1 将泛型声明在接口定义中
+                interface GenericFunc<T>{
+                    (value:T):T;
+                }
+
+                // 1.1 接口实现
+                function getData<T>(value:T):T{
+                    return value;
+                }
+
+                // 1.2 调用接口实现
+                // 1.2.1 固定一种类型并赋值给变量
+                let myGetData: GenericFunc<string> = getData;
+                console.log(myGetData('qwert'));
+
+                // 1.2.2 在调用时指定类型
+                console.log(getData<number>(12345));
+                ```
+            - 编译结果
+                ```js
+                // 1.1 接口实现
+                function getData(value) {
+                    return value;
+                }
+                // 1.2 调用接口实现
+                // 1.2.1 固定一种类型并赋值给变量
+                var myGetData = getData;
+                console.log(myGetData('qwert'));
+                // 1.2.2 在调用时指定类型
+                console.log(getData(12345));
+                ```
+        2. 将泛型声明在方法定义中
+            - 代码实现
+                ```ts
+                // 2 将泛型声明在方法定义中
+                interface GenericFunc02{
+                    <T> (value: T):T
+                }
+
+                // 2.1 接口实现
+                function getData02<T>(value: T):T{
+                    return value;
+                }
+
+                // 2.2 调用接口实现
+                // 2.2.1 固定一种类型并赋值给变量
+                let myGetData02: GenericFunc<string> = getData02;
+                console.log(myGetData02('qwert'));
+
+                // 2.2.2 在调用时指定类型
+                console.log(getData02<number>(12345));
+                ```
+            - 编译结果
+                ```js
+                // 2.1 接口实现
+                function getData02(value) {
+                    return value;
+                }
+                // 2.2 调用接口实现
+                // 2.2.1 固定一种类型并赋值给变量
+                var myGetData02 = getData02;
+                console.log(myGetData02('qwert'));
+                // 2.2.2 在调用时指定类型
+                console.log(getData02(12345));
+                ```
 
 [top](#catalog)
