@@ -5,13 +5,27 @@
 ### 目录
 - [声明标识符](#声明标识符)
 - [数据类型系统](#数据类型系统)
-    - [JS中的两套类型系统](#JS中的两套类型系统)
+    - [JS和ES类型系统的划分与关联](#JS和ES类型系统的划分与关联)
+    - [JavaScript中的两套类型系统](#JavaScript中的两套类型系统)
     - [ECMAScript的类型系统](#ECMAScript的类型系统)
-        - [ES的类型系统的划分](#ES的类型系统的划分)
         - [ES语言类型](#ES语言类型)
-        - [ES语言类型与JS类型的区别](#ES语言类型与JS类型的区别)
         - [ES规范类型](#ES规范类型)
-    - [ES类型系统与JS类型系统的关系](#ES类型系统与JS类型系统的关系)
+    - [ES语言类型与JS类型的部分区别](#ES语言类型与JS类型的部分区别)
+- [字符串](#字符串)
+    - [字符串的特殊性](字符串的特殊性)
+    - [字符串的可索引性](#字符串的可索引性)
+    - [字符串的可迭代性](#字符串的可迭代性)
+    - [多行声明时的折行符](#多行声明时的折行符)
+    - [NUL字符串](#NUL字符串)
+    - [UTF-16的支持](#UTF-16的支持)
+    - [空字符串](#空字符串)
+- [模版字面量](#模版字面量)
+    - [模版字面量--基本使用与注意实现](#模版字面量--基本使用与注意实现)
+    - [模版字面量的本质](#模版字面量的本质)
+- [标签函数](#标签函数)
+- [数值--数字字面量](#数值--数字字面量)
+    - [进制的表示](#进制的表示)
+    - [10进制数的存储与计算性能](#10进制数的存储与计算性能)
 - [数据类型的操作](#数据类型的操作)
     - [数据类型的判断](#数据类型的判断)
     - [值类型与引用类型表示数据使用方式](#值类型与引用类型表示数据使用方式)
@@ -19,16 +33,22 @@
 - [数据、变量、内存](#数据、变量、内存)
     - [三者之间的关系](#三者之间的关系)
     - [与数据、变量、内存相关的问题](#与数据、变量、内存相关的问题)
-- [基础总结-对象](#基础总结-对象)
-- [基础总结-函数](#基础总结-函数)
-    - [与函数相关的几个基本问题](#与函数相关的几个基本问题)
-    - [回调函数](#回调函数)
-    - [立即执行函数IIFE](#立即执行函数IIFE)
-    - [函数中的this对象](#函数中的this对象)
+- [比较运算](#比较运算)
+    - [JS中的两个特殊约定](#JS中的两个特殊约定)
+    - [数据类型不同时的变换规则](#数据类型不同时的变换规则)
+    - [NaN的特殊性](#NaN的特殊性)
+    - [相等比较](#相等比较)
+    - [大小比较](#大小比较)
+- [对象](#对象)
 - [提升](#提升)
     - [变量提升与函数提升](#变量提升与函数提升)
     - [与提升相关的问题](#与提升相关的问题)
 - [函数](#函数)
+    - [函数声明](#函数声明)
+    - [与函数相关的几个基本问题](#与函数相关的几个基本问题)
+    - [回调函数](#回调函数)
+    - [立即执行函数IIFE](#立即执行函数IIFE)
+    - [函数中的this对象](#函数中的this对象)
     - [原型与原型链](#原型与原型链)
         - [原型prototype](#原型prototype)
         - [显式原型与隐式原型](#显式原型与隐式原型)
@@ -96,7 +116,27 @@
     - 模块 import
 
 # 数据类型系统
-## JS中的两套类型系统
+## JS和ES类型系统的划分与关联
+[top](#catalog)
+- JS和ES的语言类型概念
+    - JavaScript有自己的类型系统
+    - ECMAScript也有自己的类型系统
+    - ES规范中描述的语言，严格来说并不是JS
+        - JS甚至可以理解为ES的方言
+
+- JS类型系统的两种划分
+    - 7 种基本类型
+    - 值类型与引用类型
+
+- ES类型系统的两种划分
+    - ES语言类型，ECMAScript language types
+    - ES规范类型，ECMAScript specification types
+
+- ES类型系统与JS类型系统的关系
+    - ES规范类型**实现了**ES语言类型
+    - ES语言类型**描述了**JS语言规范
+
+## JavaScript中的两套类型系统
 [top](#catalog)
 - JavaScript类型系统可以分为两套
     1. 7种基本数据类型
@@ -122,13 +162,6 @@
     - 内部的数值是**有序的**
 
 ## ECMAScript的类型系统
-### ES的类型系统的划分
-[top](#catalog)
-- ES的类型系统的两种划分
-    - ES语言类型，ECMAScript language types
-    - ES规范类型，ECMAScript specification types
-- ES规范中描述的语言，严格来说并不是JS
-
 ### ES语言类型
 [top](#catalog)
 - ES规范中用首字母大写的单词作为数据类型
@@ -145,19 +178,6 @@
     - 不应该用ES语言类型来映射JS类型
         - 这样将会引入更多的不可解释的问题
     - ES语言规范只是为了编写ECMAScirpt规范本身
-
-### ES语言类型与JS类型的区别
-[top](#catalog)
-- 两种的区别
-
-    ||ES|JS|
-    |-|-|-|
-    |null    |`Null`是一种类型，只有一个值`null`|没有null类型，null值是对象类型的一个特殊示例|
-    |function|没有函数类型，函数是对象类型的一个变体，即对象类型的一种实现|包含fucntion|
-
-- ES中
-    - ES中最基础的对象称为普通对象， Ordinary object
-    - 在普通对象上添加了定制行为的被称为变体，Exotic object
 
 ### ES规范类型
 [top](#catalog)
@@ -176,10 +196,413 @@
     - Lexical Enviroments、Enviroment Record
         - 主要用在词法和运行期环境等的描述
 
-## ES类型系统与JS类型系统的关系
+## ES语言类型与JS类型的部分区别
 [top](#catalog)
-- ES规范类型用于**实现**ES语言类型
-- ES语言类型用于**描述**JS语言规范
+- 两种的区别
+
+    ||ES|JS|
+    |-|-|-|
+    |null    |`Null`是一种类型，只有一个值`null`|没有null类型，null值是对象类型的一个特殊示例|
+    |function|没有函数类型，函数是对象类型的一个**变体**，即对象类型的一种实现|包含fucntion|
+
+- ES中的**变体**
+    - ES中最基础的对象称为普通对象， Ordinary object
+    - 在普通对象上添加了定制行为的被称为变体，Exotic object
+
+# 字符串
+## 字符串的可索引性
+[top](#catalog)
+- **可以通过 索引来获取字符**: `字符串[index]`
+- 本质是将索引作为属性来使用
+- 可以用 `for...of` 来遍历每个字符
+- 示例
+    - 参考代码
+        - [src/literal/string/indexable.js](src/literal/string/indexable.js)
+    - 代码内容
+        ```js
+        // 字符串的可索引性
+        let a = 'abcde';
+
+        // 1. 通过索引访问某个字符
+        console.log( "a[2]=" + a[2] );  // a[2]=c
+        ```
+## 字符串的可迭代性
+[top](#catalog)
+- 从ES6开始，字符串被添加的 `Symbol.iterator` 属性，可以被迭代
+- 迭代性操作
+    - 字符串可以被三点运算符 `...` 展开
+    - 可以 `for...of` 迭代每个字符
+    - 可以使用 `yeild*` ，从生成器内部返回一个字符
+
+- 示例
+    - 参考代码
+        - [src/literal/string/iterator.js](src/literal/string/iterator.js)
+    - 代码内容
+        1. 使用三点运算符 `...` 展开
+            ```js
+            let str = 'abvce';
+            let a = [...str];
+            console.log(a); // [ 'a', 'b', 'v', 'c', 'e' ]
+            ```
+        2. `for...of` 迭代每个字符
+            ```js
+            for (let char of a){
+                console.log( "char=" + char);
+                // 输出:
+                // char=a
+                // char=b
+                // char=c
+                // char=d
+                // char=e
+            }
+            ```
+        3. 通过 `yeild*` ，从生成器内部返回一个字符
+            ```js
+            function* generatChar(str){
+                yield* str;
+            }
+            let g = generatChar('abcd');
+            console.log(g.next());  // { value: 'a', done: false }
+
+            for(let n of g){
+                console.log(n);
+            }
+            // 输出:
+            // b
+            // c
+            // d
+            ```
+## 多行声明时的折行符
+[top](#catalog)
+- 多行声明时的折行符 `\`
+    - **在一行的末尾**，用于表示文本的**折行**
+    - 多行声明字符串时，换行是有效的。`\`可以避免换行符
+    - 如果字符串过长可以用 `\` 折行
+- 注意事项
+    -  `\` 后面不能有注释
+- 示例
+    - 参考代码
+        - [src/literal/string/multiline.js](src/literal/string/multiline.js)
+    - 代码内容
+        ```js
+        let a = '\
+        qwertyy\
+        qeerty\
+        '
+        console.log(a);     // qwertyyqeerty
+        ```
+
+## NUL字符串
+[top](#catalog)
+- `\0` 表示NUL字符串
+- 输出时，仍然是空，但是length能测试出来
+- 声明方法
+    1. `String.fromCharCode(0)`
+    2. 字面量: `\0`
+- 示例
+    - 参考代码
+        - [src/literal/string/NUL_str.js](src/literal/string/NUL_str.js)
+    - 代码内容
+        ```js
+        // 1 声明方式1
+        str1 = String.fromCharCode(0, 0, 0, 0, 0);
+        console.log(`str1="${str1}"`);                  // str1=""
+        console.log(`str1.length=${str1.length}`);      // str1.length=5
+
+        // 2 声明方式2
+        str2 = '\0\0\0\0';
+        console.log(`str2="${str2}"`);                  // str2=""
+        console.log(`str2.length=${str2.length}`);      // str2.length=4
+        ```
+
+## UTF-16的支持
+[top](#catalog)
+- js字符串对 UTF-16 的支持
+    - es6中增加了 `"\u{nnnnn}"`，表示码值大于 `0xFFFFF` 的Unicode字符的语法
+    - 在当前js字符集使用UTF-8时，`"\u{nnnnn}"`的长度为2 
+- 正确判断 UTF-16 字符的长度
+    - ?????
+- 示例
+    - 参考代码
+        - [src/literal/string/utf16.js](src/literal/string/utf16.js)
+    - 代码内容
+        ```js
+        // '\u{nnnnn}' 使用UTF-16字符
+        let str3 = '\u{20BB7}'
+        console.log(`str3 = ${str3}`);                  // str3 = 𠮷
+        console.log(`str3.length = ${str3.length}`);    // str3.length = 2
+        ```
+
+## 空字符串
+[top](#catalog)
+- 用 `''`、`""` 表示空字符串
+- 空字符串的长度为0
+- 空字符串可以用作对象的属性名
+- 示例
+    - 参考代码
+        - [src/literal/string/empty_str.js](src/literal/string/empty_str.js)
+    - 代码内容
+        ```js
+        let obj = {
+            '':100
+        }
+        console.log(`obj[''] = ${obj['']}`);  // obj[''] = 100
+        ```
+
+# 模版字面量
+## 模版字面量--基本使用与注意实现
+[top](#catalog)
+- 用法
+    - 通过 ` 符号来标识
+    - 内部使用 `${}` 来捕获当前上下文中的变量、常量、字面量、对象成员属性
+- 可以理解为一种增强的字符串声明
+    - 它的返回值总是一个字符串，但是严格来说并没有模版字符串这种说法
+- 一些特殊的字符与多行声明
+    - 换行有效
+    - 折行符 `\` 有效
+    - 需要转译才能显示的字符 \、`、$
+    - 双引号和单引号可以直接写，不需要转译
+
+- 示例
+    - 参考代码
+        - [src/literal/template/usage.js](src/literal/template/usage.js)
+    - 代码内容
+        ```js
+        let str1 = `
+        "abcd \
+        "\\"
+        "\`"
+        "\$"`
+
+        console.log(str1);
+        // 输出:
+        //           <<<< 包含一个换行，即使左侧 ` 后面的换行
+        // "abcd' "\"
+        // "`"
+        // "$"  
+        ```
+
+## 模版字面量的本质
+[top](#catalog)
+- 本质是一个数组，然后由标签函数调用
+    ```js
+    let a = `aaaa${param1}bbbbb${parma2}`;
+    // 可以分解为
+    let list = ['aaaa', 'bbbbb'];
+    param1
+    param2
+    ```
+- `String.raw()` 是一个模版字面量的**标签函数**
+- `String.raw()` 函数的调用
+    - `String.raw({ raw: [...] }, ....)`，通过数组定义插入点
+        - 示例
+            ```js
+            // 相当于 let a = `e1${插入参数1}e2${插入参数2}e3...`
+            let a = String.raw( {raw: [e1, e2, e3,...]}, 插入参数1, 插入参数2,.....)
+            ```
+        - 插入参数必须要插在两个元素中间，否则无法插入
+            ```js
+            // 相当于 let a = `'aa${12}bb`
+            // 因为缺少一个元素，无法插入34，
+            let a = String.raw( {raw: ['aa', 'bb']}, 12, 34);
+            ```
+    - `String.raw({ raw: '...' }, ....)`，通过字符串定义插入点
+        ```js
+        //  相当于  
+        let a = String.raw( {raw: 'abcde'}, 插入参数1, 插入参数2,.....)
+        ```
+    - String.raw 的**标签函数式**调用
+        ```js
+        // let rawStr03 = String.raw`...`
+        // 转义字符不会生效，但是捕获遍历仍然有效
+        let param03 = 12345
+        console.log(String.raw`aaaa\nbbb, num=${param03}`);  // aaaa\nbbb, num=12345
+        ```
+    - 将 String.raw 单独声明为**标签函数**来复用
+        - 复用时，会**按照参数的顺序自动填充到模版中，**与模版中的捕获声明无关
+        ```js
+        let tagFn = 模版 => String.raw(模版, 参数,...);
+        tagFn`模版内容`;
+        ```
+- 示例
+    - 参考代码
+        - [src/literal/template/underlying.js](src/literal/template/underlying.js)
+    - 代码内容
+        ```js
+        // 2.1 使用模版字面量
+        let param1 = 1234;
+        let param2 = 'qwer';
+        let originStr = `number=${param1}, string=${param2}`;
+        console.log(originStr); // number=1234, string=qwer
+
+        // 2.2 使用String.raw 的函数形式
+        // 2.2.1 通过数组定义插入点
+        // 相当于 let rawStr01 = `number=${param1}string=${param1}`
+        let rawStr01 = String.raw({raw:['number=', ', string=','']}, param1, param2);
+        console.log("rawStr01= " + rawStr01)        // number=1234, string=qwer
+
+        // 2.2.2 如果 raw 数组中没有三个元素 ''， param2 无法被插入
+        // 相当于 let rawStr02 = `number=${param1}string=`
+        let rawStr02 = String.raw({raw:['number=', ', string=']}, param1, param2);
+        console.log("rawStr02= " + rawStr02)        // number=1234, string=
+
+        // 2.2.3 通过字符串定义插入点
+        // 相当于 let rawStr03 = `a${111}b${222}c${333}d`
+        let rawStr03 = String.raw({raw: 'abcd'}, 111, 222, 333);
+        console.log("rawStr03= " + rawStr03);       // rawStr03= a111b222c333d
+
+        // 2.3 String.raw 的运算符式调用
+        // let rawStr03 = String.raw`...`
+        // 转义字符不会生效，但是捕获遍历仍然有效
+        let param03 = 12345
+        console.log(String.raw`aaaa\nbbb, num=${param03}`);  // aaaa\nbbb, num=12345
+
+        // 2.4 将 String.raw 单独声明为 标签函数 来复用
+        // 声明函数
+        let foo = template => String.raw(template, 'v1', 'v2', 'v3');
+        // 复用
+        // console.log(foo`k1=${}, k2=${}, k3=${}`);        // 必须声明捕获的变量
+        console.log(foo`k1=${0}, k2=${1}, k3=${2}`);        // k1=v1, k2=v2, k3=v3
+        ```
+
+# 标签函数
+[top](#catalog)
+- 参考文档：https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#Tagged_template_literals
+- 功能
+    - 用函数解析模版字符串
+- 调用方式
+    - 在标签函数后面加一个模版字符串来调用
+        ```js
+        标签函数`模版字符串`
+        ```
+    - 这是一种隐式的函数调用
+- 标签函数的定义
+    - ts的定义方式
+        - 接收任意数量的捕获参数
+            ```ts
+            function tagFn(strings:string[], ...exps:any[]):any {
+                return ...;
+            }
+            ```
+        - 接收指定数量的捕获参数
+            ```ts
+            function tagFn(strings:string[], exp1:any, exp2:any):any {
+                return ...;
+            }
+            ```
+    - 相当于 `String.raw({ raw: [...] }, ....)`，通过数组定义插入点
+    - 参数`strings`，就是固定的字符串部分，这些字符串被 `${}` 操作符分割
+    - exps，就是 `${}` 内部参数的集合
+- 标签函数的返回值类型
+    - 可以直接返回字符串
+    - 可以返回一个函数，再复用
+- 示例
+    - 参考代码
+        - [src/literal/tag_function/define.js](src/literal/tag_function/define.js)
+    - 代码内容
+        1. 定义返回字符串的标签函数
+            ```js
+            // 1.1 定义标签函数
+            function tagFn01(strs, ...exps){
+                // 获取两个数组中的最大值
+                let minLength = strs.length > exps.length ? exps.length : strs.length;
+                // 循环拼接
+                let result = '';
+                let i;
+                for (i= 0; i<minLength; i++){
+                    result += strs[i];
+                    if (typeof exps[i] === 'number'){ // 拼接字符串时，执行相关处理
+                        if (exps[i] > 0){
+                            result += '正数';
+                        } else {
+                            result += '非正数';
+                        }
+                        
+                    } else {
+                        result += exps[i];
+                    }
+                }
+
+                // 将剩余的部分添加到结果字符串
+                // ...
+                // 将拼接结果返回
+                return result;
+            }
+
+            // 1.2 调用标签函数
+            let num1 = 1234;
+            let num2 = -1234;
+            let num3 = 0;
+            let str1 = tagFn01`num1 is ${num1}, num2 is ${num2}, num3 is ${num3}`;
+            console.log(str1);
+            ```
+        2. 定义返回函数的标签函数
+            - 参考实现
+                - https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#Tagged_template_literals
+            - 实现内容
+            ```js
+            function template(strings, ...keys) {
+                // 返回一个函数。在复用时，传递需要捕获的参数，并拼接字符串
+                return function(...values) {
+                    let dict = values[values.length - 1] || {}; // 最后一个参数需要是对象
+                    let result = [strings[0]];
+                    keys.forEach(function(key, i) {   // 开始拼接
+                        let value = Number.isInteger(key) ? values[key] : dict[key];
+                        result.push(value, strings[i + 1]);
+                    });
+                    return result.join('');
+                };
+            }
+
+            // 2.1 在模版中通过index来捕获参数
+            let t1Closure = template`${0}${1}${0}!`;
+            //let t1Closure = template(["","","","!"],0,1,0);
+            console.log(t1Closure('Y', 'A'));                           // "YAY!"
+
+            // 2.2 在模版中同时使用index 和 对象属性名的方式来捕获参数
+            let t2Closure = template`${0} ${'foo'}!`;
+            //let t2Closure = template(["","","!"],0,"foo");
+            console.log(t2Closure('Hello', {foo: 'World'}));            // "Hello World!"
+
+            // 2.3 
+            let t3Closure = template`I'm ${'name'}. I'm almost ${'age'} years old.`;
+            //let t3Closure = template(["I'm ", ". I'm almost ", " years old."], "name", "age");
+            console.log(t3Closure('foo', {name: 'MDN', age: 30}));      //"I'm MDN. I'm almost 30 years old."
+            console.log(t3Closure({name: 'MDN', age: 30}));             //"I'm MDN. I'm almost 30 years old."
+            ```
+
+# 数值--数字字面量
+## 进制的表示
+[top](#catalog)
+- 16进制
+    - `0x1234`、`0X1234`， 由 `0x`、`0X` 开头
+    - 16进制数由：0～9、A～F 组成
+- 8进制
+    - `0o1234`、`0O1234`， 由 `0o`、`0O` 开头
+    - 8进制数由：0～7 组成
+- 2进制
+    - `0b1234`、`0B1234`， 由 `0b`、`0B` 开头
+    - 2进制数由：0、1 组成
+    
+    - `1234`，10进制 1234
+- 10进制
+    - 可以由：0～9、至多一个 `.` 、e、E 组成
+        ```js
+        1.2345
+        .1234       以 `.` 字符开始的是10进制浮点数
+        .0e8        // 仍然是0
+        1.23E-45    // 负号用来表示 负指数
+        1.23E+45    // 正号用来表示 正指数
+        ```
+## 10进制数的存储与计算性能
+[top](#catalog)
+- 10进制数的存储
+    - 对于10进制**整数**，不同的引擎实现不同，可能是整数、可能是浮点数
+    - 由于整数存储的不确定性，<label style='color:red'>不能期望JS中的整数会有较高的运算性能</lable>
+    - 如果数中包含: `.`、`e`、`E`，则数字字面量总会被存储为**浮点数**
+- 提升数值运算型能
+    - 用**位运算**替代算数运算
+    - 位运算总是以整型数的形式来运算，即使操作数是一个浮点数
 
 # 数据类型的操作
 ## 数据类型的判断
@@ -190,7 +613,7 @@
         - 功能:
             - 获取变量的类型，返回一个字符串
         - 返回
-            - 包括: undefined、string、number、boolean、function,symbol???
+            - 包括: undefined、string、number、boolean、function,symbol
             - **返回结果都是对应类型**，并且**第一个字母小写**
             - 无法判断 null 、Array、 Object，因为都会返回 object (对于null，这是一个bug)
         - 调用方式
@@ -215,7 +638,7 @@
         - [/javascript/underlyingPrinciple/src/datatype/checkDatatype.html](/javascript/underlyingPrinciple/src/datatype/checkDatatype.html)
     - js内容
         ```js
-                // 1. 基本数据类型的判断
+        // 1. 基本数据类型的判断
         // 判断 undefined
         var a;
         console.log(typeof a === 'undefined');
@@ -449,6 +872,190 @@
         - 自动释放的内容是：栈空间中的变量，在函数执行完之后，自动释放
         - gc 回收的内容是：堆空间中的变量/对象，需要变量/对象没有引用，并且需要等待 gc回收启动
 
+# 比较运算
+## JS中的两个特殊约定
+[top](#catalog)
+- 两个特殊约定
+    1. `-0 === 0`
+    2. `NaN !== NaN`
+- ES6 对 JS 两个特殊约定的处理方法： `Object.is()`
+    ```js
+    Object.is(-0, +0) === false;
+    Object.is(NaN, NaN) === true;
+    ```
+
+## 数据类型不同时的变换规则
+[top](#catalog)
+- 比较时的数据变换规则
+    1. 如果包含一个 number，则另一个操作数也会转换为 number
+    2. 如果有 boolean，转换为number
+        - 因为规则 1，转换后公式中出现了 number，所其他变量也会转换为number
+    3. 如果有object，调用`valueOf()`转换为值数据
+- <label style='color:red'>JS总是尽量用number比较来实现相等比较</label>
+    - JS内部的数据存储格式适合该操作
+- 字符串
+    - 对于 string，只有两个操作数都是 string，才能依次按照字符比较
+    - 如果只有一个操作数是 string，需要转换为 number
+
+## NaN的特殊性
+[top](#catalog)
+- NaN和自身永远不相等，只有`Object.is(NaN, NaN)` 是 true
+- 示例
+    - 参考代码
+        - [src/compare/NaN.js](src/compare/NaN.js)
+    - 代码内容
+        ```js
+        // 1. 相等比较
+        console.log( NaN == NaN);   // false
+        console.log( NaN != NaN);   // true
+
+        // 2. 严格相等比较
+        console.log( NaN === NaN);  // false
+        console.log( NaN !== NaN);  // true
+
+        // 3. 大小比较
+        console.log( NaN < NaN);    // false
+        console.log( NaN <= NaN);   // false
+        console.log( NaN > NaN);    // false
+        console.log( NaN >= NaN);   // false
+
+        // 4. 使用 Object.is 进行比较
+        console.log( Object.is(NaN, NaN) ); // true
+        ```
+
+## 相等比较
+[top](#catalog)
+- `Object.is()`的注意事项
+    - 任意两个对象都是不等的（至少地址不等），所以不能替换对象间的 `==` 和 `===` 操作
+- `相等`与`严格相等`
+    
+    |名称|运算符|比较内容|
+    |-|-|-|
+    |相等|==|值相等|
+    |不等|!=|值不等|
+    |严格相等|==|数据类型相等，并且值相等|
+    |严格不等|!=|数据类型不等，或这值不等|
+- `相等` 的运算规则
+    - 整体规则
+        |比较类型|规则|
+        |-|-|
+        |值与引用|将引用类型转换为与值类型相等的类型，然后比较数据是否相等|
+        |值与值|统一数据类型后，比较数据内容|
+        |引用与引用|比较地址|
+    - 字符串比较会有比较大的开销
+        - 需要对字符串中的每个字符进行比较
+        - 引擎通常会对优化，将多个字符串指向同一个引用。<label style='color:red'>即在赋值时，按照引用类型的方式处理</label>
+        - 因为存在优化，所以不是每次都要对每个字符进行比较
+- `严格相等` 的运算规则
+    - 整体规则
+        |比较类型|规则|
+        |-|-|
+        |值与引用|一定不相等|
+        |值与值|数据类型相同，则比较数据是否相等；数据类型不同，一定不相等|
+        |引用与引用|比较地址|
+- 相等比较中的特例
+    - `NaN` 和自身永远不相等
+    - Symbol可以转换为 true，但是值不等于 true
+        - `Boolean(Symbol()) === true`
+        - `!Symbol() === false`
+        - `Symbol() === false`
+    - 字面量相同的引用类型，也是不严格相等的
+        ```js
+        {} !== {}
+        /./ !== /./
+        function(){} !== function(){}
+        ```
+
+## 大小比较
+[top](#catalog)
+- 比较运算符
+    - `>`，`>=`
+    - `<`，`<=`
+- 运算规则
+    |比较类型|规则|
+    |-|-|
+    |值与引用|将引用类型转换为与值类型相等的类型，然后比较数据大小|
+    |值与值|比较数据的大小|
+    |引用与引用|`>`、`<`，总是返回 false<br>`>=`、`<=`，总是返回 true|
+
+- 当两个字符串
+- 示例
+    - 不同类型之间的大小比较
+        - 参考代码
+            - [src/compare/different_type.js](src/compare/different_type.js)
+        - 代码内容
+            ```js
+            let num1 = 1;
+            let num2 = 23;
+            let num3 = 24;
+            let str = '23';
+            let b0 = false;
+            let b1 = true;
+            let o1 = {name:'aaa', age:22};
+            let o2 = {name:'aaa', age:22};
+            let o3 = new Object();
+            o3.name = 'aaa';
+            o3.age = 22;
+            let o4 = {name:'aaa', age:23};
+
+            // num 与 string比较，str转换为 number
+            console.log( `num1 < str: ${num1 < str}` );  //true
+            console.log( `num2 <= str: ${num2 <= str}` ); //true
+            console.log( `num3 <= str: ${num3 <= str}` ); //false
+
+            // true、false 比较，boolean转换为 number
+            console.log( `b1 > b0: ${b1 > b0}` );     //true
+
+            // boolean 与 number 比较，boolean、str转换为 number
+            console.log( `num1 <= b1: ${num1 <= b1}` );  //true
+            console.log( `num1 <= b0: ${num1 <= b0}` );  //false
+
+            // object 之间比较，object的属性、属性值相等
+            console.log( `o1 < o2: ${o1 < o2}` );       // false
+            console.log( `o1 > o2: ${o1 > o2}` );       // false
+            console.log( `o1 <= o2: ${o1 <= o2}` );     // true
+            console.log( `o1 >= o2: ${o1 >= o2}` );     // true
+
+            // 对象字面量与new Object 比较
+            console.log( `o1 < o3: ${o1 < o3}` );       // false
+            console.log( `o1 > o3: ${o1 > o3}` );       // false
+            console.log( `o1 <= o3: ${o1 <= o3}` );     // true
+            console.log( `o1 >= o3: ${o1 >= o3}` );     // true
+
+            // object 之间比较，object的属性、属性值不相等
+            console.log( `o1 < o4: ${o1 < o4}` );       // false
+            console.log( `o1 > o4: ${o1 > o4}` );       // false
+            console.log( `o1 <= o4: ${o1 <= o4}` );     // true
+            console.log( `o1 >= o4: ${o1 >= o4}` );     // true
+
+            // 空对象比较
+            console.log( {} < {} );     // false
+            console.log( {} > {} );     // false
+            console.log( {} <= {} );    // true
+            console.log( {} >= {} );    // true
+            ```
+    - 字符串的比较
+        - 参考代码
+            - [src/compare/string.js](src/compare/string.js)
+        - 代码内容
+            ```js
+            let str1 = 'abc';
+            let str2 = 'ab';
+            let str3 = '200';
+            let num = 100;
+
+            // 1. 两个字符串的比较，依次比较每个字符
+            console.log( str1 >= str2 );    // true
+
+            // 2. 非数字字符串与数字比较
+            // str转换为NaN，与任何值比较都是false
+            console.log( str1 <= num );     // false
+            console.log( str1 >= num );     // false
+
+            // 3. 数值字符串与数字比较
+            console.log( str3 <= num );     // false 
+            console.log( str3 >= num );     // true
+            ```
 
 # 对象
 [top](#catalog)
@@ -474,168 +1081,6 @@
         - 属性名中包含特殊字符
         - 变量名不确定
             - 如：属性名保存在变量中，只能通过：`obj[变量]`的方式来获取属性值
-
-# 函数
-## 与函数相关的几个基本问题
-[top](#catalog)
-- 什么是函数
-    - 实现了特定功能的多行代码的封装
-    - 只有函数类型可以执行，其他类型无法执行
-
-- 为什么要用函数
-    - 提高代码复用率
-    - 便于阅读
-
-- 如何定义函数
-    - 构造函数 : `var 变量名 = new Function('函数代码字符串')`
-    - 函数声明 : `function 函数名(){...}`
-    - 函数表达式 : `var 变量名 = function(){};`
-
-- 如何调用/执行函数
-
-    |调用方式|说明|
-    |-|-|
-    |`test()`|直接调用|
-    |`obj.test()`|调用对象的方法。调用时，会自动绑定this对象|
-    |`new test()`|以构造函数的方式调用|
-    |`test.call(obj, param1, param2...)`|临时绑定this对象调用|
-    |`test.apply(obj, [param1, param2])`|临时绑定this对象调用|
-
-- 形参的本质是什么？
-    - 局部变量
-    - 形参的值是实参值的拷贝
-
-## 回调函数
-[top](#catalog)
-- 回调函数的特征
-    - 自定义函数
-    - 没有主动调用函数
-    - 函数最终被执行了
-
-- 常见的回调函数
-    - dom事件回调函数
-    - 定时器/延时器的回调函数
-    - ajax的回调函数
-    - 生命周期回调函数
-
-## 立即执行函数IIFE
-[top](#catalog)
-- IIFE，等同于**匿名函数自调用**
-    - 这样的函数只需要执行一次，执行后就可以丢弃
-
-- 调用方式分析
-    - 调用方法
-        ```js
-        (function(){
-            console.log(new Date());
-        })()
-        ```
-    - 错误的调用方法
-        - 错误示例
-            ```js
-            function(){
-                console.log(new Date());
-            }()
-            ```
-        - 在语义上没有问题，但是在语法上有问题
-        - `function(){}`部分，编译器无法将其看作一个整体，所以需要使用括号包起来，如：`(function(){})`
-
-- 为什么需要IIFE
-    - 隐藏实现
-    - 变量都包含在临时作用于中。执行后，不会影响外部作用域，可以减少作用域冲突
-
-- 示例
-    - 全局作用域和临时作用域中，都包含变量 a。通过IIFE隔离不同的作用域
-        ```js
-        var a = 1234;
-
-        // 通过IIFE隔离作用域，对a的操作不会互相干扰
-        (function(){
-            var a = 1;
-            function test(){
-                console.log(++a);
-            }
-
-            window.$ = function(){
-                return {test:test};
-            }
-        })()
-
-        $().test(); // 2
-        $().test(); // 3
-        $().test(); // 4
-        console.log(a); // 1234
-        ```
-
-## 函数中的this对象
-[top](#catalog)
-- this对象是什么
-    - 所有函数内部都有一个this对象
-    - this对象指向调用函数的对象
-    - 任何函数本质上都是通过某个对象来调用的，如果没有显式指定，就是 window 对象
-
-- 如何确定this的指向
-
-    |调用方式|说明|this指向|
-    |-|-|-|
-    |`test()`|直接调用|window 对象|
-    |`obj.test()`|调用对象的方法。调用时，会自动绑定this对象|obj|
-    |`new test()`|以构造函数的方式调用|新创建的类对象|
-    |`test.call(obj, param1, param2...)`|临时绑定this对象调用|obj|
-    |`test.call()`|临时绑定this对象调用|window 对象|
-    |`test.apply(obj, [param1, param2])`|临时绑定this对象调用|obj|
-    |`test.apply()`|临时绑定this对象调用|window 对象|
-
-- 构造函数中的this
-    - 如果通过 `new 构造函数(...)` 的方式来调用函数并创建对象，this是新创建的对象
-    - 如果直接调用函数：`构造函数(...)`，则 this 是 window对象
-        - 在这种调用方式下，**有可能会更改 window对象 中的重要属性或函数**，需要注意
-
-- 示例
-    - 测试：this对象的指向
-        ```js
-        function Person(color){
-            console.log("this01 =", this);
-            this.color = color;
-            this.getColor = function(){
-                console.log("this02 =", this);
-                return this.color;
-            };
-
-            this.setColor = function(color){
-                console.log("this03 =", this);
-                this.color = color;
-            };
-        }
-
-        Person("blue"); // this01 = Window
-
-        var p = new Person("orange"); // this01 = Person {}
-        p.getColor();   // this02 = Person {color: "orange", getColor: ƒ, setColor: ƒ}
-
-        var obj = {};
-        p.setColor.call(obj, "green");  // this03 = {}
-        console.log("obj =", obj);      // obj = {color: "green"}
-
-        var test = p.setColor;
-        test();         //this03 = Window 
-        ```
-    - 测试：没有显式指定调用对象时，调用对象是 window 对象
-        ```js
-        function fn1(){
-            console.log("fn1 this =", this);
-            function fn2(){
-                console.log("fn2 this =", this);
-            }
-
-            fn2();
-        }
-
-        fn1();
-
-        // fn1 this = Window
-        // fn2 this = Window
-        ```
 
 # 提升
 ## 变量提升与函数提升
@@ -823,6 +1268,217 @@
             - 使用函数表达式的方式创建函数，js执行时，只有变量 fn3部分被提升，并且只有定义部分，值是undefined，所以无法执行函数
 
 # 函数
+## 函数声明
+[top](#catalog)
+- 函数声明是变量声明的一种特殊形式
+- 如果函数不声明参数，可以在函数体中通过内部对象 `arguments` 来获取形参
+- 在ES5以后，表达式中出现的具名函数名，只影响该函数内的代码，不会影响该表达式所在的作用域
+    ```js
+    // 在条件表达式内部创建具名函数
+    if (function foo(){console.log(foo)});
+
+    // 不会影响条件表达式所在的作用域
+    console.log(typeof foo);    // undefined
+    ```
+- 函数的声明与调用
+    - 普通的声明
+        ```js
+        // 有参函数
+        function foo(a, b, c){}
+        // 无参函数
+        function bar(){}
+
+        foo('aaa', 'bbb', 'cccc')
+        bar()
+        ```
+    - 默认参数
+        ```js
+        function foo(a, b=1234){}
+
+        foo('aaa')
+        foo('aaa', 2345)
+        ```
+    - 剩余参数
+        ```js
+        function foo(a, ...more){}
+        foo('aaa', 1, 2, 3, 4)
+        ```
+    - 剩余参数，只捕获部分参数
+        ```js
+        function foo(a, ...[x, y]){}
+        foo('aaa', 1, 2, 3) //只捕获到： 'aaa', 1, 2
+        foo('aaa', 1, 2)
+        ```js
+    - 对象参数解构
+        ```js
+        function foo({a, b, c:c的别名}){
+            console.log(a)
+            console.log(b)
+            console.log(c的别名)
+        }
+        ```
+
+## 与函数相关的几个基本问题
+[top](#catalog)
+- 什么是函数
+    - 实现了特定功能的多行代码的封装
+    - 只有函数类型可以执行，其他类型无法执行
+
+- 为什么要用函数
+    - 提高代码复用率
+    - 便于阅读
+
+- 如何定义函数
+    - 构造函数 : `var 变量名 = new Function('函数代码字符串')`
+    - 函数声明 : `function 函数名(){...}`
+    - 函数表达式 : `var 变量名 = function(){};`
+
+- 如何调用/执行函数
+
+    |调用方式|说明|
+    |-|-|
+    |`test()`|直接调用|
+    |`obj.test()`|调用对象的方法。调用时，会自动绑定this对象|
+    |`new test()`|以构造函数的方式调用|
+    |`test.call(obj, param1, param2...)`|临时绑定this对象调用|
+    |`test.apply(obj, [param1, param2])`|临时绑定this对象调用|
+
+- 形参的本质是什么？
+    - 局部变量
+    - 形参的值是实参值的拷贝
+
+## 回调函数
+[top](#catalog)
+- 回调函数的特征
+    - 自定义函数
+    - 没有主动调用函数
+    - 函数最终被执行了
+
+- 常见的回调函数
+    - dom事件回调函数
+    - 定时器/延时器的回调函数
+    - ajax的回调函数
+    - 生命周期回调函数
+
+## 立即执行函数IIFE
+[top](#catalog)
+- IIFE，等同于**匿名函数自调用**
+    - 这样的函数只需要执行一次，执行后就可以丢弃
+
+- 调用方式分析
+    - 调用方法
+        ```js
+        (function(){
+            console.log(new Date());
+        })()
+        ```
+    - 错误的调用方法
+        - 错误示例
+            ```js
+            function(){
+                console.log(new Date());
+            }()
+            ```
+        - 在语义上没有问题，但是在语法上有问题
+        - `function(){}`部分，编译器无法将其看作一个整体，所以需要使用括号包起来，如：`(function(){})`
+
+- 为什么需要IIFE
+    - 隐藏实现
+    - 变量都包含在临时作用于中。执行后，不会影响外部作用域，可以减少作用域冲突
+
+- 示例
+    - 全局作用域和临时作用域中，都包含变量 a。通过IIFE隔离不同的作用域
+        ```js
+        var a = 1234;
+
+        // 通过IIFE隔离作用域，对a的操作不会互相干扰
+        (function(){
+            var a = 1;
+            function test(){
+                console.log(++a);
+            }
+
+            window.$ = function(){
+                return {test:test};
+            }
+        })()
+
+        $().test(); // 2
+        $().test(); // 3
+        $().test(); // 4
+        console.log(a); // 1234
+        ```
+
+## 函数中的this对象
+[top](#catalog)
+- this对象是什么
+    - 所有函数内部都有一个this对象
+    - this对象指向调用函数的对象
+    - 任何函数本质上都是通过某个对象来调用的，如果没有显式指定，就是 window 对象
+
+- 如何确定this的指向
+
+    |调用方式|说明|this指向|
+    |-|-|-|
+    |`test()`|直接调用|window 对象|
+    |`obj.test()`|调用对象的方法。调用时，会自动绑定this对象|obj|
+    |`new test()`|以构造函数的方式调用|新创建的类对象|
+    |`test.call(obj, param1, param2...)`|临时绑定this对象调用|obj|
+    |`test.call()`|临时绑定this对象调用|window 对象|
+    |`test.apply(obj, [param1, param2])`|临时绑定this对象调用|obj|
+    |`test.apply()`|临时绑定this对象调用|window 对象|
+
+- 构造函数中的this
+    - 如果通过 `new 构造函数(...)` 的方式来调用函数并创建对象，this是新创建的对象
+    - 如果直接调用函数：`构造函数(...)`，则 this 是 window对象
+        - 在这种调用方式下，**有可能会更改 window对象 中的重要属性或函数**，需要注意
+
+- 示例
+    - 测试：this对象的指向
+        ```js
+        function Person(color){
+            console.log("this01 =", this);
+            this.color = color;
+            this.getColor = function(){
+                console.log("this02 =", this);
+                return this.color;
+            };
+
+            this.setColor = function(color){
+                console.log("this03 =", this);
+                this.color = color;
+            };
+        }
+
+        Person("blue"); // this01 = Window
+
+        var p = new Person("orange"); // this01 = Person {}
+        p.getColor();   // this02 = Person {color: "orange", getColor: ƒ, setColor: ƒ}
+
+        var obj = {};
+        p.setColor.call(obj, "green");  // this03 = {}
+        console.log("obj =", obj);      // obj = {color: "green"}
+
+        var test = p.setColor;
+        test();         //this03 = Window 
+        ```
+    - 测试：没有显式指定调用对象时，调用对象是 window 对象
+        ```js
+        function fn1(){
+            console.log("fn1 this =", this);
+            function fn2(){
+                console.log("fn2 this =", this);
+            }
+
+            fn2();
+        }
+
+        fn1();
+
+        // fn1 this = Window
+        // fn2 this = Window
+        ```
+
 ## 原型与原型链
 ### 原型prototype
 [top](#catalog)
@@ -2912,8 +3568,9 @@
 ## 代码结尾的分号
 [top](#catalog)
 - 每条js语句结尾可以不加分号
-- 加不加分号只是编码风格的问题
-
+- 称谓
+    - 语句结尾加分号 `;`，称为: **表达式语句**
+    - 语句结尾不加分号 `;`，称为: **表达式**
 - **必须加分号的情况**
     - 两种情况
         1. 小括号开头的前一条语句

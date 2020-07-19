@@ -26,12 +26,16 @@
             console.log("second =", second)     // second = secondtr
             console.log("third =", third)       // third = undefined
 
-            // 1.5 结构时，设置别名
+            // 1.5 解构时，设置别名
             let {aaa:alias01, bbb:alias02} = {"aaa":1111, "bbb":222, "third":33333};
             console.log("alias01 =", alias01)   // alias01 = 1111
             console.log("alias02 =", alias02)   // alias02 = 222
             // console.log("aaa =", aaa)        // aaa无法使用
             // console.log("bbb =", bbb)        // bbb无法使用
+
+            // 1.6 对象属性的深度遍历
+            let {p1:{p2:v}} = {p1:{p2:'abcd'}};
+            console.log( 'v = ' + v);  // v = abcd
 
             // 2. 数组的解构
             // 2.1 完全匹配
@@ -54,9 +58,14 @@
             let [h, , j] = [12, 13, 14]
             console.log("h =", h)       // j = 14
             console.log("j =", j)       // h = 12
+            
+            // 2.5用三点运算符来捕获多余的元素
+            let [x, y, ...more] = [3, 4, 5, 6, 7, 8]
+            console.log("x =", x)       // x = 3
+            console.log("y =", y)       // y = 4
+            console.log("more =", more)       // more = [5, 6, 7, 8]
 
-
-            // 3. 解构赋值的应用
+            // 3. 函数的对象类型参数解构
             // 使用解构的格式作为形参
             function show({name, age, address: addr}){
                 console.log("name =", name)

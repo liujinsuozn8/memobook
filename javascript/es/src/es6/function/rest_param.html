@@ -4,29 +4,39 @@
         <meta charset="utf-8">
         <title>rest param test</title>
         <script type="text/javascript">
-            // 1. rest可变参数
-            function foo(a, ...values){
-                console.log(a)
-                console.log(values)
-                values.forEach(item => console.log(item))
-            }
-
-            foo(1,2,3,4,5, "abc")
-            // 输出:
-            // 1
-            // (5) [2, 3, 4, 5, "abc"]
-            // 2
-            // 3
-            // 4
-            // 5
-            // abc
-
-            // 2. 扩展运算
+            // 1. 扩展运算
             let a = [1, 2, 3]
             let b = [1, ...a, 6]
             console.log(b)
             // 输出: 
             // (5) [1, 1, 2, 3, 6]
+
+            // 2. 函数的剩余参数
+            // 2.1 展开的基本形式
+            function restFn01(a, b, ...more){
+                console.log(a)
+                console.log(b)
+                console.log(more)
+            }
+            restFn01(2,3,4,5,6);
+            // 输出:
+            // 2
+            // 3
+            // [4, 5, 6]
+            
+            // 2.2 展开时，只捕获部分参数
+            function restFn02(a, b, ...[r1, r2]){
+                console.log(a)
+                console.log(b)
+                console.log(r1)
+                console.log(r2)
+            }
+            restFn02(2,3,4,5,6);
+            // 输出:
+            // 2
+            // 3
+            // 4
+            // 5
 
         </script>
     </head>
