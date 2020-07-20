@@ -36,6 +36,9 @@
         - [BeanValidationPostProcessor--数据校验处理](#BeanValidationPostProcessor--数据校验处理)
         - [InitDestroyAnnotationBeanPostProcessor--JSR250注解的识别与方法调用](#InitDestroyAnnotationBeanPostProcessor--JSR250注解的识别与方法调用)
         - [AutowiredAnnotationBeanPostProcessor--自动装配注解处理](#AutowiredAnnotationBeanPostProcessor--自动装配注解处理)
+- @Value--属性赋值
+    - [属性赋值的三种方式](#属性赋值的三种方式)
+    - [@PropertySource--使用方法](#@PropertySource--使用方法)
 - [](#)
 - [](#)
 
@@ -66,6 +69,9 @@
         - JSR250的注解
         - bean实现 `InitializingBean`和`DisposableBean`接口
         - @Bean(initMethod="初始化方法", destroyMethod="")
+- 属性赋值
+    - @Value，设置属性值
+    - @PropertySource，添加配置文件到配置类
 
 # 组件注册注解
 ## @Configuration--创建配置类
@@ -1844,5 +1850,164 @@
 ### AutowiredAnnotationBeanPostProcessor--自动装配注解处理
 [top](#catalog)
 - ?????
+
+# @Value--属性赋值
+## 属性赋值的三种方式
+[top](#catalog)
+- 属性赋值的三种方法
+    1. 使用普通的数据设置属性值
+        - `@Value("testName")`
+    2. 通过SpEL设置属性值
+        - `@Value("#{22-2}")`
+    3. `@PropertySource`设置配置文件 + `${}`，从配置文件中读取数据，即从运行环境变量中获取值
+        - `@Value("${配置文件中的变量名}")`
+
+- 示例
+    - 实现内容
+        - 参考代码
+            - [/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/propertyassign/Person.java](/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/propertyassign/Person.java)    
+            - [/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/propertyassign/ValueConfig.java](/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/propertyassign/ValueConfig.java)    
+        - bean
+            ```java
+            public class Person {
+                // 1. 使用普通的数据设置属性值
+                @Value("testName")
+                private String name;
+            
+                // 2. 通过SpEL设置属性值
+                @Value("#{22-2}")
+                private Integer age;
+            
+                // 3. 使用`${}`，从配置文件中读取数据，即从运行环境变量中获取值
+                @Value("${address}")
+                private String address;
+                
+                // getter、setter
+            }
+            ```
+        - 配置类
+            ```java
+            @PropertySource(value={"classpath:/propertyassign/valuetest.properties"})
+            @Configuration
+            public class ValueConfig {
+                @Bean
+                public Person person(){
+                    return new Person();
+                }
+            }
+            ```
+    - 测试内容
+        - 参考代码
+            - [/java/mylearn/myspring-annotation/src/test/java/com/ljs/learn/myspringannotation/propertyassign/ValueConfigTest.java](/java/mylearn/myspring-annotation/src/test/java/com/ljs/learn/myspringannotation/propertyassign/ValueConfigTest.java)
+        - 测试代码
+            ```java
+            @Test
+            public void person() {
+                AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(ValueConfig.class);
+                Person person = (Person) context.getBean("person");
+                System.out.println(person);
+        
+                Person test = new Person();
+                test.setName("testName");
+                test.setAge(20);
+                test.setAddress("testAddress");
+        
+                assertEquals(person, test);
+            }
+            ```
+
+## @PropertySource--使用方法
+[top](#catalog)
+- 注解的使用方法
+    - `@PropertySource({配置文件数组})`
+    - `@PropertySource`本身是可重复注解，可以通过 `@PropertySources` 设置多个
+    - `@PropertySource`，路径的两种设置方法
+        - `classpath:/com/myco/app.properties`
+        - `file:/path/to/file.xml`
+
+- 获取配置文件数据的方法
+    1. 方式1: `@PropertySource` + `${}`，获取数据并设置给bean的属性赋值
+        - 本质就是读取配置文件中的属性
+        - 与xml设置来读取配置文件相同
+            ```xml
+            <!--设置配置文件的问题-->
+            <context:property-placeholder location="classpath:db.properties"/>
+            <!-- 通过 ${} 来使用 -->
+            <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+                <property name="driverClass" value="${driver}"/>
+                <property name="jdbcUrl" value="${url}"/>
+                <property name="user" value="${username}"/>
+                <property name="password" value="${password}"/>
+            </bean>
+            ```
+        - `@Value`注解的使用方法与配置类似
+            1. 在**配置类**中，通过`@PropertySource(value={路径数组})`，设置配置文件的位置
+                - 容器启动后会读取外部配置文件中的 k/v ，并保存到运行的环境变量中
+            2. 在bena中，通过`@Value("${配置文件中的属性名}")`，从环境变量中获取数据
+    2. 方式2: 通过Spring的上下文对象获取数据
+        1. 容器启动后，配置文件中的数据已经全部加载到环境变量中
+        2. 通过 `context.getEnvironment();` 获取环境变量对象 
+        3. 通过 `环境变量对象.getProperty("配置文件中的属性名");` 获取配置文件中的数据
+
+- 示例--使用方式1
+    - 参考代码
+        - [/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/propertyassign/Person.java](/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/propertyassign/Person.java)    
+        - [/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/propertyassign/ValueConfig.java](/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/propertyassign/ValueConfig.java)    
+    - bean
+        ```java
+        public class Person {
+            // 其他属性
+            // ...
+
+            // 3. 使用`${}`，从配置文件中读取数据，即从运行环境变量中获取值
+            @Value("${address}")
+            private String address;
+            
+            // getter、setter
+        }
+        ```
+    - 配置类
+        ```java
+        // 设置配置文件的路径
+        @PropertySource(value={"classpath:/propertyassign/valuetest.properties"})
+        @Configuration
+        public class ValueConfig {
+            @Bean
+            public Person person(){
+                return new Person();
+            }
+        }
+        ```
+
+- 示例--使用方式2
+    - 参考代码
+        - [/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/propertyassign/ValueConfig.java](/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/propertyassign/ValueConfig.java)    
+        - [/java/mylearn/myspring-annotation/src/test/java/com/ljs/learn/myspringannotation/propertyassign/ValueConfigTest.java](/java/mylearn/myspring-annotation/src/test/java/com/ljs/learn/myspringannotation/propertyassign/ValueConfigTest.java)
+    - 配置类
+        ```java
+        // 设置配置文件的路径
+        @PropertySource(value={"classpath:/propertyassign/valuetest.properties"})
+        @Configuration
+        public class ValueConfig {
+            @Bean
+            public Person person(){
+                return new Person();
+            }
+        }
+        ```
+    - 从环境变量对象中获取数据
+        ```java
+        @Test
+        public void getPropertiesValue(){
+            AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(ValueConfig.class);
+            // 1. 获取环境变量对象
+            ConfigurableEnvironment env = context.getEnvironment();
+            
+            // 2. 通过环境变量对象获取配置文件中的数据
+            String address = env.getProperty("address");
+            
+            assertEquals(address, "testAddress");
+        }
+        ```
 
 [top](#catalog)
