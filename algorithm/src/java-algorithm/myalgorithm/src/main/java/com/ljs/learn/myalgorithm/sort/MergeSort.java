@@ -2,7 +2,7 @@ package com.ljs.learn.myalgorithm.sort;
 
 // 归并排序
 public class MergeSort {
-    // 启动排序
+    // 1. 启动排序
     public static void sort(int[] array){
         // 根据原始序列的大小创建临时数组
         int[] temp = new int[array.length];
@@ -10,7 +10,7 @@ public class MergeSort {
         split(array, 0, array.length-1, temp);
     }
 
-    // 归并排序的拆分阶段
+    // 2. 归并排序的拆分阶段
     public static void split(int[] array, int startIdx, int endIdx, int[] temp){
         // startIdx < endIdx，说明当前要拆分的子序列中还有至少2个元素
         // 如果不满足，则说明当前子序列中只有一个元素
@@ -27,7 +27,7 @@ public class MergeSort {
         }
     }
 
-    /** 归并排序的合并阶段
+    /** 3. 归并排序的合并阶段
      *
      * @param array     原始数组
      * @param startIdx  左指针的起始位置

@@ -53,7 +53,7 @@ public class BinarySearch {
         int mid = (left + right) / 2;
         int midVal = array[mid];
 
-        // 需要超找的值与中间值比较
+        // 需要查找的值与中间值比较
         if (findVal < midVal){
             // 继续向左递归
             return searchASCAll(array, left, mid - 1, findVal);

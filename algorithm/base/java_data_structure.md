@@ -53,11 +53,35 @@
 - 数据结构-树
     - [树简介](#树简介)
     - [二叉树简介](#二叉树简介)
+    - [二叉树遍历](#二叉树遍历)
+        - [二叉树的三种遍历](#二叉树的三种遍历)
+        - [二叉树遍历的实现](#二叉树遍历的实现)
+    - [二叉树查找](#二叉树查找)
+    - [二叉树删除结点](#二叉树删除结点)
+    - [顺序存储二叉树](#顺序存储二叉树)
+    - [线索化二叉树](#线索化二叉树)
+        - [线索化二叉树--引入问题](#线索化二叉树--引入问题)
+        - [线索化二叉树简介](#线索化二叉树简介)
+        - [树结点线索化的实现](#树结点线索化的实现)
+        - [线索化二叉树的遍历](#线索化二叉树的遍历)
+- 数据结构-堆
+    - [堆简介](#堆简介)
+    - [构建大顶堆的方法](#构建大顶堆的方法)
+    - [构建大顶堆的实现](#构建大顶堆的实现)
+- 数据结构-霍夫曼树
+    - [霍夫曼树简介](#霍夫曼树简介)
+    - [霍夫曼树的构建方法](#霍夫曼树的构建方法)
+    - [霍夫曼树的实现](#霍夫曼树的实现)
+- 霍夫曼编码
+    - [霍夫曼编码简介](#霍夫曼编码简介)
+    - [前缀编码](#前缀编码)
+    - [通信领域中信息的处理方式](#通信领域中信息的处理方式)
+    - [霍夫曼编码的原理](#霍夫曼编码的原理)
+    - [霍夫曼编码的编码过程](#霍夫曼编码的编码过程)
+    - [霍夫曼编码的解码过程](#霍夫曼编码的解码过程)
+    - [霍夫曼编码实现参考](#霍夫曼编码实现参考)
+    - [霍夫曼编码的注意事项](#霍夫曼编码的注意事项)
 - [](#)
-- [](#)
-- [](#)
-- [](#)
-
 
 # 数据结构与算法概述
 [top](#catalog)
@@ -2641,5 +2665,1069 @@
         - 如果删除了F，会导致倒数第二层的右侧不连续，则不是完全二叉树
         - 如果删除了I，会导致倒数第一层的右侧不连续，则不是完全二叉树
         - ![complete_binary_tree](imgs/data_structure/tree/binary_tree/complete_binary_tree.png)
+
+## 二叉树遍历
+### 二叉树的三种遍历
+[top](#catalog)
+- 3中遍历的顺序
+    - 前序遍历
+        - 输出: 父节点、左子树、右子树
+    - 中序遍历
+        - 输出: 左子树、父节点、右子树
+    - 后序遍历
+        - 输出: 左子树、右子树、父节点
+- 遍历顺序主要看父节点什么时候遍历
+- 3中遍历的步骤
+    - 前序步骤
+        1. 创建一个二叉树
+        2. 输出当前结点
+        3. 如果左子节点不为空，则递归，继续前序遍历
+        4. 如果右子节点不为空，则递归，继续前序遍历
+    - 中序步骤
+        1. 创建一个二叉树
+        2. 如果左子节点不为空，则递归，继续中序遍历
+        3. 输出当前结点
+        4. 如果右子节点不为空，则递归，继续中序遍历
+    - 后序步骤
+        1. 创建一个二叉树
+        2. 如果左子节点不为空，则递归，继续后序遍历
+        3. 如果右子节点不为空，则递归，继续后序遍历
+        4. 输出当前结点
+
+### 二叉树遍历的实现
+[top](#catalog)
+- 实现内容
+    - 参考代码
+        - [/algorithm/src/java-algorithm/datastructure/src/main/java/com/ljs/learn/datastructure/tree/binary/demo1/BinaryTree.java](/algorithm/src/java-algorithm/datastructure/src/main/java/com/ljs/learn/datastructure/tree/binary/demo1/BinaryTree.java)
+        - [/algorithm/src/java-algorithm/datastructure/src/main/java/com/ljs/learn/datastructure/tree/binary/demo1/TreeNode.java](/algorithm/src/java-algorithm/datastructure/src/main/java/com/ljs/learn/datastructure/tree/binary/demo1/TreeNode.java)
+
+    - 二叉树结点
+        ```java
+        public class TreeNode<T> {
+            private T data;
+            private TreeNode left;
+            private TreeNode right;
+        
+            public TreeNode(T data) {
+                this.data = data;
+            }
+        
+            // 前序遍历
+            public void preOrder() {
+                System.out.println(this);
+                if (this.left != null) {
+                    this.left.preOrder();
+                }
+        
+                if (this.right != null) {
+                    this.right.preOrder();
+                }
+            }
+        
+            // 中序遍历
+            public void infixOrder() {
+                if (this.left != null) {
+                    this.left.infixOrder();
+                }
+        
+                System.out.println(this);
+        
+                if (this.right != null) {
+                    this.right.infixOrder();
+                }
+            }
+        
+            // 后序遍历
+            public void postOrder(){
+                if(this.left != null){
+                    this.left.postOrder();
+                }
+        
+                if(this.right != null){
+                    this.right.postOrder();
+                }
+        
+                System.out.println(this);
+            }
+        
+            @Override
+            public String toString() {
+                return data.toString();
+            }
+        
+            // getter、setter
+        }
+        ```
+    - 二叉树
+        ```java
+        public class BinaryTree<T> {
+            private TreeNode<T> root; // 保存根结点
+        
+            public BinaryTree(TreeNode<T> root) {
+                this.root = root;
+            }
+        
+            // 启动前序遍历
+            public void preOrder(){
+                if (root == null) return ;
+                root.preOrder();
+            }
+        
+            // 启动中序遍历
+            public void infixOrder(){
+                if (root == null) return ;
+                root.infixOrder();
+            }
+        
+            // 启动后序遍历
+            public void postOrder(){
+                if (root == null) return ;
+                root.postOrder();
+            }
+            // getter、setter
+        }
+        ```
+
+- 测试内容
+    - 参考代码
+        - [/algorithm/src/java-algorithm/datastructure/src/test/java/com/ljs/learn/datastructure/tree/binary/demo1/BinaryTreeTest.java](/algorithm/src/java-algorithm/datastructure/src/test/java/com/ljs/learn/datastructure/tree/binary/demo1/BinaryTreeTest.java)
+    - 测试代码
+        ```java
+        public static BinaryTree<Integer> tree;
+        static {
+            /** 创建一个二叉树
+             *       1
+             *     2   3
+             *   4       5
+             */
+            TreeNode<Integer> node1 = new TreeNode<>(1);
+            TreeNode<Integer> node2 = new TreeNode<>(2);
+            TreeNode<Integer> node3 = new TreeNode<>(3);
+            TreeNode<Integer> node4 = new TreeNode<>(4);
+            TreeNode<Integer> node5 = new TreeNode<>(5);
+            node1.setLeft(node2);
+            node1.setRight(node3);
+            node2.setLeft(node4);
+            node3.setRight(node5);
+    
+            tree = new BinaryTree<>(node1);
+        }
+        @Test
+        public void preOrder() {
+            tree.preOrder();
+            // 输出: 1 2 4 3 5
+        }
+    
+        @Test
+        public void infixOrder() {
+            tree.infixOrder();
+            //输出: 4 2 1 3 5
+        }
+    
+        @Test
+        public void postOrder() {
+            tree.postOrder();
+            //输出: 4 2 5 3 1
+        }
+        ```
+
+## 二叉树查找
+[top](#catalog)
+- 实现内容
+    - 参考代码
+        - [/algorithm/src/java-algorithm/datastructure/src/main/java/com/ljs/learn/datastructure/tree/binary/demo1/TreeNode.java](/algorithm/src/java-algorithm/datastructure/src/main/java/com/ljs/learn/datastructure/tree/binary/demo1/TreeNode.java)
+        - [/algorithm/src/java-algorithm/datastructure/src/main/java/com/ljs/learn/datastructure/tree/binary/demo1/BinaryTree.java](/algorithm/src/java-algorithm/datastructure/src/main/java/com/ljs/learn/datastructure/tree/binary/demo1/BinaryTree.java)
+    - 遍历查找
+        ```java
+        public class TreeNode<T> {
+            // 前序查找
+            public T preOrderSearch(T findVal) {
+                // 1. 与当前结点比较，相同则返回
+                if (this.data.equals(findVal)) {
+                    return this.data;
+                }
+        
+                T temp = null;
+                // 2. 判断左子树是否为空，不为空，则向左递归前序遍历
+                if (this.left != null) {
+                    temp = (T) this.left.preOrderSearch(findVal);
+        
+                    // 如果找到则返回
+                    if (temp != null) return temp;
+                }
+        
+                // 3. 如果左边没找到，则判断右子树是否为空，不为空则向右递归前序遍历
+                if (this.right != null) {
+                    temp = (T) this.right.preOrderSearch(findVal);
+                }
+        
+                // 4. 不对结果进行判断，直接返回，有上一层的遍历来进行判断
+                return temp;
+            }
+        
+            // 中序查找
+            public T infixOrderSearch(T findVal) {
+                T temp = null;
+        
+                // 1. 判断左子树是否为空，不为空则向左递归遍历
+                if (this.left != null) {
+                    temp = (T) this.left.infixOrderSearch(findVal);
+        
+                    // 如果找到则返回
+                    if (temp != null) return temp;
+                }
+        
+                // 2. 与当前结点比较，相同则返回
+                if (this.data.equals(findVal)) {
+                    return this.data;
+                }
+        
+                // 3. 判断右子树是否为空，不为空则向右递归遍历
+                if (this.right != null) {
+                    temp = (T) this.right.infixOrderSearch(findVal);
+                }
+        
+                // 4. 不对结果进行判断，直接返回，有上一层的遍历来进行判断
+                return temp;
+            }
+        
+            // 后续查找
+            public T postOrderSearch(T findVal) {
+                T temp = null;
+        
+                // 1. 判断左子树是否为空，不为空则向左递归遍历
+                if (this.left != null) {
+                    temp = (T) this.left.postOrderSearch(findVal);
+        
+                    // 如果找到则返回
+                    if (temp != null) return temp;
+                }
+        
+                // 2. 判断右子树是否为空，不为空则向右递归遍历
+                if (this.right != null) {
+                    temp = (T) this.right.postOrderSearch(findVal);
+        
+                    // 如果找到则返回
+                    if (temp != null) return temp;
+                }
+        
+                // 3. 与当前结点比较，相同则返回
+                if (this.data.equals(findVal)) {
+                    return this.data;
+                } else {
+                    // 不同则直接返回null
+                    return null;
+                }
+            }
+        }
+        ```
+    - 启动查找
+        ```java
+        public class BinaryTree<T> {
+            private TreeNode<T> root; // 保存根结点
+            // 启动前序查找
+            public T preOrderSearch(T findVal){
+                if (root == null) return null;
+                return root.preOrderSearch(findVal);
+            }
+            // 启动中序查找
+            public T infixOrderSearch(T findVal){
+                if (root == null) return null;
+                return root.infixOrderSearch(findVal);
+            }
+            // 启动后序查找
+            public T postOrderSearch(T findVal){
+                if (root == null) return null;
+                return root.postOrderSearch(findVal);
+            }
+        }
+        ```
+
+- 测试代码
+    - 参考代码
+        - [/algorithm/src/java-algorithm/datastructure/src/test/java/com/ljs/learn/datastructure/tree/binary/demo1/BinaryTreeTest.java](/algorithm/src/java-algorithm/datastructure/src/test/java/com/ljs/learn/datastructure/tree/binary/demo1/BinaryTreeTest.java)
+    - 测试代码
+        ```java
+        // 前序查找测试
+        @Test
+        public void preOrderSearch(){
+            assert tree.preOrderSearch(5) == 5;
+            assert tree.preOrderSearch(6) == null;
+        }
+    
+        // 中序查找测试
+        @Test
+        public void infixOrderSearch(){
+            assert tree.infixOrderSearch(5) == 5;
+            assert tree.infixOrderSearch(6) == null;
+        }
+    
+        // 后序查找测试
+        @Test
+        public void postOrderSearch(){
+            assert tree.postOrderSearch(5) == 5;
+            assert tree.postOrderSearch(6) == null;
+        }
+        ```
+
+## 二叉树删除结点
+[top](#catalog)
+- 删除结点的要求
+    1. 如果删除的结点是叶子结点，则删除该结点
+    2. 如果删除的结点是非叶子结点，则删除该子树
+
+- 需要判断**当前结点的子节点**是否需要删除
+    - 不直接使用当前结点判断的原因
+        - 因为二叉树是单向的，删除当前结点时无法找到父结点，所以不能直接通过当前结点来判断
+    - 即判断: 当前结点的左子节点和右子节点是否需要删除
+
+- 实现思路
+    1. 如果是空树，则跳过
+    2. 检查root结点，如果 `root结点 == findVal`，则将二叉树置空
+    3. 开始递归删除
+    4. 如果: `左子节点 != null`，并且`左子节点 == findVal`，删除左子节点
+       - 即: 设左子节点为空 `this.left=null`
+       - 删除后，结束递归
+    5. 如果: `右子节点 != null`，并且`右子节点 == findVal`，删除右子节点
+       - 即: 设右子节点为空 `this.right=null`
+       - 删除后，结束递归
+    6. 如果没有找到目标结点，并且 `左子节点 != null`，继续向左递归删除
+    7. 如果左递归删除没有成功，并且 `右子节点 != null`，继续向右递归删除
+
+- 实现内容
+    - 参考代码
+        - [/algorithm/src/java-algorithm/datastructure/src/main/java/com/ljs/learn/datastructure/tree/binary/demo1/BinaryTree.java](/algorithm/src/java-algorithm/datastructure/src/main/java/com/ljs/learn/datastructure/tree/binary/demo1/BinaryTree.java)
+        - [/algorithm/src/java-algorithm/datastructure/src/main/java/com/ljs/learn/datastructure/tree/binary/demo1/TreeNode.java](/algorithm/src/java-algorithm/datastructure/src/main/java/com/ljs/learn/datastructure/tree/binary/demo1/TreeNode.java)
+    - 树启动删除结点， `BinaryTree.java`
+        ```java
+        public void delNode(int findVal){
+            // 1. 如果是空树，则跳过
+            if (root == null) {
+                return ;
+            } else if ( root.getData().equals(findVal)){
+                // 2. 检查root结点，如果 `root结点 == findVal`，则将二叉树置空
+                root = null;
+            } else {
+                root.delNode(findVal);
+            }
+        }
+        ```
+    - 结点删除，`TreeNode.java`
+        ```java
+        public void delNode(int findVal){
+            // 1. 如果: `左子节点 != null`，并且`左子节点 == findVal`，删除左子节点
+            if (this.left != null && this.left.getData().equals(findVal)){
+                this.left = null;
+            }
+    
+            // 2. 如果: `右子节点 != null`，并且`右子节点 == findVal`，删除右子节点
+            if (this.right != null && this.right.getData().equals(findVal)){
+                this.right = null;
+            }
+    
+            // 3. 如果没有找到目标结点，并且 `左子节点 != null`，继续向左递归删除
+            if (this.left != null){
+                this.left.delNode(findVal);
+            }
+            // 4. 如果左递归删除没有成功，并且 `右子节点 != null`，继续向右递归删除
+            if (this.right != null){
+                this.right.delNode(findVal);
+            }
+        }
+        ```
+- 测试内容
+    - 参考代码
+        - [/algorithm/src/java-algorithm/datastructure/src/test/java/com/ljs/learn/datastructure/tree/binary/demo1/BinaryTreeTest.java](/algorithm/src/java-algorithm/datastructure/src/test/java/com/ljs/learn/datastructure/tree/binary/demo1/BinaryTreeTest.java)
+    - 测试代码
+        ```java
+        @Test
+        public void delNode(){
+            tree.preOrder();
+            // 输出: 1 2 4 3 5 6
+    
+            // 删除结点
+            tree.delNode(5);
+    
+            System.out.println("------");
+    
+            tree.preOrder();
+            // 输出: 1 2 4 3 6
+        }
+        ```
+
+## 顺序存储二叉树
+[top](#catalog)
+- 数组存储方式和树的存储方式可以相互转换
+    - 数组可以转换成树
+    - 树可以转换成数组
+- 顺序存储二叉树的要求
+    - 遍历数组时，仍然可以以前序遍历、中序遍历、后序遍历的方式遍历
+- 顺序存储二叉树示例
+    - ![/algorithm/base/imgs/data_structure/tree/binary_tree/seq_store_tree.png](/algorithm/base/imgs/data_structure/tree/binary_tree/seq_store_tree.png)
+- <label style='color:red'>顺序存储的特点</label>
+    - 顺序二叉树通常只考虑完全二叉树
+    - n表示二叉树中的第几个元素。从 0 开始，与数组保持一直
+    - 第n个元素的左子节点为: `2 * n + 1`
+    - 第n个元素的右子节点为: `2 * n + 2`
+    - 第n个元素的父节点为: `( n -1 ) / 2`
+
+- 实现内容
+    - 参考代码
+        - [/algorithm/src/java-algorithm/datastructure/src/main/java/com/ljs/learn/datastructure/tree/binary/arrbinary/ArrayBinaryTree.java](/algorithm/src/java-algorithm/datastructure/src/main/java/com/ljs/learn/datastructure/tree/binary/arrbinary/ArrayBinaryTree.java)
+    - 代码内容
+        ```java
+        /**
+        * 启动前序遍历
+        */
+        public void preOrder(){
+            // 如果数组为空，或者 arr.length = 0，则退出
+            if(array == null || array.length == 0){
+                System.out.println("null array");
+                return;
+            }
+            this.preOrder(0);
+        }
+
+        /** 完成顺序存储二叉树的前序遍历
+        * @param index 数组下标
+        */
+        public void preOrder(int index){
+            // 1. 输出当前的元素
+            System.out.println(array[index]);
+
+            // 2. 向左递归遍历，需要防止越界
+            if ((index * 2 + 1) < this.array.length){
+                preOrder(index * 2 + 1);
+            }
+
+            // 3. 向右递归遍历，需要防止越界
+            if ((index * 2 + 2) < this.array.length){
+                preOrder(index * 2 + 2);
+            }
+        }
+        ```
+- 测试内容
+    - 参考代码
+        - [/algorithm/src/java-algorithm/datastructure/src/test/java/com/ljs/learn/datastructure/tree/binary/arrbinary/ArrayBinaryTreeTest.java](/algorithm/src/java-algorithm/datastructure/src/test/java/com/ljs/learn/datastructure/tree/binary/arrbinary/ArrayBinaryTreeTest.java)
+    - 测试代码
+        ```java
+        @Test
+        public void preOrder() {
+            ArrayBinaryTree tree = new ArrayBinaryTree(new int[]{1, 2, 3, 4, 5, 6, 7});
+            tree.preOrder();
+            // 输出: 1 2 4 5 3 6 7
+        }
+        ```
+
+## 线索化二叉树
+### 线索化二叉树--引入问题
+[top](#catalog)
+- 将数组 `[1, 3, 6, 8, 10, 14]` 构建成一颗二叉树
+    - ![leadin_problem](imgs/data_structure/tree/threaded_binarytree/leadin_problem.png)
+
+- 该二叉树的问题
+    - 二叉树的终须遍历结果为: `8 3 10 1 14 6`
+    - 6，8，10，14 这几个结点的左右指针没有完全利用
+    - 如果充分利用各个结点的左右指针，让各个结点指向自己的前后结点？
+        - 使用线索二叉树
+
+### 线索化二叉树简介
+[top](#catalog)
+- n个结点的二叉链表中含有 `n+1`个空指针域
+    - 计算公式: `2n - (n - 1)`
+        - `2n` 表示所有的结点一共有`2n`个指针（左指针 + 右指针）
+        - `n - 1` 表示已经使用的指针个数
+- 什么是线索?
+    - 利用二叉树链表中的空指针域，存放指向该结点在**某种遍历方式**下的前驱和后继结点的指针
+    - 这种附加的指针称为**线索**
+
+- 附加了线索的二叉树称为**线索链表**，相应的二叉树称为**线索二叉树**
+- 根据不同的线索性质，线索二叉树可以分为
+    - 前序二叉树
+    - 中序二叉树
+    - 后序二叉树
+
+### 树结点线索化的实现
+[top](#catalog)
+- 线索化示例-中序线索化二叉树
+    - ![threaded_tree_infixorder](imgs/data_structure/tree/threaded_binarytree/threaded_tree_infixorder.png)
+
+- 线索化时的问题
+    - left指针
+        - 指向的可能是左子树，也可能指向前驱结点
+    - right指针
+        - 指向的可能是右子树，也可能是后继结点
+    - 需要一个指针指向当前结点的前一个结点，才能创建结点之间的关系
+
+- 实现内容
+    - 参考代码
+        - [/algorithm/src/java-algorithm/datastructure/src/main/java/com/ljs/learn/datastructure/tree/binary/threaded/ThreadedBinaryTree.java](/algorithm/src/java-algorithm/datastructure/src/main/java/com/ljs/learn/datastructure/tree/binary/threaded/ThreadedBinaryTree.java)
+        - [/algorithm/src/java-algorithm/datastructure/src/main/java/com/ljs/learn/datastructure/tree/binary/threaded/ThreadedNode.java](/algorithm/src/java-algorithm/datastructure/src/main/java/com/ljs/learn/datastructure/tree/binary/threaded/ThreadedNode.java)
+    - 树结点 `ThreadedNode.java`
+        ```java
+        // 中序遍历线索二叉树结点
+        public class ThreadedNode<T>{
+            T data;
+            ThreadedNode<T> left;
+            ThreadedNode<T> right;
+        
+            // leftType == 0 表示指向的是左子树
+            // leftType == 1 表示指向的中序遍历的前驱结点
+            int rightType;
+            // rightType == 0 表示指向的是右子树
+            // rightType == 1 表示指向的中序遍历的后继结点
+            int leftType;
+        
+            public ThreadedNode(T data) {
+                this.data = data;
+            }
+        
+            // 其他代码
+            // ...
+        }
+        ```
+    - 树 `ThreadedBinaryTree.java`
+        ```java
+        public class ThreadedBinaryTree<T> {
+            private ThreadedNode<T> root;
+        
+            // 为了实现线索化，需要创建指向当前结点的前驱结点的指针
+            // 在递归进行线索化时，总是保存前一个结点
+            private ThreadedNode<T> pre = null;
+        
+            public ThreadedBinaryTree(ThreadedNode<T> root) {
+                this.root = root;
+            }
+        
+            // 启动二叉树中序线索化
+            public void infixThreadedNodes(){
+                this.infixThreadedNodes(root);
+            }
+        
+            /**
+             * 对二叉树进行中序线索化
+             * @param node 需要线索化的结点
+             */
+            public void infixThreadedNodes(ThreadedNode<T> node){
+                // 如果是空结点，则跳过
+                if (node == null) return ;
+        
+                // 1. (递归的)线索化左子树
+                infixThreadedNodes(node.left);
+        
+                // 2. 线索化当前结点
+                // 2.1 处理【当前结点】的前驱结点
+                // 如果当前结点的左结点为空，则线索化
+                if (node.left == null){
+                    // 让当前结点的左指针指向前驱结点
+                    node.left = pre;
+                    // 设置左指针的类型为线索
+                    node.leftType = 1;
+                }
+        
+                // 2.2 处理【前驱结点】的后继结点（因为当前结点无法处理后继结点，所以放在再一次迭代中处理）
+                // 如果前驱结点的右结点为空，则线索化
+                // 需要防止第一次为空
+                if (pre != null && pre.right == null){
+                    // 将前驱结点的右结点设置为当前结点
+                    pre.right = node;
+                    pre.rightType = 1;
+                }
+        
+                // 每处理一个个结点后，将前驱结点更新为当前结点
+                pre = node;
+        
+                // 3. (递归的)线索化右子树
+                infixThreadedNodes(node.right);
+            }
+        }
+        ```
+
+- 测试内容
+    - 参考代码
+        - [/algorithm/src/java-algorithm/datastructure/src/test/java/com/ljs/learn/datastructure/tree/binary/threaded/ThreadedBinaryTreeTest.java](/algorithm/src/java-algorithm/datastructure/src/test/java/com/ljs/learn/datastructure/tree/binary/threaded/ThreadedBinaryTreeTest.java)
+    - 测试代码
+        ```java
+        @Test
+        public void infixThreadedNodes() {
+            // 创建二叉树 [1, 3, 6, 8, 10, 14]
+            ThreadedNode<Integer> node1 = new ThreadedNode<>(1);
+            ThreadedNode<Integer> node3 = new ThreadedNode<>(3);
+            ThreadedNode<Integer> node6 = new ThreadedNode<>(6);
+            ThreadedNode<Integer> node8 = new ThreadedNode<>(8);
+            ThreadedNode<Integer> node10 = new ThreadedNode<>(10);
+            ThreadedNode<Integer> node14 = new ThreadedNode<>(14);
+    
+            node1.left = node3;
+            node1.right = node6;
+            node3.left = node8;
+            node3.right = node10;
+            node6.left = node14;
+    
+            ThreadedBinaryTree<Integer> tree = new ThreadedBinaryTree<>(node1);
+    
+            //执行线索化
+            tree.infixThreadedNodes();
+    
+            assertEquals( node10.left, node3);
+            assertEquals( node10.right, node1);
+    
+            assertEquals( node14.left, node1);
+            assertEquals( node14.right, node6);
+    
+            // 中序遍历时 8 第一个执行线索化，pre = null，
+            assertEquals(node8.left, null);
+            assertEquals(node8.right, node3);
+        }
+        ```
+
+### 线索化二叉树的遍历
+[top](#catalog)
+- 线索化后，各个结点相互关联，用原来的方式遍历会导致死循环
+- 线索化二叉树的遍历方法
+    - 各个结点通过线性方式遍历
+    - 不需要使用递归，有更高的遍历效率
+    - 遍历的次序需要和线索化顺序保持一致
+    
+- 实现内容
+    - 参考代码
+        - [/algorithm/src/java-algorithm/datastructure/src/test/java/com/ljs/learn/datastructure/tree/binary/threaded/ThreadedBinaryTreeTest.java](/algorithm/src/java-algorithm/datastructure/src/test/java/com/ljs/learn/datastructure/tree/binary/threaded/ThreadedBinaryTreeTest.java)
+    - 实现代码
+        ```java
+        // 遍历中序线索化二叉树
+        public void infixThreadedList(){
+            // 存储当前遍历的结点，从root开始
+            ThreadedNode<T> node = root;
+            
+            // 当 node == null 时，即遍历到终点 
+            while (node != null){
+                // 1. 循环找到leftType == 1的结点
+                while (node.leftType == 0) node = node.left;
+    
+                // 打印当前结点
+                System.out.println(node);
+    
+                // 如果当前结点的右指针指向的是后继结点，就一直输出
+                while(node.rightType == 1){
+                    node = node.right;
+                    System.out.println(node);
+                }
+    
+                // 更新结点
+                node = node.right;
+            }
+        }
+        ```
+
+# 数据结构-堆
+## 堆简介
+[top](#catalog)
+- 堆是具有以下性质的完全二叉树
+    - 大顶堆
+        - 每个结点的值都大于或等于其左右子节点的值
+        - 左右子节点的大小没有特殊要求
+    - 小顶堆
+        - 每个结点的值都小于或等于其左右子节点的值
+        - 左右子节点的大小没有特殊要求
+
+- 堆的底层使用**顺序存储二叉树**来保存数据，即数组
+
+- 大顶堆
+    - 大顶堆的特点
+        - `arr[i] >= arr[2 * i + 1] && arr[i] >= arr[2 * i + 2]`
+    - 大顶堆示例
+        - ![max_heap](imgs/data_structure/heap/max_heap.png)
+- 小顶堆
+    - 小顶堆的特点
+        - `arr[i] <= arr[2 * i + 1] && arr[i] <= arr[2 * i + 2]`
+    - 小顶堆示例
+        - ![min_heap](imgs/data_structure/heap/min_heap.png)
+
+## 构建大顶堆的方法
+[top](#catalog)
+- 构建方法
+    1. 使用给定的序列作为树结构
+    2. 计算非叶子结点
+        - 非叶子结点的个数: `arr.length  / 2`
+        - 最后一个非叶子结点的索引: `arr.length  / 2 - 1`
+    3. 从**最后一个非叶子**结点开始，按照从后往前的顺序，直到根结点，对每个子树进行构建
+        1. 检查左子节点和右子节点哪个更大，并获取最大值 `max`
+            - 如果已经没有有结点，则左结点为 `max`
+        2. 将 `max` 与非叶子结点的值进行比较
+        3. 如果非叶子结点较小
+            - 交换非叶子结点与子节点的数据
+            - 将构建的目标从当前结点移动到子节点
+            - 判断子节点是否为叶子节点（子节点的结点索引是否已经超过底层数组的索引范围）
+                - 如果不是叶子节点从 3.1 开始重新循环
+                - 如果是叶子结点，则停止循环，当前的子树构建完成
+        4. 如果 `max` 较小
+            - 说明子树都已有序，停止循环，当前的子树构建完成
+        5. 对前一个非叶子结点执行循环
+
+- 构建示例，将 `[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]` 构建为大顶堆
+    - ![step01](imgs/data_structure/heap/create_max_heap_demo/step01.png)
+    - ![step02](imgs/data_structure/heap/create_max_heap_demo/step02.png)
+    - ![step03](imgs/data_structure/heap/create_max_heap_demo/step03.png)
+    - ![step04](imgs/data_structure/heap/create_max_heap_demo/step04.png)
+    - ![step05](imgs/data_structure/heap/create_max_heap_demo/step05.png)
+
+## 构建大顶堆的实现
+[top](#catalog)
+- 实现内容
+    - 参考内容
+        - [/algorithm/src/java-algorithm/datastructure/src/main/java/com/ljs/learn/datastructure/heap/MaxHeap.java](/algorithm/src/java-algorithm/datastructure/src/main/java/com/ljs/learn/datastructure/heap/MaxHeap.java)
+    - 实现代码
+        ```java
+        /** 1. 启动大顶堆的构建，构建整个树
+        * 
+        * @param array 需要构建大顶堆的数组
+        */
+        public static void adjustHeap(int[] array){
+            adjustHeap(array, array.length);
+        }
+
+        /** 2. 启动大顶堆的构建，可以部分构建
+        *
+        * @param array 需要构建大顶堆的数组
+        * @param length 构建的最大长度，可以设置只将树的一部分构建为大顶堆
+        */
+        public static void adjustHeap(int[] array, int length){
+            // 1. 计算最后一个非叶子结点的索引
+            int lastNoLeafNodeIdx = array.length / 2 - 1;
+
+            // 2. 从后向前遍历所有非叶子结点
+            for (int i = lastNoLeafNodeIdx; i >= 0 ; i--) {
+                adjustHeapForSubTree(array, i, length);
+            }
+        }
+
+        /**
+        * 3. 将 i 结点开始的子树调整为一个大顶堆
+        * @param array 待调整的数组
+        * @param i   表示非叶子结点在数组中的索引
+        * @param length 对多少个元素进行调整
+        */
+        public static void adjustHeapForSubTree(int array[], int i, int length){
+            // 1. 取出当前非叶子结点的值，并保存。在整体调整完成之后，设置到最终的索引处
+            int temp = array[i];
+
+            // 2. 开始调整
+            // 从当前结点的左结点开始
+            for (int k = i*2+1; k<length; k=k*2+1){
+                // 2.1 如果还有右子节点，并且右子节点更大，将k指向右子节点
+                // 否则使用左结点
+                if (k+1<length && array[k] < array[k+1]){
+                    k++;
+                }
+
+                // 2.2 如果子节点大于  temp，交换位置
+                if (array[k] > temp){
+                    array[i] = array[k];
+                    i=k;
+                } else {
+                    // 否则，整个子树已经是大顶堆，退出构建
+                    break;
+                }
+            }
+
+            // 3. 以i为父节点子树构建完成，将temp保存到调整后的位置
+            array[i] = temp;
+        }
+        ```
+
+- 测试内容
+    - 测试代码
+        - [/algorithm/src/java-algorithm/datastructure/src/test/java/com/ljs/learn/datastructure/heap/MaxHeapTest.java](/algorithm/src/java-algorithm/datastructure/src/test/java/com/ljs/learn/datastructure/heap/MaxHeapTest.java)
+    - 测试内容
+        ```java
+        // 测试整个树的大顶堆构建
+        @Test
+        public void adjustHeap() {
+            int[] array = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
+            MaxHeap.adjustHeap(array);
+            int[] result = {11, 10, 7, 9, 5, 6, 3, 8, 4, 2, 1};
+
+            assertArrayEquals(array, result);
+        }
+
+        // 测试子树部分的大顶堆构建
+        @Test
+        public void adjustHeapForSubTree() {
+            int[] array = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
+            // 计算最后一个非叶子结点的索引
+            int lastNoLeafNodeIdx = array.length / 2 - 1;
+            MaxHeap.adjustHeapForSubTree(array, lastNoLeafNodeIdx, array.length);
+
+            int[] result = {1, 2, 3, 4, 11, 6, 7, 8, 9, 10, 5};
+
+            assertArrayEquals(array, result);
+        }
+        ```
+
+# 数据结构-霍夫曼树
+## 霍夫曼树简介
+[top](#catalog)
+- 霍夫曼树也称为**最优二叉树**
+- 霍夫曼树中的几个概念
+    - 路径
+        - 在一颗树中，从一个结点往下可以到达的其他结点之间的通路，称为路径
+    - 路径长度
+        - 从结点到目标结点的层数差
+        - 如果根结点的层数为1，从根结点到第L层结点的路径长度为`L-1`
+    - 结点的权
+        - 如果结点中有某种含义的数值，则称这个数值为该结点的权
+    - 结点带权路径长度
+        - 从**根结点**到目标结点之间的路径长度与该结点权的乘积
+        - 示例
+            - ![weight_path_of_node](imgs/data_structure/tree/huffuman/weight_path_of_node.png)
+    - 树的带权路径（WPL，weighted path length）
+        - 所有**叶子结点**的带权路径长度之和
+        - 示例
+            - ![weight_path_of_tree](imgs/data_structure/tree/huffuman/weight_path_of_tree.png)
+        
+- 什么是霍夫曼树
+    - 构造一颗二叉树，给定n个权值作为n个叶子结点的权
+    - 若该树的**带权路径长度（WPL）**达到最小，则称为霍夫曼树
+- 霍夫曼树的特点
+    - 树的带权路径最小的树
+    - **所有权值较大**的结点离根较近
+        - 只有权值较大的结点靠近根结点时，与路径长度乘积后的值才不会被过度放大
+- 霍夫曼树与非霍夫曼树的对比
+    - ![huffuman_tree_demo](imgs/data_structure/tree/huffuman/huffuman_tree_demo.png)
+
+## 霍夫曼树的构建方法
+[top](#catalog)
+- 构造霍夫曼树的步骤
+    1. 序列预处理
+        - 对序列**升序排序**
+        - 序列的每个元素视为一个结点
+        - 每个元素可以视作一颗最简单的二叉树
+    2. 取出根结点权值最小的两个二叉树，即排序后的第一、第二个元素
+    3. 将两个权值最小的二叉树组成一颗新的二叉树
+        - 新二叉树的根结点是前两个二叉树根结点权值的和
+    4. 将新的二叉树的**根结点**放入序列，再次对序列做升序排列
+    5. 重复 1--4，直到所有数据都被处理，就得到一颗霍夫曼树
+
+- 构造示例
+    - ![create_tree_demo](imgs/data_structure/tree/huffuman/create_tree_demo.png)
+
+- 注意事项
+    - 构建霍夫曼树时，不同的排序方法最终得到的树结构可能不同
+        - 尤其是多个字符的权值相同时，使用稳定排序和非稳定排序的结果将会不同
+    - 虽然树结构不同，但是**带权路径长度（WPL）**最终仍然是相同的
+## 霍夫曼树的实现
+[top](#catalog)
+- 实现内容
+    - 参考代码
+        - [/algorithm/src/java-algorithm/datastructure/src/main/java/com/ljs/learn/datastructure/tree/huffman/HuffmanNode.java](/algorithm/src/java-algorithm/datastructure/src/main/java/com/ljs/learn/datastructure/tree/huffman/HuffmanNode.java)
+        - [/algorithm/src/java-algorithm/datastructure/src/main/java/com/ljs/learn/datastructure/tree/huffman/HuffmanTree.java](/algorithm/src/java-algorithm/datastructure/src/main/java/com/ljs/learn/datastructure/tree/huffman/HuffmanTree.java)
+    - 树的结点
+        ```java
+        // 为了能够对结点排序，需要实现 Comparable 接口
+        public class HuffmanNode implements Comparable<HuffmanNode> {
+            int weight; //结点的权值
+            HuffmanNode left;
+            HuffmanNode right;
+        
+            @Override
+            public int compareTo(HuffmanNode o) {
+                return this.weight - o.weight;
+            }
+        }
+        ```
+    - 构建树
+        ```java
+        public static HuffmanNode createTree(int[] array) {
+            // 将数组转换为结点数组
+            List<HuffmanNode> nodes = new ArrayList<>(array.length);
+            for (int i : array) {
+                nodes.add(new HuffmanNode(i));
+            }
+    
+            while (nodes.size() > 1) {
+                // 1. 将结点数组进行排序（升序）
+                Collections.sort(nodes);
+    
+                // 2. 抽取最小的两个结点，并从数组中删除
+                HuffmanNode left = nodes.get(0);
+                HuffmanNode right = nodes.get(1);
+    
+                // 3. 使用两个最小结点创建新的树
+                HuffmanNode newNode = new HuffmanNode(left.weight + right.weight);
+                newNode.left = left;
+                newNode.right = right;
+    
+                // 4. 将新的树保存到数组中
+                // 4.1 方式1，将树设置到index=1的位置直接替换旧的树。然啊后删除index=0的树
+                nodes.set(1, newNode);
+                nodes.remove(0);
+                // 4.2 方式2，删除第一个和第二个元素，然后将新的树添加到数组末尾
+                // nodes.remove(left);
+                // nodes.remove(right);
+                // nodes.add(newNode);
+    
+                // 5. 重新循环：排序-->抽最小的两个值-->创建树-->保存树
+                // 直到数组中只剩下一个元素
+            }
+    
+            return nodes.get(0);
+        }
+        ```
+- 测试内容
+    - 参考代码
+        - [/algorithm/src/java-algorithm/datastructure/src/test/java/com/ljs/learn/datastructure/tree/huffman/HuffmanTreeTest.java](/algorithm/src/java-algorithm/datastructure/src/test/java/com/ljs/learn/datastructure/tree/huffman/HuffmanTreeTest.java)
+    - 测试代码
+        ```java
+        @Test
+        public void createTree() {
+            // 创建树并指向前序遍历
+            int[] array = {1,2,3,4,5,6};
+            HuffmanNode tree = HuffmanTree.createTree(array);
+    
+            tree.preOrder();
+            // 21 9 4 5 12 6 3 1 2 3 6
+        }
+        ```
+
+# 霍夫曼编码
+## 霍夫曼编码简介
+[top](#catalog)
+- 霍夫曼编码是在电讯通信中的经典应用之一
+- 霍夫曼编码广泛的应用与数据文件压缩，压缩率通常在 20%～90%之间
+- 霍夫曼编码是可变字长编码（VLC）的一种，也称为最佳编码
+
+## 前缀编码
+[top](#catalog)
+- 什么是前缀编码？
+    - 即字符的编码都不能是其他字符的前缀，不会造成匹配的二意性
+
+## 通信领域中信息的处理方式
+[top](#catalog)
+- 定长编码
+    - 编码方式
+        - 将所有信息分解为字符，包括空格，然后将字符转换为ASCII码
+    - 缺点
+        - 转换后的数据过长，1个字符需要1byte的容量来存储
+- 变长编码
+    - 编码方式
+        - 将每个字符用不同的 1、0组合来表示，然后按照字符出现的顺序进行表示
+        - 字符编码的原则: 出现次数越多的字符，编码越小
+        - 示例
+            - 数据: `i like java`
+            - 每个字符的值
+                - 0 = 空格
+                - 1 = a
+                - 10 = i
+                - 11 = e
+                - 100 = k
+                - 101 = l
+                - 110 = j
+                - 111 = v
+            - 数据编码: 
+                ```
+                10 0   101 10 100 11 0   110 1 111 1
+                 i " " l   i  k   e  " "  j  a  v  a
+              
+                1001011010011011011111
+                ```
+        - 缺点
+            - 不是前缀编码，如 `10 = i`，`100 = k`，i的编码是k编码的前缀
+            - 在解码时，无法准确的划分编码，容易造成解码错误
+                - 如 `like` 的编码是: `101 10 100 11`
+                - 也可以划分为: `10 110 100 11` ,即 ivke
+
+- 霍夫曼编码
+
+## 霍夫曼编码的原理
+[top](#catalog)
+- 霍夫曼编码的特点
+    - 霍夫曼编码是**前缀编码**，解码时不会有二意性
+    - 无损压缩
+- 编码原理
+    1. 统计数据中各个字符出现的次数
+    2. 按照字符出现的次数构建一个霍夫曼树，次数作为权值
+    3. 根据霍夫曼树，给各个字符设定编码
+        - 编码规则，向左为0，向右为1
+    4. 然后按照霍夫曼编码，编码整个数据
+    5. 编码后每8个 0、1 组成一个字节，然后整体发送给
+- 注意事项
+    - 构建霍夫曼树时，不同的排序方法最终得到的树结构可能不同
+        - 尤其是多个字符的权值相同时，使用稳定排序和非稳定排序的结果将会不同
+    - 编码长度总是相同的
+        - 树结构可能不同，但是**带权路径长度（WPL）**总是相同的
+        - 因为WPL相同，所以字符编码可能不同，但是最终的到的编码总长是相同的
+
+## 霍夫曼编码的编码过程
+[top](#catalog)
+- 霍夫曼树结点需要保存的数据
+    - 权值: 字符出现的次数
+    - data: 字符
+- 编码过程
+    1. 通过数据构建霍夫曼树
+        1. 将数据转化为字节数组 `byte[]`
+        2. 统计字符及字符个数
+        3. 根据统计结果，创建树的结点
+        4. 将所有结点保存在一个数组中，然后构建霍夫曼树
+    2. 根据树生成霍夫曼编码表
+        1. 使用`Map<Byte, String>` 的形式保存编码表
+            - Byte 表示字符
+            - String 表示字符对应的编码
+        2. 遍历树，生成编码表
+        3. 遍历过程中，使用一个字符串来存储**叶子节点**的路径
+            - 如果数据是`null`，是非叶子结点，需要继续递归
+            - 如果数据不是`null`，是叶子结点，需要保存到编码表中
+    3. 根据编码表压缩数据
+        1. 按照编码表将数据的每个字符编码，并组成一个**编码字符串**（字符串中只有0、1）
+        2. 从左到右，按照8位一个byte，将字符串转换位byte数组
+            - 每8位都是**补码**。需要 `-1，再取反，转化成源码
+            - 每次截取字符串时，需要检查是否越界
+        3. 计算转换后的byte数组的长度
+            - 计算方法: `( 编码字符串 + 7 ) / 8`
+    4. 将压缩后的 byte 数组返回
+
+- 注意事项
+    - 需要保存编码后的编码字符串的长度，防止在解码时，最后不足 8 位时，丢位的情况
+        - 如编码字符串最后剩余5位: `00100`
+        - 解码时，从byte转换会string时，会变成 `100`
+        - 所以需要保存编码字符串的长度，在最后不足八位时，进行补位
+
+## 霍夫曼编码的解码过程
+[top](#catalog)
+- 需要使用编码后的字节数组，参照编码表来解码
+- 解码过程
+    1. 将 huffmanBytes 解析为对应的二进制字符串
+        - 转换时，需要将每个二进制数补高位，补成8位
+            - 因为编码时，是每8位进行转换，单有些值比较小，转换后不能变成8为，需要补位
+        - 最后一个字节不需要补高位
+            - 因为最后一位在编码时的具体长度是不确定的，所以不需要编码
+    2. 将编码表的key、value 反转
+        - 编码时，通过字符来获取编码
+        - 解码时，通过编码来获取字符，所以要反转
+    3. 遍历编码字符串，并在反转后的编码表中搜索对应的字符
+
+- byte转二进制字符串的注意事项
+    - 编码时，是按照补码来操作的
+    - 解码时，也是按照补码来操作的
+    - 解码时，可能会出现结果不足8位的情况，需要通过 `256 | 解码结果` 的方式补位
+        - 256 可转换为 `1 0000 0000`，可以用于补位
+    - 解码结果可能会超过 8 位需要截取低八位
+    - 编码时，可能会有不足8位的情况。在截位时，需要注意是否要补位
+
+## 霍夫曼编码实现参考
+[top](#catalog)
+- 实现参考
+    - [/algorithm/src/java-algorithm/myalgorithm/src/main/java/com/ljs/learn/myalgorithm/encoding/huffman/HuffmanEncodingUtils.java](/algorithm/src/java-algorithm/myalgorithm/src/main/java/com/ljs/learn/myalgorithm/encoding/huffman/HuffmanEncodingUtils.java)
+    - [/algorithm/src/java-algorithm/myalgorithm/src/main/java/com/ljs/learn/myalgorithm/encoding/huffman/HuffmanEncoding.java](/algorithm/src/java-algorithm/myalgorithm/src/main/java/com/ljs/learn/myalgorithm/encoding/huffman/HuffmanEncoding.java)
+    - [/algorithm/src/java-algorithm/myalgorithm/src/main/java/com/ljs/learn/myalgorithm/encoding/huffman/HuffmanEncodingUtils.java](/algorithm/src/java-algorithm/myalgorithm/src/main/java/com/ljs/learn/myalgorithm/encoding/huffman/HuffmanEncodingUtils.java)
+
+- 测试内容
+    - [/algorithm/src/java-algorithm/myalgorithm/src/test/java/com/ljs/learn/myalgorithm/encoding/huffman/HuffmanEncodingTest.java](/algorithm/src/java-algorithm/myalgorithm/src/test/java/com/ljs/learn/myalgorithm/encoding/huffman/HuffmanEncodingTest.java)
+
+## 霍夫曼编码的注意事项
+[top](#catalog)
+- 如果文件本身已经被压缩过，则用霍夫曼编码再压缩不会有明显的变化
+    - 如: 视频、ppt 等文件
+- 霍夫曼编码是按字节来处理的，所以可以处理所有的二进制文件
+- 如果一个文件中，重复的珊瑚礁不多，压缩效果不会很好
 
 [top](#catalog)

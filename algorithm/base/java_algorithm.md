@@ -48,6 +48,7 @@
     - [基数排序的思想](#基数排序的思想)
     - [基数排序的分步求解](#基数排序的分步求解)
     - [基数排序算法实现](#基数排序算法实现)
+- [排序算法--堆排序](#排序算法--堆排序)
 - [查找算法--顺序查找](#查找算法--顺序查找)
 - [查找算法--二分查找](#查找算法--二分查找)
     - [二分查找基本思想](#二分查找基本思想)
@@ -61,6 +62,10 @@
     - [斐波那契查找的基本思路](#斐波那契查找的基本思路)
     - [斐波那契查找的注意事项](#斐波那契查找的注意事项)
     - [斐波那契查找的基本实现](#斐波那契查找的基本实现)
+- [堆排序](#堆排序)
+    - [堆排序简介](#堆排序简介)
+    - [堆排序的基本思想](#堆排序的基本思想)
+    - [堆排序的实现--升序](#堆排序的实现--升序)
 - [](#)
 - [](#)
 
@@ -504,9 +509,9 @@
     |选择|`O(n^2)`|`O(n^2)`|不稳定|`O(1)`|in-place|n小时较好|
     |插入|`O(n^2)`|`O(n^2)`|稳定|`O(1)`|in-place|大部分已排序时较好|
     |交换|`O(n^2)`|`O(n^2)`|不稳定|`O(1)`|???|n小时较好|
-    |Shell|`O(nlogn)`|`O(n^s) 1<s<2`|不稳定|`O(n)`|in-place||
+    |希尔|`O(nlogn)`|`O(n^s) 1<s<2`|不稳定|`O(n)`|in-place||
     |快速|`O(nlogn)`|`O(n^2)`|不稳定|`O(nlogn)`|in-place|n大时较好|
-    |归并|`O(nlogn)`|`O(nlogn)`|稳定|`O(1)`|out-place|n大时较好|
+    |归并|`O(nlogn)`|`O(nlogn)`|稳定|`O(n)`|out-place|n大时较好|
     |基数|`O(n x k)`|`O(n x k)`|稳定|`O(n+k)`|out-place|k是桶的数量|
     |堆|`O(nlogn)`|`O(nlogn)`|不稳定|`O(1)`|in-place|n大时较好|
 
@@ -1313,9 +1318,9 @@
         4. right的结束位置
     2. left、right依次比较，将较小的元素保存到临时数组，然后向后移动指针
     3. 持续比较、移动指针，直到left或right用完
-    4. 将 left 或 right 中剩余的数据一次保存到临时数组中
+    4. 将 left 或 right 中剩余的数据依次保存到临时数组中
         - 剩余数据本身就是有序的，所以可以直接保存
-    5. 将临时数组中的数据拷贝到原始数组中
+    5. 将临时数组中的数据拷贝回原始数组中
 - 拆分阶段的实现
     1. 计算left的结束位置，即中间位置: `(left + right)/2`
     2. 迭代的向左拆分
@@ -1663,6 +1668,11 @@
         }
         ```
 
+# 排序算法--堆排序
+## 基数排序简介
+[top](#catalog)
+
+
 # 查找算法--顺序查找
 [top](#catalog)
 - 顺序查找就是依次遍历序列每个元素，并返回其索引。如果没有找到，则返回 `-1`
@@ -1795,7 +1805,7 @@
             int mid = (left + right) / 2;
             int midVal = array[mid];
     
-            // 需要超找的值与中间值比较
+            // 需要查找的值与中间值比较
             if (findVal < midVal){
                 // 继续向左递归
                 return searchASCAll(array, left, mid - 1, findVal);
@@ -1865,7 +1875,7 @@
     - 如果关键字分布不均匀，插值查找不一定比折半查找要好
 
 - 自适应的mid（插值索引）的计算方法
-    - `mid = left + (right - left) x (findVal - arr[left]) / (arr[right] - a[left])`
+    - `mid = left + (right - left) x (findVal - arr[left]) / (arr[right] - arr[left])`
     - 原始的mid公式及其变形
         - 原始的mid公式: `mid = (left + right) / 2`
         - 公式变形结果: `mid = left + (right - left) x 1/2` 
@@ -2126,6 +2136,105 @@
             int result = FibonacciSearch.search(array, 1);
     
             assert result == 0;
+        }
+        ```
+
+# 堆排序
+## 堆排序简介
+[top](#catalog)
+- 堆排序是利用堆这种数据结构设计的一种排序算法
+- 堆排序的特性
+    - 是一种**选择排序**
+    - 最坏、最好、平均时间复杂度都是 `O(nlogn)`
+    - 属于不稳定排序
+
+## 堆排序的基本思想
+[top](#catalog)
+- 堆的一般使用规则
+    - 升序用大顶堆
+    - 降序用小顶堆
+- 基本思想（升序排列）
+    1. 第一轮循环
+        1. 将待排序的序列创建一个大顶堆
+            - 以顺序存储二叉树的形式存储数据，即以数组的形式存储
+        2. 创建完成后，整个序列的最大值就是堆顶的根结点
+        3. 将第一个结点与 （数组的）最后一个元素**交换**，此时末尾元素为最大值
+    2. 第二轮循环
+        1. 排除最后一个结点，使用剩余的 `n-1` 个元素重新**创建一个新的大顶堆**
+        2. 创建完成后，整个序列的最大值就是堆顶的根结点
+        2. 将第一个结点与 倒数第二个 元素**交换**
+    3. 剩余的数据重复循环过程
+    4. 整体循环过程中，数据逐渐减少，最终得到一个有序序列
+- 排序示例
+    - 将 `[4,6,8,5,9]` 以升序排列
+    - ![sort_demo](imgs/algorithm/sort/heapsort/sort_demo.png)
+
+## 堆排序的实现--升序
+[top](#catalog)
+- 实现内容
+    - 参考代码
+        - [/algorithm/src/java-algorithm/myalgorithm/src/main/java/com/ljs/learn/myalgorithm/sort/HeapSort.java](/algorithm/src/java-algorithm/myalgorithm/src/main/java/com/ljs/learn/myalgorithm/sort/HeapSort.java)
+    - 执行堆排序
+        ```java
+        // 执行堆排序
+        public static void sort(int[] array) {
+            int temp;
+
+            // 每轮排序后，将大顶堆的构建长度 - 1，直到还剩一个元素
+            for (int length = array.length; length > 1; length--) {
+                // 1 构建大顶堆
+                adjustHeap(array, length);
+                // 2 交换第一个与最后一个元素
+                temp = array[0];
+                array[0] = array[length - 1];
+                array[length - 1] = temp;
+                // System.out.println(Arrays.toString(array));
+            }
+        }
+        ```
+    - 大顶堆
+        ```java
+        /**
+         * 3. 将 i 结点开始的子树调整为一个大顶堆
+         * @param array 待调整的数组
+         * @param i   表示非叶子结点在数组中的索引
+         * @param length 对多少个元素进行调整
+         */
+        public static void adjustHeap(int[] array, int length) {
+            // 1. 计算最后一个非叶子结点的位置
+            int lastNoLeafNodeIdx = array.length / 2 - 1;
+
+            // 2. 从后向前，将每个结点构建为大顶堆
+            for (int i = lastNoLeafNodeIdx; i >= 0; i--) {
+                adjustHeapForSubTree(array, i, length);
+            }
+        }
+
+        // 将 i 结点的子树构建为大顶堆
+        public static void adjustHeapForSubTree(int[] array, int i, int length) {
+            // 1. 保存 i 结点的数据
+            int temp = array[i];
+
+            // 2. 调整堆
+            for (int k = i * 2 + 1; k < length; k = k * 2 + 1) {
+                // 2.1 如果还有右子节点，并且右子节点更大，将k指向右子节点
+                // 否则使用左结点
+                if (k + 1 < length && array[k] < array[k + 1]) {
+                    k++;
+                }
+
+                // 2.2 如果子节点大于 temp，交换位置
+                if (array[k] > temp) {
+                    array[i] = array[k];
+                    i = k;
+                } else {
+                    // 否则，整个子树已经是大顶堆，退出构建
+                    break;
+                }
+            }
+
+            // 3. 以i为父节点子树构建完成，将temp保存到调整后的位置
+            array[i] = temp;
         }
         ```
 
