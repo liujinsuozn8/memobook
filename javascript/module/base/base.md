@@ -598,6 +598,7 @@
             export function foo(){...}
             export function bar(){...}
             export let obj = {...}
+            export class Person{...}
             ```
         - 导入: 通过解构赋值的方式，引入指定内容。<label style='color:red'>变量名必须和导出的内容同名</label>
             ```js
@@ -609,7 +610,8 @@
             function foo(){...}
             function bar(){...}
             let obj = {...}
-            export {foo, bar, obj}
+            export class Person{...}
+            export {foo, bar, obj, Person}
             ```
         - 导入: 通过解构赋值的方式，引入指定内容。<label style='color:red'>变量名必须和导出的内容同名</label>
             ```js
@@ -620,7 +622,8 @@
             ```js
             function foo(){...}
             function bar(){...}
-            export {foo, bar}   // 统一导出
+            export class Person{...}
+            export {foo, bar, Person}   // 统一导出
             export let obj = {...}  // 单独导出
             ```
         - 导入: 通过解构赋值的方式，引入指定内容。<label style='color:red'>变量名必须和导出的内容同名</label>

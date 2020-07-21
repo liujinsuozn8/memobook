@@ -108,21 +108,35 @@
     - [路由的实现方式](#路由的实现方式)
     - [vue-router简介](#vue-router简介)
     - [vue-router的基本使用方法](#vue-router的基本使用方法)
-    - [路由映射的配置方法](#路由映射的配置方法)
-        - [将路由配置添加到路由对象中](#将路由配置添加到路由对象中)
+    - [Route--路由映射的配置方法](#Route--路由映射的配置方法)
+        - [Route的使用说明](#Route的使用说明)
+        - [Route的属性说明](#Route的属性说明)
         - [普通路由](#普通路由)
         - [路由的重定向](#路由的重定向)
         - [默认路由](#默认路由)
         - [懒加载路由](#懒加载路由)
         - [动态路由](#动态路由)
         - [嵌套路由](#嵌套路由)
-    - [路由对象的参数设置](#路由对象的参数设置)
+    - [VueRouter的选项设置](#VueRouter的选项设置)
         - [mode--历史记录的模式](#mode--历史记录的模式)
         - [linkActiveClass--激活状态下的链接样式](#linkActiveClass--激活状态下的链接样式)
     - [router-link的属性](#router-link的属性)
-    - [通过代码手动跳转路由](#通过代码手动跳转路由)
-    - [动态路由的开发与使用](#动态路由的开发与使用)
+    - [路由中的参数传递方式](#路由中的参数传递方式)
+        - [两种参数传递方式](#两种参数传递方式)
+        - [动态路由的开发与使用](#动态路由的开发与使用)
+        - [设置url中的请求参数](#设置url中的请求参数)
     - [嵌套路由的开发与使用](#嵌套路由的开发与使用)
+    - [手动跳转路由](#手动跳转路由)
+    - [$route和$router的区别与分析](#$route和$router的区别与分析)
+    - [路由守卫](#路由守卫)
+        - [路由守卫简介](#路由守卫简介)
+        - [全局路由守卫](#全局路由守卫)
+        - [路由独享守卫](#路由独享守卫)
+        - [组件内的守卫](#组件内的守卫)
+- [keep-alive](#keep-alive)
+    - [默认设置下的路由跳转分析](#默认设置下的路由跳转分析)
+    - [keep-alive简介](#keep-alive简介)
+    - [keep-alive与router-view结合使用](#keep-alive与router-view结合使用)
 - [](#)
 
 
@@ -361,8 +375,17 @@
 
 # Vue的生命周期
 [top](#catalog)
-- created: 一般会做网络请求
-- mounted:
+- mounted: template 挂载到 DOM 之后执行
+- updated: 在页面发生更新后
+    - 什么时候会刷新
+        - 数据发生更新
+        - 路由切换
+- created: 进入路由创建组件之后，一般会做网络请求
+    - 路由被包在 keep-alive中后不会重复创建销毁
+- destroyed: 离开路由，销毁组件
+    - 路由被包在 keep-alive中后不会重复创建销毁
+- actived: 路由被包在 keep-alive 后，每次进入路由时触发
+- deactived: 路由被包在 keep-alive 后，每次离开路由时触发
 ????
 
 # Vue基本指令
@@ -711,6 +734,12 @@
     - 每个 `value` 是一个 `boolean` 型的值
     - 当 `value == true` 时，对应的 `key` 生效
     - 如果有多个 key 生效，则按照 css 的编码顺序加载
+
+- 注意事项
+    - 如果 key 中包含 `-` 字符，需要用双引号包起来，如:
+        ```html
+        <div :class='{"aaa--bbb": value1}'></div>
+        ```
 
 - 示例
     - 参考代码
@@ -2853,7 +2882,7 @@
                 props:['showlist', 'title', 'end'],
             };
             ```
-        3. 在父组件中，设置数据、设置子组件
+        3. 在父组件中，设置数据、注册子组件
             ```js
             const app = new Vue({
                 el: '#app',
@@ -2861,7 +2890,7 @@
                     typeList:['aaa', 'bbb', 'ccc'],
                     title:'this is type list'
                 },
-                components:{    // 设置子组件
+                components:{    // 注册子组件
                     'child-cpn': child,
                 }
             });
@@ -2897,6 +2926,7 @@
     - 对象中的props可以设置默认值
 
 - 对象的几种设置方法
+    <span id='props-object-setting'></span>
     ```js
     // 自定义类型
     function Person(name, age){
@@ -2967,7 +2997,7 @@
             </template>
             ```
         2. 定义子组件构造器
-            - 参考上面的：对象的几种设置方法
+            - 参考上面的: [对象的几种设置方法](#props-object-setting)
         3. 在父组件中，设置数据、设置子组件
             ```js
             const app = new Vue({
@@ -4610,6 +4640,15 @@
     |`package.json`||
     |`README.md`||
 
+- `src` 目录分析
+    - `assets`，保存静态资源，与`public/`不同，打包时，assets会被webpack处理
+    - `components`，保存小组件，可被其他组件复用的组件
+    - `router`，路由映射配置
+    - `views`，页面级组件，可以引用 `components` 中的组件
+    - `containers`，容器级组件，**需要手动创建**
+    - `App.vue`
+    - `main.js`，打包入口
+
 ### vue-cli3的配置
 [top](#catalog)
 - vue-cli3的配置如何管理
@@ -4706,12 +4745,13 @@
             |-|-|-|
             |1|导入路由     |从包 `vue-router` 导入路由插件|
             |2|安装路由     |调用 `Vue.use(VueRouter)` 方法，安装插件|
-            |3|创建路由实例 |创建**路由实例**，并传入<label style='color:red'>路由映射配置</label>|
+            |3|实例化`VueRouter` |实例化`VueRouter`，并传入路由映射: `Router`对象|
             |4|挂载路由     |在Vue实例中挂载 No.2 中创建的路由实例|
 
 - vue-router 的使用方法
     1. 创建并**导出**路由所需的组件
-    2. 配置路由映射，即组件与路径的映射关系
+    2. 配置路由映射: `Router`对象，即组件与路径的映射关系
+    3. 将多个 `Router`对象 组装成数组，作为 `VueRouter` 的 options
     3. 通过 `<router-link>`、`<router-view>` 标签，来使用路由
         - `<router-link>`、`<router-view>` 是由 vue-router 注册的全局组件，可以直接使用
         - `<router-link>` 会被渲染成 `<a>`，用于路径的跳转
@@ -4751,7 +4791,7 @@
             Vue.use(VueRouter);
 
             // 3. 创建路由实例
-            // 3.1 创建组件与url路径的映射关系
+            // 3.1 创建多个Route，即多个组件与url路径的映射关系
             const routes = [
                 // 一个映射关系就是一个对象
                 {
@@ -4773,7 +4813,7 @@
             // 4. 将路由挂载到Vue实例
             // 在main.js 中导入路由对象，并挂载
             ```
-        2. 在 Vue 实例中挂载路由对象，[src/main.js](src/router/router-demo01/src/main.js)
+        2. 在 Vue 实例中挂载路由对象 `VueRouter`，[src/main.js](src/router/router-demo01/src/main.js)
             ```js
             import Vue from 'vue'
             import App from './App.vue'
@@ -4783,7 +4823,7 @@
             Vue.config.productionTip = false
 
             new Vue({
-                router, // 4.2 将路由挂载到Vue实例
+                router, // 4.2 将路由对象挂载到Vue实例
                 render: h => h(App)
             }).$mount('#app')
             ```
@@ -4806,7 +4846,7 @@
                     name: 'About',
                 }
                 ```
-        2. 配置路由映射:  [src/router/index.js](src/router/router-demo01/src/router/index.js)
+        2. 配置路由映射 `Route`:  [src/router/index.js](src/router/router-demo01/src/router/index.js)
             ```js
             // 导入路由所需组件
             import Home from '../views/Home.vue';
@@ -4840,13 +4880,14 @@
             </template>
             ```
 
-## 路由映射的配置方法
-### 将路由配置添加到路由对象中
+## Route--路由映射的配置方法
+### Route的使用说明
 [top](#catalog)
-- 一个对象就是一个路由，需要在对象中设置该路由的属性
-- 将多个路由配置组成数组，并添加到路由对象的选项中
+- 配置 `Route` 时 只要创建**普通对象**即可，Vue底层会自动装配成 `Route` 对象
+- 一个 `Route` 负责一个url与一个组件之间的映射关系
+- 多个 `Route` 组成一个数组，作为 `VueRouter` 实例化时的 options
     ```js
-    // 1. 创建组件与url路径的映射关系
+    // 1. 创建多个Route，即多个组件与url路径的映射关系
     const routes = [
         {
             path: '/home',
@@ -4861,6 +4902,31 @@
         routes  // 2.创建路由实例，并设置路由映射
     });
     ```
+
+### Route的属性说明
+[top](#catalog)
+```js
+{
+    path: '跳转路径',           // 跳转路径，在 router-link 中需要使用该路径
+    component: path所需的组件,  // path 对应的组件
+
+    redirect: '重定向路径',     // 将路径重定向到指定路径。需要是一个已存在的 Route 中的path
+
+    children:{                  // 配置嵌套路由，即子路由
+        Router,
+        Router,
+        ...
+    },
+
+    meta:{                      // 自定义元数据
+        ...
+    }
+
+    // 路由独享的守卫
+    beforeEnter: (to, from, next) =>{...},   // 前置路由守卫
+    afterEnter: (to, from) =>{...},          // 后置路由守卫
+}
+```
 
 ### 普通路由
 [top](#catalog)
@@ -4909,6 +4975,24 @@
     ]
     ```
 
+- 示例
+    - 参考代码
+        - [src/router/router-demo01/src/views/lazy/Lazy.vue](#src/router/router-demo01/src/views/lazy/Lazy.vue)
+        - [src/router/router-demo01/src/router/index.js](#src/router/router-demo01/src/router/index.js)
+    - 代码内容
+        - Route 配置
+            ```js
+            const Lazy = ()=> import(/* webpackChunkName: "lazy" */'../views/lazy/Lazy.vue');
+
+            const routes = [
+              // 配置懒加载路由映射
+              {
+                path: '/lazy',
+                component: Lazy,
+              },
+            ]
+            ```
+
 ### 动态路由
 [top](#catalog)
 ```js
@@ -4920,7 +5004,7 @@
 
 ### 嵌套路由
 [top](#catalog)
-- 路由配置
+- Route配置
     ```js
     {
       path: '/父路由',          // 先配置父路由
@@ -4944,10 +5028,10 @@
         <router-link to='/父路径/子路径'>xxx</router-link>
         ```
 
-## 路由对象的参数设置
+## VueRouter的选项设置
 ### mode--历史记录的模式
 [top](#catalog)
-- 历史记录的模式需要在创建 路由实例时指定
+- 历史记录的模式需要在实例化 VueRouter 时指定
 - 使用 html5 的 history 对象
     ```js
     import VueRouter from 'vue-router';
@@ -4989,7 +5073,7 @@
 
 - `to`
     - 功能: 用于设置跳转的路径
-    - 属性值: 路由映射中**已存在**的 `path` 属性
+    - 属性值: `Route` 中**已存在**的 `path` 属性
     - 示例
         ```html
         <router-link to="/home">Home</router-link>
@@ -5030,58 +5114,49 @@
         ```
     - 该属性的缺点
         - 需要手动为每个连接单独设置该属性，无法统一修改
-        - 可以通过路由器对象的 `linkActiveClass` 来统一设置该属性
+        - 可以通过 `VueRouter`实例 的 `linkActiveClass` 来统一设置该属性
 
-## 通过代码手动跳转路由
+## 路由中的参数传递方式
+### 两种参数传递方式
 [top](#catalog)
-- 注意事项
-    - 不要使用 history.pushState，或者 location.href 来控制路由跳转
-    - 所有的路由跳转都应该通过 `vue-router` 组件中的功能来来实现
-- 如何获取路由对象？
-    - `this.$router`，通过该属性获取路由对象
-    - `vue-router` 安装之后，会自动向每个组件中添加 `$router` 属性
-- `this.$router` 的路由跳转方法
-
-    |方法|功能|备注|
-    |-|-|-|
-    |`this.$router.push('路由映射中的路径')`|跳转路由，生成历史记录||
-    |`this.$router.replace('路由映射中的路径')`|跳转路由，不生成历史记录|相当于使用了 `replace`属性|
-
-- 手动实现路由的方法
-    1. 在标签中通过 `v-on` 监听某个事件
-    2. 在Vue实例的 `methods` 属性中注册事件响应函数
-    3. 在事件响应函数内部获取路由对象，并控制路由跳转
-
-- 手动跳转路由 与 `router-link` 及其相关属性的对应关系
-
-    |手写内容|`router-link`及其标签|
-    |-|-|
-    |手写的标签|`tag` 属性|
-    |事件监听方法 + `this.$router`对象|`to` 属性|
-    |`this.$router.replace`|`replace` 属性|
-
-- 示例
-    - 参考代码
-        - [src/router/router-demo01/src/App.vue](src/router/router-demo01/src/App.vue)
-    - 代码内容
-        1. 在标签中通过 `v-on` 监听某个事件
+- 可用的参数传递方式
+    1. params，动态路由传参
+    2. query，设置url中的请求参数
+- **两种传递方式可以组合使用**
+- parmas 方式
+    - 路由路径配置: `/固定路径/:参数名`
+    - 参数传递的方式: 直接在路径中设定具体的值
+        - 使用`<router-link>`
             ```html
-            <button @click="foodClick">Food</button>
+            <router-link to='/固定路径/具体参数'>
             ```
-        2. 注册响应函数，并控制路由跳转
+        - 手动跳转
             ```js
-            methods:{
-                // 2.在Vue实例的 `methods` 属性中注册事件响应函数
-                foodClick(){
-
-                // 3.在事件响应函数内部获取路由对象，并控制路由跳转
-                // this.$router.push('/food');     // 生成历史记录
-                this.$router.replace('/food');  // 不生成历史记录
-                }
-            }
+            this.$router.push('/固定路径' + 具体参数);
             ```
+    - 参数传递时形成的路径: `/固定路径/具体数据`
+    - 参数的获取方式: `this.$route.params.参数名`
+- query 方式
+    - 路由路径配置: `/路径名`，就是普通的配置
+    - 参数传递方式
+        - 使用步骤
+            1. 在 `query对象` 中封装参数
+            2. 将路径参数也转换为对象，并装载 `query对象`
+        - 使用`<router-link>`
+            ```html
+            <router-link :to="{path:'/固定路径', query:{key1:value1, ket2:value2,...}}">
+            ```
+        - 手动跳转
+            ```js
+            this.$router.push({
+                path:'/固定路径',
+                query:{key1:value1, ket2:value2,...}
+            })
+            ```
+    - 参数传递时形成的路径: `/路径名?key1=value1&key2=value2`
+    - 参数的获取方式: `this.$route.query.参数名`
 
-## 动态路由的开发与使用
+### 动态路由的开发与使用
 [top](#catalog)
 - 什么是动态路由？
     - `path`和`Component`的匹配关系，称为动态路由
@@ -5093,7 +5168,7 @@
         - 用户b: `/usr/bbb`
     - 用户id相当于数据，需要通过路由传递到组件中，或者根据id判断使用什么样的组件
 - 动态路由的设置与使用步骤
-    1. 配置动态路由的映射
+    1. 配置动态路由的 `Router`对象
         ```js
         {
           path: '/固定路由/:参数名', // 通过 `:参数名` 的方式设置路由的动态部分
@@ -5111,16 +5186,17 @@
                 2. 参数无法实时刷新
                     - 因为没有重新创建路由对象
                     - 因为没有实时更新参数的方法
-    4. 使用动态路由的页面，直接通过 `/固定路由/具体数据` 的方式执行跳转
+    4. 如果不使用计算属性，可以直接将`this.$route.params.路由参数` 写在 `{{}}` 中实时显示
+    5. 使用动态路由的页面，直接通过 `/固定路由/具体数据` 的方式执行跳转
 
 - 示例
     - 参考代码
-        - [src\router\router-demo01\src\router\index.js](src\router\router-demo01\src\router\index.js)
-        - [src/router/router-demo01/src/views/ParamBar.vue](src/router/router-demo01/src/views/ParamBar.vue)
+        - [src/router/router-demo01/src/router/index.js](src/router/router-demo01/src/router/index.js)
+        - [src/router/router-demo01/src/views/dynamic_router/ParamBar.vue](src/router/router-demo01/src/views/dynamic_router/ParamBar.vue)
         - [src/router/router-demo01/src/App.vue](src/router/router-demo01/src/App.vue)
 
     - 代码内容
-        1. 配置动态路由的映射
+        1. 配置动态路由的 `Route`对象
             ```js
             // index.js
             {
@@ -5156,11 +5232,76 @@
             <router-link to='/parambar/12345'>ParamBar-12345</router-link> |
             ```
 
+### 设置url中的请求参数
+[top](#catalog)
+- 使用场景
+    - 参数数据量较大的请求
+- 设置请求参数的使用步骤
+    1. 配置 `Route`对象，**配置方式与普通的路由没有区别**
+    2. 在父页面设置路由，及其参数
+        ```html
+        <router-link :to="{path:'/固定路径', query:{key1:value1, ket2:value2,...}}">
+        ```
+    3. 在组件中
+        - 通过 `this.$route.query` 获取 query对象
+        - 通过 `this.$route.query.参数名` 获取 query对象中保存的参数
+- 示例
+    - 参考代码
+        - [src/router/router-demo01/src/App.vue](src/router/router-demo01/src/App.vue)
+        - [src/router/router-demo01/src/router/index.js](src/router/router-demo01/src/router/index.js)
+        - [src/router/router-demo01/src/views/router_query/Profile.vue](src/router/router-demo01/src/views/router_query/Profile.vue)
+    - 代码内容
+        1. 配置 `Route`对象，`index.js`
+            ```js
+            {
+              path: '/profile',
+              component: Profile,
+            }
+            ```
+        2. 在父页面设置路由，及其参数，`App.vue`
+            ```html
+            <router-link :to="{path:'/profile', query:{name:'testName', age:22}}" tag='button'>Profile</router-link> |
+            ```
+        3. 在组件中获取query对象，`Profile.vue`
+            ```html
+            <template>
+              <div>
+                <p>this is my page</p>
+                <!-- 2. 显示query参数 -->
+                <p>{{this.$route.query}}</p>
+                <p>name = {{name}}</p>
+                <p>age = {{age}}</p>
+              </div>
+            </template>
+
+            <script>
+            export default {
+              name: 'Profile',
+              computed:{
+                // 1. 通过计算属性获取query对象的数据
+                name(){
+                  return this.$route.query.name;
+                },
+                age(){
+                  return this.$route.query.age;
+                },
+              }
+            }
+            </script>
+            ```
+
 ## 嵌套路由的开发与使用
 [top](#catalog)
 - 嵌套路由的实现步骤
     1. 创建对应的子组件，并且父路由配置对象的 `children` 属性中配置子路由映射
     2. 在组件内部使用 `<router-view/>` 来显示组件
+
+- 嵌套的子路由与普通路由的相同点
+    - 嵌套的子路由可以是
+        - 动态路由
+        - 静态路由
+        - 可以设置默认路由的重定向
+    - 嵌套的子路由可以拥有属于自己的 `meta` 数据
 
 - 注意事项
     - 配置子路由时， `path` 直接写子路径，不需要父路径，也不需要 `/`
@@ -5169,47 +5310,413 @@
 - 示例
     - 参考代码
         - [src/router/router-demo01/src/router/index.js](src/router/router-demo01/src/router/index.js)
-        - [src/router/router-demo01/src/views/UserList.vue](src/router/router-demo01/src/views/UserList.vue)
-    - 路由配置
+        - [src/router/router-demo01/src/views/child_router/UserList.vue](src/router/router-demo01/src/views/child_router/UserList.vue)
+    - 配置 `Router`对象
         ```js
         {
           path: '/userlist',        // 配置父路由
           component: UserList,
           children:[                // 配置嵌套路由
             {
-              path: ':userid',      // 配置子路由 (动态路由)
-              component: UserInfo
+              path: ':userid',      // 配置动态子路由
+              component: UserInfo,
+              meta:{
+                title:'SubUser Page'
+              }
             },
-          ]
+            {
+              path: 'user-blank',   // 配置静态子路由
+              component: UserBlank
+            },
+            {
+              path: '',             // 配置默认子路由
+              redirect: 'user-blank'
+            }
+          ],
+          meta:{
+            title:'UserList Page'
+          }
         },
         ```
     - 父路径的写法
         ```html
         <ul>
+            <!-- 1. 使用 静态路由 -->
+            <li>
+              <router-link to='/userlist/user-bland'>userblank</router-link>
+            </li>
+            <!-- 2. 遍历数据并生成 动态路由 -->
             <li v-for='userid in userList' :key='userid'>
-                <!-- 嵌套路由需要从父路径开始写 -->
-                <router-link :to='"/userlist/" + userid'>{{userid}}</router-link>
+              <!-- 嵌套路由需要从父路径开始写 -->
+              <router-link :to='"/userlist/" + userid'>{{userid}}</router-link>
             </li>
         </ul>
         ```
 
-## 路由中的参数传递
+## 手动跳转路由
 [top](#catalog)
-- 参数传递的两种方式
-    1. params，动态路由传参
-    2. query
-- parmas 方式
-    - 路由路径配置: `/固定路径/:参数名`
-    - 参数传递的方式: 直接在路径中设定具体的值
-    - 参数传递时形成的路径: `/固定路径/具体数据`
-- query 方式
-    - 路由路径配置: `/路径名`，就是普通的配置
-    - 参数传递方式:
-        1. 在 `query对象` 中封装参数
-        2. 将 `query对象` 作为参数传递
-        3. 在目标页面获取 `query对象`，从该对象中获取数据
-    - 参数传递时形成的路径: `/路径名?key1=value1&key2=value2`
+- 注意事项
+    - 不要使用 history.pushState，或者 location.href 来控制路由跳转
+    - 所有的路由跳转都应该通过 `vue-router` 组件中的功能来来实现
+- 如何实现手动跳转
+    1. `this.$router`，通过该属性获取挂载在 Vue 实例上的 `VueRouter` 对象
+        - `vue-router` 安装之后，会自动向每个组件中添加 `$router` 属性
+    2. 使用 `this.$router` 的路由跳转方法控制跳转
 
+        |方法|功能|备注|
+        |-|-|-|
+        |`this.$router.push('路由映射中的路径')`|跳转路由，生成历史记录||
+        |`this.$router.replace('路由映射中的路径')`|跳转路由，不生成历史记录|相当于使用了 `<router-link>`中的`replace`属性|
+
+- 手动实现路由的方法
+    1. 在标签中通过 `v-on` 监听某个事件
+    2. 在Vue实例的 `methods` 属性中注册事件响应函数
+    3. 在事件响应函数内部通过 `this.$router` 来控制路由
+
+- 手动跳转路由 与 `router-link` 及其相关属性的对应关系
+
+    |手写内容|`router-link`及其标签|
+    |-|-|
+    |手写的标签|`tag` 属性|
+    |事件监听方法 + `this.$router`对象|`to` 属性|
+    |`this.$router.replace`|`replace` 属性|
+
+- 不同的参数传递方式
+    - parmas 方式
+        ```js
+        this.$router.push('/固定路径' + 具体参数);
+        ```
+    - query 方式
+        ```js
+        this.$router.push({
+            path:'/固定路径',
+            query:{key1:value1, ket2:value2,...}
+        })
+        ```
+
+- 示例
+    - 参考代码
+        - [src/router/router-demo01/src/App.vue](src/router/router-demo01/src/App.vue)
+    - 代码内容
+        1. 在标签中通过 `v-on` 监听某个事件
+            ```html
+            <button @click="foodClick">Food</button>
+            ```
+        2. 注册响应函数，并控制路由跳转
+            ```js
+            methods:{
+                // 2.在Vue实例的 `methods` 属性中注册事件响应函数
+                foodClick(){
+
+                // 3.在事件响应函数内部获取路由对象，并控制路由跳转
+                // this.$router.push('/food');     // 生成历史记录
+                this.$router.replace('/food');  // 不生成历史记录
+                }
+            }
+            ```
+
+## $route和$router的区别与分析
+[top](#catalog)
+- $route和$router的区别
+
+    ||表示内容|功能|
+    |-|-|-|
+    |`$router`|就是 `VueRouter` 的实例对象，即挂载在Vue实例上的对象|用于导航到不同的路由路径|
+    |`$route`|表示当前被激活的 `Route`对象|通过 `$route` 可以获取到 `parmas`、`query` 对象，并从中获取通过路由传递的参数|
+- `$route`和`$router` 在Vue底层的设置策略
+    - 如果当前Vue实例（包括组件实例）中如果挂载了 `VueRouter`对象，则直接使用
+    - 如果没有挂载，则使用父组件中的 `VueRouter`对象
+    - 设置时，自顶向下设置，所以在所有的组件中都可以访问到 `$route` 和 `$router`
+
+- 源码分析
+    1. 自定义代码，创建Vue实例时，挂载路由对象
+        ```js
+        new Vue({
+            router, // <<<<<< 挂载 `VueRouter`对象
+            render: h => h(App)
+        }).$mount('#app')
+
+        ```
+    2. Vue底层在执行实例化时，会执行 `VueRouter.install();`，将` VueRouter`对象安装到Vue实例中
+        - 源码路径
+            - [vue-router/src/index.js](vue-router/src/index.js)
+        - 源码分析
+            ```js
+            import { install } from './install'
+            export default class VueRouter {
+                // install 是一个静态方法
+                static install: () => void;
+                // 其他代码.....
+            }
+
+            // 重新设置install
+            VueRouter.install = install
+            ```
+    3. `install` 方法分析
+        - 源码路径
+            - [vue-router/src/install.js](vue-router/src/install.js)
+        - 源码分析
+            ```js
+            export function install (Vue) {
+              if (install.installed && _Vue === Vue) return
+              install.installed = true
+
+              _Vue = Vue
+
+              const isDef = v => v !== undefined
+
+              const registerInstance = (vm, callVal) => {
+                let i = vm.$options._parentVnode
+                if (isDef(i) && isDef(i = i.data) && isDef(i = i.registerRouteInstance)) {
+                  i(vm, callVal)
+                }
+              }
+
+              // 1. 为当前的Vue实例 设置 $router、$route 的具体内容
+              Vue.mixin({
+                beforeCreate () {
+                  // 如果当前实例中包含 router属性，则进行绑定
+                  if (isDef(this.$options.router)) {
+                    this._routerRoot = this
+                    // VVVVVVV 创建Vue实例时挂载的 `VueRouter`对象，即$router
+                    this._router = this.$options.router
+                    this._router.init(this)
+                    // VVVVVVV 响应式的设置 _route，即$route
+                    // VVVVVVV 设置的结果是当前激活的 `Router`对象
+                    Vue.util.defineReactive(this, '_route', this._router.history.current)
+                  } else {
+                    // 如果当前实例中不包含 router属性，则使用父类的 $router 和 $route
+                    // 所以只要Vue实例中挂载了 `VueRouter`对象，所有的组件就都可以使用路由了
+                    this._routerRoot = (this.$parent && this.$parent._routerRoot) || this
+                  }
+                  registerInstance(this, this)
+                },
+                destroyed () {
+                  registerInstance(this)
+                }
+              })
+
+              // 2. 在Vue的原型上，定义 this.$router。所需内容来自 Vue.mixin() 中执行的设置
+
+              // 2.2 所有组件都是继承Vue，所以在所有的实例中都可以使用
+              Object.defineProperty(Vue.prototype, '$router', {
+                  // 在Vue.mixin 方法中设置的 `VueRouter`对象
+                  get () { return this._routerRoot._router }
+              })
+
+              // 2.3 在Vue的原型上，定义 this.$route
+              // 所有组件都是继承Vue，所以在所有的实例中都可以使用
+              Object.defineProperty(Vue.prototype, '$route', {
+                get () { return this._routerRoot._route }
+              })
+
+              // 3. 注册组件 <router-link> 和 <router-view>
+              // 注册时使用驼峰，使用时既爱那个驼峰分解，并用 `-` 连接
+              Vue.component('RouterView', View)
+              Vue.component('RouterLink', Link)
+
+              const strats = Vue.config.optionMergeStrategies
+              // use the same hook merging strategy for route hooks
+              strats.beforeRouteEnter = strats.beforeRouteLeave = strats.beforeRouteUpdate = strats.created
+            }
+            ```
+
+## 路由守卫
+### 路由守卫简介
+[top](#catalog)
+- 路由守卫的功能
+    - 监听路由A到路由B的跳转，并在跳转的过程中执行一些操作
+- 路由守卫的适用场景
+    - 在SPA应用中，根据不同的页面显示不同的title
+        - 网页标题通过 `<title>` 显示，但是SPA只有一个固定的HTML，切换页面时，标题不会改变
+        - 可以通过 `document.title` 来设置标题
+        - 需要在每次切换路由时，重新设置标题
+        - 通过路由守卫，监听路由跳转，来重新设置标题
+
+### 全局路由守卫
+[top](#catalog)
+- 功能
+    - 监听所有路由的跳转，并执行相关处理
+- 使用路由守卫的方法
+    1. 通过 `VueRouter` 对象调用守卫函数来执行相关处理
+    2. 守卫函数
+        - `beforeEach`，前置守卫函数
+        - `afterEach`，后置守卫函数
+- 守卫函数说明
+    - `beforeEach` 前置守卫函数
+        - 响应时间: 离开当前路由之前
+        - 函数定义
+            ```ts
+            // 守卫函数定义
+            beforeEach(guard: NavigationGuard): Function
+
+            // 参数定义
+            export type NavigationGuard<V extends Vue = Vue> = (
+              // 将要进入的路由
+              to: Route,
+              // 将要离开的路由
+              from: Route,
+              // 手动调用next后，才能进入下一个路由。Vue的默认实现会主动调用next，所以才能正常执行路由跳转
+              next: NavigationGuardNext<V>
+            ) => any
+            ```
+        - 使用时需要传递包含 3 个参数的函数，并调用 `next` 方法
+            ```js
+            vueRouter.beforeEach((to, from, next)=>{
+                // 相关处理
+                //...
+
+                // 主动调用 next()，跳转到下一个路由
+                next();
+            });
+            ```
+    - `afterEach` 后置守卫
+        - 响应时间: 跳转到新路由之后
+        - 函数定义
+            ```ts
+            afterEach(hook: (to: Route, from: Route) => any): Function
+            ```
+        - 使用时需要传递包含 2 个参数的函数，并调用 `next` 方法
+            ```js
+            vueRouter.afterEach((to, from)=>{
+                // 相关处理
+                //...
+            });
+            ```
+- 注意事项
+    - 如果需要使用与组件相关的数据，可以通过 `Route` 的`meta` 属性设置
+    - 对于嵌套路由如果要使用父路径的数据，需要通过 `matched` 属性获取
+        - 该属性是一个数组，按照路由的嵌套顺序排列
+
+- 示例
+    - 参考配置
+         - [src/router/router-demo01/src/router/index.js](src/router/router-demo01/src/router/index.js)
+    - 全局路由守卫的配置内容
+        ```js
+        // 5. 配置全局路由守卫
+        // 5.1 前置路由守卫
+        router.beforeEach((to, from, next) =>{
+          // 通过路由配置的 meta 来设置页面标题
+          document.title = to.meta.title || document.title;
+          // 在方法内部必须手动调用 next，否则路由不会跳转
+          next();
+        });
+
+        // 5.1 后置路由守卫
+        router.afterEach((to, from)=>{
+          console.log('222222222')
+        });
+        ```
+
+### 路由独享守卫
+[top](#catalog)
+?????
+
+### 组件内的守卫
+[top](#catalog)
+?????
+
+# keep-alive
+## 默认设置下的路由跳转分析
+[top](#catalog)
+- 默认设置下，每次跳转路由时，Vue对组件的操作
+    1. 重新实例化新路由的组件
+    2. 调用新路由对应的组件的生命周期方法: `created`
+    3. 销毁旧路由的组件对象
+    4. 调用旧路由对应的组件的生命周期方法: `destroyed`
+- 默认设置下，路由跳转的缺点
+    - 重复的创建和销毁组件
+    - 组件中的数据和状态无法被保存
+
+## keep-alive简介
+[top](#catalog)
+- `keep-alive`
+    - vue**内置**的组件
+    - 功能
+        - 可以使被包含的组件保留状态，或避免重新渲染
+- 使用 `keep-alive` 产生的两个**生命周期**函数
+    - `activated`，组件被激活时触发
+    - `deactivated`，离开组件时触发
+- 两个重要属性
+    - 2个属性
+        - include，字符串或正则表达式，只有匹配的组件会被缓存
+        - exclude，字符串或正则表达式，任何匹配的组件都不会被缓存
+    - 需要组件对象中声明了name属性，用于属性的匹配
+
+## keep-alive与router-view结合使用
+[top](#catalog)
+- `<router-view/>` 如果直接被包在`<keep-alive>` 里面，所有路由匹配到的视图组件都会被缓存
+    - 对于嵌套路由，路由内部的子路由的状态也会被保存
+    - 在重新回到嵌套路由的页面时，还能够重新离开时的状态
+- 示例
+    - 参考代码
+        - vue代码
+            - [src/router/router-demo01/src/App.vue](src/router/router-demo01/src/App.vue)
+            - [src/router/router-demo01/src/views/keep_alive/Keep.vue](src/router/router-demo01/src/views/keep_alive/Keep.vue)
+        - 路由配置
+            - [src/router/router-demo01/src/router/index.js](src/router/router-demo01/src/router/index.js)
+
+    - 为 `router-view` 设置 keep-alive，`App.vue`
+        ```html
+        <!-- 设置 keep-alive。排除 `NoKeep,NoKeep02`，多个排除目标之间只能有 逗号，不能有空格  -->
+        <keep-alive exclude='NoKeep,NoKeep02'>
+          <router-view/>
+        </keep-alive>
+        ```
+    - 处理带有默认路由的嵌套路由
+        1. 关闭路由配置中的默认路由, `index.js`
+            ```js
+            {
+              path: '/keep',
+              component: Keep,
+              children: [
+                // 默认路由改为由 activated 方法来设定
+                // {
+                //   path: '',
+                //   redirect: 'first'
+                // },
+                {
+                  path: 'first',
+                  component: KeepFirst
+                },
+                {
+                  path: 'second',
+                  component: KeepSecond
+                },
+              ]
+            },
+            ```
+        2. 将路径保存在变量中，通过 `activated` 事件来设置路由、通过 `beforeRouteLeave` 在离开路由前保存路由。 `Keep.vue`
+            ```js
+            export default {
+              data(){
+                return {
+                  path:'/keep/first'
+                }
+              },
+              created(){
+                console.log("this is keep created");
+              },
+              destroyed(){
+                console.log("this is keep destroyed");
+              },
+
+              /*
+                1. 进入路由时，设置默认路由
+                如果是第一次进入，则使用默认的 path
+                如果不是第一次进入，则使用由组件路由守卫 `beforeRouteLeave` 事实更新的路由路径
+              */
+              activated(){
+                this.$router.push(this.path);
+                console.log('keep page activated');
+              },
+              beforeRouteLeave(to, from ,next){
+                // 2. 在路由离开前，将当前的活动路由的路径保存到 path 属性中
+                this.path = this.$route.path;
+                next();
+              }
+            }
+            ```
 
 # 其他
 [top](#catalog)

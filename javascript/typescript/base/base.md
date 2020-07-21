@@ -47,6 +47,13 @@
     - [泛型函数](#泛型函数)
     - [泛型类](#泛型类)
     - [泛型函数接口](#泛型函数接口)
+    - [泛型接口的实现类](#泛型接口的实现类)
+- [模块](#模块)
+- [装饰器](#装饰器)
+    - [装饰器说明](#装饰器说明)
+    - [属性装饰器](#属性装饰器)
+    - [方法装饰器](#方法装饰器)
+    - [方法参数的装饰器](#方法参数的装饰器)
 - [](#)
 
 # Typescript简介
@@ -2159,5 +2166,346 @@
                 // 2.2.2 在调用时指定类型
                 console.log(getData02(12345));
                 ```
+
+## 泛型接口的实现类
+[top](#catalog)
+- 定义方法
+    ```ts
+    // 定义接口
+    interface 接口<T, S, A>{...}
+
+    // 定义接口实现类
+    //        在类名后面注明接口标识，         接口后面也需要注明接口标识
+    class 类名<T, S, A> implements interface 接口<T, S, A>{...}
+    ```
+
+- 编译结果
+    - 泛型部分只是 ts 编译器的编译约束
+    - 编译结果中不会包含与泛型相关的内容
+
+- 示例
+    - 参考代码
+        - 示例代码
+            - [src/syntax/js/generic/implements.js](src/syntax/js/generic/implements.js)
+        - 编译结果
+            - [src/syntax/js/generic/implements.js](src/syntax/js/generic/implements.js)
+    - 代码内容
+        - 泛型接口声明
+            ```ts
+            interface DB<T>{
+                add(info:T):boolean;        // 添加
+                update(info:T):boolean;     // 更新
+                delete(id:string):boolean;  // 删除
+                get(id:string):T|null;      // 根据id获取数据
+                show():void;                // 打印所有数据
+            }
+            ```
+        - 泛型接口实现
+            ```ts
+            class MySqlDB<T extends HasID> implements DB<T>{
+                private data:{[key:string]:T};
+                constructor(){...}
+                add(info: T): boolean {...}
+                update(info: T): boolean {...}
+                delete(id: string): boolean {...}
+                get(id: string): T|null {...}
+                show():void{...}
+            }
+            ```
+
+# 模块
+[top](#catalog)
+- ts中的模块标准遵循 **ES6的模块标准**
+
+# 装饰器
+## 装饰器说明
+[top](#catalog)
+- 什么是装饰器
+    - 一种特殊类型的声明
+
+- 装饰器的功能
+    - 可以附加到类声明、方法、属性或参数上，可以修改类的行为
+    - 可以为一个目标添加多个装饰器来扩展不同的内容
+
+- 装饰器的本质
+    - 一个方法
+
+- 常见的装饰器
+    - 类装饰器
+    - 属性装饰器
+    - 方法装饰器
+    - 参数装饰器
+
+- 装饰器的写法
+    - 普通装饰器，无法传参
+        ```ts
+        // param 表示被修饰的对象
+        function decorator (param:any){
+            ...
+        }
+
+        // 使用装饰器
+        @decorator
+        class XXX{...}
+        ```
+    - 装饰器工厂，可以传参
+        ```ts
+        // 通过闭包返回一个新的函数作为装饰器
+        function decorator (工厂参数){
+            // param 表示被修饰的对象
+            return function (param:any){
+                ...
+            }
+        }
+
+        // 使用装饰器
+        @decorator('xxxx')
+        class XXX{...}
+        ```
+
+- 装饰器的执行顺序
+    - 对于一个目标上的多个装饰器
+        - 从下向上执行
+    - 对于一个类上的所有类别的装饰器的执行顺序
+        1. 属性、方法、方法参数装饰器
+            - 类内部的装饰器整体上按照从上到下的方式执行
+            - 对于一个目标上的多个装饰器，仍然是从下到上
+        2. 类装饰器
+
+
+## 类装饰器
+[top](#catalog)
+- 定义方式
+    - 普通装饰器
+        ```ts
+        function 属性装饰器(target: any){
+            ...
+        }
+        ```
+    - 装饰器工厂
+        ```ts
+        function 属性装饰器(工厂参数){
+            function (target: any){
+                ...
+            }
+        }
+        ```
+
+- 1 个必须参数
+    - `target`: 类本身
+- 示例
+    - 参考
+        - 代码
+            - [src/syntax/decorator/class.ts](src/syntax/decorator/class.ts)
+        - 编译结果
+            - [src/syntax/js/decorator/class.js](src/syntax/js/decorator/class.js)
+    - 代码内容
+        ```ts
+        // 1. 定义普通装饰器
+        // param 就是被装饰的类本身
+        function logClass(target:any):void{
+            // 为类添加额外的方法
+            target.prototype.info = function(msg:string):void{
+                console.log(msg);
+            }
+        }
+
+        // 2. 定义装饰器工厂
+        function ApiURL(url:string):any{
+            url = 'http://' + url;
+            return function(target:any){
+                // 为类添加额外的属性
+                target.prototype.apiUrl = url;
+            }
+        }
+
+        // 3. 使用多个装饰器标识类
+        @logClass
+        @ApiURL('www.aaaa.bbb')
+        class HttpClient{
+            constructor(){}
+
+            getData(){}
+        }
+
+        // 4. 使用装饰器扩展的内容
+        // 默认情况下直接使用会有编译异常
+        // 可以将 实例的类型声明为 any 来避免
+        // let hc: HttpClient = new HttpClient();
+        let hc: any = new HttpClient();
+        console.log(hc.apiUrl);     // http://www.aaaa.bbb
+
+        hc.info('test msg')         // test msg
+        ```
+
+## 属性装饰器
+[top](#catalog)
+- 定义方式
+    - 普通装饰器
+        ```ts
+        function 属性装饰器(target:any, propName:any){
+            ...
+        }
+        ```
+    - 装饰器工厂
+        ```ts
+        function 属性装饰器(工厂参数){
+            function (target:any, propName:any){
+                ...
+            }
+        }
+        ```
+- 2 个必须参数
+    - `target`: 对于静态成员来说是类的构造函数，对于实例成员是类的原型对象
+    - `propName`: 成员的名字
+
+- 示例
+    - 参考
+        - 代码
+            - [src/syntax/decorator/property.ts](src/syntax/decorator/property.ts)
+        - 编译结果
+            - [src/syntax/js/decorator/property.js](src/syntax/js/decorator/property.js)
+    - 代码内容
+        ```ts
+        // 1. 定义属性装饰器
+        // 为属性设置属性值
+        function Value(propValue:any){
+            // target: 对于静态成员来说是类的构造函数，对于实例成员是类的原型对象
+            // propName: 成员的名字
+            return function(target:any, propName:any){
+                target[propName] = propValue;
+            }
+        }
+
+        // 2. 使用属性装饰器
+        class StudentA{
+            // 为属性设值
+            @Value('www.aa.bbb')
+            name:string | undefined
+            constructor(){}
+
+            printInfo():void{
+                console.log(this.name);
+            }
+        }
+
+        let studentA:StudentA = new StudentA();
+        studentA.printInfo();   // www.aa.bbb
+        ```
+
+## 方法装饰器
+[top](#catalog)
+- 方法装饰器的功能
+    - 方法装饰器会被应用到方法的**属性描述符上**
+    - 可以用来监控、修改或替换方法的定义
+- 定义方式
+    - 普通装饰器
+        ```ts
+        function 属性装饰器(target:any, propName:any, descriptor:any){
+            ...
+        }
+        ```
+    - 装饰器工厂
+        ```ts
+        function 属性装饰器(工厂参数){
+            function (target:any, propName:any, descriptor:any){
+                ...
+            }
+        }
+        ```
+
+- 3 个必须参数
+    - `target`: 对于静态成员来说是类的构造函数，对于实例成员是类的原型对象
+    - `propName`: 成员的名字
+    - `descriptor`: 成员的属性描述符
+
+- 如何改写方法？
+    1. 通过 `descriptor.value` 获取原始方法，并保存
+    2. 重写 `descriptor.value`，添加自定义内容
+    3. 在重写的方法中，调用原始方法，来完成原始的功能
+
+- 示例
+    - 参考
+        - 代码
+            - [src/syntax/decorator/method.ts](src/syntax/decorator/method.ts)
+        - 编译结果
+            - [src/syntax/js/decorator/method.js](src/syntax/js/decorator/method.js)
+    - 代码内容
+        ```ts
+        // 1. 定义方法装饰器
+        // 装饰方法，并将方法的所有参数转换为字符串
+        function MethodParmasToString(target:any, propName:any, descriptor:any){
+            // 1.1 从属性描述符中获取原始的函数，并保存
+            let originFn = descriptor.value;
+
+            // 1.2 重新设置函数
+            descriptor.value = function(...args:any[]){
+                // 1.3 将所有参数转换为String
+                args = args.map( n => String(n) );
+                // 1.4 重新调用原始方法
+                originFn(...args);
+            }
+        }
+
+        // 2. 使用方法装饰器
+        class Logger{
+            @MethodParmasToString
+            info(...args:any[]):void{
+                console.log(args);
+            }
+        }
+
+        let log:Logger = new Logger();
+        log.info(1234, 'aaaa', false);  // [ '1234', 'aaaa', 'false' ]
+        ```
+
+## 方法参数的装饰器
+[top](#catalog)
+- 方法参数装饰器的功能
+    - 可以为类的原型增加一些**元数据**
+
+- 定义方式
+    - 普通装饰器
+        ```ts
+        function 属性装饰器(target:any, funcName:any, paramIndex:any){
+            ...
+        }
+        ```
+    - 装饰器工厂
+        ```ts
+        function 属性装饰器(工厂参数){
+            function (target:any, funcName:any, paramIndex:any){
+                ...
+            }
+        }
+        ```
+
+- 3 个必须参数
+    - `target`: 对于静态成员来说是类的构造函数，对于实例成员是类的原型对象
+    - `funcName`: 参数名字
+    - `paramIndex`: 参数索引
+
+- 示例
+    - 参考代码
+        - [src/syntax/decorator/param.ts](src/syntax/decorator/param.ts)
+    - 代码内容
+        ```ts
+        // 1. 定义方法参数装饰器
+        function Param(target:any, funcName:any, paramIndex:any){
+            console.log(target);
+            console.log(funcName);
+            console.log(paramIndex);
+        }
+
+        // 2. 使用方法装饰器
+        class LoggerB{
+            info(@Param msg):void{
+                console.log(msg);
+            }
+        }
+
+        let logb = new LoggerB();
+        logb.info('aaaa');
+        ```
 
 [top](#catalog)
