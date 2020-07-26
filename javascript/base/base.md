@@ -2185,19 +2185,23 @@
 
 ## 构造函数
 [top](#catalog)
-- 通过 `new Object()` 和 对象字面量创建的对象的缺点
-    - 型都是 Object，无法很好的区分每个对象是什么
-
 - 什么是构造函数
-    - 构造就是一个普通的函数，创建方式和普通函数没有区别
+    - 普通函数，或JS内置的或宿主程序扩展的构造器
     - 构造函数习惯上**首字母大写**
     - 调用构造函数时使用`new`关键字来调用：`new 构造函数();`
     - 如果直接调用构造函数：`构造函数()`，与调用普通函数相同
 
+- 如果构造函数没有参数，可以省略 `()`
+    ```js
+    function Foo(){}
+    let a = new Foo;
+    let b = new Foo();
+    ```
+
 - 使用同一个构造函数创建的对象，称为一类对象，也将**构造函数称为类**， 通过构造函数创建的对象称为该类的**实例**
 
 - 构造函数的执行流程
-    1. 调用构造函数时，立刻创建一个新的对象
+    1. JS在构造器执行时传入 `new` 运算所产生的实例
     2. 将新建的对象设置为函数中的this
         - 可以通过 `this` 来设置对象的属性及方法
     3. 执行函数体
@@ -2207,11 +2211,47 @@
 - 可以通过 `变量 instanceof 类`，检查变量是不是某个类的实例
     - 因为所有对象都是Object的后代，所以任何对象执行：`对象 instanceof Object`，返回值都是true
 
+- 构造器的返回值
+    - 如果构造器中没有返回值，则返回的是this对象
+    - 如果构造器中有返回值
+        - 如果返回的是**值类型**，则这个返回值会被忽略，返回的仍然是this对象
+        - 如果返回的是**引用类型**，则将会会略this对象，返回这个引用数据
+    - 示例
+        - 参考代码
+            - [src/function/constructor.js](src/function/constructor.js)
+        - 代码内容
+            ```js
+            // 1. 返回一个值类型，该值类型数据会被忽略，仍然返回this
+            function Fnc(){
+                this.name = 'testName';
+                return 'abcd';
+            }
+            let fnc = new Fnc();
+            console.log(fnc);   // 输出: Fnc { name: 'testName' }
+
+            // 2. 返回一个引用类型，返回该引用类型数据
+            function Foo(){
+                this.name = 'testName';
+                return {};
+            }
+
+            let foo = new Foo();
+            console.log(foo);   // 输出: {}
+
+            // 3. 没有返回值，返回this对象
+            function Bar(){
+                this.name = 'testName';
+            }
+
+            let bar = new Bar();
+            console.log(bar);   // 输出: Bar { name: 'testName' }
+            ```
+
 - 构造函数会出现的问题：函数表达式不能共享对象
     - 问题构造函数分析
         - 有如下的构造函数
             ```js
-            function Xxx(){
+            function Foo(){
                 this.printToConsole = function(){...};
             }
             ```
@@ -2222,36 +2262,6 @@
         - 在全局作用域中声明函数，然后在构造函数中引用
             - 这种方法会影响全局作用域的命名空间，很不安全
             - 多人开发时，可能会被同名函数覆盖
-
-- 示例
-    - 参考代码
-        - [/javascript/base/src/function/constructor.html](/javascript/base/src/function/constructor.html)
-
-    - 测试构造函数的执行流程
-        ```js
-        // 返回一个指定的值
-        function Person01(){
-            this.name = "this is p01";
-            this.age = 16;
-            return {name:"bbbb", age:18};
-        }
-
-        // 默认返回 this 对象
-        function Person02(){
-            this.name = "this is p02";
-            this.age = 16;
-        }
-        
-        // 返回指定值后，返回结果的类型与类不相同
-        var p01 = new Person01();
-        console.log(p01); // {name: "bbbb", age: 18}
-        console.log(p01 instanceof Person01); // false
-
-        // 默认返回this对象，类型与类相同
-        var p02 = new Person02();
-        console.log(p02); // Person02 {name: "this is p02", age: 16}
-        console.log(p02 instanceof Person02); // true
-        ```
 
 ## 原型对象
 [top](#catalog)
@@ -3472,8 +3482,14 @@ console.log("a = ", a);
         - 在这种方式下，可以直接使用正则表达式的元字符，不需要转义
 
 - 匹配模式
-    - `i`，忽略大小写
-    - `g`，全局匹配模式
+
+    |模式标识|功能|
+    |-|-|
+    |`m`|匹配多行文本，`^`、`$`也用于匹配文本内的单行首尾|
+    |`i`|忽略大小写|
+    |`g`|全局匹配模式|
+    |`y`|仅匹配正则表达式的 lastIndex 属性指示的索引|
+    |`u`|使用 Unicode 字符集|
 
 - 正则表达式对象的常用方法
     - `test("被检查的字符串")`，检查字符串是否符合正则表达式的规则

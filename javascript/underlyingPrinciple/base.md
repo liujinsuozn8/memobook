@@ -83,13 +83,18 @@
         - [与闭包相关的问题](#与闭包相关的问题)
 - [面向对象](#面向对象)
     - [对象创建模式](#对象创建模式)
-    - [继承模式](#继承模式)
+    - [原生的继承模式](#原生的继承模式)
         - [原型链继承](#原型链继承)
         - [借用构造函数继承](#借用构造函数继承)
         - [组合继承](#组合继承)
         - [寄生组合继承](#寄生组合继承)
         - [保留父类的静态方法](#保留父类的静态方法)
         - [构建通用的继承关系设定方法](#构建通用的继承关系设定方法)
+    - [类继承的体系](#类继承的体系)
+        - [声明类](#声明类)
+        - [声明属性](#声明属性)
+        - [类继承](#类继承)
+        - [声明静态内容](#声明静态内容)
 - [线程机制与事件机制](#线程机制与事件机制)
     - [浏览器中的进程与线程](#浏览器中的进程与线程)
     - [定时器的问题](#定时器的问题)
@@ -2845,7 +2850,7 @@
     - 自定义构造函数 + 原型函数
 
 
-## 继承模式
+## 原生的继承模式
 ### 原型链继承
 [top](#catalog)
 - 使用方法
@@ -3236,6 +3241,178 @@
         student.showSelf();  // 输出: name =aaa, age =20
         ```
 
+## 类继承的体系
+### 声明类
+[top](#catalog)
+- 默认类继承自 内置的`Object()`
+    ```js
+    class Foo{}
+    ```
+- 通过 `new` 关键字实例化对象，与构造器实例化对象相同
+    ```js
+    class Foo{}
+    var a = new Foo();
+    ```
+- 类的构造函数，相当于普通的函数
+    ```js
+    class Foo{
+        constructor(param1, param2,...){
+            this.param1 = param1;
+            this.param2 = param2;
+        }
+    }
+    var a = Foo('parma1', 'param2');
+
+    // 相当于
+    function Foo(param1, param2,...){
+        this.param1 = param1;
+        this.param2 = param2;
+    }
+    ```
+
+### 声明属性
+[top](#catalog)
+- 声明读写属性，与方法
+    ```js
+    class Foo{
+        // 属性的读方法
+        get param1(){...}
+        // 属性的写方法
+        set param1(value){...}
+        // 声明方法
+        method(){...}
+    }
+    ```
+
+- 声明所有实例对象共享的属性
+    ```js
+    class Foo{...}
+    Foo.prototype.param1 = '...'
+    ```
+
+### 类继承
+[top](#catalog)
+- 继承方式 `class 子类 extends 父类`
+- 继承无参构造的父类
+    ```js
+    class Foo{}
+
+    class FooEx extends Foo{...}
+
+    // 相当于
+    function Foo(){};
+    function FooEx(){};
+    FooEx.prototype = new Foo();
+    FooEx.prototype.constructor = FooEx;
+    ```
+
+- 继承有参构造的父类，需要通过 `super(参数类表)` 来调用父类的构造器
+    - 无论父类的构造参数是否有参数，都应该显示调用 `super()`
+        ```js
+        class Foo{
+            constructor(name, age){
+                this.name = name;
+                this.age = age;
+            }
+        }
+
+        class FooEx extends Foo{
+            constructor(name, age, address){
+                super(name, age);
+                this.address = address;
+            }
+        }
+
+        // 相当于
+        function Foo(name, age){
+            this.name = name;
+            this.age = age;
+        }
+
+        function FooEx(name, age, address){
+            Foo.call(this, name, age);
+            this.address = address;
+        }
+
+        FooEx.prototype = new Foo();
+        FooEx.prototype.constructor = FooEx;
+        ```
+
+- 通过 `super` 关键字调用父类方法。调用时，会隐士的传入`this`对象
+    ```js
+    class Foo{
+        method01(x){...}
+    }
+
+    class FooEx extends Foo{
+        // 相当于重写
+        method01(x, y){
+            super.method01(x); // 调用父类的方法
+        }
+        
+        // 直接调用父类的方法
+        method02(x, y){
+            super.method01(x);
+        }
+    }
+    ```
+
+### 声明静态内容
+[top](#catalog)
+- 通过 `static` 关键字声明静态内容
+- 发生类继承时，静态方法也会继承下来
+    - 通过 `super.父类静态方法名()` 的方式调用
+    - 通过 `super` 调用时，会自动将当前子类作为对象调用
+- 声明方式
+    ```js
+    class Foo{
+        static get param1(){...}
+
+        static foo(){...}
+    }
+
+    class FooEx extends Foo{
+        static fooex(){
+            // 调用父类的静态方法
+            super.foo();
+        }       
+    }
+
+    // 相当于
+    function Foo(){...}
+    Foo.param1 = ...;
+    Foo.foo = function(){...};
+
+    function FooEx(){...}
+    FooEx.prototype = new Foo();
+    FooEx.prototype.constructor = FooEx;
+    FooEx.fooex = function(){
+        // 调用父类的静态方法
+        Foo.foo.call(FooEx); // 自动将当前类本身作为调用参数
+    }
+    ```
+
+## 对象成员
+### 成员的可枚举性
+[top](#catalog)
+- 成员的可枚举性属性: `enumerable`
+- <label style='color:red'>显示与隐式</label>
+    - 显示: `enumerable == true`
+    - 隐式: `enumerable == false`
+- 检查方法: `obj.propertyIsEnumerable('paramName')`
+    - 检查属性是否是可枚举的
+    - 如果属性不存在，会返回 false
+    - 检查的范围：**对象的非继承属性**
+- 枚举对象成员的方法
+
+    |遍历范围|成员类型|语法|功能|
+    |-|-|-|-|
+    |对象本身、原型对象|显示成员|for...in|遍历可枚举的成员名|
+    |对象本身、非symbol的|显示成员|Object.keys()|获取所有可枚举的成员名|
+    |对象本身、非symbol的|显示成员|Object.values()|获取所有可枚举的成员值|
+    |对象本身、非symbol的|显示成员|Object.entries()|获取所有可枚举的成员KV数据|
+    |对象本身、非symbol的|显示+隐式|Object.getOwnPropertyNames()|获取对象自身的所有成员名|
+    |对象本身、symbol的|显示+隐式|Object.getOwnPropertySymbols()|获取对象自身的所有Symbol成员名|
 
 # 线程机制与事件机制
 ## 浏览器中的进程与线程
