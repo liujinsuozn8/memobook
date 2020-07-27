@@ -782,7 +782,7 @@
         - curr 当前文件状态，fs.Stat对象
         - prev 修改前文件状态，fs.Stat对象
 
-# upervisor--nodejs的自启动工具
+# supervisor--nodejs的自启动工具
 [top](#catalog)
 - 自启动工具: upervisor 是什么？
     - upervisor 会一直watch应用下的所有文件，当发现文件被修改时，就重新载入文件，进行自动部署
@@ -818,6 +818,7 @@
 - `request` 的操作
     - `request.url`，获取请求中的url
     - `request.method`，获取请求中的方式（GET、POST等方式）
+        - <label stlye='color:red'>可以根据该属性判断请求的类型</label>
 
 - `response` 的操作
     - `res.writeHead(ResultCode, 响应头)` 设置响应头与状态码

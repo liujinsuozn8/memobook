@@ -10,6 +10,7 @@
     - [处理post请求](#处理post请求)
         - [使用原生nodejs来处理post请求参数](#使用原生nodejs来处理post请求参数)
         - [使用koa-bodyparser中间件来处理post请求参数](#使用koa-bodyparser中间件来处理post请求参数)
+    - [处理静态资源](#处理静态资源)
 - [koa中间件](#koa中间件)
     - [koa中间件概述](#koa中间件概述)
     - [应用级中间件](#应用级中间件)
@@ -26,7 +27,6 @@
     - [生成内容的分析](#生成内容的分析)
 - [koa模块化开发](#koa模块化开发)
     - [路由模块化开发](#路由模块化开发)
-    - [](#)
 - [上下文对象ctx可用内容速查](#上下文对象ctx可用内容速查)
 - [](#)
 - [](#)
@@ -223,7 +223,7 @@
 [top](#catalog)
 - 什么是中间件？
     - 在匹配路由之前、之后，完成的操作
-    - 类似与AOP切面编程
+    - 类似于AOP切面编程
 - koa中间件的功能
     - 执行请求代码
     - 修改请求和响应对象
@@ -462,15 +462,16 @@
 # 在koa中使用Cookie
 [top](#catalog)
 - 在koa中设置cookie
-    ```
+    ```js
     ctx.cookies.set(name, value [, options])
     ```
 - 在koa中获取cookie
-    ```
+    ```js
     ctx.cookies.get( name )
     ```
 
 - 可用options
+
     |option|描述|
     |-|-|
     |maxAge|一个表示毫秒数的数字，表示多少毫秒后过期|
@@ -523,7 +524,7 @@
     |key|'koa:sess'|使用默认值|
     |maxAge|86400000|cookie的过期时间，需要修改|
     |overwrite|true|是否可以覆盖，设不设都可以覆盖|
-    |httpOnly|true|true 表示只有服务器的可以获取cookie，false 表示服务器和浏览器的js都可以获取cookie|
+    |httpOnly|true|true 表示只有服务器的js可以获取cookie，false 表示服务器和浏览器的js都可以获取cookie|
     |signed|true|默认 签名|
     |rolling|false|每次访问时，是否重新设置session的过期时间|
     |renew|false|每次访问时检查session的过期时间，只有快过期时才重新设置过期时间。**需要修改，最好使用true**|
@@ -761,7 +762,7 @@
               └─ layout.jade
         ```
 - 安装依赖: `npm i`
-- 启动项目: `npm start`
+- 启动项目: `npm run start`
 
 ## 生成内容的分析
 [top](#catalog)
@@ -773,7 +774,7 @@
 [top](#catalog)
 - 路由模块化开发的本质
     - 将 `app.js` 中的路由拆分到子路由模块，再由`app.js`进行引入
-        - 即将 `app.js` 从路由管理者变为路由终结
+        - 即: 将 `app.js` 从路由管理者变为路由终结
     - 由不同的父级路径来管理不同的子路由
     - 最终形成**多层路由**的访问方式
 
@@ -790,7 +791,7 @@
             ```
     3. `app.js` 作为路由中介，导入路由模块，并设置子路由
         - 设置方式
-            ```
+            ```js
             router.use('子路由负责的路径', 路由模块.routes())
             app.use(.allowedMethods())
             ```

@@ -95,6 +95,11 @@
         - [声明属性](#声明属性)
         - [类继承](#类继承)
         - [声明静态内容](#声明静态内容)
+    - [对象成员](#对象成员)
+        - [成员的可枚举性](#成员的可枚举性)
+        - [对象及其成员的检查](#对象及其成员的检查)
+        - [成员的删除](#成员的删除)
+        - [成员方法的调用](#成员方法的调用)
 - [线程机制与事件机制](#线程机制与事件机制)
     - [浏览器中的进程与线程](#浏览器中的进程与线程)
     - [定时器的问题](#定时器的问题)
@@ -3244,6 +3249,7 @@
 ## 类继承的体系
 ### 声明类
 [top](#catalog)
+- 类声明是运行在**严格模式**中的
 - 默认类继承自 内置的`Object()`
     ```js
     class Foo{}
@@ -3293,6 +3299,7 @@
 ### 类继承
 [top](#catalog)
 - 继承方式 `class 子类 extends 父类`
+- 类的继承是运行在**严格模式**中的
 - 继承无参构造的父类
     ```js
     class Foo{}
@@ -3413,6 +3420,101 @@
     |对象本身、非symbol的|显示成员|Object.entries()|获取所有可枚举的成员KV数据|
     |对象本身、非symbol的|显示+隐式|Object.getOwnPropertyNames()|获取对象自身的所有成员名|
     |对象本身、symbol的|显示+隐式|Object.getOwnPropertySymbols()|获取对象自身的所有Symbol成员名|
+
+### 对象及其成员的检查
+[top](#catalog)
+- 在JS中，取一个<label style="color:red">不存在的属性</label>的值，<label style="color:red">不会导致异常，会返回 undefined</label>
+- `in` 用来检查对象是否具有某个成员
+    - 成员范围: 显示 + 隐士
+    - 检查类型: 基本类型 + 对象类型
+- `instanceof` 检查一个对象是不是一个类/构造器的实例
+
+### 成员的删除
+[top](#catalog)
+- 通过`delete`关键字来删除一个对象的指定属性
+- `delete` 的本质
+    - <label style='color:red'>删除实例对象自身属性表中的属性描述符</label>
+
+- `delete` 不能删除的内容
+    1. 用 `var`、`let`、`const` 声明的变量与常量
+    2. 函数、或具名函数
+    3. 原型上的成员
+
+- 如果在当前对象中设置了和原型成员相同的属性
+    - 删除时，只会删除当前对象自身的成员。不会影响原型对象
+    - 再次使用该属性时，会继续使用原型上的成员
+    - 示例
+        ```js
+        function Foo(){}
+        Foo.prototype.name = 'foo name';
+
+        function FooEx(){
+            this.name = 'FooEx name';
+        }
+
+        FooEx.prototype = new Foo();
+        FooEx.prototype.constructor = FooEx;
+
+        let a = new FooEx();
+        // 输出对象自身的 name 属性
+        console.log(a.name);    // 输出: FooEx name
+
+        delete a.name;
+        // 删除后，输出对象原型上的属性
+        console.log(a.name);    // 输出: foo name
+
+        delete a.name;
+        // 再次删除后，仍然输出原型上的属性
+        console.log(a.name);    // 输出: foo name
+        ```
+
+- `delete` 操作的返回值: true/false
+    - 仅在删除一个不能删除的成员时，才会返回false
+    - 返回false的情况
+        - 删除对象的原型
+        - 删除宿主对象
+        - 删除宿主对象的成员
+    - 在以下两种情况下，不能完成删除，但仍然会返回true
+        - 删除不存在的成员
+        - 删除继承自父类/原型的成员
+    - 示例
+        ```js
+        function Foo(){}
+        function FooEx(){}
+        FooEx.prototype = new Foo();
+        FooEx.prototype.name = 'foo name';
+        FooEx.prototype.constructor = FooEx;
+
+        // 删除原型对象
+        let result = delete FooEx.prototype;
+        console.log(result);    // 输出: false
+
+        // 删除不存在的属性
+        result = delete FooEx.abcd;
+        console.log(result);    // 输出: true
+
+        // 删除原型对象的成员
+        result = delete FooEx.name;
+        console.log(result);    // 输出: true
+        ```
+
+### 成员方法的调用
+[top](#catalog)
+- JS中方法的调用与其他面向对象语言的底层实现不同
+
+    |语言|实现方式|
+    |-|-|
+    |其他语言|对自身语法进行扩展|
+    |JS|通过 **运算** 实现|
+
+- **运算**的实现
+    1. 通过 `.`，或者 `['属性名']` 来获取方法
+    2. 然后通过 `()` 调用
+        ```js
+        obj['method']()
+        obj.method()
+        ```
+    3. 调用时，自动传入 `this` 对象
 
 # 线程机制与事件机制
 ## 浏览器中的进程与线程
