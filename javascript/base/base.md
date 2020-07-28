@@ -2098,6 +2098,15 @@
             "属性名n":属性值n
         }
         ```
+- 通过字面量创建属性时，如果属性名是一个**变量**，需要通过 `[变量]` 的方式设置
+    ```js
+    var name = 'myname';
+    var obj = {
+        [name] : 'testName'， // 通过 [变量] 的方式设置属性
+    }
+
+    console.log(obj[name]); // 输出: testName
+    ```
 
 ## 对象的方法
 [top](#catalog)

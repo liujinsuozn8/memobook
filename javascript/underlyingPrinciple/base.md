@@ -26,6 +26,9 @@
 - [数值--数字字面量](#数值--数字字面量)
     - [进制的表示](#进制的表示)
     - [10进制数的存储与计算性能](#10进制数的存储与计算性能)
+- [符号](#符号)
+    - [符号属性](#符号属性)
+    - [全局符号表](#全局符号表)
 - [数据类型的操作](#数据类型的操作)
     - [数据类型的判断](#数据类型的判断)
     - [值类型与引用类型表示数据使用方式](#值类型与引用类型表示数据使用方式)
@@ -616,6 +619,81 @@
 - 提升数值运算型能
     - 用**位运算**替代算数运算
     - 位运算总是以整型数的形式来运算，即使操作数是一个浮点数
+
+# 符号
+## 符号属性
+[top](#catalog)
+- 符号类型数据的创建
+    ```js
+    var a = new Symbol(); 
+    ```
+- 符号数据也被称为**符号**
+- 符号可以作为对象的属性
+    - 符号属性无法被 `for ... in ` 枚举
+    - 符号属性具有一般成员的全部性质
+    - 符号属性可以被继承
+    - 符号类型成员需要特殊的方式才能列举、存取、使用
+- `Object.getOwnpropertySymbols(obj)`
+    - 可以获取对象中，非继承的所有符号属性
+    - 是唯一能有效列举符号属性的方法
+
+- 一般对象自身没有符号属性
+- 改变对象内部行为的符号属性
+    - 所有对象的行为都受到一些**与内部行为相关的**符号属性的影响
+    - 包括
+        |符号|影响的行为|类型|
+        |-|-|-|
+        |Symobl.hasInstance|instanceof 的类型检查|function|
+        |Symobl.iterator|for...of|function|
+        |Symobl.unscopables|with(object){...}|object|
+        |Symobl.toPrimitive|Object.prototype.valueOf()|function|
+        |Symobl.toStringTag|Object.prototype.toString()|string|
+    - 添加符号属性时，为了避免原型性质的影响，可以使用 `Object.defineProperty` 来添加
+    - 示例
+        - 参考代码
+            - []()
+        - 代码内容
+            ```js
+            var str = new String('hi');
+            // 1. 修改符号属性，返回一个数字 1
+            str[Symbol.toPrimitive] = ()=>1;
+            console.log(100 + str); // 输出: 101
+
+            // 2. 修改 instanceOf 的符号属性
+            class Foo{}
+            class FooEx{
+                static [Symbol.hasInstance](){
+                    return false;   // 无论什么类型，都会返回 false
+                }
+            }
+
+            var fooex = new FooEx();
+            console.log(fooex instanceof FooEx);    // 输出: false
+
+            class Bar{}
+            Object.defineProperty(Bar, Symbol.hasInstance, {value: ()=>false});
+            var bar = new Bar();
+            console.log(bar instanceof Bar);    // 输出: false
+            ```
+
+## 全局符号表
+[top](#catalog)
+- 在模块中，如果 Symbol 数据作为属性名，并且没有导出，**该属性名无法在包外被访问**
+    - 示例
+        - temp.js
+            ```js
+            var mySymbol = Symbol();    // 不导出符号数据
+            module.exports = {          // 只导出对象
+                [mySymbol]: 'abcd'
+            };
+            ```
+        - temp2.js
+            ```js
+            const obj = require('./temp')
+            console.log(obj);   // 输出: { [Symbol()]: 'abcd' }
+            // 但是无法直接访问属性
+            ```
+- `Symbol.for()`
 
 # 数据类型的操作
 ## 数据类型的判断

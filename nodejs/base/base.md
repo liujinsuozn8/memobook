@@ -58,7 +58,8 @@
             cmd /k echo.
             ```
 - mac安装
-    - ?????
+    - 安装: `brew install -g node`
+    - 卸载: `brew uninstall nodejs`
 
 - Linux安装
     - ?????
