@@ -26,9 +26,6 @@
 - [数值--数字字面量](#数值--数字字面量)
     - [进制的表示](#进制的表示)
     - [10进制数的存储与计算性能](#10进制数的存储与计算性能)
-- [符号](#符号)
-    - [符号属性](#符号属性)
-    - [全局符号表](#全局符号表)
 - [数据类型的操作](#数据类型的操作)
     - [数据类型的判断](#数据类型的判断)
     - [值类型与引用类型表示数据使用方式](#值类型与引用类型表示数据使用方式)
@@ -93,16 +90,27 @@
         - [寄生组合继承](#寄生组合继承)
         - [保留父类的静态方法](#保留父类的静态方法)
         - [构建通用的继承关系设定方法](#构建通用的继承关系设定方法)
-    - [类继承的体系](#类继承的体系)
-        - [声明类](#声明类)
-        - [声明属性](#声明属性)
-        - [类继承](#类继承)
-        - [声明静态内容](#声明静态内容)
     - [对象成员](#对象成员)
         - [成员的可枚举性](#成员的可枚举性)
         - [对象及其成员的检查](#对象及其成员的检查)
         - [成员的删除](#成员的删除)
         - [成员方法的调用](#成员方法的调用)
+    - [对象中的符号属性](#对象中的符号属性)
+        - [符号属性](#符号属性)
+        - [全局符号表](#全局符号表)
+    - [原型继承](#原型继承)
+        - [JS的继承实现方式](#JS的继承实现方式)
+        - [空对象、空白对象](#空对象、空白对象)
+        - [原型继承的实现与分析](#原型继承的实现与分析)
+        - [原型对象的复制与对象的自有属性表](#原型对象的复制与对象的自有属性表)
+        - [构造函数与普通函数的异同](#构造函数与普通函数的异同)
+        - [对象的内置属性与方法](#对象的内置属性与方法)
+    - [类继承的体系](#类继承的体系)
+        - [声明类](#声明类)
+        - [声明属性](#声明属性)
+        - [类继承的声明](#类继承的声明)
+        - [声明静态内容](#声明静态内容)
+    - [类的特性](#类的特性)
 - [线程机制与事件机制](#线程机制与事件机制)
     - [浏览器中的进程与线程](#浏览器中的进程与线程)
     - [定时器的问题](#定时器的问题)
@@ -619,81 +627,6 @@
 - 提升数值运算型能
     - 用**位运算**替代算数运算
     - 位运算总是以整型数的形式来运算，即使操作数是一个浮点数
-
-# 符号
-## 符号属性
-[top](#catalog)
-- 符号类型数据的创建
-    ```js
-    var a = new Symbol(); 
-    ```
-- 符号数据也被称为**符号**
-- 符号可以作为对象的属性
-    - 符号属性无法被 `for ... in ` 枚举
-    - 符号属性具有一般成员的全部性质
-    - 符号属性可以被继承
-    - 符号类型成员需要特殊的方式才能列举、存取、使用
-- `Object.getOwnpropertySymbols(obj)`
-    - 可以获取对象中，非继承的所有符号属性
-    - 是唯一能有效列举符号属性的方法
-
-- 一般对象自身没有符号属性
-- 改变对象内部行为的符号属性
-    - 所有对象的行为都受到一些**与内部行为相关的**符号属性的影响
-    - 包括
-        |符号|影响的行为|类型|
-        |-|-|-|
-        |Symobl.hasInstance|instanceof 的类型检查|function|
-        |Symobl.iterator|for...of|function|
-        |Symobl.unscopables|with(object){...}|object|
-        |Symobl.toPrimitive|Object.prototype.valueOf()|function|
-        |Symobl.toStringTag|Object.prototype.toString()|string|
-    - 添加符号属性时，为了避免原型性质的影响，可以使用 `Object.defineProperty` 来添加
-    - 示例
-        - 参考代码
-            - []()
-        - 代码内容
-            ```js
-            var str = new String('hi');
-            // 1. 修改符号属性，返回一个数字 1
-            str[Symbol.toPrimitive] = ()=>1;
-            console.log(100 + str); // 输出: 101
-
-            // 2. 修改 instanceOf 的符号属性
-            class Foo{}
-            class FooEx{
-                static [Symbol.hasInstance](){
-                    return false;   // 无论什么类型，都会返回 false
-                }
-            }
-
-            var fooex = new FooEx();
-            console.log(fooex instanceof FooEx);    // 输出: false
-
-            class Bar{}
-            Object.defineProperty(Bar, Symbol.hasInstance, {value: ()=>false});
-            var bar = new Bar();
-            console.log(bar instanceof Bar);    // 输出: false
-            ```
-
-## 全局符号表
-[top](#catalog)
-- 在模块中，如果 Symbol 数据作为属性名，并且没有导出，**该属性名无法在包外被访问**
-    - 示例
-        - temp.js
-            ```js
-            var mySymbol = Symbol();    // 不导出符号数据
-            module.exports = {          // 只导出对象
-                [mySymbol]: 'abcd'
-            };
-            ```
-        - temp2.js
-            ```js
-            const obj = require('./temp')
-            console.log(obj);   // 输出: { [Symbol()]: 'abcd' }
-            // 但是无法直接访问属性
-            ```
-- `Symbol.for()`
 
 # 数据类型的操作
 ## 数据类型的判断
@@ -2949,7 +2882,7 @@
 - 重点
     - 子类型的原型对象指向父对象的实例
 
-- 这种方式的缺点
+- 缺点
     - 如果父类型的构造函数中有参数时，无法通过子类的构造函数来设置
 
 - 示例
@@ -3137,9 +3070,9 @@
                                     │  ^                  ^
                         constructor V  │ prototype        │ __proto__
                                     V  │                  │
-                                ┌───────────┐     ┌──────────────────┐
-                                │　　子类　　 │     │　　new 子类();　　 │
-                                └───────────┘     └──────────────────┘
+                                ┌───────────┐     ┌─────────────────┐
+                                │　　子类　　 │     │　　new 子类();　　│
+                                └───────────┘     └─────────────────┘
     ```
 
 ### 保留父类的静态方法
@@ -3324,159 +3257,6 @@
         student.showSelf();  // 输出: name =aaa, age =20
         ```
 
-## 类继承的体系
-### 声明类
-[top](#catalog)
-- 类声明是运行在**严格模式**中的
-- 默认类继承自 内置的`Object()`
-    ```js
-    class Foo{}
-    ```
-- 通过 `new` 关键字实例化对象，与构造器实例化对象相同
-    ```js
-    class Foo{}
-    var a = new Foo();
-    ```
-- 类的构造函数，相当于普通的函数
-    ```js
-    class Foo{
-        constructor(param1, param2,...){
-            this.param1 = param1;
-            this.param2 = param2;
-        }
-    }
-    var a = Foo('parma1', 'param2');
-
-    // 相当于
-    function Foo(param1, param2,...){
-        this.param1 = param1;
-        this.param2 = param2;
-    }
-    ```
-
-### 声明属性
-[top](#catalog)
-- 声明读写属性，与方法
-    ```js
-    class Foo{
-        // 属性的读方法
-        get param1(){...}
-        // 属性的写方法
-        set param1(value){...}
-        // 声明方法
-        method(){...}
-    }
-    ```
-
-- 声明所有实例对象共享的属性
-    ```js
-    class Foo{...}
-    Foo.prototype.param1 = '...'
-    ```
-
-### 类继承
-[top](#catalog)
-- 继承方式 `class 子类 extends 父类`
-- 类的继承是运行在**严格模式**中的
-- 继承无参构造的父类
-    ```js
-    class Foo{}
-
-    class FooEx extends Foo{...}
-
-    // 相当于
-    function Foo(){};
-    function FooEx(){};
-    FooEx.prototype = new Foo();
-    FooEx.prototype.constructor = FooEx;
-    ```
-
-- 继承有参构造的父类，需要通过 `super(参数类表)` 来调用父类的构造器
-    - 无论父类的构造参数是否有参数，都应该显示调用 `super()`
-        ```js
-        class Foo{
-            constructor(name, age){
-                this.name = name;
-                this.age = age;
-            }
-        }
-
-        class FooEx extends Foo{
-            constructor(name, age, address){
-                super(name, age);
-                this.address = address;
-            }
-        }
-
-        // 相当于
-        function Foo(name, age){
-            this.name = name;
-            this.age = age;
-        }
-
-        function FooEx(name, age, address){
-            Foo.call(this, name, age);
-            this.address = address;
-        }
-
-        FooEx.prototype = new Foo();
-        FooEx.prototype.constructor = FooEx;
-        ```
-
-- 通过 `super` 关键字调用父类方法。调用时，会隐士的传入`this`对象
-    ```js
-    class Foo{
-        method01(x){...}
-    }
-
-    class FooEx extends Foo{
-        // 相当于重写
-        method01(x, y){
-            super.method01(x); // 调用父类的方法
-        }
-        
-        // 直接调用父类的方法
-        method02(x, y){
-            super.method01(x);
-        }
-    }
-    ```
-
-### 声明静态内容
-[top](#catalog)
-- 通过 `static` 关键字声明静态内容
-- 发生类继承时，静态方法也会继承下来
-    - 通过 `super.父类静态方法名()` 的方式调用
-    - 通过 `super` 调用时，会自动将当前子类作为对象调用
-- 声明方式
-    ```js
-    class Foo{
-        static get param1(){...}
-
-        static foo(){...}
-    }
-
-    class FooEx extends Foo{
-        static fooex(){
-            // 调用父类的静态方法
-            super.foo();
-        }       
-    }
-
-    // 相当于
-    function Foo(){...}
-    Foo.param1 = ...;
-    Foo.foo = function(){...};
-
-    function FooEx(){...}
-    FooEx.prototype = new Foo();
-    FooEx.prototype.constructor = FooEx;
-    FooEx.fooex = function(){
-        // 调用父类的静态方法
-        Foo.foo.call(FooEx); // 自动将当前类本身作为调用参数
-    }
-    ```
-
 ## 对象成员
 ### 成员的可枚举性
 [top](#catalog)
@@ -3593,6 +3373,537 @@
         obj.method()
         ```
     3. 调用时，自动传入 `this` 对象
+
+## 对象中的符号属性
+### 符号属性
+[top](#catalog)
+- 符号类型数据的创建
+    ```js
+    var a = new Symbol(); 
+    ```
+- 符号数据也被称为**符号**
+- 符号可以作为对象的属性
+    - 符号属性无法被 `for ... in ` 枚举
+    - 符号属性具有一般成员的全部性质
+    - 符号属性可以被继承
+    - 符号类型成员需要特殊的方式才能列举、存取、使用
+- `Object.getOwnpropertySymbols(obj)`
+    - 可以获取对象中，非继承的所有符号属性
+    - 是唯一能有效列举符号属性的方法
+
+- 一般对象自身没有符号属性
+- 改变对象内部行为的符号属性
+    - 所有对象的行为都受到一些**与内部行为相关的**符号属性的影响
+    - 包括
+        |符号|影响的行为|类型|
+        |-|-|-|
+        |Symobl.hasInstance|instanceof 的类型检查|function|
+        |Symobl.iterator|for...of|function|
+        |Symobl.unscopables|with(object){...}|object|
+        |Symobl.toPrimitive|Object.prototype.valueOf()|function|
+        |Symobl.toStringTag|Object.prototype.toString()|string|
+    - 添加符号属性时，为了避免原型性质的影响，可以使用 `Object.defineProperty` 来添加
+    - 示例
+        - 参考代码
+            - []()
+        - 代码内容
+            ```js
+            var str = new String('hi');
+            // 1. 修改符号属性，返回一个数字 1
+            str[Symbol.toPrimitive] = ()=>1;
+            console.log(100 + str); // 输出: 101
+
+            // 2. 修改 instanceOf 的符号属性
+            class Foo{}
+            class FooEx{
+                static [Symbol.hasInstance](){
+                    return false;   // 无论什么类型，都会返回 false
+                }
+            }
+
+            var fooex = new FooEx();
+            console.log(fooex instanceof FooEx);    // 输出: false
+
+            class Bar{}
+            Object.defineProperty(Bar, Symbol.hasInstance, {value: ()=>false});
+            var bar = new Bar();
+            console.log(bar instanceof Bar);    // 输出: false
+            ```
+
+### 全局符号表
+[top](#catalog)
+- 引入问题: **模块中，对象内的符号属性在模块外无法直接访问**
+    - 问题描述
+        1. 在 `模块A` 中，创建一个对象 `obj`
+        2. 创建一个符号数据 `mySymbol`
+        3. 将 `mySymbol` 作为 `obj` 的属性名
+        4. 导出 `obj`
+        5. 在 `模块B` 中，导入并使用 `模块A` 中的内容
+            - 可以使用 `模块A.obj`
+            - 无法使用 `模块A.obj[mySymbol]`
+                - 因为 `mySymbol` 没有导出，并且无法创建一个相同的符号数据，所以无法使用
+    - 示例
+        - temp.js
+            ```js
+            var mySymbol = Symbol();    // 不导出符号数据
+            module.exports = {          // 只导出对象
+                [mySymbol]: 'abcd'
+            };
+            ```
+        - temp2.js
+            ```js
+            const obj = require('./temp')
+            console.log(obj);   // 输出: { [Symbol()]: 'abcd' }
+            // 但是无法直接访问属性
+            ```
+- `Symbol.for("符号名")`，创建全局符号表
+    - 符号数据的创建与获取
+        - 该方法**只在第一次调用**时创建符号数据
+        - 第N次调用时，会直接返回已有的符号数据
+    - 该方法的优点
+        1. 该方法的**内建机制**保证了符号的<label style='color:red'>全局唯一性</label>
+        2. 没有直接使用全局变量，避免了对其他模块和全局环境产生干扰
+    - 解决引入问题
+        - 参考代码
+            - [src/datatype/symbol/globalTable/moduleA.js](#src/datatype/symbol/globalTable/moduleA.js)
+            - [src/datatype/symbol/globalTable/moduleB.js](#src/datatype/symbol/globalTable/moduleB.js)
+        - moduleA.js
+            ```js
+            var mySymbol = Symbol.for('mySymbol');    // 创建全局符号数据
+            module.exports = {          // 只导出对象
+                [mySymbol]: 'abcd'
+            };
+            ```
+        - moduleB.js
+            ```js
+            // 导入模块A
+            const obj = require('./moduleA');
+            console.log(obj);   // 输出: { [Symbol(mySymbol)]: 'abcd' }
+
+            // 通过全局符号表访问符号属性
+            var mySymbol = Symbol.for("mySymbol");
+            console.log(obj[mySymbol]); // 输出: abcd
+            ```
+
+- `Symbol.keyFor(符号数据)`，通过符号数据在全局符号表中**反查符号名**
+    - 示例
+        ```js
+        var mySymbol = Symbol.for('testSymbol');
+        var symbolName = Symbol.keyFor(mySymbol);
+        console.log(symbolName);    // 输出: testSymbol
+        ```
+
+## 原型继承
+### JS的继承实现方式
+[top](#catalog)
+- 一般语言中对象系统的继承特性的实现方式
+    - 基于类，class-based
+    - 基于原型，prototype-based
+    - 基于元类，metaclass-based
+- JS 使用原型继承实现对象系统及其继承特性
+
+### 空对象、空白对象
+[top](#catalog)
+- null-空 与 empty-空白对象
+    - null
+        - **null 不是由 `Object()` 构造函数创建的**，`instanceof` 判断会返回 false
+            ```js
+            var a = null instanceof Object;
+            // a = false
+            ```
+        - 可枚举型
+            - null 可以被 `for...in` 枚举。但因为是空值，没有任何成员
+                ```js
+                // 可以枚举，但是没有任何输出
+                for(let a in null){
+                    console.log(a);
+                }
+                ```
+            - 无法通过 `Object.keys(null)` 获取键值列表
+        - null 可以参与参与数值运算，会被自动转换为 `0`
+    - empty
+        - **`{}` 是由 `Object()` 构造函数创建的**，`instanceof` 判断会返回 true
+            - 空白对象的创建
+                ```js
+                var empty01 = new Object(); // 通过构造函数创建
+                var empty02 = {};   // 通过对象字面量创建，底层会调用 `Object()`
+                console.log(empty01 instanceof Object); // true
+                console.log(empty02 instanceof Object); // true
+                ```
+        - 默认情况下，空白对象只包含原生对象的一些`内置成员`
+        - 可枚举性
+            - 原生的`内置成员`不会被 `for...in` 枚举
+                - `for (let k in {})` 不会有任何效果
+        - <label style='color:red'>空白对象的本质</label>
+            - 原型链上所有原型对象的自有属性表都为空的对象
+            - 参考: [原型对象的复制与对象的自有属性表](原型对象的复制与对象的自有属性表)
+
+
+- empty-空白对象，是所有对象的基础
+    - `Object.prototype`，也是<label style='color:red'>空白对象</label>，只包含原生的内置成员
+        - `Object.prototype` 可以遍历，但是没有任何效果
+            ```js
+            var num = 0
+            for(let n in Object.prototype) num++;
+            console.log(num);   // 输出0
+            ```
+    - 通过 `Object()` 构造函数创建的对象，也是<label style='color:red'>空白对象</label>，这表明
+        - `new Object()`、`{}` 都是 `Object.prototype` 的一份复制
+
+### 原型继承的实现与分析
+[top](#catalog)
+- 原型的含义
+    - 如果 `构造器A` 有一个`原型对象A.prototype`，则由 `A` 创建的实例都必然是 `A.prototype` 的复制
+        - 如 `Object()`，及其原型对象`Object.prototype`，创建的实例都是`Object.prototype`的赋值
+    - 实例是原型的复制，会拥有原型对象的所有属性、方法等内容
+
+- **空白对象是整个原型继承体系的基础**
+    ```
+                    __proto__
+            null <<──────── {} 空白对象
+                            ^
+                            ^
+                            │
+        prototype           │          __proto__
+    Object ───────>> Object.prototype <<─────── new Object()
+                                                    ^
+                                                    ^
+                                                    │
+                                prototype           │   __proto__
+                            A ───────────>> A.prototype <<────── new A()
+                                                                    ^
+                                                                    ^
+                                                                    │
+                                                prototype           │   __proto__
+                                            B ───────────>> B.prototype <<────── new B()
+                                                                                    ^
+                                                                                    ^
+                                                                                    │
+                                                                prototype           │   __proto__
+                                                            C ───────────>> C.prototype <<────── new C()
+    ```
+
+- 通过原型实现**继承性**
+    - 继承实现过程分析
+        1. 创建构造函数 `A()`，并在原型上添加一些成员
+            - 创建过程
+                ```js
+                function A(){}
+                A.prototype.a1 = ...;
+                A.prototype.a2 = ...;
+                ```
+            - 此时原型是`Object()` 的一个实例，即 `{}`
+            - 在原型上添加的方法，实际上都添加在 `{}` 对象内
+        2. 创建构造函数 `B()`，并重设原型
+            - 重设方式
+                ```js
+                function B(){};
+                var instanceA = new A();
+                B.prototype = instanceA;
+                B.prototype.constructor = B;
+                ```
+            - 重设时，实例化了一个 `A()` 的对象: `instanceA`
+            - `instanceA` 实际上是 `{}` 对象的拷贝
+                - 通过该对象，可以调用添加在 `{}` 上的方法: `instanceA.a1`、`instanceA.a2`
+        3. 在 `B()` 的原型上添加一些成员
+            - 添加过程
+                ```js
+                B.prototype.b1 = ...;
+                B.prototype.b2 = ...;
+                ```
+            - 这些方法实际上都添加在 `instanceA` 对象内
+            - 可以通过 `instanceA.b1`、`instanceA.b2` 来调用这些方法
+        4. 实例化 `B()`
+            ```js
+            var instanceB = new B();
+            ```
+        5. `instanceB`，实际上是 `instanceA` 对象的拷贝
+            - `instanceB` 可以调用 `instanceB.b1`、`instanceB.b2`
+            - 因为 `instanceA` 能够调用 `instanceA.a1`、`instanceA.a2`，所以 `instanceB` 也可以调用 `instanceB.a1`、`instanceB.a2`
+        6. 通过原型对象的层层拷贝，最终实现继承性
+    - 示例
+        - 参考代码
+            - [src/oop/prototype_extend/inheritance.js](src/oop/prototype_extend/inheritance.js)
+        - 代码内容
+            ```js
+            // 1. 创建构造函数 `A()`，并在原型上添加一些成员
+            function A(){}  // A 的原型是 {}
+            A.prototype.a1 = ()=> console.log('this is a1');
+            A.prototype.a2 = ()=> console.log('this is a2');
+
+            // 2. 创建构造函数 `B()`，并重设原型
+            function B(){}
+            var instanceA = new A();
+            B.prototype = instanceA;
+            B.prototype.constructor = B;
+
+            // 3. 在 `B()` 的原型上添加一些成员
+            B.prototype.b1 = ()=> console.log('this is b1');
+            B.prototype.b2 = ()=> console.log('this is b2');
+
+            // 这些方法实际上添加在 instanceA 对象内，可以通过 instanceA 调用这些方法
+            instanceA.b1(); // this is b1
+            instanceA.b2(); // this is b2
+            // instanceA 是 A() 的实例，所以可以调用 A.prototype 上的方法
+            instanceA.a1(); // this is a1
+            instanceA.a2(); // this is a2
+
+            // 4. 实例化 `B()`
+            var instanceB = new B();
+
+            // 5. `instanceB`，实际上是 `instanceA` 对象的拷贝
+            // instanceB 可以访问 B.prototype 上的方法
+            // instanceB 也可以访问 A.prototype 上的方法
+            instanceB.b1(); // this is b1
+            instanceB.b2(); // this is b2
+            instanceB.a1(); // this is a1
+            instanceB.a2(); // this is a2
+            ```
+
+- 构建原型继承关系的执行时间
+    - 前提
+        - 因为继承关系基于原型对象的修改，所以原型继承依赖于程序在**执行期**的执行过程
+        - 子类依赖于父类的构造过程，所以**子类必须晚于父类构造**
+    - 执行时间
+        - 继承关系的实现是在执行期实现的
+        - 构造函数声明是在语法分析期实现
+    - 代码书写顺序的要求
+        - 构造函数声明比继承关系的实现要早，所以两者在代码上**没有具体的顺序要求**
+            - 最好先写声明，再写继承关系，方便维护
+
+- 原型链的实现
+    - 由对象所有父类和祖先类的原型对象构成的、可以向上访问的**链表**
+    - 原型链的每个原型对象之间通过隐式原型 `__proto__` 来连接，构成**链表**
+
+### 原型对象的复制与对象的自有属性表
+[top](#catalog)
+- JS中创建对象的方式
+    - 创建一个对象的标识符，该标识符是**指向原型对象的引用**
+    - 创建过程中不会复制原型对象的内存数据，所以创建过程很轻量
+
+- 写对象属性时的处理方式
+    - 发生属性的写操作时，会为该对象单独创建一个**自有属性表**
+    - 属性写操作，只会访问**自有属性表**，不会干扰原型对象，也就不会干扰其他实例对象
+
+- 读对象属性时的处理方式
+    - 对属性时的两条规则
+        1. 优先读取对象的自有属性表
+        2. 如果自有属性表中没有，通过**隐式原型** `null`
+            - 访问原型对象时，也需要遵守着两条规则
+                - 先检查原型对象的自有属性表
+                - 再遍历原型对象的原型链
+            - 返回结果
+                - 如果找到则返回
+                - 没有找到返回 `undefined`
+
+- <label style='color:red'>重新定义空白对象</label>
+    - 原型链上所有原型对象的自有属性表都为空的对象
+
+- 对象赋值与属性访问示意图
+    - ![property_table](imgs/oop/property_table.png)
+
+
+### 构造函数与普通函数的异同
+[top](#catalog)
+- 相同点
+    - 普通函数和构造函数没有明显的区别，都是函数对象
+    - 构造函数与普通函数在创建时都会包含 `prototype` 属性
+- 不同点
+    - 构造函数的 `prototype` 是一个有特殊含义的值或对象。如父类的原型对象
+    - 普通函数虽然也有 `prototype` 属性，但是是没有意义的
+
+### 对象的内置属性与方法
+[top](#catalog)
+- 查看对象内置属性的方法
+    1. 查看 `Object.prototype` 上的成员（显示 + 隐式）。这是所有实例对象所共有的
+        ```js
+        console.log(Object.getOwnPropertyNames(Object.prototype))
+        ```
+    2. 查看构造器函数 `Function` 中包含的成员（显示 + 隐式）
+        ```js
+        console.log(Object.getOwnPropertyNames(Function))
+        console.log(Object.getOwnPropertyNames(Function.prototype))
+        ```
+    3. 查看 `Object` 自身的成员（显示 + 隐式）。如果类以 `Object` 为基类，实例 对象可以使用这些方法
+        ```js
+        console.log(Object.getOwnPropertyNames(Object))
+        ```
+
+## 类继承的体系
+### 声明类
+[top](#catalog)
+- 类声明是运行在**严格模式**中的
+- 默认类继承自 内置的`Object()`
+    ```js
+    class Foo{}
+    ```
+- 通过 `new` 关键字实例化对象，与构造器实例化对象相同
+    ```js
+    class Foo{}
+    var a = new Foo();
+    ```
+- 类的构造函数，相当于普通的函数
+    ```js
+    class Foo{
+        constructor(param1, param2,...){
+            this.param1 = param1;
+            this.param2 = param2;
+        }
+    }
+    var a = Foo('parma1', 'param2');
+
+    // 相当于
+    function Foo(param1, param2,...){
+        this.param1 = param1;
+        this.param2 = param2;
+    }
+    ```
+
+### 声明属性
+[top](#catalog)
+- 声明读写属性，与方法
+    ```js
+    class Foo{
+        // 属性的读方法
+        get param1(){...}
+        // 属性的写方法
+        set param1(value){...}
+        // 声明方法
+        method(){...}
+    }
+    ```
+
+- 声明所有实例对象共享的属性
+    ```js
+    class Foo{...}
+    Foo.prototype.param1 = '...'
+    ```
+
+### 类继承的声明
+[top](#catalog)
+- 继承方式 `class 子类 extends 父类`
+- 类的继承是运行在**严格模式**中的
+- 继承无参构造的父类
+    ```js
+    class Foo{}
+
+    class FooEx extends Foo{...}
+
+    // 相当于
+    function Foo(){};
+    function FooEx(){};
+    FooEx.prototype = new Foo();
+    FooEx.prototype.constructor = FooEx;
+    ```
+
+- 继承有参构造的父类，需要通过 `super(参数类表)` 来调用父类的构造器
+    - 无论父类的构造参数是否有参数，都应该显示调用 `super()`
+        ```js
+        class Foo{
+            constructor(name, age){
+                this.name = name;
+                this.age = age;
+            }
+        }
+
+        class FooEx extends Foo{
+            constructor(name, age, address){
+                super(name, age);
+                this.address = address;
+            }
+        }
+
+        // 相当于
+        function Foo(name, age){
+            this.name = name;
+            this.age = age;
+        }
+
+        function FooEx(name, age, address){
+            Foo.call(this, name, age);
+            this.address = address;
+        }
+
+        FooEx.prototype = new Foo();
+        FooEx.prototype.constructor = FooEx;
+        ```
+
+- 通过 `super` 关键字调用父类方法。调用时，会隐士的传入`this`对象
+    ```js
+    class Foo{
+        method01(x){...}
+    }
+
+    class FooEx extends Foo{
+        // 相当于重写
+        method01(x, y){
+            super.method01(x); // 调用父类的方法
+        }
+
+        // 直接调用父类的方法
+        method02(x, y){
+            super.method01(x);
+        }
+    }
+    ```
+
+### 声明静态内容
+[top](#catalog)
+- 通过 `static` 关键字声明静态内容
+- 发生类继承时，静态方法也会继承下来
+    - 通过 `super.父类静态方法名()` 的方式调用
+    - 通过 `super` 调用时，会自动将当前子类作为对象调用
+- 声明方式
+    ```js
+    class Foo{
+        static get param1(){...}
+
+        static foo(){...}
+    }
+
+    class FooEx extends Foo{
+        static fooex(){
+            // 调用父类的静态方法
+            super.foo();
+        }
+    }
+
+    // 相当于
+    function Foo(){...}
+    Foo.param1 = ...;
+    Foo.foo = function(){...};
+
+    function FooEx(){...}
+    FooEx.prototype = new Foo();
+    FooEx.prototype.constructor = FooEx;
+    FooEx.fooex = function(){
+        // 调用父类的静态方法
+        Foo.foo.call(FooEx); // 自动将当前类本身作为调用参数
+    }
+    ```
+
+## 类的特性
+[top](#catalog)
+- 类是静态的声明
+    - 类声明语法: `class`、`class...extends` 将构造函数和继承关系声明提前到了**语法分析阶段**
+    - 使用类声明语法，类之间不会再有执行顺序的限制
+        - 无论写在哪，语法分析阶段就已经创建好了
+    - 因为类是静态的声明，所以内部的方法、属性存取器**只是声明，不是函数**，不能在声明内引用自己
+        - `constructor` 是特例，仍然是函数
+        ```js
+        class Foo{
+            constructor(){
+                // 引用自身
+                console.log( typeof constructor); // 输出: function
+            }
+            run(){
+                // 引用自身
+                console.log(typeof run);    // 输出: undefined
+            }
+        }
+        var foo = new Foo();
+        foo.run();
+        ```
 
 # 线程机制与事件机制
 ## 浏览器中的进程与线程
