@@ -88,7 +88,9 @@
             - [基本知识](javascript/base/base.md)
             - [dom操作](javascript/base/dom.md)
             - [bom操作](javascript/base/bom.md)
-        - [js高级原理](javascript/underlyingPrinciple/base.md)
+        - js原理
+            - [js语法](javascript/underlyingPrinciple/base.md)
+            - [js的面向对象特性](javascript/underlyingPrinciple/oop.md)
         - es标准
             - [es5、es6、es7](javascript/es/567.md)
         - 模块化开发
@@ -100,6 +102,7 @@
         - js开发框架
             - Vue
                 - [Vue的基本使用](javascript/vue/base/base.md)
+                - [Vue开发实战](javascript/vue/inaction/index.md)
     - nodejs
         - [基本知识](nodejs/base/base.md)
         - [nodejs应用](nodejs/inaction/base.md)

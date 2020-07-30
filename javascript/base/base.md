@@ -2102,7 +2102,7 @@
     ```js
     var name = 'myname';
     var obj = {
-        [name] : 'testName'， // 通过 [变量] 的方式设置属性
+        [name] : 'testName' // 通过 [变量] 的方式设置属性
     }
 
     console.log(obj[name]); // 输出: testName
