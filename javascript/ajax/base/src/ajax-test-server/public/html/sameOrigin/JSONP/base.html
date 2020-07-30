@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>JSPON基本实现</title>
+</head>
+<body>
+    <!-- 1. 在 sricpt 标签之前，创建响应函数 -->
+    <script>
+        function loadData(data){
+            console.log(`data1 = ${data.data1}`)
+            console.log(`data2 = ${data.data2}`)
+            console.log(`data3 = ${data.data3}`)
+        }
+    </script>
+    <!-- 2. 向非同源服务器发送请求
+            获取请求后，自动调用上面声明的响应函数 -->
+    <script src='http://localhost:5555/jsonpData'></script>
+</body>
+</html>

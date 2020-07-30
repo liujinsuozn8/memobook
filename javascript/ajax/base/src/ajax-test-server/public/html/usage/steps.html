@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>ajax的使用步骤</title>
+</head>
+<body>
+    <script>
+        // 1. 创建ajax对象
+        let xhr = new XMLHttpRequest();
+        // 2. 声明请求地址和请求方式
+        // xhr.open('get', 'http://localhost:3333/data/usage-step-data');
+        xhr.open('get', '/data/usage-step-data');
+        // 3. 发送请求
+        xhr.send();
+        // 4. 监听服务器返回的响应
+        xhr.onload = function(){
+            // 5. 获取服务端返回的数据
+            let result = xhr.responseText;
+            console.log(typeof result);
+            console.log(result);
+            document.write(result);
+        }
+    </script>
+</body>
+</html>

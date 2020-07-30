@@ -1,0 +1,29 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset='UTF-8'>
+    <title>根据ajax状态码获取响应数据</title>
+</head>
+<body>
+    <script>
+        const xhr = new XMLHttpRequest();
+        xhr.open('get', '/data/usage-ready-state');
+
+        // 监听状态码变化事件
+        xhr.onreadystatechange = function(){
+            // 当状态码为 4 时，获取响应数据
+            if (xhr.readyState === 4){
+                console.log('responseTest = ', xhr.responseText);
+            }
+        }
+
+        xhr.send();
+    </script>
+</body>
+</html>
+
+
+
+
+
+

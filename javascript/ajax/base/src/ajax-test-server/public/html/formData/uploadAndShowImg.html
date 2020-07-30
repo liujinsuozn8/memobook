@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>上传图片文件，并显示</title>
+    <style>
+        .img-box{
+            width: 100px;
+            height: 200px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 在表单中准备一个 `文件选择控件` -->
+    <input type="file" id='file' style='border:1px black solid; padding: 10px;'>
+    <input type="button" value="upload" id='upload'>
+    <!-- 1. 图片控件 -->
+    <div class='img-box'>
+        <!-- <img src="http://localhost:3333/upload/htmlCode.png" > -->
+    </div>
+    <script>
+        // 获取文件选择控件
+        const file = document.getElementById('file');
+
+        // 2. 获取图片显示控件
+        const imgBox = document.querySelector('.img-box');
+
+        // 点击按钮后，上传文件
+        document.getElementById('upload').onclick = function(){
+            const formData = new FormData();
+            formData.append('attr', file.files[0]);
+            console.log(formData.get('attr'));
+
+            // 3. 创建ajax请求，上传图片
+            const xhr = new XMLHttpRequest();
+            xhr.open('post', '/formData/upload');
+            xhr.send(formData);
+
+            xhr.onload = function(){
+                // 4. 获取响应数据中的路径
+                const staticPath = JSON.parse(xhr.responseText).staticPath;
+                // 5. 拼接 img 路径
+                const imgSrc = 'http://localhost:3333' + staticPath;
+                // 6. 创建img控件
+                const img = document.createElement('img');
+                // 7. 设置img控件的响应函数，在图片加载完成后，在将dom对象添加到控件中
+                img.onload = function(){
+                    imgBox.appendChild(img);
+                }
+                // 8. 设置图片的地址，并准备显示图片
+                img.src = imgSrc;
+            }
+        }
+    </script>
+</body>
+</html>

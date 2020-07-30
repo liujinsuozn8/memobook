@@ -1,0 +1,31 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset='UTF-8'>
+    <title>ajax状态码</title>
+</head>
+<body>
+    <script>
+        const xhr = new XMLHttpRequest();
+        console.log(typeof xhr.readyState); // number
+        console.log('new XHR, readyState = ', xhr.readyState);      // 1. new XHR, readyState =  0
+        xhr.open('get', '/data/usage-ready-state');
+        console.log('xhr.open, readyState = ', xhr.readyState);     // 2. xhr.open, readyState =  1
+
+        // 监听状态码变化事件
+        xhr.onreadystatechange = function(){
+            console.log('onreadystatechange, readyState = ', xhr.readyState);
+            console.log('responseTest = ', xhr.responseText);
+            // 4. onreadystatechange, readyState =  2
+            // responseTest =  
+            // 5. onreadystatechange, readyState =  3
+            // responseTest =  usage-ready-state-data   <<<< 在状态码 3 时，已经有数据返回
+            // 6. onreadystatechange, readyState =  4
+            // responseTest =  usage-ready-state-data
+        }
+
+        xhr.send();
+        console.log('after xhr.send(), readyState = ', xhr.readyState); // 3. after xhr.send(), readyState =  1
+    </script>
+</body>
+</html>

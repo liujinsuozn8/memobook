@@ -1,0 +1,136 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>检索输入框下拉列表</title>
+    <style>
+        /* .search-box {} */
+
+        .search-box__input {
+            height: 35px;
+            width: 200px;
+            line-height: 16px;
+            font-size: 16px;
+            border: 1px black solid;
+            padding: 0 10px;
+            outline: none;
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        .search-box__keywords {
+            /* 默认隐藏 */
+            display: none;
+            box-sizing: border-box;
+            width: 200px;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            position: absolute;
+        }
+
+        .search-box__keywords--active {
+            /* 激活时，显示列表 */
+            display: block;
+            border: 1px black solid;
+            border-top: 0px;
+        }
+
+        .search-box__key {
+            padding: 5px 10px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class='search-box'>
+        <input type='text' class='search-box__input' placeholder="请输入">
+        <ul class='search-box__keywords'></ul>
+    </div>
+    <script src='../../js/ajax.js'></script>
+    <script>
+        const searchInput = document.querySelector('.search-box__input');
+        const keywordList = document.querySelector('.search-box__keywords');
+        // 设置一个全局延时器标识
+        let timeOuter = null;
+        /*
+            1. 在文本框中输入内容时，向服务端发送请求，
+               如果返回了有效的keyword，则创建dom元素来显示keywords
+        */
+        searchInput.oninput = function () {
+            // 1.1 触发事件后，将延时器清空
+            clearTimeout(timeOuter);
+
+            // 1.2 去除输入内容的首尾空格
+            const key = this.value.trim();
+
+            // 1.3 如果是空字符串，则不发送请求
+            if (key === '') {
+                reactiveKeywordList();
+                return;
+            }
+
+            // 1.4  将请求包在一个新的延时器中，并重设全局延时器标识
+            timeOuter = setTimeout(
+                () => ajax({
+                    type: 'get',
+                    url: '/02searchList/keywords',
+                    data: { key },
+                    success(data) {
+                        if (data.length > 0) {
+                            activeKeywordList(data);
+                            console.log(data);
+                        } else {
+                            reactiveKeywordList();
+                        }
+                    }
+                }),
+                500
+            );
+        }
+
+        //2. 在文本框失去焦点时，隐藏keywords
+        searchInput.onblur = function () {
+            reactiveKeywordList();
+        }
+
+        // 3. 激活keyword列表，并将数据转换成li标签
+        function activeKeywordList(data) {
+            addClassName(keywordList, 'search-box__keywords--active');
+            let liStr = '';
+            for (let i = 0; i < data.length; i++) {
+                liStr += `<li class='search-box__key'>${data[i]}</li>`;
+            }
+            keywordList.innerHTML = liStr;
+        }
+
+        // 4. 反激活keyword列表
+        function reactiveKeywordList() {
+            delClassName(keywordList, 'search-box__keywords--active');
+        }
+
+        // 为目标对象添加某个类。有则跳过
+        function addClassName(obj, className) {
+            const regex = new RegExp('\\b' + className + '\\b');
+            if (!regex.test(obj.className)) {
+                // 不存在则添加
+                obj.className += ' ' + className;
+            }
+        }
+
+        // 为目标对象删除某个类
+        function delClassName(obj, className) {
+            const regex = new RegExp('\\b' + className + '\\b');
+            if (regex.test(obj.className)) {
+                // 存在则删除
+                obj.className = obj.className.replace(regex, '');
+                // 删除后，去除首尾空格
+                obj.className = obj.className.trim();
+            }
+        }
+    </script>
+</body>
+
+</html>

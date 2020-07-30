@@ -1,0 +1,49 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <meta charset='UTF-8'>
+    <title>email check</title>
+    <style>
+        .error-info {
+            color: red;
+            background-color: #aaa;
+        }
+        .success-info{
+            color: black;
+            background-color: #aaa;
+        }
+    </style>
+</head>
+
+<body>
+    <input type="text" id="email" placeholder="xxxxxx@yyy.com" autocomplete="off">
+    <p id='emailCheckInfo'></p>
+    <!-- 引入封装的 ajax 函数 -->
+    <script src='../../js/ajax.js'></script>
+    <script>
+        const emailCheckInfo = document.getElementById('emailCheckInfo');
+        // 1. 为文本框绑定焦点离开事件
+        const emailInput = document.getElementById('email');
+        emailInput.onblur = function () {
+            // 2. 调用 ajax 封装函数，发送请求
+            ajax({
+                type: 'get',
+                url: '/01email/emailCheck',
+                data: {
+                    email: this.value
+                },
+                // 验证成功/失败之后，显示服务端返回的信息，并设置响应的样式
+                success(data){
+                    emailCheckInfo.innerText = data.msg;
+                    emailCheckInfo.className= 'success-info';
+                },
+                error(data){
+                    emailCheckInfo.innerText = data.msg;
+                    emailCheckInfo.className= 'error-info';
+                }
+            })
+        }
+    </script>
+</body>
+</html>

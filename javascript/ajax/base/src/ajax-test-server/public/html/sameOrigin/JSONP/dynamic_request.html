@@ -1,0 +1,36 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <meta charset='UTF-8'>
+    <title>动态发送JSONP</title>
+</head>
+<body>
+    <button id='getBtn'>getData from other server</button>
+    <script>
+        const getBtn = document.getElementById('getBtn');
+        // 1. 设置按钮的点击事件。点击后发送请求
+        getBtn.onclick = function(){
+            // 2. 创建 <script> 元素
+            const script = document.createElement('script');
+            // 3. 设置请求地址
+            script.src = 'http://localhost:5555/jsonpData';
+            // 4. 设置 <script> 元素的监听事件
+            // 加载完成之后，删除当前节点
+            script.onload = function(){
+                // 两种删除方式都可以
+                // script.remove();
+                document.body.removeChild(this);
+            }
+
+            // 5. 将元素添加到页面中，开始发送请求
+            document.body.appendChild(script);
+        }
+
+        // 服务端响应函数
+        function loadData(data){
+            console.log(`data1=${data.data1}, data2=${data.data2}, data3=${data.data3}`);
+        }
+    </script>
+</body>
+</html>

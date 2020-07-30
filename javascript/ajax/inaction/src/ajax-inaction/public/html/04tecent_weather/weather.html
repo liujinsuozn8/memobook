@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <style>
+        .weatherTable{
+            width: 50%;
+            border:black 2px solid;
+            border-collapse: collapse;
+        }
+        .weatherTable td, .weatherTable th{
+            border: black 1px solid;
+            height:30px;
+            vertical-align:middle;
+            text-align:center;
+        }
+        .weatherTable tr:nth-child(2n){
+            background-color: #ddd;
+        }
+    </style>
+</head>
+<body>
+    <table class='weatherTable'>
+        <tr>
+            <th>温度</th>
+            <th>时间</th>
+            <th>天气</th>
+        </tr>
+    </table>
+    <script src='/js/jsonpfn.js'></script>
+    <script>
+        // 1. 发送JSONP请求
+        jsonp({
+            url: 'https://wis.qq.com/weather/common',
+            data:{
+                source: 'pc',
+                weather_type: 'forecast_1h',
+                province: '北京',
+                city: '北京'
+            },
+            success(result){
+                // 2. 获取数据后，创建html片段
+                let htmlStr = '';
+                for (let row of Object.values(result.data.forecast_1h)){
+                    // 格式化时间
+                    var timeStr = row.update_time.substring(0, 4) + "年" +
+                                  row.update_time.substring(4, 6) + "月" +
+                                  row.update_time.substring(6, 8) + "日" +
+                                  row.update_time.substring(8, 10) + "时";
+                    htmlStr += `
+                    <tr>
+                        <td>${row.degree}</td>
+                        <td>${timeStr}</td>
+                        <td>${row.weather}</td>
+                    </tr>
+                    `;
+                }
+                // 3. 将html片段添加到页面中
+                var weatherTable = document.querySelector('.weatherTable tbody');
+                weatherTable.innerHTML += htmlStr;
+                // console.log(result);
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,61 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>检索框下拉列表--测试页面</title>
+        <style>
+            /* .search-box{} */
+            .search-box__input{
+                height:35px;
+                width:200px;
+                line-height: 16px;
+                font-size: 16px;
+                border: 1px black solid;
+                padding: 0 10px;
+                outline: none;
+                position: relative;
+                box-sizing: border-box;
+            }
+            .search-box__keywords{
+                /* height: 200px; */
+                height: 0px;
+                overflow: hidden;
+                box-sizing: border-box;
+                width:200px;
+                list-style: none;
+                margin:0;
+                padding: 0;
+                position: absolute;
+            }
+
+            /* 测试样式 */
+            .search-box__input:focus + .search-box__keywords{
+                height:200px;
+                transition: height .2s ease-in;
+                border: 1px black solid;
+                border-top: 0px;
+            }
+
+            .search-box__key{
+                padding: 5px 10px;
+                font-size: 16px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class='search-box'>
+            <input type='text' class='search-box__input' placeholder="请输入">
+            <ul class='search-box__keywords'>
+                <li class='search-box__key'>aaa</li>
+                <li class='search-box__key'>bbb</li>
+                <li class='search-box__key'>ccc</li>
+            </ul>
+        </div>
+        <script>
+            var searchInput = document.querySelector('.search-box__input');
+            searchInput.oninput = function(){
+                console.log(this.value);
+            }
+        </script>
+    </body>
+</html>

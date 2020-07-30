@@ -1,0 +1,43 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset='UTF-8'>
+    <title>根据函数名发送不同的请求</title>
+</head>
+<body>
+    <button id='printBtn'>printData from other server</button>
+    <button id='concatBtn'>concatData from other server</button>
+    <script>
+        // 1. 设置两个不同的服务端响应函数
+        function printData(data){
+            console.log(`data1=${data.data1}, data2=${data.data2}, data3=${data.data3}`);
+        }
+        function concatData(data){
+            const result = data.data1 + data.data2 + data.data3;
+            console.log(`concatResult = ${result}`)
+        }
+
+        // 2. 为按钮绑定事件，不同的按钮使用不同的响应函数
+        const printBtn = document.getElementById('printBtn');
+        const concatBtn = document.getElementById('concatBtn');
+
+        // 3. 每个按钮使用不同的响应函数
+        const url = 'http://localhost:5555/jsonpByFuncName';
+        printBtn.onclick = btnClick(url + '?' + 'callback=printData');
+        concatBtn.onclick = btnClick(url + '?' + 'callback=concatData');
+
+        // 4. 通用按钮点击事件，根据请求地址参数发送请求
+        function btnClick(src){
+            return function (){
+                const script = document.createElement('script');
+                script.src = src;
+                script.onload = function(){
+                    document.body.removeChild(this);
+                }
+                document.body.appendChild(script);
+            }
+        }
+
+    </script>
+</body>
+</html>

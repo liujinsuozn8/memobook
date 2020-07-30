@@ -1,0 +1,118 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+
+<body>
+    <div class='combSelect'>
+        <select id="province">
+            <option>please select</option>
+        </select>
+        <select id="city">
+            <option>please select</option>
+        </select>
+        <select id="area">
+            <option>please select</option>
+        </select>
+    </div>
+    <script src='../../js/ajax.js'></script>
+    <script>
+        const provinceSelector = document.getElementById('province');
+        const citySelector = document.getElementById('city');
+        const areaSelector = document.getElementById('area');
+
+        // 设置默认选项
+        const defaultValue = 'default';
+        const defaultOption = `<option value="${defaultValue}">please select</option>`;
+
+        // 1. 页面初始化
+        ajax({
+            type: 'get',
+            url: '/03combSelect/province',
+            success(data) {
+                // 将返回的 省 数据设置到页面中
+                optStr = defaultOption;
+                for (const node of data) {
+                    optStr += `<option value="${node.id}">${node.name}</option>`;
+                }
+
+                provinceSelector.innerHTML = optStr;
+            }
+        });
+
+        // 2. 为 省、市 下拉框设置 onchange 事件
+        // 2.1 根据省id获取 市 数据
+        provinceSelector.selectValue = defaultValue;
+        provinceSelector.onchange = function () {
+            // 2.1.1 如果选择了 default，则忽略当前选择
+            if (this.value === defaultValue) return;
+
+            // 2.1.2 如果当前选择的值和历史记录的值相同，则不发送请求
+            // 避免前一次选择的是 默认选项
+            const curValue = this.value;
+            if (provinceSelector.selectValue === curValue) return;
+
+            // 2.1.3 发送请求
+            ajax({
+                type: 'get',
+                url: '/03combSelect/city',
+                data: {
+                    id: curValue
+                },
+                success(data) {
+                    // 2.1.4 将 市 的数据设置到页面
+                    optStr = defaultOption;
+                    for (const node of data) {
+                        optStr += `<option value="${node.id}">${node.name}</option>`;
+                    }
+                    citySelector.innerHTML = optStr;
+
+                    // 2.1.4 清空 区 的数据
+                    areaSelector.innerHTML = defaultOption;
+
+                    // 2.1.5 将选项保存到历史记录
+                    // 保存当前选择的数据
+                    provinceSelector.selectValue = curValue;
+                    // 清空区中保存的历史数据
+                    citySelector.selectValue = defaultValue;
+                }
+            })
+        };
+
+        // 2.2 根据 市i 获取 区 数据
+        citySelector.selectValue = defaultValue;
+        citySelector.onchange = function () {
+            // 2.2.1 如果选择了 default，则忽略当前选择
+            if (this.value === defaultValue) return;
+
+            // 2.2.2 如果两次选择的值相同，则不发送请求。避免前一次选择的是 默认选项
+            const curValue = this.value;
+            if (citySelector.selectValue === curValue) return;
+
+            // 2.2.3 发送请求
+            ajax({
+                type: 'get',
+                url: '/03combSelect/area',
+                data: {
+                    id: curValue
+                },
+                success(data) {
+                    // 2.2.4 将 市 的数据设置到页面
+                    optStr = defaultOption;
+                    for (const node of data) {
+                        optStr += `<option value="${node.id}">${node.name}</option>`;
+                    }
+                    area.innerHTML = optStr;
+
+                    // 2.2.5 将选项保存到历史记录
+                    citySelector.selectValue = curValue;
+                }
+            })
+        };
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+    <form id='form'>
+        username: <input type="text" name='username' autocomplete="off"><br>
+        address: <input type='text' name='address' autocomplete="off"><br>
+        <input type="button" value="submit" id='btn'>
+    </form>
+    <script>
+        // 获取 form 的 dom 对象
+        const btn = document.getElementById('btn');
+        btn.onclick = function(){
+            // 1. 创建ajax对象
+            const xhr = new XMLHttpRequest();
+            // 2. 声明请求地址和请求方式
+            xhr.open('post', '/formData/usageTest');
+
+            // 3. 通过 form 的dom对象创建 FormData
+            const form = document.getElementById('form');
+            const formData = new FormData(form);
+
+            // 4. 将 FormData 作为请求数据，发送请求
+            xhr.send(formData);
+            // 5. 监听服务器返回的响应
+            xhr.onload = function(){
+                // 6. 获取服务端返回的数据
+                console.log(xhr.responseText);
+            }
+        }
+    </script>
+</body>
+</html>

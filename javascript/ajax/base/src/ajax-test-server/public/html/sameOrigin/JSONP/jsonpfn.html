@@ -1,0 +1,56 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>jsonp封装函数测试</title>
+</head>
+
+<body>
+    username: <input type="text" id='username'><br>
+    age: <input type="text" id='age'><br>
+    address: <input type="text" id='address'><br>
+    <input type="button" id='btn01' value='btn01'>
+    <input type="button" id='btn02' value='btn02'>
+    
+    <!-- 引入jsonp封装函数 -->
+    <script src='/js/jsonpfn.js'></script>
+    <script>
+        const username = document.getElementById('username');
+        const age = document.getElementById('age');
+        const address = document.getElementById('address');
+
+        // 为按钮添加事件，发送JSONP请求
+        // 发送 3 个参数
+        document.getElementById('btn01').onclick = function(){
+            jsonp({
+                url:'http://localhost:5555/getJsonp',
+                data:{
+                    username:username.value,
+                    age:age.value,
+                    address:address.value,
+                },
+                success(data){
+                    console.log(data);
+                }
+            })
+        }
+
+        // 发送 2 个参数
+        document.getElementById('btn02').onclick = function(){
+            jsonp({
+                url:'http://localhost:5555/getJsonp',
+                data:{
+                    age:age.value,
+                    address:address.value,
+                },
+                success(data){
+                    console.log(data);
+                }
+            })
+        }
+
+</script>
+</body>
+
+</html>

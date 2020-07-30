@@ -99,10 +99,14 @@
                 - [webpack的基本使用方法](javascript/module/webpack/base.md)
         - typescirpt
             - [ts基本语法](javascript/typescript/base/base.md)
+        - ajax
+            - [ajax基础](javascript/ajax/base/base.md)
+            - [ajax实战](javascript/ajax/inaction/index.md)
         - js开发框架
             - Vue
                 - [Vue的基本使用](javascript/vue/base/base.md)
                 - [Vue开发实战](javascript/vue/inaction/index.md)
+
     - nodejs
         - [基本知识](nodejs/base/base.md)
         - [nodejs应用](nodejs/inaction/base.md)

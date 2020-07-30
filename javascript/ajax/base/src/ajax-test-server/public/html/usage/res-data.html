@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>发送ajax，并解析响应</title>
+</head>
+
+<body>
+    <button id='textBtn'>textBtn</button>
+    <button id='jsonBtn'>jsonBtn</button>
+    <div id='app'></div>
+    <script>
+        function $get(url) {
+            const xhr = new XMLHttpRequest();
+            xhr.open('get', url);
+            xhr.send();
+            xhr.onload = function () {
+                // 根据响应类型处理响应数据
+                const contentType = xhr.getResponseHeader('Content-type');
+                console.log(contentType);
+                if (contentType.indexOf('text/plain') != -1) {
+                    // 1. 处理文本型的响应数据
+                    document.getElementById('app').innerHTML= xhr.responseText;
+                } else if (contentType.indexOf('application/json') != -1) {
+                    // 2. 处理 JSON类型数据
+                    // 2.1 将服务端的返回的 JSON 字符串解析为 JS 对象
+                    let reqObj = JSON.parse(xhr.responseText);
+
+                    // 2.2 将 JS 对象混合 html 代码然后显示
+                    // 此处将数组展开为 <li>
+                    let liStr = '';
+                    for (let n of reqObj.array) {
+                        liStr += `<li>${n}</li>`;
+                    }
+                    // 2.3 在页面显示
+                    document.getElementById('app').innerHTML = '<ul>' + liStr + "</ul>";
+                }
+            }
+        }
+
+        // 获取文本格式的响应
+        document.getElementById('textBtn').onclick = () => $get('/data/usage-res-text-data');
+        // 获取JSON格式的响应
+        document.getElementById('jsonBtn').onclick = () => $get('/data/usage-res-json-data');
+    </script>
+</body>
+
+</html>

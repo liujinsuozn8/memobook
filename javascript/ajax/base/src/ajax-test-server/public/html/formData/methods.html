@@ -1,0 +1,47 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta charset='UTF-8'>
+        <title>formData对象的属性</title>
+    </head>
+    <body>
+        <form id='form' autocomplete="off">
+            username: <input type="text" name="username"><br>
+            address: <input type="text" name='address'><br>
+            age: <input type="number" name="age"><br>
+            <input type="button" value="submit" id='submit'>
+        </form>
+        <script>
+            const btn = document.getElementById('submit');
+            const form = document.getElementById('form');
+            btn.onclick = function (){
+                const xhr = new XMLHttpRequest();
+                xhr.open('post', '/formData/usageTest');
+
+                const formData = new FormData(form);
+                // 1. 获取控件属性
+                const age = formData.get('age');
+                console.log(age);
+
+                // 2. 设置已存在控件的值
+                formData.set('age', 22);
+
+                // 3. 设置不存在的控件的值
+                formData.set('school', 'abcdefg');
+
+                // 4. 删除某个控件的值
+                formData.delete('address');
+
+                // 5. 添加属性
+                formData.set('username', 'qwert');
+                formData.append('username', 'testName');
+                console.log(formData.get('username'))   // 输出 qwert
+
+                xhr.send(formData)
+                xhr.onload = function(){
+                    console.log(xhr.responseText)
+                }
+            }
+        </script>
+    </body>
+</html>

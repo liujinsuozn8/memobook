@@ -1,0 +1,32 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset='UTF-8'>
+    <title>网络中断的异常处理</title>
+</head>
+<body>
+    <button id='errBtn'>errBtn</button>
+    <script>
+        const errBtn = document.getElementById('errBtn');
+
+        // 点击按钮前，需要将浏览器设为 offline 状态
+        errBtn.onclick = function(){
+            const xhr = new XMLHttpRequest();
+            xhr.open('get', '/errtest/status500');
+            xhr.send();
+            xhr.onload = function(){        // 没有输出
+                console.log(xhr.status);
+            }
+
+            xhr.onreadystatechange = function(){
+                console.log('readystate = ', xhr.readyState);       // 1. 输出: readystate =  4
+                console.log('responseText = ', xhr.responseText);   // 2. 输出: responseText =  
+            }
+
+            xhr.onerror = function(){
+                console.log('internet error');  // 3. 输出: internet error
+            }
+        }
+    </script>
+</body>
+</html>

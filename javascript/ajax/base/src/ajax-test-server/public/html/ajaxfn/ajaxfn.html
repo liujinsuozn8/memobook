@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>封装ajax函数</title>
+</head>
+
+<body>
+    <!-- <script src='../../js/ajax.js'></script> -->
+    <script src='../../js/ajax.js'></script>
+    <script>
+        // 发送 get 请求
+        ajax({
+            type: 'get',
+            url: '/ajaxfn/getdata',
+            data: {
+                name: 'tom',
+                age: 23,
+            },
+            success: function (data) {
+                console.log('success get data = ' + data);
+            }
+        })
+
+        // 发送 post 请求
+        ajax({
+            type: 'post',
+            url: '/ajaxfn/postdata',
+            data: {
+                name: 'bob',
+                age: 24
+            },
+            contentType: 'application/json',
+            success:function(data){
+                console.log('success post data = ' , data);
+            }
+        });
+    </script>
+</body>
+
+</html>

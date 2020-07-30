@@ -1,0 +1,25 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset='UTF-8'>
+    <title>为请求附加时间戳，来处理低版本ie浏览器的缓存问题</title>
+</head>
+<body>
+    <button id='testBtn'>testBtn</button>
+    <script>
+        var testBtn = document.getElementById('testBtn');
+        testBtn.onclick = function(){
+            var xhr = new XMLHttpRequest();
+
+            // 为ajax请求附加时间戳，来解决缓存问题
+            xhr.open('get', '/iecache/random-data?datestamp=' + Date.now());
+            xhr.onreadystatechange = function(){
+                if (xhr.readyState === 4 && xhr.status === 200){
+                    console.log(xhr.responseText);
+                }
+            }
+            xhr.send();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>非同源异常测试</title>
+</head>
+<body>
+    <script>
+        const xhr = new XMLHttpRequest();
+        // 向非同源服务器发送请求
+        xhr.open('get', 'http://localhost:5555/data');
+        xhr.send();
+        xhr.onload = function(){
+            console.log(xhr.responseText);
+        }
+    </script>
+</body>
+</html>

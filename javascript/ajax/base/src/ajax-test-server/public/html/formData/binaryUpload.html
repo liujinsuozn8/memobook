@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>上传二进制文件</title>
+</head>
+<body>
+    <!-- 1. 在表单中准备一个 `文件选择控件` -->
+    <input type="file" id='file' style='border:1px black solid; padding: 10px;'><br>
+    <input type="button" value="upload" id='upload'>
+    <script>
+        const file = document.getElementById('file');
+        const uploadBtn = document.getElementById('upload');
+        // 点击按钮后，上传文件
+        uploadBtn.onclick = function(){
+            // 2. 创建 FormData 对象
+            const formData = new FormData();
+            // 3. 将选择的文件作为请求参数添加到 FomrData 对象中
+            formData.append('attr', file.files[0]);
+            console.log(formData.get('attr'));
+
+            // 开始创建ajax请求
+            const xhr = new XMLHttpRequest();
+            xhr.open('post', '/formData/upload');
+
+            // 4. 将选择的文件作为请求参数添加到 FomrData 对象中，并发送请求
+            xhr.send(formData);
+
+            xhr.onload = function(){
+                console.log(xhr.responseText)
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>上传二进制文件，并显示上传进度</title>
+    <style>
+        .progress-bar {
+            border: 1px black solid;
+            border-radius: 5px;
+            height: 30px;
+            width: 300px;
+
+            position: relative;
+        }
+
+        .progress-bar__text {
+            float:left;
+            position: absolute;
+            left: 45%;
+            color: red;
+            font-size: 20px;
+        }
+
+        .progress-bar__schedule {
+            width: 0%;
+            background-color: #47e;
+            float:left;
+            height: 30px
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 在表单中准备一个 `文件选择控件` -->
+    <input type="file" id='file' style='border:1px black solid; padding: 10px;'>
+    <input type="button" value="upload" id='upload'>
+
+    <!-- 1. 进度条控件 -->
+    <div class='progress-bar'>
+        <span class='progress-bar__text'>0%</span>
+        <div class='progress-bar__schedule'></div>
+    </div>
+    <script>
+        // 获取文件选择控件
+        const file = document.getElementById('file');
+        // 获取进度条控件
+        const progressText = document.querySelector('.progress-bar__text');
+        const progressSchedule = document.querySelector('.progress-bar__schedule');
+
+        // 点击按钮后，上传文件
+        document.getElementById('upload').onclick = function () {
+            // 3. 点击后，将进度条的长度清0
+            progressText.innerHTML = '0%';
+            progressSchedule.style.width = '0%';
+
+            const formData = new FormData();
+            formData.append('attr', file.files[0]);
+
+            const xhr = new XMLHttpRequest();
+            xhr.open('post', '/formData/upload');
+
+            // 2. 监听 progress 事件
+            xhr.upload.onprogress = function (event) {
+                // 3. 计算上传部分的百分比
+                const percent = (event.loaded / event.total * 100) + '%';
+
+                // 4. 将计算结果设置到控件中
+                progressText.innerHTML = percent;
+                progressSchedule.style.width = percent;
+            }
+
+            xhr.send(formData);
+            xhr.onload = function () {
+                console.log(xhr.responseText)
+            }
+        }
+    </script>
+</body>
+
+</html>

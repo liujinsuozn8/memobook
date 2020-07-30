@@ -1,0 +1,23 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset='UTF-8'>
+    <title>低版本ie浏览器的缓存问题</title>
+</head>
+<body>
+    <button id='testBtn'>testBtn</button>
+    <script>
+        var testBtn = document.getElementById('testBtn');
+        testBtn.onclick = function(){
+            var xhr = new XMLHttpRequest();
+            xhr.open('get', '/iecache/random-data');
+            xhr.onreadystatechange = function(){
+                if (xhr.readyState === 4 && xhr.status === 200){
+                    console.log(xhr.responseText);
+                }
+            }
+            xhr.send();
+        }
+    </script>
+</body>
+</html>

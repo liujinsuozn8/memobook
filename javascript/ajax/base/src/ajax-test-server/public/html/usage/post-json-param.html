@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>设置post请求参数--JSON格式</title>
+</head>
+<body>
+    <form>
+        name: <input type="text" name='name' autocomplete='off'><br>
+        address: <input type="text" name='address' autocomplete='off'><br>
+        age: <input type="number" name='age'><br>
+        <!-- 不使用 type="submit", 而是通过 JS 发送 ajax 请求 -->
+        <input type="button" id='submitBtn' value="submit">
+    </form>
+
+    <!-- 显示服务器的返回结果 -->
+    <p id='result'></p>
+
+    <script>
+        // 1. 封装函数用于向请求路径后拼接请求参数，并通过ajax发送 post 请求
+        function $post(url, data){
+            const xhr = new XMLHttpRequest();
+            xhr.open('post', url);
+
+            // 1.1. 设置JSON参数的请求头
+            xhr.setRequestHeader('Content-Type', 'application/json');
+
+            // 1.2. 将JSON字符串设置为请求参数，并发送请求
+            xhr.send(JSON.stringify(data));
+
+            xhr.onload = function(){
+                // 将响应数据设置到页面中
+                document.getElementById('result').innerHTML = xhr.responseText;
+            }
+        }
+
+        // 2. 初始化时执行
+        $post(
+            '/data/usage-post-json-param',
+            { name:'Tom', address:'aaaaaa', age:12 }
+        );
+
+        // 3. 点击按钮时，获取表单的数据，通过 ajax 发送 post 请求
+        document.getElementById('submitBtn').addEventListener('click', function(){
+            $post(
+                '/data/usage-post-json-param',
+                {
+                    name: document.querySelector('[name=name]').value,
+                    address: document.querySelector('[name=address]').value,
+                    age: document.querySelector('[name=age]').value,
+                }
+            )
+        });
+    </script>
+</body>
+</html>

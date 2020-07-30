@@ -1,0 +1,32 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset='UTF-8'>
+    <title></title>
+</head>
+<body>
+    <script>
+        const xhr = new XMLHttpRequest();
+        xhr.open('get', '/errtest/status400');
+        xhr.send();
+        xhr.onload = function(){
+            // 输出 http 状态码
+            console.log(xhr.status);        // 2. 输出: 400
+            // 输出异常信息
+            console.log(xhr.responseText);  // 3. 输出: error data
+        }
+
+        xhr.onreadystatechange = function(){
+            console.log('readystate = ', xhr.readyState);
+            // 1. 输出
+            // readystate =  2
+            // readystate =  3
+            // readystate =  4
+        }
+
+        xhr.onerror = function(){
+            console.log('onerror = ', xhr.status);  // 不会有输出
+        }
+    </script>
+</body>
+</html>
