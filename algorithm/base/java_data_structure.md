@@ -81,6 +81,21 @@
     - [霍夫曼编码的解码过程](#霍夫曼编码的解码过程)
     - [霍夫曼编码实现参考](#霍夫曼编码实现参考)
     - [霍夫曼编码的注意事项](#霍夫曼编码的注意事项)
+- [二叉排序树](#二叉排序树)
+    - [二叉排序树--引入问题](#二叉排序树--引入问题)
+    - [二叉排序数简介](#二叉排序数简介)
+    - [二叉排序树的构建与实现](#二叉排序树的构建与实现)
+    - [二叉排序树删除结点](#二叉排序树删除结点)
+            - [删除结点的情况分析](#删除结点的情况分析)
+            - [二叉排序树删除结点的实现](#二叉排序树删除结点的实现)
+    - [二叉平衡树](#二叉平衡树)
+        - [引入问题--二叉排序树的问题](#引入问题--二叉排序树的问题)
+        - [二叉平衡树说明](#二叉平衡树说明)
+        - [平衡二叉树--旋转方式的分析](#平衡二叉树--旋转方式的分析)
+            - [二叉平衡树的左旋](#二叉平衡树的左旋)
+            - [二叉平衡树的右旋](#二叉平衡树的右旋)
+            - [二叉平衡树的双旋](#二叉平衡树的双旋)
+        - [二叉平衡树--旋转的实现](#二叉平衡树--旋转的实现)
 - [](#)
 
 # 数据结构与算法概述
@@ -3729,5 +3744,651 @@
     - 如: 视频、ppt 等文件
 - 霍夫曼编码是按字节来处理的，所以可以处理所有的二进制文件
 - 如果一个文件中，重复的珊瑚礁不多，压缩效果不会很好
+
+# 二叉排序树
+## 二叉排序树--引入问题
+[top](#catalog)
+- 需求
+    - 数列（7， 3， 10， 12， 5， 1， 9）
+    - 要求能够高效的完成对数据的查询和添加
+
+- 使用数组实现
+    
+    |类型|优点|缺点|
+    |-|-|-|
+    |未排序数组|添加速度快：直接在数组末尾添加|查找速度慢|
+    |已排序数组|查找速度快：可以使用二分查找|插入速度慢: 为了保证有序，在插叙时，需要找到插入位置，并将后面的所有元素进行移动|
+
+- 使用链表实现
+    - 优点
+        - 添加数据速度快，并且不需要移动元素
+        - 不需要扩容
+    - 缺点
+        - 物理链表是否需有序，查找速度都很慢
+
+## 二叉排序数简介
+[top](#catalog)
+- 二叉排序树，BST，Binary Sort Tree
+- 特点
+    - 对任何一个非叶子结点，都要求:
+        1. `左结点的值 < 当前结点的值`
+        2. `右结点的值 > 当前结点的值`
+        3. 如果值相同，可以保存在左边或右边
+    - 插入速度快，查找速度快
+
+## 二叉排序树的构建与实现
+[top](#catalog)
+- 构建思路
+    1. 新结点与当前结点的值比较
+    2. 如果 `新结点 < 当前结点`，准备在左子树上添加新结点
+        - 判断`当前结点.left == NULL`
+        - 如果为空，则将新结点添加为左子节点
+        - 如果不为空，则向左递归，继续在左子树上搜索添加位置
+    3. 如果 `新结点 >= 当前结点`，准备在左子树上添加新结点
+        - 判断`当前结点.right == NULL`
+        - 如果为空，则将新结点添加为右子节点
+        - 如果不为空，则向左递归，继续在右子树上搜索添加位置
+        
+- 构建示例
+    - [binary_sort_tree_demo](imgs/data_structure/tree/binary_tree/binary_sort_tree_demo.png)
+
+- 实现内容
+    - 参考代码
+        - [/algorithm/src/java-algorithm/datastructure/src/main/java/com/ljs/learn/datastructure/tree/binary/sorttree/BinarySortNode.java](/algorithm/src/java-algorithm/datastructure/src/main/java/com/ljs/learn/datastructure/tree/binary/sorttree/BinarySortNode.java)
+        - [/algorithm/src/java-algorithm/datastructure/src/main/java/com/ljs/learn/datastructure/tree/binary/sorttree/BinarySortTree.java](/algorithm/src/java-algorithm/datastructure/src/main/java/com/ljs/learn/datastructure/tree/binary/sorttree/BinarySortTree.java)
+    - 实现代码
+        - 二叉排序树结点
+            ```java
+            public class BinarySortNode {
+                int value;
+                BinarySortNode left;
+                BinarySortNode right;
+            
+                public BinarySortNode(int value) {
+                    this.value = value;
+                }
+            
+                // 添加结点
+                // 以递归的形式添加结点，需要满足二叉排序树的规则
+                public void add(BinarySortNode node){
+                    if (node == null){
+                        return ;
+                    }
+            
+                    // 判断结点与当前结点的大小
+                    if (node.value < this.value){
+                        // 如果当前结点的左子节点为null，则直接添加结点
+                        if (this.left == null){
+                            this.left = node;
+                        } else {
+                            // 递归的向左子树添加
+                            this.left.add(node);
+                        }
+                    } else {
+                        //
+                        if (this.right == null){
+                            this.right = node;
+                        } else {
+                            // 递归的向右子树添加
+                            this.right.add(node);
+                        }
+                    }
+                }
+            }
+            ```
+        - 二叉排序树
+            ```java
+            public class BinarySortTree {
+                private BinarySortNode root;
+            
+                // 将数组的每个元素添加到树中
+                public void addArray(int[] array){
+                    for (int n : array) {
+                        addNode(n);
+                    }
+                }
+            
+                // 添加结点
+                public void addNode(int value){
+                    if (root == null){
+                        root = new BinarySortNode(value);
+                    }else {
+                        root.add(new BinarySortNode(value));
+                    }
+                }
+                // 中序遍历
+                public void infixOrder(){
+                    if (root == null) {
+                        System.out.println("empty tree");
+                    } else {
+                        root.infixOrder();
+                    }
+                }
+            }
+            ```
+- 测试内容
+    - 参考代码
+        - [/algorithm/src/java-algorithm/datastructure/src/test/java/com/ljs/learn/datastructure/tree/binary/sorttree/BinarySortTreeTest.java](/algorithm/src/java-algorithm/datastructure/src/test/java/com/ljs/learn/datastructure/tree/binary/sorttree/BinarySortTreeTest.java)
+    - 测试内容
+        ```java
+        @Test
+        public void addArray() {
+            int[] array = {7, 3, 10, 12, 5, 1, 9};
+            BinarySortTree binarySortTree = new BinarySortTree();
+            binarySortTree.addArray(array);
+
+            binarySortTree.infixOrder();
+            // 输出: 1 3 5 7 9 10 12
+        }
+        ```
+
+## 二叉排序树删除结点
+### 删除结点的情况分析
+[top](#catalog)
+- 删除结点的几种情况
+    - 删除根结点
+    - 删除非根结点
+        1. 删除叶子结点
+            - 直接删除结点
+        2. 删除只有一颗子树的结点
+            - 将目标结点的子树设置到父节点中
+        3. 删除有两颗子树的结点
+- 删除根结点
+    1. 如果没有左子结点，也没有右子节点，则将根结点删除
+    2. 如果有左子结点，和右子节点
+        - 在右子树搜索最小的结点，将该结点删除，并将值赋给根结点
+        - 在左子树搜索最大的结点，将该结点删除，并将值赋给根结点
+    3. 如果只有左子结点，或只有右子节点
+        - 将根结点设置为左子节点，或右子节点
+- 删除非根结点
+    1. 删除叶子结点
+        1. 在树中搜索需要删除的结点 targetNode
+        2. 找到 targetNode 的父节点 parent
+        3. 确定 targetNode 是 parent 的左子节点，还是右子节点
+        4. 将 parent 对应的结点设置为 null，来删除结点
+    
+    2. 删除只有一颗子树的结点
+        1. 在树中搜索需要删除的结点 targetNode
+        2. 找到 targetNode 的父节点 parent
+        3. 确定 targetNode 是 parent 的左子节点，还是右子节点
+        4. 确定 targetNode 的子树是的左子结点，还是右子节点
+        5. 根据子树和父节点的情况进行设置
+            - targetNode:parent的左结点、子树: 左结点
+                - parent.left = targetNode.left
+            - targetNode:parent的左结点、子树: 右结点
+                - parent.left = targetNode.right
+            - targetNode:parent的右结点、子树: 左结点
+                - parent.right = targetNode.left
+            - targetNode:parent的右结点、子树: 右结点
+                - parent.right = targetNode.right
+    
+    3. 删除有两颗子树的结点
+        1. 在树中搜索需要删除的结点 targetNode
+        2. 找到 targetNode 的父节点 parent
+        3. 从 targetNode 的**右子树**找到**最小的结点**，或者左子树的最大值
+            - 最小值结点一定是叶子结点
+        4. 用一个临时变量temp保存最小结点的值
+        5. 删除最小结点
+        6. 将 targetNode 中的数据替换为 temp
+
+- 删除示例
+    - 删除根结点
+        - 根结点只有右子结点
+            - ![delroot_on_sub](imgs/data_structure/tree/sorttree/deleteNode/delroot_on_sub.png)
+        - 根结点有左子节点和右子节点
+            - ![delroot_double_sub](imgs/data_structure/tree/sorttree/deleteNode/delroot_double_sub.png)
+    - 删除非根结点
+        1. 删除叶子结点
+            - ![delnode_leaf](imgs/data_structure/tree/sorttree/deleteNode/delnode_leaf.png)
+        2. 删除只有一颗子树的结点
+            - ![delnode_one_sub](imgs/data_structure/tree/sorttree/deleteNode/delnode_one_sub.png)
+        3. 删除有两颗子树的结点
+            - ![delnode_dobule_sub](imgs/data_structure/tree/sorttree/deleteNode/delnode_dobule_sub.png)
+
+### 二叉排序树删除结点的实现
+[top](#catalog)
+- 每种情况都有的两个通用操作
+    1. 在树中搜索需要删除的结点 targetNode
+    2. 找到 targetNode 的父节点 parent
+ 
+- 通用操作实现
+    - 参考代码
+        - [/algorithm/src/java-algorithm/datastructure/src/main/java/com/ljs/learn/datastructure/tree/binary/sorttree/BinarySortNode.java](/algorithm/src/java-algorithm/datastructure/src/main/java/com/ljs/learn/datastructure/tree/binary/sorttree/BinarySortNode.java)
+    - 代码内容
+        ```java
+        // 在树中搜索需要删除的结点 targetNode
+        public BinarySortNode searchNode(int value) {
+            if (this.value == value) {   // 如果和目标值相等，在直接返回
+                return this;
+            } else if (value < this.value) { // 如果比当前值小，则继续左继续递归搜索
+                if (this.left == null) return null;
+                return this.left.searchNode(value);
+            } else { // 如果比当前值大，则继续右继续递归搜索
+                if (this.right == null) return null;
+                return this.right.searchNode(value);
+            }
+        }
+    
+        // 找到 targetNode 的父节点 parent
+        public BinarySortNode searchParentNode(int value) {
+            // 如果当前结点的左结点或右结点等于 value，则找到父节点
+            if ((this.left != null && this.left.value == value) ||
+                    (this.right != null && this.right.value == value)) {
+                return this;
+            }
+    
+            if (value < this.value && this.left != null) {
+                // 如果value比当前结点小，则继续左递归
+                return this.left.searchParentNode(value);
+            } else if (value > this.value && this.right != null){
+                // 如果value比当前结点大，则继续左递归
+                return this.right.searchParentNode(value);
+            } else {
+                return null; // 无法找到父节点
+            }
+        }
+        ```
+
+- 删除结点
+    - 参考代码
+        - [/algorithm/src/java-algorithm/datastructure/src/main/java/com/ljs/learn/datastructure/tree/binary/sorttree/BinarySortTree.java](/algorithm/src/java-algorithm/datastructure/src/main/java/com/ljs/learn/datastructure/tree/binary/sorttree/BinarySortTree.java)
+    - 代码内容
+        ```java
+        // 删除结点
+        public void deleteNode(int value) {
+            if (root == null) return;
+            // 1. 搜索结点
+            // 1.1 搜索目标结点
+            BinarySortNode targetNode = searchNode(value);
+            // 如果没有找到则返回
+            if (targetNode == null) return;
+    
+            // 1.2 搜索父节点
+            BinarySortNode parentNode = searchParentNode(value);
+    
+            if (parentNode == null) {
+                // 2. 如果该结点没有父节点，则说明该结点是根结点
+                // 2.1 如果左右子结点都是 null，则将root设为空
+                if (targetNode.left == null && targetNode.right == null) {
+                    root = null;
+                } else if (targetNode.left != null && targetNode.right != null) {
+                    // 2.2 如果左右子节点都存在
+                    // 获取右子树的最小值，并删除该结点
+                    int rightMinVal = delRightTreeMin(targetNode.right);
+                    // 将当前结点的值替换为右子树的最小值
+                    targetNode.value = rightMinVal;
+                } else {
+                    // 2.3 如果只有左子树或只有右子树，则将根结点替换为子树
+                    if (targetNode.left != null) {
+                        root = targetNode.left;
+                    } else if (targetNode.left != null) {
+                        root = targetNode.right;
+                    }
+                }
+            } else {
+                // 3. 删除叶子结点
+                if (targetNode.left == null && targetNode.right == null) {
+                    // 判断目标结点是父节点的左结点还是右结点
+                    if (targetNode == parentNode.left) {
+                        parentNode.left = null;
+                    } else {
+                        parentNode.right = null;
+                    }
+                } else if (targetNode.left != null && targetNode.right != null) {
+                    // 5. 删除有两颗子树的结点
+                    // 5.1 获取右子树的最小值，并删除该结点
+                    int rightMinVal = delRightTreeMin(targetNode.right);
+                    // 5.2 将当前结点的值替换为右子树的最小值
+                    targetNode.value = rightMinVal;
+                } else {
+                    // 4. 删除只有一个子树的结点
+                    if (targetNode.left != null) {
+                        // 4.1 如果目标结点只有左子树
+                        if (parentNode.left == targetNode) {
+                            parentNode.left = targetNode.left;
+                        } else {
+                            parentNode.right = targetNode.left;
+                        }
+                    } else {
+                        // 4.2 如果目标结点只有右子树
+                        if (parentNode.left == targetNode) {
+                            parentNode.left = targetNode.right;
+                        } else {
+                            parentNode.right = targetNode.right;
+                        }
+                    }
+                }
+            }
+        }
+    
+        /**
+         * 1. 获取以 node 为根结点的子树的最小结点
+         * 2. 删除node为结点的二叉排序树的最小结点
+         *
+         * @param node 二叉排序树结点
+         * @return 返回以node为根结点的二叉树的最小结点的值
+         */
+        public int delRightTreeMin(BinarySortNode node) {
+            BinarySortNode target = node;
+    
+            // 1. 循环查找左结点，找到最小结点
+            while (target.left != null) {
+                target = target.left;
+            }
+    
+            // 2. 删除该结点
+            deleteNode(target.value);
+            return target.value;
+        }
+        ```
+      
+- 测试内容
+    - 参考代码
+        - [/algorithm/src/java-algorithm/datastructure/src/test/java/com/ljs/learn/datastructure/tree/binary/sorttree/BinarySortTreeTest.java](/algorithm/src/java-algorithm/datastructure/src/test/java/com/ljs/learn/datastructure/tree/binary/sorttree/BinarySortTreeTest.java)
+    - 测试代码
+        ```java
+        // 删除叶子结点
+        @Test
+        public void deleteLeafNode(){
+            int[] array = {7, 3, 10, 12, 5, 1, 9};
+            BinarySortTree binarySortTree = new BinarySortTree();
+            binarySortTree.addArray(array);
+            binarySortTree.infixOrder();
+            System.out.println("------------");
+    
+            binarySortTree.deleteNode(1);
+            binarySortTree.deleteNode(9);
+            binarySortTree.infixOrder();
+    
+            // 输出: 3 5 7 10 12
+        }
+    
+        // 删除只有一颗子树的结点
+        @Test
+        public void deleteOneSubNode(){
+            int[] array = {7, 3, 10, 12, 5, 1, 9, 2};
+            BinarySortTree binarySortTree = new BinarySortTree();
+            binarySortTree.addArray(array);
+            binarySortTree.infixOrder();
+            System.out.println("------------");
+    
+            binarySortTree.deleteNode(1);
+            binarySortTree.infixOrder();
+    
+            // 输出: 2 3 5 7 9 10 12
+        }
+    
+        // 删除包含两颗子树的结点
+        @Test
+        public void deleteDoubleSubNode(){
+            int[] array = {7, 3, 10, 12, 5, 1, 9, 11, 13};
+            BinarySortTree binarySortTree = new BinarySortTree();
+            binarySortTree.addArray(array);
+            binarySortTree.infixOrder();
+            System.out.println("------------");
+    
+            binarySortTree.deleteNode(10);
+            binarySortTree.infixOrder();
+            
+            // 输出: 1 3 5 7 9 11 12 13
+        }
+        ```
+
+# 二叉平衡树
+## 引入问题--二叉排序树的问题
+[top](#catalog)
+- 将数列: `[1, 2, 3, 4, 5, 6]` 构造成一个二叉排序树
+    ```
+    1
+     \
+      2
+       \
+        3
+         \
+          4
+           \
+            5
+    ```
+- 该二叉树的问题
+    - 左子树全部为空，退化成了一个单链表
+    - 对插入速度没有影响
+    - 查询速度降低
+        - **每次都需要检查左子树**
+        - 查询速度比单链表更慢
+
+## 平衡二叉树说明
+[top](#catalog)
+- 二叉平衡树，Self-balancing binary search tree
+- 二叉平衡树可以保证较高的查询效率
+- 二叉平衡树的特点
+    - 它是一颗空树或者左右两颗子树的高度的差的绝对值不超过1
+    - 左右子树都是一颗二叉平衡树
+- 二叉平衡树的常用实现方法
+    - 红黑树
+    - AVL
+    - 替罪羊树
+    - Treap
+    - 伸展树
+
+## 平衡二叉树--旋转方式的分析
+### 二叉平衡树的左旋
+[top](#catalog)
+- 左旋的条件
+    - 根结点的右子树的高度 > 根结点的左子树的高度
+- 左旋的目的
+    - 降低右子树的高度
+- 左旋的过程
+    1. 当前结点为 `curNode`
+    2. 创建一个新结点 `newNode`，并且: `newNode.vlaue = curNode.vlaue`
+    3. `newNode.left = curNode.left`
+        - 新结点的左结点指向当前结点的左结点
+    4. `newNode.right = curNode.right.left`
+        - 将新结点的右子树设置为当前结点的右子树的左子树
+        - 即搜索比当前结点大的最小值
+    5. `curNode.value = curNode.right.value`
+        - 将当前结点的值设为当前结点的右结点的值
+    6. `curNode.right = curNode.right.right`
+        - 将当前结点的右子树设置为右子树的右子树
+    7. `curNode.left = newNode`
+        - 将当前结点的左子树设置为新结点
+
+- <label style='color:red'>什么时候执行左旋？</label>
+    1. 添加结点后
+    2. 右子树的高度 - 左子树的高度 > 1
+
+- 左旋过程示例
+    - 原始数组：`[4, 3, 6, 5, 7, 8]`
+    - 左旋步骤
+        1. ![step0-3](imgs/data_structure/tree/avl/left_rotate/step0-3.png)
+        2. ![step4-7](imgs/data_structure/tree/avl/left_rotate/step4-7.png)
+
+### 二叉平衡树的右旋
+[top](#catalog)
+- 示例
+    - 如数组: `[10, 12, 8, 9, 7, 6]`
+    - 构建后的二叉排序树
+        ```
+            10
+            / \
+           8   12
+          / \
+         7   9
+        /
+       6 
+        ```
+
+- 右旋的条件
+    - 根结点的左子树的高度 > 根结点的右子树的高度
+- 右旋的目的
+    - 降低左子树的高度
+- 右旋的过程
+    1. 当前结点为 `curNode`
+    2. 创建一个新结点 `newNode`，并且: `newNode.vlaue = curNode.vlaue`
+    3. `newNode.right = curNode.right`
+        - 新结点的右结点指向当前结点的右结点
+    4. `newNode.left = curNode.left.right`
+        - 将新结点的左子树设置为当前结点的左子树的右子树
+        - 即搜索比当前结点小的最大值
+    5. `curNode.value = curNode.right.value`
+        - 将当前结点的值设为当前结点的左结点的值
+    6. `curNode.left = curNode.left.left`
+        - 将当前结点的左子树设置为左子树的左子树
+    7. `curNode.right = newNode`
+        - 将当前结点的右子树设置为新结点
+
+- <label style='color:red'>什么时候执行左旋？</label>
+    1. 添加结点后
+    2. 左子树的高度 - 右子树的高度 > 1
+
+- 右旋过程示例
+    - 原始数组：`[10, 12, 8, 9, 7, 6]`
+    - 右旋步骤
+        1. ![step0-3](imgs/data_structure/tree/avl/right_rotate/step0-3.png) 
+        2. ![step4-7](imgs/data_structure/tree/avl/right_rotate/step4-7.png)
+
+### 二叉平衡树的双旋
+[top](#catalog)
+- 在某些情况下单向旋转不能完成二叉树的转换
+    - ![cannot_get_avl](imgs/data_structure/tree/avl/double_rotate/cannot_get_avl.png)
+- 单向旋转不能解决问题的条件
+    - 当前结点的左子树或右子树的左右两颗子树的高度差大于0
+    - ![problem_of_single_rotate](imgs/data_structure/tree/avl/double_rotate/problem_of_single_rotate.png)
+
+- 解决方法--双旋
+    - 出现问题的子树是: 子树的左子树高度 < 子树的右子树高度
+        1. 对出现问题的子树进行左旋
+        2. 再对子树的父节点解析右旋
+    - 出现问题的子树是: 子树的左子树高度 > 子树的右子树高度
+        1. 对出现问题的子树进行右旋
+        2. 再对子树的父节点解析左旋
+- 双旋示例
+    - ![double_rotate_demo01](imgs/data_structure/tree/avl/double_rotate/double_rotate_demo01.png)
+
+## 二叉平衡树--旋转的实现
+[top](#catalog)
+- 参考代码
+    - 结点
+        - [/algorithm/src/java-algorithm/datastructure/src/main/java/com/ljs/learn/datastructure/tree/binary/avl/AVLNode.java](/algorithm/src/java-algorithm/datastructure/src/main/java/com/ljs/learn/datastructure/tree/binary/avl/AVLNode.java)
+    - 树
+        - [/algorithm/src/java-algorithm/datastructure/src/main/java/com/ljs/learn/datastructure/tree/binary/avl/AVLTree.java](/algorithm/src/java-algorithm/datastructure/src/main/java/com/ljs/learn/datastructure/tree/binary/avl/AVLTree.java)
+- 测试代码
+    - [/memobook/algorithm/src/java-algorithm/datastructure/src/test/java/com/ljs/learn/datastructure/tree/binary/avl/AVLTreeTest.java](/memobook/algorithm/src/java-algorithm/datastructure/src/test/java/com/ljs/learn/datastructure/tree/binary/avl/AVLTreeTest.java)
+
+- 实现旋转的条件: 计算左右子树的高度差
+    - 在结点中递归计算子树高度，AVLNode.java
+        ```java
+        // 返回以当前结点为根结点的树的高度
+        public int height() {
+            // 比较左右子树的高度，返回最大的高度
+            return Math.max(
+                    left == null ? 0 : left.height(),
+                    right == null ? 0 : right.height()
+            ) + 1;  // +1 表示当前结点作为根结点也算一层
+        }
+    
+        // 返回左子树的高度
+        public int leftHeight() {
+            if (left == null) return 0;
+            return left.height();
+        }
+    
+        // 返回右子树的高度
+        public int rightHeight() {
+            if (right == null) return 0 ;
+            return right.height();
+        }
+        ```
+    - 在树中启动高度计算，AVLTree.java
+        ```java
+        public int height(){
+            if (root == null) return 0;
+            return root.height();
+        }
+        ```
+    - 测试内容
+        ```java
+        @Test
+        public void height(){
+            int[] array = {4, 3, 6, 5, 7, 8};
+            AVLTree avlTree = new AVLTree();
+            avlTree.addArray(array);
+    
+            assertEquals(avlTree.height(), 4);
+        }
+        ```
+
+- 左旋的实现
+    ```java
+    // 左旋
+    public void leftRotate(){
+        AVLNode newNode = new AVLNode(this.value);
+        newNode.left = this.left;
+        newNode.right = this.right.left;
+        this.value = this.right.value;
+        this.right = this.right.right;
+        this.left = newNode;
+    }
+    ```
+- 右旋的实现
+    ```java
+    // 右旋
+    public void rightRotate(){
+        AVLNode newNode = new AVLNode(this.value);
+        newNode.right = this.right;
+        newNode.left = this.left.right;
+        this.value = this.left.value;
+        this.left = this.left.left;
+        this.right = newNode;
+    }
+    ```
+- 在添加结点时，判断具体的旋转方式
+    ```java
+    // 添加结点，并且每次添加后，检查子树高度，并通过旋转来优化树结构
+    public void addWithRotate(AVLNode node){
+        // 判断结点与当前结点的大小
+        if (node.value < this.value) {
+            // 如果当前结点的左子节点为null，则直接添加结点
+            if (this.left == null) {
+                this.left = node;
+            } else {
+                // 递归的向左子树添加
+                this.left.add(node);
+            }
+        } else {
+            //
+            if (this.right == null) {
+                this.right = node;
+            } else {
+                // 递归的向右子树添加
+                this.right.add(node);
+            }
+        }
+
+        // 检查子树高度
+        int leftTreeHeight = leftHeight();
+        int rightTreeHeight = rightHeight();
+        if ((rightTreeHeight - leftTreeHeight) > 1){
+            // 左子树 < 右子树，则左旋
+
+            // 双旋检查: 在右子树中，如果子树的左子树高度 > 子树的右子树的高度，则右旋
+            if (right != null && right.leftHeight() > right.rightHeight()){
+                right.rightRotate();
+            }
+
+            // 再做左旋
+            leftRotate();
+        } else if ((leftTreeHeight - rightTreeHeight) > 1){
+            // 左子树 > 右子树，则右旋
+
+            // 双旋检查: 在左子树中，如果子树的左子树高度 < 子树的右子树的高度，则左旋
+            if (left != null && left.rightHeight() > left.leftHeight()){
+                left.leftRotate();
+            }
+
+            // 再做右旋
+            rightRotate();
+        }
+    }
+    ```
 
 [top](#catalog)
