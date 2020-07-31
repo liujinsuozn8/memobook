@@ -43,13 +43,21 @@
     - [声明属性](#声明属性)
     - [类继承的声明](#类继承的声明)
     - [声明静态内容](#声明静态内容)
-- [类的特性](#类的特性)
-    - [类是静态的声明](#类是静态的声明)
-    - [类是由构造函数实现的](#类是由构造函数实现的)
 - [super关键字](#super关键字)
     - [super简介](#super简介)
     - [super的使用方式](#super的使用方式)
+    - [super的注意事项](#super的注意事项)
     - [super的动态计算过程](#super的动态计算过程)
+    - [通用函数---实例方法访问静态成员](#通用函数---实例方法访问静态成员)
+- [类的特性](#类的特性)
+    - [类声明是静态声明](#类声明是静态声明)
+    - [类是由构造函数实现的](#类是由构造函数实现的)
+    - [非子类、子类、原型继承中的this](#非子类、子类、原型继承中的this)
+    - [父类是默认值](#父类是默认值)
+    - [父类是null--纯静态类](#父类是null--纯静态类)
+    - [类继承和原型继承的区别](#类继承和原型继承的区别)
+- [与原型访问相关的操作](#与原型访问相关的操作)
+- [JS的对象系统](#JS的对象系统)
 
 # 对象
 [top](#catalog)
@@ -224,11 +232,41 @@
     2. 如果自身没有，再沿着 `__proto__` 链向上查找，找到则返回
     3. 如果查找到`Object函数的原型对象.__proto__ `，则返回 `undefined`
 
-- 原型链的尽头: `Object函数的原型对象.__proto__ `，该值为 `null`，找到此处会返回 `undefined`
-- 原型链的本质: **隐式原型**
-    - 在原型链中搜索属性时，一般是通过类的实例对象启动的，所以搜索用的原型**基本都是隐式原型**
+- 原型链的尽头
+    - `Object函数的原型对象.__proto__ `，该值为 `null`，找到此处会返回 `undefined`
 
-- 原型链说明
+- 原型链的本质: **隐式原型**
+    - 由对象所有父类和祖先类的原型对象构成的、可以向上访问的**链表**
+    - 原型链的每个原型对象之间通过**隐式原型** `__proto__` 来连接，构成**链表**
+
+- 原型链的访问方式
+    - 访问方式1: 直接访问隐式原型
+        ```js
+        obj.__proto__
+        ```
+    - 访问方式2: 通过构造器间接访问
+        - 访问代码
+            ```js
+            obj.constructor.prototype
+            ```
+        - `obj.constructor` 相当于 `obj.__proto__.constructor`
+            - 因为对象自身一般不会有 `constructor` 属性，所以自动到隐式原型中搜索
+            - 隐式原型与显示原型指向相同，所以 `obj.constructor` 就是 构造函数/类 本身
+            - 在通过 `prototype` 即可访问到原型链的上一层原型对象
+        - 本质上等同于 `构造函数.prototype`
+    - 访问方式3: 使用内置函数
+        - 访问代码
+            ```js
+            Object.getPrototypeOf(obj).constructor
+            ```
+        - 通过 `Object.getPrototypeOf` 准确的获取隐式原型对象，防止对象自身包含 `constructor` 属性
+
+- 与原型链相关的操作
+    - 这些操作主要还是操作对象的 **隐式原型** `__ptoto__`
+    - 设置对象的隐式原型: `Object.setPrototypeOf(target, src)`
+    - 获取对象的隐式原型: `Object.getPrototypeOf(obj)`
+
+- 示例
     - 说明代码
         ```js
         // js启动后，js引擎默认创建 Object 函数 及其 原型对象
@@ -258,7 +296,7 @@
         myfn.test03();
         ```
 
-    - 内存结构
+    - 说明代码的内存结构
         ```
             内存：栈                内存：堆
         ┌────────────┐    ┌──────────────────────────────────────────────────────────────┐
@@ -1125,10 +1163,6 @@
         - 构造函数声明比继承关系的实现要早，所以两者在代码上**没有具体的顺序要求**
             - 最好先写声明，再写继承关系，方便维护
 
-- 原型链的实现
-    - 由对象所有父类和祖先类的原型对象构成的、可以向上访问的**链表**
-    - 原型链的每个原型对象之间通过隐式原型 `__proto__` 来连接，构成**链表**
-
 ## 原型对象的复制与对象的自有属性表
 [top](#catalog)
 - JS中创建对象的方式
@@ -1139,10 +1173,10 @@
     - 发生属性的写操作时，会为该对象单独创建一个**自有属性表**
     - 属性写操作，只会访问**自有属性表**，不会干扰原型对象，也就不会干扰其他实例对象
 
-- 读对象属性时的处理方式
+- 读<label style='color:red'>对象</label>属性时的处理方式
     - 对属性时的两条规则
         1. 优先读取对象的自有属性表
-        2. 如果自有属性表中没有，通过**隐式原型** `null`
+        2. 如果自有属性表中没有，访问<label style='color:red'>隐式原型对象 _proto__ </label>
             - 访问原型对象时，也需要遵守着两条规则
                 - 先检查原型对象的自有属性表
                 - 再遍历原型对象的原型链
@@ -1150,7 +1184,7 @@
                 - 如果找到则返回
                 - 没有找到返回 `undefined`
 
-- <label style='color:red'>重新定义空白对象</label>
+- <label style='color:red'>重新定义空白对象（什么是空白对象?）</label>
     - 原型链上所有原型对象的自有属性表都为空的对象
 
 - 对象赋值与属性访问示意图
@@ -1617,115 +1651,16 @@
     }
     ```
 
-# 类的特性
-## 类是静态的声明
-[top](#catalog)
-- 类声明是一种**静态声明**
-    - 类声明语法: `class`、`class...extends` 将构造函数和继承关系声明提前到了**语法分析阶段**
-- 使用类声明语法，类之间不会再有执行顺序的限制
-    - 无论写在哪，语法分析阶段就已经创建好了
-- 因为类是静态的声明，所以内部的方法、属性存取器**只是声明，不是函数**，不能在声明内引用自己
-    - `constructor` 是特例，仍然是函数
-    ```js
-    class Foo{
-        constructor(){
-            // 引用自身
-            console.log( typeof constructor); // 输出: function
-        }
-        run(){
-            // 引用自身
-            console.log(typeof run);    // 输出: undefined
-        }
-    }
-    var foo = new Foo();
-    foo.run();
-    ```
-
-## 类是由构造函数实现的
-[top](#catalog)
-- <label style='color:red'>类标识符的本质</label>
-    - 指向**构造方法**的引用
-        ```js
-        class Foo{}
-        Foo === Foo.prototype.constructor; // true
-        ```
-- 类的类型是 `function`
-    ```js
-    class Foo{}
-    console.log( typeof Foo );  // 输出 function
-    ```
-- 只要是类，一定会有一个**显示或隐式**的构造方法
-- 当中没有声明**构造方法**时，引擎会添加一个**隐式**的构造方法
-    - 没有父类的类
-        ```js
-        class Foo{}
-
-        // 相当于
-        class Foo{
-            constructor(){}
-        }
-        ```
-    - 某个类的子类
-        ```js
-        class FooEx extend Foo{}
-
-        // 相当于
-        class FooEx extend Foo{
-            constructor(...args){
-                super(...args);
-            }
-        }
-        ```
-- 继承关系的构造过程
-    - 类的继承关系构造与原型继承不同
-        1. 不会创建父类的实例对象，而是直接修改原型
-        2. 为了保留静态成员的继承，会将子类的原型设为父类
-    - 构造过程
-        ```js
-        class Foo{}
-        class FooEx extends Foo{}
-
-        // 实际的构造过程
-        // 1. 创建构造函数
-        function foo(){}
-        function fooEx(){}
-        // 2. 实现对象方法继承
-        Object.setPrototypeOf(fooEx.prototype, foo.prototype);
-        // 3. 实现静态方法继承
-        Object.setPrototypeOf(fooEx, foo);
-        ```
-    - 构造后的原型链
-        ```
-                            {} 空对象
-                                ^
-                                ^
-                                │
-            prototype           │           __proto__
-            foo ───────>> fooEx.prototype <<───────── new foo
-                                ^
-                                ^
-                                │   __proto__ (set by Object.setPrototypeOf)
-                                │
-                            {} 空对象
-                                ^
-                                ^
-                                │
-                prototype       │           __proto__
-        fooEx  ─────────>> fooEx.prototype <<──────── new fooEx
-        ```
-
 # super关键字
 ## super简介
 [top](#catalog)
 - super 是什么
     - super 不能称为运算符，只能称为关键字
-    - super 是在执行期**动态计算**出来的，不同的位置运算结果不同
+    - super 是在执行期**动态计算**出来的，不同位置的运算结果不同
     - 无法使用 `typeof super` 来获取类型
 
 - super的功能
     - 通过 super 可以调用父类的成员、构造函数
-
-- super 只能出现在方法声明内部
 
 - 使用 super 时的附加效果
     - 通过 `super.xxx` 调用**方法**时，将会隐式地传入当前方法中的 `this` 对象
@@ -1764,6 +1699,16 @@
     // 2.2 通过 [] 获取
     super[expression]
     ```
+
+## super的注意事项
+[top](#catalog)
+- 多级继承时的执行顺序
+    - 先执行父类，再执行子类
+    - 从上到下执行
+- <label style='color:red'>在super之前，不能使用 `this` 对象</label>
+- super 只能出现在方法声明内部
+- 类继承与原型继承混用时，super将会回溯到第一个非类的构造器
+
 
 ## super的动态计算过程
 [top](#catalog)
@@ -1911,3 +1856,406 @@
 
             obj.foo();  // 输出: [object Object]
             ```
+
+## 通用函数---实例方法访问静态成员
+[top](#catalog)
+- 实例方法访问静态成员时的问题
+    - 必须**显示的**通过类名来调用静态成员
+    - 如果调用父类的静态成员，
+    - 类代码中硬编码了类自身，会增加重构的难度
+    - 示例
+        ```js
+        class Foo{
+            static get count(){
+                return 123;
+            }
+
+            printCount(){
+                console.log('count = '+ Foo.count);
+            }
+        }
+
+        var foo = new Foo();
+        foo.printCount();   // 输出: count = 123
+        ```
+- 构造通用函数，解耦实例方法访与静态成员的调用
+    ```js
+    // 调用方法时的实参，应该是 this 对象
+    function parent(instance){
+        // 1. Object.getPrototypeOf(instance) 相当于 Class.prototype
+        // instance是this对象，也相当于 this.__proto__
+
+        // 2. 通过 Class.prototype.constructor 即可获取类本身
+        return Object.getPrototypeOf(instance).constructor;
+    }
+    ```
+
+- 示例
+    - 参考代码
+        - [src/oop/class/super/getParent.js](src/oop/class/super/getParent.js)
+    - 代码内容
+        ```js
+        // 1. 创建通用函数，解析创建实例对象的类
+        // 因为父类和子类实在一条原型链上，所以通过子类可以访问到父类中的静态成员
+        function parent(instance){
+            return Object.getPrototypeOf(instance).constructor;
+        }
+
+        // 2. 创建父类
+        class Foo{
+            // 设置父类的静态成员
+            static get count(){
+                return 123;
+            }
+
+        }
+
+        // 3. 创建子类
+        class FooEx extends Foo{
+            // 设置子类的静态成员
+            static print(){
+                console.log('this is FooEX');
+            }
+            // 访问父类中的静态成员
+            printParentStaticProperty(){
+                console.log('count = '+ parent(this).count);
+            }
+
+            // 访问当前类中的静态成员
+            printSelfStaticProperty(){
+                parent(this).print()
+            }
+        }
+
+        // 4. 实例化子类对象，并访问静态成员
+        var fooEx = new FooEx();
+        fooEx.printParentStaticProperty();  // 输出: count = 123
+        fooEx.printSelfStaticProperty();    // 输出: this is FooEX
+        ```
+
+
+# 类的特性
+## 类声明是静态声明
+[top](#catalog)
+- 类声明是一种**静态声明**
+    - 类声明语法: `class`、`class...extends` 将构造函数和继承关系声明提前到了**语法分析阶段**
+- 使用类声明语法，类之间不会再有执行顺序的限制
+    - 无论写在哪，语法分析阶段就已经创建好了
+- 因为类是静态的声明，所以内部的方法、属性存取器**只是声明，不是函数**，不能在声明内引用自己
+    - `constructor` 是特例，仍然是函数
+    ```js
+    class Foo{
+        constructor(){
+            // 引用自身
+            console.log( typeof constructor); // 输出: function
+        }
+        run(){
+            // 引用自身
+            console.log(typeof run);    // 输出: undefined
+        }
+    }
+    var foo = new Foo();
+    foo.run();
+    ```
+
+## 类是由构造函数实现的
+[top](#catalog)
+- <label style='color:red'>类标识符的本质</label>
+    - 指向**构造方法**的引用
+        ```js
+        class Foo{}
+        Foo === Foo.prototype.constructor; // true
+        ```
+    - 对于类的实例，可以通过 `constructor` 来找到当前类
+        ```js
+        class Foo{}
+        var foo = new Foo();
+        foo.constructor === Foo;    // true
+        ```
+- 类的类型是 `function`
+    ```js
+    class Foo{}
+    console.log( typeof Foo );  // 输出 function
+    ```
+- 只要是类，一定会有一个**显示或隐式**的构造方法
+- 当中没有声明**构造方法**时，引擎会添加一个**隐式**的构造方法
+    - 没有父类的类
+        ```js
+        class Foo{}
+
+        // 相当于
+        class Foo{
+            constructor(){}
+        }
+        ```
+    - 某个类的子类
+        ```js
+        class FooEx extend Foo{}
+
+        // 相当于
+        class FooEx extend Foo{
+            constructor(...args){
+                super(...args);
+            }
+        }
+        ```
+- 继承关系的构造过程
+    - 类的继承关系构造与原型继承不同
+        1. 不会创建父类的实例对象，而是直接<label style='color:red'>设置原型的原型</label>
+            - 准确说是: `子类.prototype.__proto__ = 父类.prototype`
+        2. 为了保留静态成员的继承，会将子类的原型设为父类
+    - 构造过程
+        ```js
+        class Foo{}
+        class FooEx extends Foo{}
+
+        // 实际的构造过程
+        // 1. 创建构造函数
+        function Foo(){}
+        function FooEx(){}
+        // 2. 实现对象方法继承，相当于: FooEx.prototype.__proto__ = Foo.prototype
+        Object.setPrototypeOf(FooEx.prototype, Foo.prototype);
+        // 3. 实现静态方法继承
+        Object.setPrototypeOf(FooEx, Foo);
+        ```
+    - 构造后的原型链
+        ```
+                            {constructor:Foo, __proto__:{ Object() } }
+                                        ^
+                                        ^
+                                        │
+                        prototype       │
+                    Foo ───────>> Foo.prototype
+                                        ^
+                                        ^
+                                        │ __proto__ (通过 Object.setPrototypeOf 方法构建)
+                                        │
+                {constructor:FooEx, __proto__:{ Foo() } }
+                                ^
+                                ^
+                                │  引用对象的指向
+                prototype       │           __proto__
+        FooEx  ─────────>> FooEx.prototype <<──────── new FooEx()
+        ```
+
+## 非子类、子类、原型继承中的this
+[top](#catalog)
+- 创建this的相关信息
+
+    |来源                           |起点          |构造的结束时间|
+    |-------------------------------|-------------|-------------|
+    |非子类 `class Foo{}`            |基类 `Object`|进入构造方法之前，this 有引擎自动创建|
+    |子类 `class FooEx extends Foo{}`|基类 `Object`|所有的super都调用完成|
+    |原型继承                        |子类         |进入构造方法之前，this 有引擎自动创建|
+
+- 类继承中的 `this` 实例是由 `Object()` 构造器创建的
+- 类的构造过程说明
+    - 构造过程
+        1. 通过 `new 子类()` 创建实例对象
+        2. 执行子类的 `constructor` 函数
+        3. 调用 `constructor` 函数内部的 `super()` 函数（显示/隐式的）
+        4. 动态计算 `super()`，得到父类的构造函数
+        5. 执行父类的构造函数，遇到内部的 `super()` 函数（显示/隐式的）
+        6. **顺着原型链**，重复步骤 4--5，直到最底层的基类: `Object()`
+            - 此时已经构成了一个递归形式的调用链
+        7. 调用 `Object()`，创建实例对象，该对象作为 `this` 对象
+        8. 回溯 步骤 6 产生的调用链
+            - 每次回溯通过 `子类.call(this)` 的方式调用子类的构造器
+            - 调用后，子类中的属性会添加到 `this` 中
+        9. 回溯完成后，对象构造完成
+    - 构造过程示例
+        ```js
+        Object.constructor()  ─────────>>> this = new Object();  No.7
+            ^                                   │
+            │ super()                           │ No.8
+            │                                   V
+        Foo.constructor()     ─────────>>> Foo.call(this)
+            ^                                   │
+            │ super()                           │ No.8
+            │ No.5                              V
+        FooEx.constructor()   ─────────>>> FooEx.call(this)
+            ^                                   │
+            │ super()  No.4                     │ No.8
+            │ No.3                              V
+        FooNext.constructor() ─────────>>> FooNext.call(this)
+            ^                                   │
+            │ No.2                              │
+            │                       No.9        │
+        new FooNext();  No.1 <<<────────────────┘
+        ```
+- 类构造过程中的注意事项
+    - `Object()` 最先创建实例 `this` 的前提
+        - 必须让所有的构造方法都先调用 `super()`，回溯整个原型链
+        - 必须在子类的 `constructor` 函数中主动调用 `super()`
+            - 如果没有 `constructor`, JS会添加隐式的构造函数
+    - <label style='color:red'>在super之前，不能使用 this </label>
+        - 因为super之前还没有创建 this，所以无法使用
+
+- 类继承和原型继承的混用
+    - super 将会一直回溯到第一个非 `类声明` 构造器
+    - 即使父类是通过原型继承方式创建的，也需要在构造器中**显示的调用super**
+    - 示例
+        - 参考代码
+            - [src/oop/class/super/mixin.js](src/oop/class/super/mixin.js)
+
+        - 代码内容
+            ```js
+            // 1. 创建父类
+            class Foo{
+                constructor(){
+                    console.log('this is Foo')
+                }
+            }
+            // 2. 创建子类，使用原型继承 Foo
+            function FooEx(){
+                console.log('this is FooEx')
+            }
+            FooEx.prototype = new Foo();    // 此时Foo的对象已经构造完成，不会被 super回溯
+            FooEx.prototype.constructor = FooEx;
+
+            // 3. 使用类创建FooEx的子类
+            class FooNext extends FooEx{
+                constructor(){
+                    super() // 即使父类是通过原型继承方式创建的也需要显示的调用super
+                    console.log('this is FooNext')
+                }
+            }
+
+            var a = new FooNext();
+            // 输出:
+            // this is Foo
+            // this is FooEx
+            // this is FooNext
+            ```
+
+## 父类是默认值
+[top](#catalog)
+- 父类的默认值为 `Object`
+- 两种效果相同的声明
+    - 声明方式1
+        - 如果有 `constructor`，一定不能使用 `super`
+        ```js
+        class Foo{
+            constructor(){}
+        }
+        ```
+    - 声明方式2
+        - 如果有 `constructor`，必须使用 `super`
+        ```js
+        class Foo extends Object{
+            constructor(){
+                super()
+            }
+        }
+        ```
+
+## 父类是null--纯静态类
+[top](#catalog)
+- 父类是null
+    ```js
+    class Foo extends null{}
+    ```
+- 如果父类是null时，该类无法创建实例
+    - 不能创建实例的原因: `super`、`this` 失效
+        1. null 无法作为函数调用，所以 `super()` 是无效的
+        2. 因为 `super()` 失效，所以无法创建对象，即无法创建 `this`
+        3. `super` 做动态计算时，还需要 `this`，但是无法创建 `this`，导致创建过程失效
+    - 失效的时间
+        - 执行期
+- 父类是null时，无法创建实例，所以只能当作`纯静态类`，**只能对外提供静态方法**
+    - 可以有对象方法，但是无法创建对象，所以没有意义
+
+- 纯静态了的构造方法
+    - 纯静态类只是无法实例化，但仍然有默认的构造方法
+        - 进行实例化时，会调用该方法
+            - 但是调用内部的`super()` 时，回溯到了null导致了失败
+    - 可以重写构造函数，并手动返回一个对象
+        - 手动返回的构造方式，
+            ```js
+            constructor(){
+                return Object.create(new.target.prototype)
+            }
+            ```
+        - `new.target` 指向 调用 `new` 时的那个类，也就是静态类
+        - `new.target.prototype` 用来保证原型链上的继承关系
+            - 这里必须通过这种方式来保证
+            - ?????
+    - 实例
+        - 参考代码
+            - [src/oop/class/extends/extendsNull.js](src/oop/class/extends/extendsNull.js)
+        - 代码内容
+            ```js
+            class Foo extends null{
+                // 在构造器中手动返回一个对象
+                constructor(){
+                    return Object.create(new.target.prototype)
+                }
+                foo(){
+                    console.log('call foo')
+                }
+            }
+
+            // 实例化对象
+            var foo = new Foo();
+            foo.foo();  // call foo
+
+            // 检查类型
+            console.log(foo instanceof Foo);    // true
+            // 对象隐式原型的隐式原型被删除了，无法找到Object
+            // 不在是Object的子类
+            console.log(foo instanceof Object); // false
+            ```
+
+## 类继承和原型继承的区别
+[top](#catalog)
+|不同点|类继承|原型继承|备注|
+|-|-|-|-|
+|`new` 操作|从基类开始构造实例|从子类开始构造实例||
+|继承的实现方式|`Object.setPrototypeOf`|设置原型对象`prototype`<br>维护原型链||
+|||||
+
+# 与原型访问相关的操作
+[top](#catalog)
+- 访问显示原型
+    - `Class.prototype`
+
+- 访问隐式原型
+    - `obj.__proto__`
+    - 设置对象的隐式原型: `Object.setPrototypeOf(target, src)`
+    - 获取对象的隐式原型: `Object.getPrototypeOf(obj)`
+    - 检查`对象A`是不是`对象B`的原型对象: `objA.isPrototypeOf(objB)`
+
+- 通过原型链获取**类/父类**的方法
+    - 实例对象获取对象自身类的方法
+        - `obj.constructor`
+        - `Object.getPrototypeOf(obj).constructor`
+    - 通过原型链访问父类的方法
+        - `obj.constructor.prototype`
+        - `Object.getPrototypeOf(obj).constructor.prototype`
+
+- 遍历原型链
+    ```js
+    var proto = Object.getPrototypeOF(obj);
+    // 会一直遍历到原型链的尽头: null
+    while(proto){
+        // 打印原型
+        console.log(proto);
+        // 访问上一层原型
+        proto = Object.getPrototypeOf(proto);
+    }
+    ```
+
+# JS的对象系统
+[top](#catalog)
+- 继承的最终目的都是构建一个对象系统，而不是系统
+- 对象系统的三要素
+    - 继承
+    - 封装
+    - 多态
+
+
+----------------------------------------------------------------------
+
+----------------------------------------------------------------------
+
+

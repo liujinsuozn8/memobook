@@ -597,7 +597,7 @@
         - 功能:
             - 获取变量的类型，返回一个字符串
         - 返回
-            - 包括: undefined、string、number、boolean、function,symbol
+            - 包括: undefined、string、number、boolean、function, symbol, object
             - **返回结果都是对应类型**，并且**第一个字母小写**
             - 无法判断 null 、Array、 Object，因为都会返回 object (对于null，这是一个bug)
         - 调用方式
