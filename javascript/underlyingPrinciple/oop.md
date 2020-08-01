@@ -17,7 +17,7 @@
     - [与原型相关的问题](#与原型相关的问题)
 - [原型构造继承关系的几种方法](#原型构造继承关系的几种方法)
     - [原型链继承](#原型链继承)
-    - [借用构造函数继承](#借用构造函数继承)
+    - [类抄写--借用构造函数继承](#类抄写--借用构造函数继承)
     - [组合继承](#组合继承)
     - [寄生组合继承](#寄生组合继承)
     - [保留父类的静态方法](#保留父类的静态方法)
@@ -52,6 +52,9 @@
 - [类的特性](#类的特性)
     - [类声明是静态声明](#类声明是静态声明)
     - [类是由构造函数实现的](#类是由构造函数实现的)
+    - [类继承关系的构造](#类继承关系的构造)
+        - [类继承关系的构造过程](#类继承关系的构造过程)
+        - [setPrototypeOf构建类继承关系的本质](#setPrototypeOf构建类继承关系的本质)
     - [非子类、子类、原型继承中的this](#非子类、子类、原型继承中的this)
     - [父类是默认值](#父类是默认值)
     - [父类是null--纯静态类](#父类是null--纯静态类)
@@ -557,12 +560,21 @@
 - 使用方法
     1. 定义父类型的构造函数
     2. 给父类型的原型添加方法
+        ```js
+        父类.prototype.xxx = ...;
+        ```
     3. 定义子类型的构造函数
     4. 重新构造子类型的原型关系
-        1. 重新设置子类型的原型对象：创建父类型的对象赋值给子类型的原型对象
-        2. 将子类型原型的`constructor`属性设置为子类型
+        1. 重新设置子类型的原型对象：创建父类的对象赋值给子类型的原型对象
+            ```js
+            子类.prototype = new 父类();
+            ```
+        2. 将子类型原型的`constructor`属性设置为子类
+            ```js
+            子类.prototype.constructor = 子类;
+            ```
+
     6. 给子类型原型添加方法
-    7. 创建子类型的对象：可以调用父类型的方法
 
 - 重点
     - 子类型的原型对象指向父对象的实例
@@ -612,20 +624,29 @@
         subObj.showSupper()
         ```
 
-## 借用构造函数继承
+## 类抄写--借用构造函数继承
 [top](#catalog)
+- 这种方法本质上就是`类抄写`，将父类中的成员拷贝到子类中
+
 - 使用方法
     1. 定义父类型的构造函数
     2. 定义子类型的构造函数
     3. 在子类型构造函数中通过 `call` 调用父类型的构造函数
         - 即：将父类构造函数中的 this对象 替换为 子类型的this
-        - 执行后，无论是在子类型构造函数还是父类型构造函数中，附加的属性、函数就都在 this对象上了
+        - 执行后，子类型构造函数、父类型构造函数中附加的: 属性、函数就都添加到 this对象上了
         - 但是<label style="color:red">父类型在原型上添加的属性与方法，子类型无法共享</label>
+        - 示例
+        ```js
+        function 子类(arguments){
+            父类.call(this, arguments);
+        }
+        ```
 
 - 缺点
     - 无法共享父类型原型对象上的方法
+        - 每次创建对象时，都会进行类抄写，每个子类对象中的父类成员都是不同的，会浪费内存
     - 不是真正的继承，只是借用父类型的构造函数来设置参数
-
+    - 无法通过 `instanceof` 来检查子类实例与父类的继承个关系
 - 示例
     - 参考代码
         - [src/oop/constructor_extends.html](src/oop/constructor_extends.html)
@@ -654,9 +675,9 @@
 
 ## 组合继承
 [top](#catalog)
-- 原型链 + 借用构造函数，两种方式的组合继承
+- 原型链 + 类抄写，两种方式的组合继承
     1. 利用原型链实现对父类型对象的方法**继承**
-    2. 利用super()借用父类型构造函数**初始化相同属性**
+    2. 利用 `父类.call(this)`，借用父类型构造函数**初始化相同属性**
 - 缺点
     - 额外调用了一次父类的构造函数
     - 如果父类的构造函数需要注入其他对象，或者内部有复杂的逻辑处理，可能会产生异常
@@ -729,7 +750,7 @@
     4. 将子类的原型设置为寄生类的实例，然后再重置子类原型的 `constructor`
         ```js
         子类.prototype = new 寄生类();
-        子类.prototype.constructor = 子类;
+         子类.prototype.constructor = 子类;
         ```
     5. 在子类内部仍然需要调用父类，将父类中的属性添加在 `this` 对象中
         ```js
@@ -1933,7 +1954,6 @@
         fooEx.printSelfStaticProperty();    // 输出: this is FooEX
         ```
 
-
 # 类的特性
 ## 类声明是静态声明
 [top](#catalog)
@@ -1999,44 +2019,107 @@
             }
         }
         ```
-- 继承关系的构造过程
-    - 类的继承关系构造与原型继承不同
-        1. 不会创建父类的实例对象，而是直接<label style='color:red'>设置原型的原型</label>
-            - 准确说是: `子类.prototype.__proto__ = 父类.prototype`
-        2. 为了保留静态成员的继承，会将子类的原型设为父类
-    - 构造过程
-        ```js
-        class Foo{}
-        class FooEx extends Foo{}
+## 类继承关系的构造
+### 类继承关系的构造过程
+[top](#catalog)
+- 类的继承关系构造与原型继承不同
+    1. 不会创建父类的实例对象，而是通过 `Object.setPrototypeOf(子类.prototype, 父类.prototype)`，直接<label style='color:red'>设置原型的原型</label>
+        - 准确说是: `子类.prototype.__proto__ = 父类.prototype`
+    2. 为了保留静态成员的继承，会将子类的原型设为父类
+- 构造过程
+    ```js
+    class Foo{}
+    class FooEx extends Foo{}
 
-        // 实际的构造过程
-        // 1. 创建构造函数
+    // 实际的构造过程
+    // 1. 创建构造函数
+    function Foo(){}
+    function FooEx(){}
+    // 2. 实现对象方法继承，相当于: FooEx.prototype.__proto__ = Foo.prototype
+    Object.setPrototypeOf(FooEx.prototype, Foo.prototype);
+    // 3. 实现静态方法继承
+    Object.setPrototypeOf(FooEx, Foo);
+    ```
+- 构造后的原型链
+    ```
+                        {constructor:Foo, __proto__:{ Object() } }
+                                    ^
+                                    ^
+                                    │
+                    prototype       │
+                Foo ───────>> Foo.prototype
+                                    ^
+                                    ^
+                                    │ __proto__ (通过 Object.setPrototypeOf 方法构建)
+                                    │
+            {constructor:FooEx, __proto__:{ Foo() } }
+                            ^
+                            ^
+                            │  引用对象的指向
+            prototype       │           __proto__
+    FooEx  ─────────>> FooEx.prototype <<──────── new FooEx()
+    ```
+
+### setPrototypeOf构建类继承关系的本质
+[top](#catalog)
+- 原型继承的实现方式
+    ```js
+    子类.prototype = new 父类();    // 创建继承关系
+    子类.prototype.constructor = 子类;  // 维护原型链
+    ```
+- 类继承的实现方式
+    - `Object.setPrototypeOf(子类.prototype, 父类.prototype)`
+
+- `setPrototypeOf` 和原型继承实现没有区别，只是省略了实例化父类对象的过程
+- `Object.setPrototypeOf(子类.prototype, 父类.prototype)` 执行过程分析
+    1. 没有实例化父类对象，替代方案是使用原始的 `子类.prototype`
+    2. 修改 `子类.prototype` 的隐式原型，这就是 `setPrototypeOf` 操作的主要操作
+        ```js
+        子类.prototype.__proto__ = 父类.prototype;
+        ```
+    3. 此时 `子类.prototype` 已经实现继承关系，**与原型继承的异同**：
+        1. 原型对象指向的对象的隐式原型都是 `父类.prototype`
+        2. `子类.prototype.constructor` 指向的都是 `子类`
+            - `setPrototypeOf` 使用的是原始的原型对象，所以 `constructor` 仍然是`子类`，**不需要手动维护**
+            - 原型继承实现中，因为修改了子类的原型对象，所以需要手动维护原型链：`子类.prototype.constructor = 子类`
+
+- 与 `Object.setPrototypeOf` 相比，手动维护原型链的缺点
+    - 主要缺点
+        - 手动维护原型链只是在父类对象上添加了一个 `constructor` 属性，没有真正修改原型中的`constructor`指向
+            - 父类对象的原型上的 `constructor` 仍然指向的是父类
+            - 在访问原型链时，父类对象作为子类原型在被访问到时，会先访问父类对象的`自有属性表`，所以**手动维护的**`constructor`会生效
+        - 通过 `Object.getPrototypeOf(子类.prototype).constructor` 访问原型链时，无法访问到子类，而是访问到父类
+    - 说明示例
+        ```js
+        // 1. 创建父类
         function Foo(){}
+        // 2. 创建子类
         function FooEx(){}
-        // 2. 实现对象方法继承，相当于: FooEx.prototype.__proto__ = Foo.prototype
-        Object.setPrototypeOf(FooEx.prototype, Foo.prototype);
-        // 3. 实现静态方法继承
-        Object.setPrototypeOf(FooEx, Foo);
+        // 3. 创建父类的实例对象
+        var Parent = new Foo();
+        // 4. 将子类的原型设置为父类的实例对象
+        FooEx.prototype = Parent;
+        // 5. 维护原型链
+        FooEx.prototype.constructor = FooEx;
+        // 6. 实例化子类对象
+        var x = new FooEx();
+        // 7. 可以检测到: 子类对象与父类的继承关系
+        console.log(x instanceof FooEx);    // true
+        // 8. 通过 Object.getPrototypeOf 获取父类对象的原型，再获取 constructor，并不是子类
+        console.log(Object.getPrototypeOf(Parent).constructor); // Foo(){}
+        // 9. 直接获取父类对象的 constructor
+        console.log(Parent.constructor); // FooEx(){}
+        // 8. 通过 Object.getPrototypeOf 获取父类对象的原型，再获取constructor
+        // 子类的原型: fooEx.prototype 就是父类对象: parent
+        console.log(Object.getPrototypeOf(FooEx.prototype).constructor); // Foo(){}
+        // 9. 直接获取父类对象的 constructor
+        // 相当于: parent.constructor
+        console.log(FooEx.prototype.constructor);   // FooEx(){}
         ```
-    - 构造后的原型链
-        ```
-                            {constructor:Foo, __proto__:{ Object() } }
-                                        ^
-                                        ^
-                                        │
-                        prototype       │
-                    Foo ───────>> Foo.prototype
-                                        ^
-                                        ^
-                                        │ __proto__ (通过 Object.setPrototypeOf 方法构建)
-                                        │
-                {constructor:FooEx, __proto__:{ Foo() } }
-                                ^
-                                ^
-                                │  引用对象的指向
-                prototype       │           __proto__
-        FooEx  ─────────>> FooEx.prototype <<──────── new FooEx()
-        ```
+
+- `Object.setPrototypeOf` 与 原型继承的实现比较
+    - ![setPrototypeOf_prototype_compare](imgs/oop/setPrototypeOf_prototype_compare.png)
+
 
 ## 非子类、子类、原型继承中的this
 [top](#catalog)
@@ -2211,6 +2294,7 @@
 |不同点|类继承|原型继承|备注|
 |-|-|-|-|
 |`new` 操作|从基类开始构造实例|从子类开始构造实例||
+|构造函数的执行顺序|从父类到子类|从子类到父类||
 |继承的实现方式|`Object.setPrototypeOf`|设置原型对象`prototype`<br>维护原型链||
 |||||
 
@@ -2225,12 +2309,13 @@
     - 获取对象的隐式原型: `Object.getPrototypeOf(obj)`
     - 检查`对象A`是不是`对象B`的原型对象: `objA.isPrototypeOf(objB)`
 
-- 通过原型链获取**类/父类**的方法
+- 通过原型链获取**类**的方法
     - 实例对象获取对象自身类的方法
         - `obj.constructor`
         - `Object.getPrototypeOf(obj).constructor`
-    - 通过原型链访问父类的方法
+    - 访问对象的原型对象
         - `obj.constructor.prototype`
+            - `obj` 将会顺着 `__proto__` 找到 `constructor`
         - `Object.getPrototypeOf(obj).constructor.prototype`
 
 - 遍历原型链
@@ -2246,16 +2331,44 @@
     ```
 
 # JS的对象系统
+## 对象的属性
 [top](#catalog)
-- 继承的最终目的都是构建一个对象系统，而不是系统
-- 对象系统的三要素
-    - 继承
-    - 封装
-    - 多态
+- 对象系统的外在表现: PME
+    - 属性，Properties
+    - 方法，Methods
+    - 事件，Events
 
+- PME只是一种划分方式，三者都可以算作属性，因为
+    - JS的方法起始是一种连续运算的结果
+    - JS的事件是外置的，JS本身没有事件系统
 
-----------------------------------------------------------------------
+- js 中的对象只是属性包，PME只是外在表现，不是技术实现上的必须
+    - 为什么js的对象只是属性包？
+        - JS中的方法是：</label style='color:red'>属性存取`.`、`['方法名']`与函数调用`()`的连续运算效果</label>
+- js 中的事件
+    - JS引擎本身没有事件系统
+        - 用JS写的事件响应函数，或面向事件响应来构建架构系统，这些都**不是ES或JS的组成部分**
+        - 事件是由DOM对象提供的
+            - 一个由宿主环境供应与维护的**可编程对象模型**提供的
+    - 事件的本质
+        - 在确定的时候发生的、可由用户代码响应的行为
 
-----------------------------------------------------------------------
+## 构建对象系统
+[top](#catalog)
+- js中构造对象系统的方法，包括:
+    - 类抄写
+    - 原型继承
+    - 类继承
+    - 直接创建对象
+    - 其他可以在ES基础上扩展的方法，如
+        - 元继承、元类继承
 
+- 类抄写
+    - 参考: [类抄写--借用构造函数继承](#类抄写--借用构造函数继承)
+    - 缺点
+        - 浪费内存
+        - 无法通过 `instanceof` 检查继承关系
 
+- [原型链继承](#原型链继承)
+    - [组合继承](#组合继承)
+    
