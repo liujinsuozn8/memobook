@@ -88,6 +88,7 @@
             - [基本知识](javascript/base/base.md)
             - [dom操作](javascript/base/dom.md)
             - [bom操作](javascript/base/bom.md)
+            - [console控制台输出](javascript/base/console.md)
         - js原理
             - [js语法](javascript/underlyingPrinciple/base.md)
             - [js的面向对象特性](javascript/underlyingPrinciple/oop.md)

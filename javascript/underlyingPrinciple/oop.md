@@ -10,6 +10,8 @@
     - [原型prototype](#原型prototype)
     - [显式原型与隐式原型](#显式原型与隐式原型)
     - [原型链](#原型链)
+        - [原型链的访问](#原型链的访问)
+        - [原型链的维护](#原型链的维护)
     - [原型中的几个特殊性](#原型中的几个特殊性)
     - [自定义函数、Function、Object之间的原型关系](#自定义函数、Function、Object之间的原型关系)
     - [属性设置与原型链的访问](#属性设置与原型链的访问)
@@ -27,6 +29,7 @@
     - [空对象、空白对象](#空对象、空白对象)
     - [原型继承的实现与分析](#原型继承的实现与分析)
     - [原型对象的复制与对象的自有属性表](#原型对象的复制与对象的自有属性表)
+    - [null作为原型--更加空白的对象](#null作为原型--更加空白的对象)
     - [构造函数与普通函数的异同](#构造函数与普通函数的异同)
     - [对象的内置属性与方法](#对象的内置属性与方法)
     - [修改对象的隐式原型](#修改对象的隐式原型)
@@ -61,6 +64,11 @@
     - [类继承和原型继承的区别](#类继承和原型继承的区别)
 - [与原型访问相关的操作](#与原型访问相关的操作)
 - [JS的对象系统](#JS的对象系统)
+    - [对象的属性](#对象的属性)
+    - [继承方式](#继承方式)
+    - [如何选择继承方式](#如何选择继承方式)
+- [内置对象](#内置对象)
+- [](#)
 
 # 对象
 [top](#catalog)
@@ -94,7 +102,6 @@
     - 对象字面量
     - 自定义构造函数 + 原型函数
 
-
 # 原型与原型链
 ## 原型prototype
 [top](#catalog)
@@ -106,7 +113,8 @@
             console.log(Fn.prototype instanceof Object) // 输出true
             ```
     - 原型对象中默认有一个属性：`constructor`，它指向函数对象
-        - `constructor`属性是 原型对象 与 空对象的**本质区别**，空对象中默认不会有该属性
+        - `constructor`属性是 原型对象 与 普通实例对象的**本质区别**，普通实例对象中默认不会有该属性
+        - 除非要维护原型链，手动在普通实例对象上添加 `constructor`
     - 示例
         ```js
         function fn(){};
@@ -125,7 +133,7 @@
         // 输出：true
         ```
 
-    - 属性关系图：constructor 与其 类型相互引用
+    - 属性关系图：constructor 与其类型相互引用
         ```
         ┌─────────────────┐
         │       Type      │ <<───────────────────────────┐
@@ -229,6 +237,7 @@
 
 
 ## 原型链
+### 原型链的访问
 [top](#catalog)
 - 如何**读取**一个对象的属性/如何在原型链上**读取**属性？
     1. 先在当前对象自身的属性中查找，找到则返回
@@ -239,7 +248,7 @@
     - `Object函数的原型对象.__proto__ `，该值为 `null`，找到此处会返回 `undefined`
 
 - 原型链的本质: **隐式原型**
-    - 由对象所有父类和祖先类的原型对象构成的、可以向上访问的**链表**
+    - 由对象所有父类（构造函数）的原型对象构成的、可以向上访问的**链表**
     - 原型链的每个原型对象之间通过**隐式原型** `__proto__` 来连接，构成**链表**
 
 - 原型链的访问方式
@@ -247,16 +256,18 @@
         ```js
         obj.__proto__
         ```
-    - 访问方式2: 通过构造器间接访问
+    - 访问方式2: 通过构造函数间接访问
         - 访问代码
             ```js
             obj.constructor.prototype
             ```
         - `obj.constructor` 相当于 `obj.__proto__.constructor`
             - 因为对象自身一般不会有 `constructor` 属性，所以自动到隐式原型中搜索
-            - 隐式原型与显示原型指向相同，所以 `obj.constructor` 就是 构造函数/类 本身
+            - 隐式原型与显示原型指向相同，所以 `obj.constructor` 就是 构造函数 本身
             - 在通过 `prototype` 即可访问到原型链的上一层原型对象
         - 本质上等同于 `构造函数.prototype`
+        - 缺点
+            - 修改构造函数的原型对象后，如果没有维护原型链，会产生副作用
     - 访问方式3: 使用内置函数
         - 访问代码
             ```js
@@ -264,10 +275,7 @@
             ```
         - 通过 `Object.getPrototypeOf` 准确的获取隐式原型对象，防止对象自身包含 `constructor` 属性
 
-- 与原型链相关的操作
-    - 这些操作主要还是操作对象的 **隐式原型** `__ptoto__`
-    - 设置对象的隐式原型: `Object.setPrototypeOf(target, src)`
-    - 获取对象的隐式原型: `Object.getPrototypeOf(obj)`
+- <span style='color:red'>虽然原型链有多种访问方式，但是引擎访问原型链时，还是会使用`__proto__`</span>
 
 - 示例
     - 说明代码
@@ -340,6 +348,43 @@
         └────────────┘    └──────────────────────────────────────────────────────────────┘
         ```
 
+### 原型链的维护
+[top](#catalog)
+- 维护的目标: `构造函数.prototype.constructor`
+- 没有维护时产生的副作用
+    - `实例.constructor.prototype` 与 `实例.__proto__` 不同
+        - `实例.constructor.prototype` 指向的是父类的原型对象
+            - 实例自身没有 `constructor`，所以访问的是原型对象的`constructor`
+            - 原型对象的`constructor` 没有维护，指向的仍然是**父类的原型对象**
+        - `实例.__proto__` 指向的是当前类的原型对象
+            - 因为这个对象本身是由 `new` 运算符根据原习对象构建的
+        - 说明示意图
+            - ![maintain_prototype_chain](imgs/oop/prototype/maintain_prototype_chain.png)
+    - 在类似[原型链继承](#原型链继承)的实现中，重新设置原型对象后，如果没有维护原型链，就会产生副作用
+    - 示例
+        ```js
+        // 1. 父类
+        function foo(){}
+        // 2. 子类
+        function fooEx(){}
+        // 3. 重新设置子类的原型
+        var parent = new foo();
+        fooEx.prototype = parent;
+        // 4. 不维护原型链
+        // fooEx.prototype.constructor = fooEx
+        // 5. 实例化子类对象
+        var subInstance = new fooEx()
+        // 6. 可以检测出子类对象与父类的关系
+        console.log(subInstance instanceof fooEx) // true
+        // 7. 没有维护原型链产生的副作用: 两种访问方式的结果不同
+        console.log(subInstance.constructor.prototype === subInstance.__proto__) // false
+        // 8. 实例.constructor.prototype 指向的是父类的原型对象
+        console.log(subInstance.constructor.prototype === foo.prototype) // true
+        // 9. 实例.__proto__ 指向的是当前类的原型对象
+        console.log(subInstance.__proto__ === parent) // true
+
+        ```
+
 ## 原型中的几个特殊性
 [top](#catalog)
 - 函数对象的特殊性
@@ -372,7 +417,7 @@
         console.log(Function.prototype instanceof Object) // 输出 true
         ```
     - 通过这个特殊性可以引申出：
-        - <label style="color:red">任何函数对象都是 Function 的实例，包括Object函数对象和 Function函数对象自身</label>
+        - <span style="color:red">任何函数对象都是 Function 的实例，包括Object函数对象和 Function函数对象自身</span>
 
 - `Object` 函数对象的特殊性
     - `Object` 函数对象的原型**不是Object的实例**
@@ -384,7 +429,7 @@
         ```
 
     - 由于这个特殊性，需要修改 prototype 的定义
-        - <label style="color:red">每个函数对象都有一个prototype属性，默认指向一个空的Object实例对象，即原型对象。但是Object不满足</label>
+        - <span style="color:red">每个函数对象都有一个prototype属性，默认指向一个空的Object实例对象，即原型对象。但是Object不满足</span>
 
 ## 自定义函数、Function、Object之间的原型关系
 [top](#catalog)
@@ -472,11 +517,11 @@
         - 如果对象内部有某个属性，则进行修改；如果没有则添加该属性
 
 - 原型对象中，设置属性的问题
-    - 原型上的变量与方法是**类与实例对象**所**共享**的
+    - 原型上的变量与方法是**构造函数与实例对象**所**共享**的
     - 如果通过某个对象修改了原型上的东西，会影响其他对象的使用
 
 - 由于属性的读写问题，引申出一个设计的原则
-    - <label style="color:red">方法定义在原型中、属性在构造函数中设置</label>
+    - <span style="color:red">方法定义在原型中、属性在构造函数中设置</span>
     - 如果
 
 - 示例
@@ -507,8 +552,7 @@
     - 如果 B函数 的**显式原型**对象在 A对象 的**原型链**上，则返回 true，否则返回 false
 - 本质上还是通过：`构造函数的显式原型 === 实例对象的隐式原型`这一标准来判断
 - 构造函数和实例对象**唯一的关联是原型对象的指向相同**
-    - 只要指向相同，则一定是对应的类与实例
-
+    - 只要指向相同，则一定是对应的构造函数与实例
 
 ## 与原型相关的问题
 [top](#catalog)
@@ -558,29 +602,27 @@
 ## 原型链继承
 [top](#catalog)
 - 使用方法
-    1. 定义父类型的构造函数
-    2. 给父类型的原型添加方法
+    1. 定义父类的构造函数
+    2. 给父类的原型添加方法
         ```js
         父类.prototype.xxx = ...;
         ```
-    3. 定义子类型的构造函数
-    4. 重新构造子类型的原型关系
-        1. 重新设置子类型的原型对象：创建父类的对象赋值给子类型的原型对象
-            ```js
-            子类.prototype = new 父类();
-            ```
-        2. 将子类型原型的`constructor`属性设置为子类
-            ```js
-            子类.prototype.constructor = 子类;
-            ```
-
-    6. 给子类型原型添加方法
-
+    3. 定义子类的构造函数
+    4. 重新设置子类的原型对象：父类的对象作为子类的原型对象
+        ```js
+        子类.prototype = new 父类();
+        ```
+    5. <span style='color:red'>维护原型链: 将子类原型的 `constructor` 属性设置为子类</span>
+        ```js
+        子类.prototype.constructor = 子类;
+        ```
 - 重点
     - 子类型的原型对象指向父对象的实例
 
 - 缺点
     - 如果父类型的构造函数中有参数时，无法通过子类的构造函数来设置
+    - 需要手动维护原型链: `子类.prototype.constructor`
+        - <span style='color:red'> 如果不维护，则 `子类对象.constructor.prototype` 和 `子类对象.__proto__` 的指向是不一致的</span>
 
 - 示例
     - 参考代码
@@ -629,12 +671,12 @@
 - 这种方法本质上就是`类抄写`，将父类中的成员拷贝到子类中
 
 - 使用方法
-    1. 定义父类型的构造函数
-    2. 定义子类型的构造函数
-    3. 在子类型构造函数中通过 `call` 调用父类型的构造函数
-        - 即：将父类构造函数中的 this对象 替换为 子类型的this
-        - 执行后，子类型构造函数、父类型构造函数中附加的: 属性、函数就都添加到 this对象上了
-        - 但是<label style="color:red">父类型在原型上添加的属性与方法，子类型无法共享</label>
+    1. 定义父类（的构造函数）
+    2. 定义子类（的构造函数）
+    3. 在子类构造函数中通过 `call` 调用父类的构造函数
+        - 即：将父类中的 this对象 替换为 子类的this
+        - 执行后，子类、父类中附加的: 属性、函数就都添加到 this对象上了
+        - 但是<span style="color:red">父类在原型上添加的属性与方法，子类无法共享</span>
         - 示例
         ```js
         function 子类(arguments){
@@ -643,10 +685,10 @@
         ```
 
 - 缺点
-    - 无法共享父类型原型对象上的方法
+    - 无法共享父类原型对象上的方法
         - 每次创建对象时，都会进行类抄写，每个子类对象中的父类成员都是不同的，会浪费内存
-    - 不是真正的继承，只是借用父类型的构造函数来设置参数
-    - 无法通过 `instanceof` 来检查子类实例与父类的继承个关系
+    - 不是真正的继承，只是借用父类的构造函数来设置参数
+    - 无法通过 `instanceof` 来检查子类实例与父类的继承关系
 - 示例
     - 参考代码
         - [src/oop/constructor_extends.html](src/oop/constructor_extends.html)
@@ -755,7 +797,7 @@
     5. 在子类内部仍然需要调用父类，将父类中的属性添加在 `this` 对象中
         ```js
         function 子类(){
-            父类.call(this, [父类构造器参数]);
+            父类.call(this, [父类构造函数参数]);
         }
         ```
 
@@ -821,7 +863,6 @@
         var fooex = new FooEx('fooexName');
         fooex.run();    // 输出: this is fooexName run
         ```
-
 
 ## 保留父类的静态方法
 [top](#catalog)
@@ -1047,26 +1088,26 @@
         - 可枚举性
             - 原生的`内置成员`不会被 `for...in` 枚举
                 - `for (let k in {})` 不会有任何效果
-        - <label style='color:red'>空白对象的本质</label>
+        - <span style='color:red'>空白对象的本质</span>
             - 原型链上所有原型对象的自有属性表都为空的对象
             - 参考: [原型对象的复制与对象的自有属性表](原型对象的复制与对象的自有属性表)
 
 
 - empty-空白对象，是所有对象的基础
-    - `Object.prototype`，也是<label style='color:red'>空白对象</label>，只包含原生的内置成员
+    - `Object.prototype`，也是<span style='color:red'>空白对象</span>，只包含原生的内置成员
         - `Object.prototype` 可以遍历，但是没有任何效果
             ```js
             var num = 0
             for(let n in Object.prototype) num++;
             console.log(num);   // 输出0
             ```
-    - 通过 `Object()` 构造函数创建的对象，也是<label style='color:red'>空白对象</label>，这表明
+    - 通过 `Object()` 构造函数创建的对象，也是<span style='color:red'>空白对象</span>，这表明
         - `new Object()`、`{}` 都是 `Object.prototype` 的一份复制
 
 ## 原型继承的实现与分析
 [top](#catalog)
 - 原型的含义
-    - 如果 `构造器A` 有一个`原型对象A.prototype`，则由 `A` 创建的实例都必然是 `A.prototype` 的复制
+    - 如果 `构造函数A` 有一个`原型对象A.prototype`，则由 `A` 创建的实例都必然是 `A.prototype` 的复制
         - 如 `Object()`，及其原型对象`Object.prototype`，创建的实例都是`Object.prototype`的赋值
     - 实例是原型的复制，会拥有原型对象的所有属性、方法等内容
 
@@ -1184,6 +1225,79 @@
         - 构造函数声明比继承关系的实现要早，所以两者在代码上**没有具体的顺序要求**
             - 最好先写声明，再写继承关系，方便维护
 
+## null作为原型--更加空白的对象
+[top](#catalog)
+- null 作为原型的两种情况
+    1. 将类的显示原型设为 null: `构造函数.prototype = null`
+    2. 将对象的显示原型改为 null: `Object.setPrototypeOf(实例对象, null)`
+        - 通过 `Ojbect.getPrototype(实例对象) === null` 来检测
+
+- 将类的显示原型设为 null: `构造函数.prototype = null`
+    - 实例化对象时，<span style='color:red'>对象的真实创建者</span>
+    - nul本身无法创建对象，所以引擎会通过 `new Object()` 的方式创建对象
+    - `new Object()` 创建的对象会作为 `this`，来执行构造函数内部的处理
+    - 因为实例是由 `new Object()` 创建的，所以原型对象会变成 `Object.prototype`
+    - 这种情况下，实例的隐式原型与构造函数的显示原型是不相同的
+        - `实例.__proto__ === Object`
+        - `构造函数.prototype === null`
+    - 示例
+        - 参考代码
+            - [src/oop/null/null_prototype.js](src/oop/null/null_prototype.js)
+        - 代码内容
+            ```js
+            // 1. 创建构造函数
+            function foo(){
+                this.run = function(){
+                    console.log('this is foo run')
+                }
+            }
+            // 2. 将构造函数的原型设为null
+            foo.prototype = null;
+            // 3. 实例化对象
+            var instance = new foo();
+            // 4. foo.prototype 是 null，所以无法正常的执行类型判断
+            try{
+                console.log(instance instanceof foo);    
+            } catch (e){
+                console.log(e.message); // Function has non-object prototype 'null' in instanceof check
+            }
+
+            // 5. foo 的实例是 Object() 的实例
+            console.log(instance instanceof Object); // true
+
+            // 6. 实例的原型不是 null
+            console.log(Object.getPrototypeOf(instance) === null); // false
+            // 7. 实例原型是一个由 Object() 创建的对象
+            console.log(Object.getPrototypeOf(instance)); // {}
+            // 8. 实例的构造器是 Object()
+            console.log(Object.getPrototypeOf(instance).constructor === Object); // true
+            // 9. 构造函数的原型是 null，但是实例的原型已经变成的Object，因为实例是由 Object() 创建的
+            console.log(Object.getPrototypeOf(instance) === foo.prototype); // false
+            // 10. 实例的原型变成了Object.prototype
+            console.log(Object.getPrototypeOf(instance) === Object.prototype);  // true
+            // 11. 有 Object() 创建的对象会作为this对象，执行构造函数，所以实例可以执行构造函数内添加的方法
+            instance.run(); // this is foo run
+            ```
+
+- `Object.setPrototypeOf(实例对象, null)`，可以直接将实例对象的隐式原型替换为null
+    - 替换后
+        1. 对象完全脱离了所有的构造函数
+        2. 无法检测出是哪个构造函数的实例
+        3. 但是仍然保留 object 的性质，所以 `typeof` 可以计算出对象类型
+    - 示例
+        ```js
+        function foo(){}
+        var a = new foo();
+        Object.setPrototypeOf(a, null);
+        console.log(a instanceof Object);   // false
+        console.log(a instanceof foo);      // false
+        console.log(typeof a);  // object
+        ```
+    - 这种情况下，将会创建一个<span style='color:red'>最空的对象</span>
+        - 这种对象比`空白对象`更加空白
+            - 空白对象还有原型这种对象，这种对象连原型都没有，只剩一个 `object` 类型的空壳
+    - 对这种对象是一个: 只有`自有属性表`的属性包
+
 ## 原型对象的复制与对象的自有属性表
 [top](#catalog)
 - JS中创建对象的方式
@@ -1194,10 +1308,10 @@
     - 发生属性的写操作时，会为该对象单独创建一个**自有属性表**
     - 属性写操作，只会访问**自有属性表**，不会干扰原型对象，也就不会干扰其他实例对象
 
-- 读<label style='color:red'>对象</label>属性时的处理方式
+- 读<span style='color:red'>对象</span>属性时的处理方式
     - 对属性时的两条规则
         1. 优先读取对象的自有属性表
-        2. 如果自有属性表中没有，访问<label style='color:red'>隐式原型对象 _proto__ </label>
+        2. 如果自有属性表中没有，访问<span style='color:red'>隐式原型对象 _proto__ </span>
             - 访问原型对象时，也需要遵守着两条规则
                 - 先检查原型对象的自有属性表
                 - 再遍历原型对象的原型链
@@ -1205,7 +1319,7 @@
                 - 如果找到则返回
                 - 没有找到返回 `undefined`
 
-- <label style='color:red'>重新定义空白对象（什么是空白对象?）</label>
+- <span style='color:red'>重新定义空白对象（什么是空白对象?）</span>
     - 原型链上所有原型对象的自有属性表都为空的对象
 
 - 对象赋值与属性访问示意图
@@ -1240,7 +1354,7 @@
 ## 修改对象的隐式原型
 [top](#catalog)
 - `Object.setPrototypeOf`，用于重写隐式原型
-    - 可以切断对象与它的构造器或原型的关系
+    - 可以切断对象与它的**当前原型**的关系
     - 可以使对象变成其他原型的实例，创建一个新的原型链
 
 - 示例
@@ -1282,7 +1396,7 @@
 ## 成员的可枚举性
 [top](#catalog)
 - 成员的可枚举性属性: `enumerable`
-- <label style='color:red'>显示与隐式</label>
+- <span style='color:red'>显示与隐式</span>
     - 显示: `enumerable == true`
     - 隐式: `enumerable == false`
 - 检查方法: `obj.propertyIsEnumerable('paramName')`
@@ -1302,17 +1416,17 @@
 
 ## 对象及其成员的检查
 [top](#catalog)
-- 在JS中，取一个<label style="color:red">不存在的属性</label>的值，<label style="color:red">不会导致异常，会返回 undefined</label>
+- 在JS中，取一个<span style="color:red">不存在的属性</span>的值，<span style="color:red">不会导致异常，会返回 undefined</span>
 - `in` 用来检查对象是否具有某个成员
     - 成员范围: 显示 + 隐士
     - 检查类型: 基本类型 + 对象类型
-- `instanceof` 检查一个对象是不是一个类/构造器的实例
+- `instanceof` 检查一个对象是不是一个类/构造函数的实例
 
 ## 成员的删除
 [top](#catalog)
 - 通过`delete`关键字来删除一个对象的指定属性
 - `delete` 的本质
-    - <label style='color:red'>删除实例对象自身属性表中的属性描述符</label>
+    - <span style='color:red'>删除实例对象自身属性表中的属性描述符</span>
 
 - `delete` 不能删除的内容
     1. 用 `var`、`let`、`const` 声明的变量与常量
@@ -1482,7 +1596,7 @@
         - 该方法**只在第一次调用**时创建符号数据
         - 第N次调用时，会直接返回已有的符号数据
     - 该方法的优点
-        1. 该方法的**内建机制**保证了符号的<label style='color:red'>全局唯一性</label>
+        1. 该方法的**内建机制**保证了符号的<span style='color:red'>全局唯一性</span>
         2. 没有直接使用全局变量，避免了对其他模块和全局环境产生干扰
     - 解决引入问题
         - 参考代码
@@ -1522,7 +1636,7 @@
     ```js
     class Foo{}
     ```
-- 通过 `new` 关键字实例化对象，与构造器实例化对象相同
+- 通过 `new` 关键字实例化对象，与构造函数实例化对象相同
     ```js
     class Foo{}
     var a = new Foo();
@@ -1726,10 +1840,9 @@
 - 多级继承时的执行顺序
     - 先执行父类，再执行子类
     - 从上到下执行
-- <label style='color:red'>在super之前，不能使用 `this` 对象</label>
+- <span style='color:red'>在super之前，不能使用 `this` 对象</span>
 - super 只能出现在方法声明内部
 - 类继承与原型继承混用时，super将会回溯到第一个非类的构造器
-
 
 ## super的动态计算过程
 [top](#catalog)
@@ -1955,32 +2068,9 @@
         ```
 
 # 类的特性
-## 类声明是静态声明
-[top](#catalog)
-- 类声明是一种**静态声明**
-    - 类声明语法: `class`、`class...extends` 将构造函数和继承关系声明提前到了**语法分析阶段**
-- 使用类声明语法，类之间不会再有执行顺序的限制
-    - 无论写在哪，语法分析阶段就已经创建好了
-- 因为类是静态的声明，所以内部的方法、属性存取器**只是声明，不是函数**，不能在声明内引用自己
-    - `constructor` 是特例，仍然是函数
-    ```js
-    class Foo{
-        constructor(){
-            // 引用自身
-            console.log( typeof constructor); // 输出: function
-        }
-        run(){
-            // 引用自身
-            console.log(typeof run);    // 输出: undefined
-        }
-    }
-    var foo = new Foo();
-    foo.run();
-    ```
-
 ## 类是由构造函数实现的
 [top](#catalog)
-- <label style='color:red'>类标识符的本质</label>
+- <span style='color:red'>类标识符的本质</span>
     - 指向**构造方法**的引用
         ```js
         class Foo{}
@@ -2019,11 +2109,12 @@
             }
         }
         ```
+
 ## 类继承关系的构造
 ### 类继承关系的构造过程
 [top](#catalog)
 - 类的继承关系构造与原型继承不同
-    1. 不会创建父类的实例对象，而是通过 `Object.setPrototypeOf(子类.prototype, 父类.prototype)`，直接<label style='color:red'>设置原型的原型</label>
+    1. 不会创建父类的实例对象，而是通过 `Object.setPrototypeOf(子类.prototype, 父类.prototype)`，直接<span style='color:red'>设置原型的原型</span>
         - 准确说是: `子类.prototype.__proto__ = 父类.prototype`
     2. 为了保留静态成员的继承，会将子类的原型设为父类
 - 构造过程
@@ -2118,8 +2209,43 @@
         ```
 
 - `Object.setPrototypeOf` 与 原型继承的实现比较
-    - ![setPrototypeOf_prototype_compare](imgs/oop/setPrototypeOf_prototype_compare.png)
+    - ![setPrototypeOf_prototype_compare](imgs/oop/prototype/setPrototypeOf_prototype_compare.png)
 
+## 类声明是静态声明
+[top](#catalog)
+- 类声明是一种**静态声明**
+    - 类声明语法: `class`、`class...extends` 将构造函数和继承关系声明提前到了**语法分析阶段**
+
+- 静态性质带来的好处
+    - 使用类声明语法，类之间不会再有执行顺序的限制
+        - 无论写在哪，语法分析阶段就已经创建好了
+
+- 为什么类声明是静态的？
+    - 参考: [类继承和原型继承的区别](#类继承和原型继承的区别)
+    - JS中的<span style='color:red'>类本质是在描述对象</span>，`extends` 也只是在<span style='color:red'>声明</span>继承关系
+    - 类可以是一个内存块，或一段描述文本，而不必是一个有对象特性的结构
+    - 在声明之后，`子类.prototype.__proto__` 就会被 `Object.setPrototypeOf` 设置为 `父类.prototype`
+        - 参考: [类继承关系的构造](#类继承关系的构造)
+        - 这些操作是**在声明时就已经确定的**，而不是在执行期在底层构造
+        - 所以在引入或执行时，才没有顺序的要求
+
+- 注意事项
+    - 因为类是静态的声明，所以内部的方法、属性存取器**只是声明，不是函数**，不能在声明内引用自己
+        - `constructor` 是特例，仍然是函数
+        ```js
+        class Foo{
+            constructor(){
+                // 引用自身
+                console.log( typeof constructor); // 输出: function
+            }
+            run(){
+                // 引用自身
+                console.log(typeof run);    // 输出: undefined
+            }
+        }
+        var foo = new Foo();
+        foo.run();
+        ```
 
 ## 非子类、子类、原型继承中的this
 [top](#catalog)
@@ -2131,7 +2257,7 @@
     |子类 `class FooEx extends Foo{}`|基类 `Object`|所有的super都调用完成|
     |原型继承                        |子类         |进入构造方法之前，this 有引擎自动创建|
 
-- 类继承中的 `this` 实例是由 `Object()` 构造器创建的
+- 类继承中的 `this` 实例是由 `Object()` 构造函数创建的
 - 类的构造过程说明
     - 构造过程
         1. 通过 `new 子类()` 创建实例对象
@@ -2171,7 +2297,7 @@
         - 必须让所有的构造方法都先调用 `super()`，回溯整个原型链
         - 必须在子类的 `constructor` 函数中主动调用 `super()`
             - 如果没有 `constructor`, JS会添加隐式的构造函数
-    - <label style='color:red'>在super之前，不能使用 this </label>
+    - <span style='color:red'>在super之前，不能使用 this </span>
         - 因为super之前还没有创建 this，所以无法使用
 
 - 类继承和原型继承的混用
@@ -2253,7 +2379,7 @@
         - 进行实例化时，会调用该方法
             - 但是调用内部的`super()` 时，回溯到了null导致了失败
     - 可以重写构造函数，并手动返回一个对象
-        - 手动返回的构造方式，
+        - 手动返回的构造方式
             ```js
             constructor(){
                 return Object.create(new.target.prototype)
@@ -2291,12 +2417,33 @@
 
 ## 类继承和原型继承的区别
 [top](#catalog)
-|不同点|类继承|原型继承|备注|
-|-|-|-|-|
-|`new` 操作|从基类开始构造实例|从子类开始构造实例||
-|构造函数的执行顺序|从父类到子类|从子类到父类||
-|继承的实现方式|`Object.setPrototypeOf`|设置原型对象`prototype`<br>维护原型链||
-|||||
+- 本质区别: 
+    - 在声明上: 动态与静态
+        - 原型继承，动态的
+            - (父类的)原型也是对象实例
+            - 是，是在执行期才能确定的
+            - 需要手动创建
+        - 类/类继承，静态的
+            - 类的所有内容都是在声明时就已经确定的
+            - 类不是对象，没有对象的性质
+            - 类可以是一个内存块，或一段描述文本，而不必是一个有对象特性的结构
+            - JS中的<span style='color:red'>类本质是在描述对象</span>，`extends` 也只是在<span style='color:red'>声明</span>继承关系
+    - 在实现上：有对象/无对象
+        - 原型继承，有对象
+            - 需要创建父类的实例作为原型对象
+        - 类继承，无对象
+            - 在声明之后，`子类.prototype.__proto__` 就会被 `Object.setPrototypeOf` 设置为 `父类.prototype`
+            - 这些操作是在声明时就已经确定的
+
+- 不同点总结
+    |不同点|类继承|原型继承|
+    |-|-|-|
+    |`new` 操作|从基类开始构造实例|从子类开始构造实例|
+    |构造函数的执行顺序|从父类到子类|从子类到父类|
+    |继承的实现方式|`Object.setPrototypeOf`|设置原型对象`prototype`<br>维护原型链|
+    |是否有中间对象|没有，声明后就已经决定了父类、子类的关系|需要手动创建父类对象作为子类的原型|
+    |动态 or 静态|静态声明|动态实现|
+    ||||
 
 # 与原型访问相关的操作
 [top](#catalog)
@@ -2306,6 +2453,8 @@
 - 访问隐式原型
     - `obj.__proto__`
     - 设置对象的隐式原型: `Object.setPrototypeOf(target, src)`
+        - 该方法只能接收 对象 和 null
+        - 该方法会返回 target 的引用
     - 获取对象的隐式原型: `Object.getPrototypeOf(obj)`
     - 检查`对象A`是不是`对象B`的原型对象: `objA.isPrototypeOf(objB)`
 
@@ -2344,7 +2493,7 @@
 
 - js 中的对象只是属性包，PME只是外在表现，不是技术实现上的必须
     - 为什么js的对象只是属性包？
-        - JS中的方法是：</label style='color:red'>属性存取`.`、`['方法名']`与函数调用`()`的连续运算效果</label>
+        - JS中的方法是：</span style='color:red'>属性存取`.`、`['方法名']`与函数调用`()`的连续运算效果</span>
 - js 中的事件
     - JS引擎本身没有事件系统
         - 用JS写的事件响应函数，或面向事件响应来构建架构系统，这些都**不是ES或JS的组成部分**
@@ -2353,7 +2502,7 @@
     - 事件的本质
         - 在确定的时候发生的、可由用户代码响应的行为
 
-## 构建对象系统
+## 继承方式
 [top](#catalog)
 - js中构造对象系统的方法，包括:
     - 类抄写
@@ -2371,4 +2520,110 @@
 
 - [原型链继承](#原型链继承)
     - [组合继承](#组合继承)
-    
+
+- 类继承
+    - 参考
+        - [类继承的体系](#类继承的体系)
+        - [类的特性](#类的特性)
+
+- 直接创建对象
+    - 脱离 `new` 运算符直接创建对象，是对**原型继承模型的简化**
+        - 原型继承、类继承，都需要用 `new` 调用一次构造器函数
+    - `new`的`构造`过程包括
+        - 实例化对象
+        - 维护原型链
+            - 原型继承的手动设置 `子类.prototype.constructor`
+        - 属性定义
+            - 构造函数中直接在`this`对象（自由属性表）上添加的成员
+    - 直接创建对象的方法: `Object.create(原型对象, 属性描述符)`
+        - 功能
+            - 基于某个原型对象来创建对象
+        - 该方法与 `new` 方式的区别
+            - `new` 会执行构造函数，并在函数内部做`类抄写`，将成员写到 `this`
+            - `Object.create` 从根本上<span style='color:red'>去除了构造函数</span>
+                - 去除构造函数，直接通过`原型对象`来创建对象
+                - 通过属性描述符来取代 `类抄写`
+        - **创建对象的过程被简化为: 原型继承+属性定义**
+        - 底层的实现类似于
+            ```js
+            function Object_create(prototypeObj, prototypeDescriptors){
+                var obj = Object.setPrototypeOf(new Object(), prototypeObj);
+                return Object.defineProperties(obj, prototypeDescriptors);
+            }
+            ```
+
+## 如何选择继承方式
+[top](#catalog)
+- JS中多种继承方式的问题
+    - 面向更加轻量的原型继承，或是面向更深层次的类继承个，是JS语言设计摇摆不定的一个主要表现
+    - `new` 运算是传统语句风格，`Object.create()` 是典型的函数调用风格，这是JS在函数式语言和过程式语言中的摇摆不定
+- 应该根据不同的场景使用不同的继承方式
+    1. 大型系统开发，**必须使用** 类继承
+        - 通过确定性的继承关系 + 静态语法检测，简化代码，提升系统稳定性
+    2. 小型结构、体系的局部，可以使用原型继承
+
+# 内置对象
+[top](#catalog)
+- 早期规范的对象
+    - Arguments
+        - 没有构造器
+        - 它的实例可以有 `new Object()` 创建并赋予成员
+        - 实例总是在函数调用时动态创建，并添加在函数闭包中
+            - 所以在函数中可以使用`arguments`
+        - `Arguments` 不是数组，是<span style='color:red'>类数组</span>
+    - Error
+        - 用于创建一个异常
+        - 用户可以在原生的异常上定义更多的异常类型
+
+# 其他       
+- 通过`Reflect.construct(父类构造函数, [父类构造函数的实参列表], 子类构造函数)` 来更加精细的控制
+    - 这种方式的执行内容
+        1. 创建子类对象
+        2. 1 中创建的对象作为 `this`, 执行父类构造函数，进行`类抄写`
+    - 这种方式的缺点
+        1. 子类对象的原型链上只有: 子类构造函数、`Object()`，**没有父类**
+        2. 无法用 `instanceof` 检查子类对象与父类的关系
+        3. 不会执行子类构造函数，其内部的成员无法添加到 `this` 上
+    - 这种方法特殊的地方
+        - 执行父类的构造函数
+        - 原型对象是子类
+    - 对象成员的来源
+        - 类抄写的部分来自于父类的构造函数
+        - 原型方法来自于子类
+
+    - 示例，以`foo`为父类，以 `fooEx`为子类的对象
+        ```js
+        // 父类构造函数
+        function foo(name, age){
+            console.log('construct foo');
+            this.name = name;
+            this.age = age;
+            this.show = function(){
+                console.log(`name = ${this.name}, age=${this.age}`);
+            }
+        }
+        foo.prototype.run = function(){
+            console.log('this is foo run');
+        }
+
+        // 子类构造函数
+        // 内部的一切处理都不会执行
+        function fooEx(){
+            console.log('construct fooEx');
+            this.name = 'fooEx Name'
+            this.age = 12345
+        }
+        fooEx.prototype.work = function(){
+            console.log('this is fooEx work');
+        }
+
+        // 创建子类实例
+        var subObj = Reflect.construct(foo, ['testName', 22], fooEx);
+        subObj.show()   // construct foo
+        console.log(subObj instanceof foo); // false
+        console.log(subObj instanceof fooEx); // true
+        // 无法执行父类原型的方法，因为对象和父类没有直接的关系
+        // subObj.run()
+        // 可以执行子类原型上的方法
+        subObj.work();  // this is fooEx work
+        ```

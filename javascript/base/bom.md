@@ -20,7 +20,10 @@
     - [定时器应用-颜色自动切换](#定时器应用-颜色自动切换)
     - [定时器应用-解决键盘事件的延迟](#定时器应用-解决键盘事件的延迟)
 - [延时器](#延时器)
-- [](#)
+- [弹出框](#弹出框)
+    - [alert提示框](#alert提示框)
+    - [prompt可输入提示框](#prompt可输入提示框)
+    - [confirm确认取消](#confirm确认取消)
 - [](#)
 - [](#)
 
@@ -376,11 +379,11 @@
     |-|-|-|
     |`assign("URL")`|加载新的文档，即跳转到其他页面|<ul><li>与直接使用URL字符串修改Location对象相同</li><li>跳转页面后会生成历史记录，但是跳转到当前页面时不会生成新的历史记录</li></ul>|
     |`reload([true])`|重新加载当前文档|与 F5/刷新按钮的功能相同|使用：`reload(true)`，在刷新页面时，会强制情况缓存|
-    |`replace()`|用新的文档替换当前文档，即跳转到其他页面|<ul><li>与直接使用URL字符串修改Location对象相同</li><li>跳转页面后<label style="color:red">不会生成当前页面的历史记录</label></li></ul>|
+    |`replace()`|用新的文档替换当前文档，即跳转到其他页面|<ul><li>与直接使用URL字符串修改Location对象相同</li><li>跳转页面后<span style="color:red">不会生成当前页面的历史记录</span></li></ul>|
 
 - Location对象的属性
 
-    |属性|可以<label style='color:red'>设置或返回</label>的内容|是否刷新页面|
+    |属性|可以<span style='color:red'>设置或返回</span>的内容|是否刷新页面|
     |-|-|-|
     |hash|从井号 (#) 开始的 URL（锚）|N (会产生历史记录)|
     |host|主机名/IP地址 + 端口号|Y|
@@ -817,3 +820,32 @@
 - 延时器与定时器互相转化
     - 连续多次调用延时器 = 定时器
     - 定时器只调用一次，然后被清除 = 延时器
+
+# 弹出框
+## alert提示框
+[top](#catalog)
+- 提示框：`alert(参数);`
+    - <span style="color:red">只支持一个参数</span>
+- `alert` 没有返回值，如果使用会得到 `undefined`
+- 输出什么?
+    1. `alert(alert(1))`
+        - 将会输出两次
+        - 第一次输出 `1`, 即内部的`alert(1)`
+        - 第二次输出 `undefined`，因为内层的 `alert(1)` 会返回 `undefined`
+    2. `alert(alert(1), alert(2))`
+        - 将会输出三次
+        - 第一次输出 `1`, 即内部的`alert(1)`
+        - 第二次输出 `2`, 即内部的`alert(2)`
+            - 虽然第二个数不作为参数，但是作为函数调用仍然会执行
+        - 第三次输出 `undefined`，因为内层的 `alert(1)` 会返回 `undefined`
+
+## prompt可输入提示框
+[top](#catalog)
+- `var input = prompt("提示信息");`
+- 可以通过变量来接收输入的数据
+
+## confirm确认取消
+[top](#catalog)
+- `var input = confirm('xxxx')`
+- 选择确认时，返回true
+- 选择取消时，返回false

@@ -76,7 +76,6 @@
     - [String的基本原理和基本方法](#String的基本原理和基本方法)
     - [String与正则表达式相关的方法](#String与正则表达式相关的方法)
 - [垃圾回收gc](#垃圾回收gc)
-- [弹出框](#弹出框)
 - [反射](#反射)
 - [JSON](#JSON)
     - [JSON的基本知识](#JSON的基本知识)
@@ -87,10 +86,10 @@
 [top](#catalog)
 - `ECMAScript`是`JavaSctipt`的标准，各个厂商提供实现，一般情况下这两个词的含义是相同的，但是JavaScript的含义更广泛
 
-- <label style="color:red">一个完整的JavaScript实现应该有三部分组成</label>
-    - <label style="color:red">ECMAScript：实现标准 (简称ES)</label>
-    - <label style="color:red">DOM：文档对象模型</label>
-    - <label style="color:red">BOM：浏览器对象模型</label>
+- <span style="color:red">一个完整的JavaScript实现应该有三部分组成</span>
+    - <span style="color:red">ECMAScript：实现标准 (简称ES)</span>
+    - <span style="color:red">DOM：文档对象模型</span>
+    - <span style="color:red">BOM：浏览器对象模型</span>
 
 # JS的编写位置
 [top](#catalog)
@@ -106,7 +105,7 @@
             2. 在html中，通过`<script type="text/javascript" src="外部js路径">`的`src`属性引入外部js
         - 将js保存成外部js文件之后，可以:
             - 可以在不同的页面中进行引用
-            - <label style="color:red">可以利用浏览器缓存</label>
+            - <span style="color:red">可以利用浏览器缓存</span>
         - 当某个`<script>`标签用来引入外部js后，就不能在该被标签中编写js代码。即使编写了浏览器也会忽略
 
 - 示例
@@ -467,7 +466,7 @@
         ```
     - `continue 标签名` 只适用于**直接负责 for 的标签语句**，否则会产生编译编译异常
         - 原因
-            - <labe style='color:red'>contiune 关键字只能跳转到：当前层、外层(需要加标签) 循环的起始位置</label>
+            - <span style='color:red'>contiune 关键字只能跳转到：当前层、外层(需要加标签) 循环的起始位置</span>
             - `标签名: {}` 这样的标签语句无法被 continue 视作一个循环的起始位置
         - 适用的写法
             ```js
@@ -654,7 +653,7 @@
     2. catch
     3. finally
     4. 如果还有错误继续抛出到上一层 try...catch
-    5. 异常别捕获后，`try...catch...finally` <label style='color:red'>后面的代码都不会被执行</label>
+    5. 异常别捕获后，`try...catch...finally` <span style='color:red'>后面的代码都不会被执行</span>
 - 注意事项
     - catch、finally 都是可选的，但是**必须至少存在一个**
     - 如果 catch、finally 内部的代码发生了异常，异常会被抛出到更外层的 `try...catch`
@@ -761,7 +760,7 @@
 
 ## 值类型
 [top](#catalog)
-- <label style="color:red">无法给值类型 添加方法和属性，只能添加给对象</label>
+- <span style="color:red">无法给值类型 添加方法和属性，只能添加给对象</span>
 - string
     - 需要使用引号 `"` 或 `'` 括起来
         ```js
@@ -785,7 +784,7 @@
             console.log(x);
             // 输出：aaaaaaa
             ```
-    - <label style="color:red">使用Unicode的方法</label>
+    - <span style="color:red">使用Unicode的方法</span>
         - 语法：`"\u16进制Unicode编码"`
     - **可以通过 索引来获取字符**: `字符串[index]`
         - 本质是将索引作为属性来使用
@@ -872,7 +871,7 @@
 [top](#catalog)
 - Null类型的值只有一个：`null`
 - `null`表示**空对象**
-- <label style="color:red">`typeof null` 返回的是：object</label>
+- <span style="color:red">`typeof null` 返回的是：object</span>
 
 
 ## 类型转换
@@ -1032,7 +1031,7 @@
             - 函数需要字符串是数字字符串，有其他字符就无法正常转换
             - 实际开发中经常会从html中取值，如像素大小：`"100px"`，就无法直接使用`Number()`
         - `parseInt(字符串)` 从左到右读取数字，直到读取到一个数字之外的字符，并将数字转换为**整数**
-            - <label style='color:red'>如果是小数，会向下取整</label>
+            - <span style='color:red'>如果是小数，会向下取整</span>
         - `parseFloat(字符串)` 从左到右读取数字，直到读取到一个数字之外的字符，并将数字转换为**浮点数**
         - 如果对非String类型数据使用这两个方法，会先转换为String，然后再操作
 
@@ -1338,7 +1337,7 @@
 - `+` 运算符
     - 对于多个Number型的数据，执行加法运算
     - 对于多个String型的数据，执行字符串连接
-    - <label style="color:red">任何类型和String型的`+`运算，都会先将非String型转换为String型，然后再执行字符串连接</label>
+    - <span style="color:red">任何类型和String型的`+`运算，都会先将非String型转换为String型，然后再执行字符串连接</span>
         - 扩展：任意类型与空字符串 `""` 进行 `+` 运算都将类型转换为字符串
             - 这是一种**隐式类型转换**，由浏览器自动完成
             - 底层也是对非字符串类型调用了 `String()`
@@ -1349,7 +1348,7 @@
                 // 相当于
                 // a = String(a) + "";
                 ```
-        - <label stlye="color:red">多个其他类型与String类型执行 `+` 运算时，从左至右，依次进行每一个部分的运算</label>
+        - <span stlye="color:red">多个其他类型与String类型执行 `+` 运算时，从左至右，依次进行每一个部分的运算</span>
             - `var a = 1 + 2 + "3";`
                 1. 先计算： `1 + 2`，得到 `3`
                 2. 再执行：`3 + "3"`，得到：`"33"`
@@ -1857,7 +1856,7 @@
 - 对于对象类型，比较的是对象的地址；对于基本数据类型，比较的是变量中保存的值
 
 - 特殊的判断
-    - <label style="color:red">Undefined衍生自Null</label>，两者的相等与全等判断如下：
+    - <span style="color:red">Undefined衍生自Null</span>，两者的相等与全等判断如下：
         - `Undefined == Null`，返回true
         - `Undefined === Null`，返回false
     - Null自身不会转换成Number，除了Null和Undefined，与其他的类型进行判断都返回 false
@@ -1971,7 +1970,7 @@
 [top](#catalog)
 - 对象是引用类型
 - 对象是一种符合的数据类型，在对象中可以保存多个不同数据类型的属性
-- <label style="color:red">所有对象都是Object的后代</label>
+- <span style="color:red">所有对象都是Object的后代</span>
 - 对象的分类
 
     |类别|提供者|例子|
@@ -2435,7 +2434,7 @@
 # 函数
 ## 函数的基本概念
 [top](#catalog)
-- <label style="color:red">js的函数本身也是一个对象</label>
+- <span style="color:red">js的函数本身也是一个对象</span>
 - 通过函数封装一些功能，来进行代码复用
 - 对函数使用 `typeof` 关键字会返回 `function`
 
@@ -2524,7 +2523,7 @@
 - 使用 `return` 关键字来设置函数的返回值
     - `return 返回值;`，指定函数的具体返回值
     - `return ;`，返回 `undefined`
-    - <label style="color:red">如果不指定返回值，默认也会返回 `undefined`</label>
+    - <span style="color:red">如果不指定返回值，默认也会返回 `undefined`</span>
 - `return` 之后的语句都不会执行
 - 通过`var 结果变量 = 函数名([参数值类表]);` 的方式，来接收函数的返回值
 
@@ -2664,7 +2663,7 @@
             eval("(" + a + ")")
             ```
 - `eval`的返回值
-    - 当eval执行一批语句时，将<label style='color:red'>返回最后执行的、有返回值的那条语句的值</label>
+    - 当eval执行一批语句时，将<span style='color:red'>返回最后执行的、有返回值的那条语句的值</span>
         ```js
         // 只有 1+2有返回值，其他语句没有返回值
         let result = eval('1+2; var a = 5; ; ; ; ; function fn(){};');
@@ -2769,8 +2768,8 @@
 - `window`对象中的内容
     - `document`等对象
     - 编写在 `<script>` 标签中的js代码
-    - <label style="color:red">在全局作用域中创建的变量，都会作为 window 对象的属性</label>
-    - <label style="color:red">在全局作用域中创建的函数，都会作为 window 对象的方法</label>
+    - <span style="color:red">在全局作用域中创建的变量，都会作为 window 对象的属性</span>
+    - <span style="color:red">在全局作用域中创建的函数，都会作为 window 对象的方法</span>
     - 不使用 `var` 声明的变量
         - 声明变量时，如果不使用 `var 变量` 的方式来创建变量，相当于：`window.变量`，但是这样变量无法被 [提升](#提升)
         ```js
@@ -2779,7 +2778,7 @@
         window.a = 10;    
         ```
 
-- `window`对象 中的方法和属性都属于全局作用域，<label style="color:red">在页面任何部分都可以访问，并且可以直接通过名字访问</label>
+- `window`对象 中的方法和属性都属于全局作用域，<span style="color:red">在页面任何部分都可以访问，并且可以直接通过名字访问</span>
 
 
 - 示例
@@ -3473,7 +3472,7 @@ console.log("a = ", a);
             ```js
             var reg = new RegExp("正则表达式" [, "匹配模式"]);
             ```
-        - <label style="color:red">使用正则表达式元字符时的注意事项</label>
+        - <span style="color:red">使用正则表达式元字符时的注意事项</span>
             - 当使用：`\s`,`\w`,`\b`等元字符时，需要将`\`转义为：`\\`
             - 示例
                 ```js
@@ -3590,7 +3589,7 @@ console.log("a = ", a);
                 2. 如果 `start_index > end_index` , 方法会自动调整参数的顺序
 
         - `substr(start_index [, char_count])`
-            - <label style="color:red">ECMAScript并没有对该方法进行标准化定义，所以尽量少用</label>
+            - <span style="color:red">ECMAScript并没有对该方法进行标准化定义，所以尽量少用</span>
             - 从start_index开始截取指定数量的字符，并返回新的字符串
             - 参数说明
                 - start_index ，开始位置的索引
@@ -3831,13 +3830,6 @@ console.log("a = ", a);
     a = null
     ```
 
-
-# 弹出框
-[top](#catalog)
-- 提示框：`alert("asdfg");`
-    - `alert` 函数没有返回值
-- 可输入提示框：`var 接受输入值的参数 = prompt("提示信息");`
-
 # 反射
 [top](#catalog)
 - `typeof 变量`：获取变量的类型，返回一个字符串
@@ -3954,7 +3946,7 @@ console.log("a = ", a);
 - 函数
     - 函数如果不指定返回值，默认也会返回 `undefined`
     - 使用**函数表达式** `var 变量名 = function([参数列表]){...}`创建的函数
-            - 函数表达式<label style="color:red">不会提升</label>，所以不要函数表达式声明之前使用函数
+            - 函数表达式<span style="color:red">不会提升</span>，所以不要函数表达式声明之前使用函数
 
 - 通过构造函数创建正则表达式的时候，如果使用了：`\s`,`\w`,`\b`等元字符时，需要将`\`转义为：`\\`
     ```js
