@@ -1,12 +1,16 @@
 const Koa = require('koa');
+// const Koa = require('./node_modules/koa');
 const Router = require('koa-router');
 const body = require('koa-body');
 const static = require('koa-static');
+const session = require('koa-session');
 
 let app = new Koa();
 let router = new Router();
 
-app.use(body());
+app.use(body({
+    multipart:true
+}));
 
 // 同源测试服务器
 app.use(static(__dirname + '/public'));
@@ -47,6 +51,54 @@ router.get('/getJsonp', async ctx=>{
     const resultCode = `${cbName}(${JSON.stringify(ctx.query)})`
     ctx.body = resultCode;
 });
+
+////////////////// CORS /////////////////////////////
+// 通过中间件为所有请求设置请求头
+app.use(async (ctx, next)=>{
+    // 设置请求头
+    // 1. 允许哪些客户端访问服务端
+    ctx.set('Access-Control-Allow-Origin', 'http://localhost:3333')
+    // 2. 设置客户端可以通过哪些请求方式访问服务端
+    ctx.set('Access-Control-Allow-Methods', 'get,post')
+    // 3. 设置可以携带cookie
+    ctx.set('Access-Control-Allow-Credentials', true);
+    await next()
+})
+// 处理 CORS 请求
+router.get('/corsData', async ctx=>{
+    ctx.body = 'corsData';
+})
+
+
+//// 携带cookie，设置session ///////
+// 设置session
+app.keys = ['some secret hurr'];
+const CONFIG={
+    key: 'koa:sess',
+    maxAge:86400000,
+    overwrite:true,
+    httpOnly:true,
+    signed:true, 
+    rolling:false,
+    renew:false,
+}
+app.use(session(CONFIG, app));
+
+// cookie测试
+router.post('/cookieLogin', async ctx=>{
+    var username = ctx.request.body.username;
+    var pwd = ctx.request.body.pwd;
+    ctx.session.islogin = true;
+    ctx.body = 'success';
+})
+
+router.get('/loginCheck', async ctx=>{
+    if (ctx.session.islogin){
+        ctx.body = 'success';
+    } else {
+        ctx.body = 'error';
+    }
+})
 
 app.use(router.routes());
 app.use(router.allowedMethods());

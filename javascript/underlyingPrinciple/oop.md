@@ -67,7 +67,14 @@
     - [对象的属性](#对象的属性)
     - [继承方式](#继承方式)
     - [如何选择继承方式](#如何选择继承方式)
-- [内置对象](#内置对象)
+    - [内置对象](#内置对象)
+        - [早期规范的对象](#早期规范的对象)
+        - [集合对象](#集合对象)
+        - [结构化数据对象](#结构化数据对象)
+        - [宿主环境中提供的对象](#宿主环境中提供的对象)
+    - [具有特殊效果的继承](#具有特殊效果的继承)
+- [定制对象属性](#定制对象属性)
+    - [属性描述符](#属性描述符)
 - [](#)
 
 # 对象
@@ -1514,7 +1521,7 @@
 [top](#catalog)
 - 符号类型数据的创建
     ```js
-    var a = new Symbol(); 
+    var a = Symbol();
     ```
 - 符号数据也被称为**符号**
 - 符号可以作为对象的属性
@@ -2562,20 +2569,294 @@
         - 通过确定性的继承关系 + 静态语法检测，简化代码，提升系统稳定性
     2. 小型结构、体系的局部，可以使用原型继承
 
-# 内置对象
+## 内置对象
+### 早期规范的对象
 [top](#catalog)
-- 早期规范的对象
-    - Arguments
-        - 没有构造器
-        - 它的实例可以有 `new Object()` 创建并赋予成员
-        - 实例总是在函数调用时动态创建，并添加在函数闭包中
-            - 所以在函数中可以使用`arguments`
-        - `Arguments` 不是数组，是<span style='color:red'>类数组</span>
-    - Error
-        - 用于创建一个异常
-        - 用户可以在原生的异常上定义更多的异常类型
+- `Arguments()`
+    - 没有构造器
+    - 它的实例可以有 `new Object()` 创建并赋予成员
+    - 实例总是在函数调用时动态创建，并添加在函数闭包中
+        - 所以在函数中可以使用`arguments`
+    - `Arguments` 不是数组，是<span style='color:red'>类数组</span>
+- `Error()`
+    - 用于创建一个异常
+    - 用户可以在原生的异常上定义更多的异常类型
+    - 原生异常的继承关系
+        ```
+        - Object()
+            - Error()
+                - TypeError()
+                - EvalError()
+                - URIError()
+                - ReferenceError()
+                - RangeErrot()
+                - SyntaxError()
+        ```
+- `Date()`
+- Math
 
-# 其他       
+### 集合对象
+[top](#catalog)
+- JS中的两种集合
+    1. 索引集合
+        - 数组 Array
+        - 类型化数组 TypedArray
+    2. 键值集合
+        - Map、WeakMap
+        - Set、WeakSet
+- 索引集合
+    - 数组 Array
+        - JS的数组是**异质的、交错的、稀疏的**，表现为
+            - 异质的: 一个数组可以存储不同类型的数据
+            - 交错的: 每个元素的维度可以是不同的
+            - 稀疏的
+                - 存储时，内存地址**不一定是连续的**
+                - 数组的下标可以是不连续的
+        - 在实现上
+            - 数组在实现上与对象类似，`array[1]` 相当于 `object[1]`
+        - 性能问题
+            - 数组的存储不连续性、以及元素的不一致，所以<span style='color:red'>有巨大的性能问题</span>
+
+    - 类型化数组 TypedArray
+        - 类型化数组使用**连续的存储空间来构造对象实例**，可以解决数组的性能问题
+        - 内置类型化数组
+            - Int8Array
+            - Uint8Array
+            - Uint8ClampedArray
+            - Int16Array
+            - Uint16Array
+            - Int32Array
+            - Uint32Array
+            - Float32Array
+            - Float64Array
+
+### 结构化数据对象
+[top](#catalog)
+- 包括
+    1. 所有的 TypedArray 对象
+    2. ArrayBuffer() 对象
+    3. DataView() 对象
+    4. JSON
+- 关系图
+    - ![关系图](?????)
+- TypedArray 对象
+    - 所有的 TypedArray 对象都是结构化数据
+    - 所有的 TypedArray 都是基于 `ArrayBuffer()` 对象实现的
+- `ArrayBuffer()` 对象
+    - 用来表示通用的、固定长度的原始二进制数据缓冲区
+    - 注意事项
+        - 容易产生误解的地方
+            - `ArrayBuffer()` 不是 TypedArray 的基类
+            - `ArrayBuffer()` 不是 类数组对象
+            - `ArrayBuffer()` 不是 Array() 的子类
+        - 不能直接操作 `ArrayBuffer()` 中的数据，需要借用视图来操作
+            - TypeArray 视图
+                - 多数情况下 `ArrayBuffer()` 对象会作为 TypedArray 来使用
+            - DataView 视图
+    - 使用方法
+        1. 创建一个 n byte 的二进制数据块
+            ```js
+            var buff = ArrayBuffer(byte数);
+            ```
+        2. 创建视图: 使用 `ArrayBuffer()` 对象初始化操作视图
+            ```js
+            // 1. 创建 n byte的数据块
+            var buff = ArrayBuffer(n);
+            // 2. 创建操作视图
+            var obj1 = new TypeArray(buff);
+            var obj2 = new DataView(buff);
+            ```
+        3. 操作数据
+            ```js
+            obj1[0] = 12;
+            obj2.setInt8Value(0, 12)    // 偏移量 0，数据 12
+            ```
+    - 适用场景
+        - 操作外部数据---文件系统读取
+            1. 外部系统将数据块传给 JS，并提供一个 ArrayBuffer() 对象接口
+            2. 在 ArrayBuffer() 对象接口上创建操作视图
+            3. 不依赖外部应用的API，即可通过视图操作数据
+        - 访问其他高级语言
+    - 示例
+        - 参考代码
+            - [src/oop/built-in_obj/ArrayBuffer.js](src/oop/built-in_obj/ArrayBuffer.js)
+        - 代码内容
+            ```js
+            // 1. 创建一个 4 byte 长的 ArrayBuffer
+            var buff = new ArrayBuffer(4);
+
+            // 2. 创建一个 TypedArray，并使用 buff 的数据
+            var arr = new Int8Array(buff);
+            arr[0] = 10;
+
+            // 3. 创建一个 DataView，也使用 buff 的数据。
+            // 4. 现在 arr、view 同时在操作一个数据块，会互相影响
+            var view = new DataView(buff);
+
+            // 5. 从 view 获取通过 arr 设置的数据
+            console.assert(view.getInt8(0) === 10);
+
+            /* 6. 存储一个16进制数，0x1234 相当于存储了两位
+                每一位长为 4 bit，两位长 8 bit，即 1byte
+                从偏移量0开始，所以:
+                arr[0] === 0x12, arr[1] === 0x34
+            */
+            view.setInt16(0, 0x1234);
+
+            // 7. 通过 getInt8，去 1 byte 的数据
+            console.assert(view.getInt8(0).toString(16) === '12');
+            console.assert(view.getInt8(1).toString(16) === '34');
+
+            // 8. 通过 view 设置10进制数据，并通过 arr获取
+            view.setInt8(0, 12);
+            console.assert(arr[0] === 12);
+            ```
+
+### 宿主环境中提供的对象
+[top](#catalog)
+- 这种对象不属于JS引擎原生对象，是由宿主框架注册到JS引擎中的对象
+- 包括
+    - DOM对象
+    - window
+    - navigator
+    - XMLHttpRequest
+
+## 具有特殊效果的继承
+[top](#catalog)
+- 有特殊效果的内置对象
+    |对象|效果|
+    |-|-|
+    |Number|`number` 的包装类|
+    |String|`string` 的包装类|
+    |Boolean|`boolean` 的包装类|
+    |Object|调用包装类|
+    |Array|自动维护 `length` 属性|
+    |Date|日期对象的相关运算|
+    |Function|创建的函数对象**可以执行**|
+    |RegExp|可执行，可参与字符串运算 ?????|
+    |Proxy|代理目标对象，以及回收代理|
+    |TypeArray, DataView|创建与绑定 ArrayBuffer|
+    |ArrayBuffer, SharedArrayBuffer|初始化buffer，并维护byreLength|
+    |WeakMap, WeakSet|不修改引用，自动回收对象|
+    |Map, Set|无效果|
+    |Error|无效果|
+
+- 特殊效果的来源: 内置对象的 `构造器`
+
+- 原型继承，**无法继承**内置对象的特殊效果
+    - 原因
+        - 特殊效果来源于构造器
+        - 原型继承实例化子类时，没有执行内置对象的构造器，所以无法获得特殊效果
+    - 示例
+        - 参考代码
+            - [src/oop/built-in_obj/proto_cannt_extends_special_effect.js](src/oop/built-in_obj/proto_cannt_extends_special_effect.js)
+        - 代码内容
+            ```js
+            // 1. 创建一个继承 Function 的类
+            function foo(){}
+            foo.prototype = new Function();
+
+            // 2. 创建一个函数对象
+            var newFn = new foo('console.log("this is foo")');
+            console.assert( newFn instanceof Function === true);
+
+            // 3. 虽然newFn是函数对象，但是无法继承 Function 的特殊效果: 可以被调用
+            // 会产生异常: newFn is not a function
+            newFn();
+            ```
+
+- 类继承，**可以继承**内置对象的特殊效果
+    - 原因
+        - 类继承在创建实例时，是从基类开始向下一层一层执行构造器的
+        - 内置对象的构造器会被执行，所以能够获取特殊效果
+    - 底层的类似效果
+        ```js
+        // 1. 声明子类
+        function foo(){}
+        // 2. 实现 class...extend 的功能
+        Object.setPrototypeOf(foo.prototype, Function.prototype);
+        // 3. 通过父类的构造器来实例化对象，让对象能够获得父类 (内置对象) 的特殊效果
+        // 相当于在模拟 super() 回溯到父类时，执行父类的构造器
+        var newFn = new Function('console.log("this is newFn")');
+        // 4. 改变 newFn 的原型对象，使得 newFn是 foo 的子类
+        Object.setPrototypeOf(newFn, foo.prototype);
+        // 5. 可以调用方法
+        newFn() // this is newFn
+        ```
+    - 示例
+        - 参考代码
+            - [src/oop/built-in_obj/class_extends_special_effect.js](src/oop/built-in_obj/class_extends_special_effect.js)
+        - 代码内容
+            ```js
+            class MyFunction extends Function{}
+            class MyArray extends Array{}
+            class MyDate extends Date{}
+
+            // 1. 实例化 Function 的子类对象，并作为方法调用
+            var func = new MyFunction('console.log("this is MyFunction")');
+            func();
+
+            // 2. 创建 Array 的子类，并通过设置元素，来修改length属性
+            var arr = new MyArray(10);
+            arr[20] = 0;
+            console.assert(arr.length === 20);
+
+            // 3. 实例化 Date 的子类，可以打印子类对象代表的时间
+            var d = new MyDate();
+            console.log(d);
+            ```
+
+- 根据类继承的原理来改造原型继承，使原型继承也能够获得特殊效果
+    - 参考代码
+        - [src/oop/built-in_obj/proto_get_special_effect.js](src/oop/built-in_obj/proto_get_special_effect.js)
+    - 代码内容
+        ```js
+        function foo(...args){
+            // 2. 获取父类的构造函数
+            var Base = Object.getPrototypeOf(foo.prototype).constructor;
+            // 3. 使用父类的构造函数创建对象，来获得内置对象的特殊效果
+            // 4. 修改实例对象的原型，让它成为 子类的实例
+            var self = Object.setPrototypeOf(new Base(...args), foo.prototype);
+            // 5. 将对象返回，替换函数上下文中生成的 this 对象
+            return self;
+        }
+
+        // 1. 设置子类 与 父类的原型关系
+        Object.setPrototypeOf(foo.prototype, Function.prototype);
+
+        // 6. 实例化子类对象，并调用
+        var newFn = new foo('console.log("this is new Fn")')
+        newFn();    // this is new Fn
+        ```
+
+# 定制对象属性
+## 属性描述符
+[top](#catalog)
+- 属性描述符的分类
+    - 数据描述符
+    - 存取描述符
+
+- 数据描述符
+    - `{name: 'testName'}` 中，`name`对应的属性描述符
+        ```js
+        name: {
+            value: 'testName',
+            writable: 'true',
+            enumerable: 'true',
+            configurable: 'true',
+        }
+        ```
+    - 描述符的构成
+
+        |类型|属性|值类型|默认值|含义|
+        |-|-|-|-|-|
+        |数据描述|value|任意|undefined|属性值|
+        |数据描述|writable|Boolean|true|可写性，false表示只读|
+        |性质描述|enumerable|Boolean|true|可枚举性，false时，不能被`for...in`枚举|
+        |性质描述|configurable|Boolean|true|是否可重新配置属性<br>true时，可以修改writable，enumerable<br>可以用delete删除当前属性|
+
+
+# 其他
 - 通过`Reflect.construct(父类构造函数, [父类构造函数的实参列表], 子类构造函数)` 来更加精细的控制
     - 这种方式的执行内容
         1. 创建子类对象

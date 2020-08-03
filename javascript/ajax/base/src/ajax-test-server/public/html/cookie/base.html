@@ -1,0 +1,43 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title></title>
+    </head>
+    <body>
+        <form id='form'>
+            username:<input type="text" name='username' autocomplete="off"><br>
+            pwd:<input type="text" name='pwd' autocomplete="off"><br>
+            <input type="button" id="login" value='login'>
+            <input type="button" id="loginCheck" value='loginCheck'>
+        </form>
+        <script>
+            var loginBtn = document.getElementById('login');
+            // 1. 发送登录请求
+            loginBtn.onclick = function(){
+                var form = document.getElementById('form');
+                var fd = new FormData(form);
+                var xhr = new XMLHttpRequest();
+                // 向非同源的服务器发送登录请求
+                xhr.open('post', 'http://localhost:5555/cookieLogin');
+                xhr.withCredentials = true; // 在登录时，就需要携带cookies
+                xhr.send(fd);
+                xhr.onload = function(){
+                    console.log(xhr.responseText);
+                }
+            }
+            // 2. 登录后检查登录状态
+            var loginCheckBtn = document.getElementById('loginCheck');
+            loginCheckBtn.onclick = function(){
+                var xhr = new XMLHttpRequest();
+                // 向非同源的服务器发送登录请求
+                xhr.open('get', 'http://localhost:5555/loginCheck');
+                xhr.withCredentials = true; // 登录后的每次请求都需要携带cookie
+                xhr.send();
+                xhr.onload = function(){
+                    console.log(xhr.responseText);
+                }
+            }
+        </script>
+    </body>
+</html>

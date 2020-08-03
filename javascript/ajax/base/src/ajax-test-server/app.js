@@ -1,5 +1,5 @@
 const Koa = require('koa');
-// const Koa = require('./node_modules/koa');   // node 13无法使用时，直接从 node_modules 引入
+// const Koa = require('./node_modules/koa');
 const Router = require('koa-router');
 const static = require('koa-static');
 const body = require('koa-body');
@@ -9,7 +9,13 @@ let router = new Router();
 
 app.use(static(__dirname + '/public'));
 // 附加 `multipart: true`，用来解析 FormData
-app.use(body({ multipart: true }));
+app.use(body({
+    multipart: true,
+    // 设置上传文件的最大值 1M
+    formidable: {
+        maxFileSize: 100*1024*1024
+    }
+}));
 
 router.post('/login', async ctx=>{
     ctx.body = ctx.request.body;
@@ -26,6 +32,8 @@ router.use('/iecache', require('./routers/iecache').routes());
 router.use('/ajaxfn', require('./routers/ajaxfn').routes());
 // FormData测试
 router.use('/formData', require('./routers/formData').routes());
+// 通过服务端绕过同源策略
+router.use('/serverCross', require('./routers/serverCross').routes());
 
 app.use(router.routes());
 app.use(router.allowedMethods());

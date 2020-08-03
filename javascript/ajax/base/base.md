@@ -34,16 +34,19 @@
         - [显示FormData文件上传进度](#显示FormData文件上传进度)
         - [FormData文件上传图片及时预览](#FormData文件上传图片及时预览)
 - [Ajax请求限制](#Ajax请求限制)
-    - [Ajax请求限制--测试准备](#Ajax请求限制--测试准备)
+    - [Ajax请求限制--测试设置](#Ajax请求限制--测试设置)
     - [同源策略导致的ajax请求限制](#同源策略导致的ajax请求限制)
-    - [使用JSONP解决同源限制](#使用JSONP解决同源限制)
+    - [解决方案1--使用JSONP](#解决方案1--使用JSONP)
         - [JSONP简介](#JSONP简介)
         - [JSONP的基本实现](#JSONP的基本实现)
         - [JSONP的优化1--动态发送请求](#JSONP的优化1--动态发送请求)
         - [JSONP的优化2--函数名优化](#JSONP的优化2--函数名优化)
         - [JSONP的优化3--JSONP函数封装](#JSONP的优化3--JSONP函数封装)
-    - [CORS跨域资源共享](#CORS跨域资源共享)
+    - [解决方案2--CORS跨域资源共享](#解决方案2--CORS跨域资源共享)
         - [CORS说明](#CORS说明)
+        - [CORS的实现](#CORS的实现)
+    - [解决方案3--在服务端发请求绕过同源策略](#解决方案3--在服务端发请求绕过同源策略)
+    - [在跨区请求中携带cookie](#在跨区请求中携带cookie)
 - [](#)
 
 # ajax概述
@@ -313,7 +316,7 @@
         ```js
         xhr.open('post', '请求地址');
         ```
-    2. 设置请求头，<label style='color:red'>这是一个固定写法</label>
+    2. 设置请求头，<span style='color:red'>这是一个固定写法</span>
         ```js
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
         ```
@@ -721,7 +724,7 @@
     - 后续发送相同请求时，都会从浏览器缓存中获取响应数据
     - 即使服务端更新了数据，获取到的也是旧数据
 - 问题的原因
-    - 当IE浏览器发现在请求重复的地址时，<label style='color:red'>不会再次发送请求</label>，会直接将缓存中的数据返回给用户
+    - 当IE浏览器发现在请求重复的地址时，<span style='color:red'>不会再次发送请求</span>，会直接将缓存中的数据返回给用户
 
 - 解决方法
     - 在请求地址中添加一个参数，使每次的请求地址都不同
@@ -903,7 +906,7 @@
     - 异步上传二进制文件
         - 如图片文件、视频文件
 
-- FormData <label style='color:red'>只能用于 post 请求</label>，不能用于 get 请求
+- FormData <span style='color:red'>只能用于 post 请求</span>，不能用于 get 请求
 
 ## 通过FormData发送post请求
 [top](#catalog)
@@ -1053,7 +1056,7 @@
         xhr.send(formData);
         ```
 
-- 服务器端接收二进制数据
+    5. 在服务器端接收二进制数据，并保存文件
 
 - 示例
     - 参考代码
@@ -1236,7 +1239,7 @@
             ```
 
 # Ajax请求限制
-## Ajax请求限制--测试准备
+## Ajax请求限制--测试设置
 [top](#catalog)
 - 需要在[src\ajax-test-server](src\ajax-test-server) 下同时启动两个服务器
     - 普通服务器: npm run start
@@ -1282,7 +1285,7 @@
         - 有request，有respponse，但是浏览器拒绝接受服务器响应
         - ![](?????)
 
-## 使用JSONP解决同源限制
+## 解决方案1--使用JSONP
 ### JSONP简介
 - JSONP: json with padding
 - JSONP 不属于 ajax 请求，但可以模拟 ajax 请求
@@ -1591,7 +1594,7 @@
             }
             ```
 
-## CORS跨域资源共享
+## 解决方案2--CORS跨域资源共享
 ### CORS说明
 [top](#catalog)
 - CORS，Cross-origin resource sharing，跨域资源共享
@@ -1602,22 +1605,225 @@
         - 如: A 向 B 发送跨域请求，则 `origin` 中保存的是 A 的域名信息
         - 域名信息包括: 协议、域名、端口号
     3. 服务器端会根据该字段来决定是否同一这次跨域请求
-        - 若**服务端同意请求**，会在响应头中添加 `Access-Control-Allow-Origin` 字段
         - 无论服务端是否响应，都会给浏览器一个响应
+        - 服务端需要添加两个响应头
+            - `Access-Control-Allow-Origin`
+            - `Access-Control-Allow-Methods`
     4. 浏览器接受响应，检查响应头中是否包含  `Access-Control-Allow-Origin` 字段
 
-- `Access-Control-Allow-Origin` 字段
+- `Access-Control-Allow-Origin`，表示允许哪些客户端访问服务端
     - 作用
         - 类似一个保存在服务端的白名单
         - 每次出现跨域请求时，服务端都会检查白名单
             - 如果域名信息在白名单中，会做出响应
             - 如果不在，则不做出正常的响应
+    - 该属性如果包含当前发出请求的页面的域名，则合格
     - 该字段的值
-        - `Access-Control-Allow-Origin: 当前域名信息`
+        - `Access-Control-Allow-Origin: 域名信息`
         - `Access-Control-Allow-Origin: *`，表示允许所有跨域请求
 
-- CORS 的实现方式
+- `Access-Control-Allow-Methods`，表示可以通过哪些请求方式访问服务端
+    - `get`
+    - `post`
+    - `get,post`
+
+### CORS的实现
+[top](#catalog)
+- 实现方式
     1. CORS 不需要修改前端的ajax代码。请求头中的 `origin` 字段由浏览器自动添加
     2. 需要在服务端做 2项 配置
-        - 允许哪些客户端访问服务端
-        - 设置客户端可以通过哪些请求方式访问服务端，get 或者 post
+        - 配置内容
+            1. 允许哪些客户端访问服务端
+            2. 设置客户端可以通过哪些请求方式访问服务端
+                - get，或者 post，或者两者都可以
+        - 本质上就是添加 `Access-Control-Allow-Methods` 和 `Access-Control-Allow-Origin` 响应头
+        - 为了减少代码复杂度，应该通过中间件为所有或大部分请求设置响应头
+
+- 示例
+    - 参考代码
+        - [src/ajax-test-server/public/html/sameOrigin/CORS/base.html](src/ajax-test-server/public/html/sameOrigin/CORS/base.html)
+        - [src/ajax-test-server/sameOrigin.js](src/ajax-test-server/sameOrigin.js)
+    - 浏览器访问地址
+        - http://localhost:3333/html/sameOrigin/CORS/base.html
+    - 浏览器端代码
+        ```js
+        ajax({
+            type:'get',
+            url:'http://localhost:5555/corsData',
+            success(data){
+                console.log(data);
+            }
+        })
+        ```
+    - 服务端代码
+        ```js
+        // 通过中间件为所有请求设置请求头
+        app.use(async (ctx, next)=>{
+            // 设置请求头
+            // 1. 允许哪些客户端访问服务端
+            ctx.set('Access-Control-Allow-Origin', '*')
+            // 2. 设置客户端可以通过哪些请求方式访问服务端
+            ctx.set('Access-Control-Allow-Methods', 'get')
+            await next()
+        })
+        // 处理 CORS 请求
+        router.get('/corsData', async ctx=>{
+            ctx.body = 'corsData';
+        })
+        ```
+
+## 解决方案3--在服务端发请求绕过同源策略
+[top](#catalog)
+- 同源策略是浏览器的限制，服务器端没有这个限制
+- 从服务器端绕过同源策略的思路
+    1. `浏览器A` ---> `服务端A`，发送请求，请求`服务端B`上的数据
+    2. `服务端A` ---> `服务端B`，在后端向 `服务端B` 发送请求
+    3. `服务端B` ---> `服务端A`，非同源服务器返回响应
+    4. `服务端A` ---> `浏览器A`，同源服务器接收非同源服务器的响应，并返回给浏览器
+    5. `浏览器A` 接受响应，得到了 `服务端B` 的数据
+
+- 示例
+    - 参考代码
+        - 浏览器代码
+            - [src/ajax-test-server/public/html/sameOrigin/serverCross.html](src/ajax-test-server/public/html/sameOrigin/serverCross.html)
+        - 服务端代码
+            - [src/ajax-test-server/routers/serverCross.js](src/ajax-test-server/routers/serverCross.js)
+        - 非同源服务端代码
+            - [src/ajax-test-server/sameOrigin.js](src/ajax-test-server/sameOrigin.js)
+
+    - 浏览器访问地址
+        - http://localhost:3333/html/sameOrigin/serverCross.html
+    - 代码内容
+        1. 浏览器代码
+            ```js
+            // 向同源服务器发送请求
+            ajax({
+                type:'get',
+                url: 'http://localhost:3333/serverCross/data',
+                success(data){
+                    console.log(data);
+                }
+            })
+            ```
+        2. 非同源服务端代码
+            ```js
+            // 返回一个字符串
+            router.get('/corsData', async ctx=>{
+                ctx.body = 'corsData';
+            })
+            ```
+        3. 同源服务端代码
+            ```js
+            // 向非同源发送请求，获取到响应字符串: corsData，并作为响应返回给浏览器
+
+            // 通过服务器绕过同源策略
+            router.get('/data', async ctx=>{
+                //  4. 向其他服务器发送请求
+                ctx.body = await sendOther();
+            });
+
+            // 1. 发送异步请求
+            async function sendOther(){
+                return new Promise( (resolve, reject)=> {
+                    // 2. 向非同源服务器发送请求
+                    request('http://localhost:5555/corsData', function(error, response, body){
+                        // 3. 将请求数据返回
+                        resolve(body);
+                    });
+                })
+            }
+            ```
+
+## 在跨区请求中携带cookie
+[top](#catalog)
+- 使用ajax发送跨域请求时，在请求中，**默认不会携带cookie信息**
+
+- 解决方法
+    - 客户端
+        - 发送ajax请求时，添加 `xhr.withCredentials = true` 属性
+        - 如登录与访问请求
+            - 从登录开始就需要添加该属性
+    - 服务器端
+        - 设置session，来验证cookie
+        - 添加响应头 `Access-Control-Allow-Credentials: true`
+        - 添加响应头 `Access-Control-Allow-Origin: 跨域地址`
+            - <label style='color:red'>该响应头不能设置为 `*`，会产生请求异常</label>
+- ajax选项 `withCredentials`
+    - 设置在跨域请求时，是否携带Cookie信息，默认值为false
+
+- 添加响应头 `Access-Control-Allow-Credentials`
+    - true 表示: 允许客户端发送请求时携带cookie
+
+- 示例：向非同源服务器发送登录请求
+    - 参考代码
+        - 浏览器代码
+            - [src/ajax-test-server/public/html/cookie/base.html](src/ajax-test-server/public/html/cookie/base.html)
+        - 非同源服务端代码
+            - [src/ajax-test-server/sameOrigin.js](src/ajax-test-server/sameOrigin.js)
+    - 浏览器代码
+        ```js
+        var loginBtn = document.getElementById('login');
+        // 1. 发送登录请求
+        loginBtn.onclick = function(){
+            var form = document.getElementById('form');
+            var fd = new FormData(form);
+            var xhr = new XMLHttpRequest();
+            // 向非同源的服务器发送登录请求
+            xhr.open('post', 'http://localhost:5555/cookieLogin');
+            xhr.withCredentials = true; // 在登录时，就需要携带cookies
+            xhr.send(fd);
+            xhr.onload = function(){
+                console.log(xhr.responseText);
+            }
+        }
+        // 2. 登录后检查登录状态
+        var loginCheckBtn = document.getElementById('loginCheck');
+        loginCheckBtn.onclick = function(){
+            var xhr = new XMLHttpRequest();
+            // 向非同源的服务器发送登录请求
+            xhr.open('get', 'http://localhost:5555/loginCheck');
+            xhr.withCredentials = true; // 登录后的每次请求都需要携带cookie
+            xhr.send();
+            xhr.onload = function(){
+                console.log(xhr.responseText);
+            }
+        }
+        ```
+    - 服务端代码
+        1. 设置session
+            ```js
+            app.keys = ['some secret hurr'];
+            const CONFIG={
+                key: 'koa:sess',
+                maxAge:86400000,
+                overwrite:true,
+                httpOnly:true,
+                signed:true, 
+                rolling:false,
+                renew:false,
+            }
+            app.use(session(CONFIG, app));
+            ```
+        2. 设置请求头
+            ```js
+            // 通过中间件为所有请求设置请求头
+            app.use(async (ctx, next)=>{
+                // 设置请求头
+                // 1. 允许哪些客户端访问服务端
+                ctx.set('Access-Control-Allow-Origin', 'http://localhost:3333')
+                // 2. 设置客户端可以通过哪些请求方式访问服务端
+                ctx.set('Access-Control-Allow-Methods', 'get,post')
+                // 3. 设置可以携带cookie
+                ctx.set('Access-Control-Allow-Credentials', true);
+                await next()
+            })
+            ```
+        3. 设置路由
+            ```js
+            router.post('/cookieLogin', async ctx=>{
+                var username = ctx.request.body.username;
+                var pwd = ctx.request.body.pwd;
+                ctx.session.islogin = true;
+                ctx.body = 'success';
+            })
+            ```

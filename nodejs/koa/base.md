@@ -872,5 +872,5 @@
 |ctx.session.属性名|获取session|
 |ctx.render('模板文件名', 参数对象)|使用koa0views 中间件后，渲染模板，并绑定参数|
 |ctx.state|用于保存各页面的通用数据|
-
+|ctx.set()|设置响应头|
 [top](#catalog)

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+    <script src='/js/ajax.js'></script>
+    <script>
+        ajax({
+            type:'get',
+            url:'http://localhost:5555/corsData',
+            success(data){
+                console.log(data);
+            }
+        })
+    </script>
+</body>
+</html>

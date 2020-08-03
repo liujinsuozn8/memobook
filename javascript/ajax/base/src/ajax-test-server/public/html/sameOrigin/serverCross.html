@@ -1,0 +1,20 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset='UTF-8'>
+    <title>通过服务端绕过同源策略</title>
+</head>
+<body>
+    <script src='../../js/ajax.js'></script>
+    <script>
+        // 向同源服务器发送请求
+        ajax({
+            type:'get',
+            url: 'http://localhost:3333/serverCross/data',
+            success(data){
+                console.log(data);
+            }
+        })
+    </script>
+</body>
+</html>
