@@ -34,6 +34,8 @@ router.use('/ajaxfn', require('./routers/ajaxfn').routes());
 router.use('/formData', require('./routers/formData').routes());
 // 通过服务端绕过同源策略
 router.use('/serverCross', require('./routers/serverCross').routes());
+// jquery 测试
+router.use('/jquery', require('./routers/jqueryTest').routes());
 
 app.use(router.routes());
 app.use(router.allowedMethods());

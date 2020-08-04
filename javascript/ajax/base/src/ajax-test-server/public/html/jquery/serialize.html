@@ -1,0 +1,43 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta charset='UTF-8'>
+        <title>处理form中的数据</title>
+    </head>
+    <body>
+        <form id='form'>
+            username: <input type="text" name='username' autocomplete="off"><br>
+            address: <input type="text" name='address' autocomplete="off"><br>
+            <input type="button" value='submit' id='submit'>
+        </form>
+        <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.js"></script>
+        <script>
+            // 1. 接受一个使用jquery获取的form对象，并返回由form数据组成的对象
+            function serializeObject($form){
+                var data = {};
+
+                // serializeArray() 方法的返回内容
+                // [{name: "...", value: ""}, {name: "...", value: "..."}]
+                for (let prop of $form.serializeArray()){
+                    data[prop.name] = prop.value;
+                }
+                return data;
+            }
+
+            // 2. 发送请求
+            $('#submit').on('click', function(){
+                console.log($('#form').serialize());
+                $.ajax({
+                    type: 'get',
+                    url: '/jquery/getbase',
+                    data: serializeObject($('#form')), // 获取form中的数据对象
+                    success(data){
+                        console.log(data)
+                    }
+                });
+            })
+
+
+        </script>
+    </body>
+</html>

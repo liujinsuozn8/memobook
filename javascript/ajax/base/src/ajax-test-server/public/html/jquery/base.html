@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset='UTF-8'>
+        <title>jquery test</title>
+    </head>
+    <body>
+        <!-- 发送 get 请求 -->
+        <input type="button" value="get" id='get'>
+        <!-- 发送 post 请求 -->
+        <input type="button" value="post" id='post'>
+        <!-- 发送 error 请求 -->
+        <input type="button" value="getError" id='getError'>
+        <!-- 取消发送请求 -->
+        <input type="button" value="cancelSend" id='cancelSend'>
+        <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.js"></script>
+        <script>
+            // 1. 发送get请求
+            $('#get').on('click', function(){
+                $.ajax({
+                    type: 'get',
+                    url: '/jquery/getbase',
+                    data: { name: 'testName', age: 222 },
+                    beforeSend(){ console.log('this is before send get'); },
+                    success(data){ console.log(data); },
+                    error(xhr){ console.log(xhr); }
+                })
+            });
+
+            // 2. 使用JSON发送post请求
+            $('#post').on('click', function(){
+                $.ajax({
+                    type:'post',
+                    url: '/jquery/postbase',
+                    data: JSON.stringify({ name:'testName', age:33 }),
+                    contentType: 'application/json',
+                    beforeSend(){ console.log('this is before send post'); },
+                    success(data){ console.log(data); },
+                    error(xhr){ console.log(xhr); }
+                })
+            });
+
+            // 3. 测试异常
+            $('#getError').on('click', function(){
+                $.ajax({
+                    type: 'get',
+                    url: '/jquery/errorbase',
+                    data: { name: 'testName', age:44 },
+                    error(xhr){ console.log(xhr) }
+                });
+            });
+
+            // 4. beforeSend 取消发送请求
+            $('#cancelSend').on('click', function(){
+                $.ajax({
+                    type:'get',
+                    url:'/jquery/getbase',
+                    data: { name: 'testName', age: 55},
+                    beforeSend(){
+                        // 取消发送请求
+                        console.log('cancel send');
+                        return false;
+                    },
+                    success(data){ console.log(data); },
+                    error(xhr){ console.log(xhr); }
+                });
+            })
+        </script>
+    </body>
+</html>

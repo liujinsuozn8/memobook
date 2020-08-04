@@ -1,0 +1,43 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta charset='UTF-8'>
+        <title>$.get, $.post</title>
+    </head>
+    <body>
+        <!-- 发送 get 请求 -->
+        <input type="button" value="get" id='get'>
+        <!-- 发送 post 请求 -->
+        <input type="button" value="post" id='post'>
+        <!-- 发送 error 请求 -->
+        <input type="button" value="getError" id='getError'>
+        <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.js"></script>
+        <script>
+            // 1. 发送get请求
+            $('#get').on('click', function(){
+                $.get(
+                    '/jquery/getbase',
+                    { name: 'testName', age: 222 },
+                    function(data){ console.log(data); }
+                )
+            });
+
+            // 2. 使用JSON发送post请求
+            $('#post').on('click', function(){
+                $.post(
+                    '/jquery/postbase',
+                    { name:'testName', age:33 },
+                    function (data){ console.log(data); }
+                )
+            });
+            // 3. 测试异常
+            $('#getError').on('click', function(){
+                $.get(
+                    '/jquery/errorbase',
+                    { name: 'testName', age:44 },
+                    function (data){ console.log(data); }
+                )
+            });
+        </script>
+    </body>
+</html>

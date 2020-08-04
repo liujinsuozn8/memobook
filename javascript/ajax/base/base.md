@@ -47,6 +47,11 @@
         - [CORS的实现](#CORS的实现)
     - [解决方案3--在服务端发请求绕过同源策略](#解决方案3--在服务端发请求绕过同源策略)
     - [在跨区请求中携带cookie](#在跨区请求中携带cookie)
+- [使用jquery发送ajax请求](#使用jquery发送ajax请求)
+    - [$.ajax的基本用法](#$.ajax的基本用法)
+    - [简化用法--$.get、$.post](#简化用法--$.get、$.post)
+    - [将表达数据转换为data](#将表达数据转换为data)
+    - [jquery发送JSONP请求](#jquery发送JSONP请求)
 - [](#)
 
 # ajax概述
@@ -907,6 +912,7 @@
         - 如图片文件、视频文件
 
 - FormData <span style='color:red'>只能用于 post 请求</span>，不能用于 get 请求
+- FormData 是 Html5 开始提供的，会有兼容性问题
 
 ## 通过FormData发送post请求
 [top](#catalog)
@@ -1734,7 +1740,7 @@
             }
             ```
 
-## 在跨区请求中携带cookie
+## 在跨域请求中携带cookie
 [top](#catalog)
 - 使用ajax发送跨域请求时，在请求中，**默认不会携带cookie信息**
 
@@ -1798,7 +1804,7 @@
                 maxAge:86400000,
                 overwrite:true,
                 httpOnly:true,
-                signed:true, 
+                signed:true,
                 rolling:false,
                 renew:false,
             }
@@ -1826,4 +1832,251 @@
                 ctx.session.islogin = true;
                 ctx.body = 'success';
             })
+            ```
+
+# 使用jquery发送ajax请求
+## $.ajax的基本用法
+[top](#catalog)
+- 发送方式
+    ```js
+    $.ajax({
+        type: '请求方式',
+        url: '请求地址',
+        data: ...,
+        contentType: '',
+        beforeSend(){
+            // 发送请求之前需要调用的方法
+        },
+        success(data){
+            // 成功处理
+        },
+        error(xhr){
+            // 失败处理
+        }
+    })
+    ```
+- 注意事项
+    - data的格式
+        - 对象类型，默认会转换为 `&属性名=属性值` 的形式
+        - 字符串类型，将编辑好的参数: `&属性名=属性值` 作为data
+        - JSON字符串，需要手动调用 `JSON.stringify(obj)`, 调用结果作为data
+            - contentType 需要设置为 `application/json`
+    - 在 `beforeSend()` 中，`return false` 会终止发送请求
+
+- 示例
+    - 参考代码
+        - 浏览器代码
+            - [src/ajax-test-server/public/html/jquery/base.html](src/ajax-test-server/public/html/jquery/base.html)
+        - 服务端代码
+            - [src/ajax-test-server/routers/jqueryTest.js](src/ajax-test-server/routers/jqueryTest.js)
+    - 浏览器端代码
+        1. 发送get请求
+            ```js
+            $('#get').on('click', function(){
+                $.ajax({
+                    type: 'get',
+                    url: '/jquery/getbase',
+                    data: { name: 'testName', age: 222 },
+                    beforeSend(){ console.log('this is before send get'); },
+                    success(data){ console.log(data); },
+                    error(xhr){ console.log(xhr); }
+                })
+            });
+            ```
+        2. 使用JSON发送post请求
+            ```js
+            $('#post').on('click', function(){
+                $.ajax({
+                    type:'post',
+                    url: '/jquery/postbase',
+                    data: JSON.stringify({ name:'testName', age:33 }),
+                    contentType: 'application/json',
+                    beforeSend(){ console.log('this is before send post'); },
+                    success(data){ console.log(data); },
+                    error(xhr){ console.log(xhr); }
+                })
+            });
+        3. 测试异常
+            ```js
+            $('#getError').on('click', function(){
+                $.ajax({
+                    type: 'get',
+                    url: '/jquery/errorbase',
+                    data: { name: 'testName', age:44 },
+                    error(xhr){ console.log(xhr) }
+                });
+            });
+            ```
+        4. beforeSend 取消发送请求
+            ```js
+            $('#cancelSend').on('click', function(){
+                $.ajax({
+                    type:'get',
+                    url:'/jquery/getbase',
+                    data: { name: 'testName', age: 55},
+                    beforeSend(){
+                        // 取消发送请求
+                        console.log('cancel send');
+                        return false;
+                    },
+                    success(data){ console.log(data); },
+                    error(xhr){ console.log(xhr); }
+                });
+            })
+            ```
+    - 服务端代码
+        ```js
+        // $.ajax 基本使用测试
+        router.get('/getbase', async ctx=>{
+            ctx.body = {msg: 'success', ...ctx.query}
+        })
+
+        router.post('/postbase', async ctx=>{
+            ctx.body = {msg: 'success', ...ctx.request.body}
+        })
+
+        // 返回一个异常，测试 error()
+        router.get('/errorbase', async ctx=>{
+            ctx.status = 400;
+            ctx.body = {msg: 'error', ...ctx.query}
+        })
+        ```
+
+## 简化用法--$.get、$.post
+[top](#catalog)
+- `$.get(url, data, success)`
+- `$.post(url, data, success)`
+- data可以省略
+    - `$.get(url, success)`
+    - `$.post(url, success)`
+- 示例
+    - 参考代码
+        - [src/ajax-test-server/public/html/jquery/get_post.html](src/ajax-test-server/public/html/jquery/get_post.html)
+    - 代码内容
+        1. 发送get请求
+            ```js
+            $('#get').on('click', function(){
+                $.get(
+                    '/jquery/getbase',
+                    { name: 'testName', age: 222 },
+                    function(data){ console.log(data); }
+                )
+            });
+            ```
+        2. 使用JSON发送post请求
+            ```js
+            $('#post').on('click', function(){
+                $.post(
+                    '/jquery/postbase',
+                    { name:'testName', age:33 },
+                    function (data){ console.log(data); }
+                )
+            });
+            ```
+
+## 将表达数据转换为data
+[top](#catalog)
+- 两种转换方式
+    1. jquery对象的 `serialize()`，将数据转换为 `name=value&name=value` 的格式
+    2. jquery对象的 `serializeArray()`，将数据转换为对象数组格式
+        ```js
+        [
+            {name: '...', value: '...'},
+            {name: '...', value: '...'},
+            {name: '...', value: '...'},
+        ]
+        ```
+- 使用 `serializeArray()` 将form转换为数据对象，并用于发送请求
+    - 参考代码
+        - [src/ajax-test-server/public/html/jquery/serialize.html](src/ajax-test-server/public/html/jquery/serialize.html)
+    - 代码内容
+        ```js
+        // 1. 接受一个使用jquery获取的form对象，并返回由form数据组成的对象
+        function serializeObject($form){
+            var data = {};
+
+            // serializeArray() 方法的返回内容
+            // [{name: "...", value: ""}, {name: "...", value: "..."}]
+            for (let prop of $form.serializeArray()){
+                data[prop.name] = prop.value;
+            }
+            return data;
+        }
+
+        // 2. 发送请求
+        $('#submit').on('click', function(){
+            console.log($('#form').serialize());
+            $.ajax({
+                type: 'get',
+                url: '/jquery/getbase',
+                data: serializeObject($('#form')), // 获取form中的数据对象
+                success(data){
+                    console.log(data)
+                }
+            });
+        })
+        ```
+
+## jquery发送JSONP请求
+[top](#catalog)
+- 基本发送方式
+    ```js
+    $.ajax({
+        url: '请求地址',
+        dataType: 'jsonp',
+        success(data){
+            ....
+        }
+    })
+    ```
+- 自定义请求函数名和函数
+    ```js
+    $.ajax({
+        url: '请求地址',
+        dataType: 'jsonp',
+        jsonp: '函数名参数对应的请求参数名 默认是 callback',
+        jsonpCallback: '自定义函数的函数名'
+        // success(data){
+        //     ....
+        // }
+    })
+    ```
+- 示例
+    - 参考代码
+        - [src/ajax-test-server/public/html/jquery/jsonp.html](src/ajax-test-server/public/html/jquery/jsonp.html)
+    - 代码内容
+        1. 基本使用方法，发送跨域请求
+            ```js
+            $('#base').on('click', function(){
+                $.ajax({
+                    url: 'http://localhost:5555/getJsonp',
+                    dataType: 'jsonp',
+                    data:{
+                        name:'testName',
+                        age:12
+                    },
+                    success(data){
+                        console.log(data)
+                    }
+                })
+            });
+            ```
+        2. 发送自定义的JSONP请求
+            ```js
+            $('#customize').on('click', function(){
+                $.ajax({
+                    url: 'http://localhost:5555/getJsonp',
+                    dataType: 'jsonp',
+                    data:{
+                        name:'testName',
+                        age:24
+                    },
+                    jsonp: 'callback',
+                    jsonpCallback: 'customizeFn',
+                });
+            });
+            // 自定义响应函数
+            function customizeFn(data){
+                console.log(data);
+            }
             ```

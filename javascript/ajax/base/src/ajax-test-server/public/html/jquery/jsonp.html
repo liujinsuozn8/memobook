@@ -1,0 +1,46 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta charset='UTF-8'>
+        <title>发送JSONP请求</title>
+    </head>
+    <body>
+        <button id='base'>base</button>
+        <button id='customize'>customize</button>
+        <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.js"></script>
+        <script>
+            // 1. 基本使用方法，发送跨域请求
+            $('#base').on('click', function(){
+                $.ajax({
+                    url: 'http://localhost:5555/getJsonp',
+                    dataType: 'jsonp',
+                    data:{
+                        name:'testName',
+                        age:12
+                    },
+                    success(data){
+                        console.log(data)
+                    }
+                })
+            });
+
+            // 2. 发送自定义的JSONP请求
+            $('#customize').on('click', function(){
+                $.ajax({
+                    url: 'http://localhost:5555/getJsonp',
+                    dataType: 'jsonp',
+                    data:{
+                        name:'testName',
+                        age:24
+                    },
+                    jsonp: 'callback',
+                    jsonpCallback: 'customizeFn',
+                });
+            });
+            // 自定义响应函数
+            function customizeFn(data){
+                console.log(data);
+            }
+        </script>
+    </body>
+</html>

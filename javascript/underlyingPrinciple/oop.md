@@ -74,7 +74,17 @@
         - [宿主环境中提供的对象](#宿主环境中提供的对象)
     - [具有特殊效果的继承](#具有特殊效果的继承)
 - [定制对象属性](#定制对象属性)
+    - [对象属性概述](#对象属性概述)
     - [属性描述符](#属性描述符)
+        - [数据描述符](#数据描述符)
+        - [存取描述符](#存取描述符)
+        - [对象字面量形式下的隐式描述符](#对象字面量形式下的隐式描述符)
+        - [类声明中的描述符](#类声明中的描述符)
+    - [定制对象属性](#定制对象属性)
+        - [属性赋值行为的4种情况](#属性赋值行为的4种情况)
+        - [属性描述符的覆盖](#属性描述符的覆盖)
+        - [属性的设置与获取方法](#属性的设置与获取方法)
+    - [自有属性表](#自有属性表)
 - [](#)
 
 # 对象
@@ -270,7 +280,7 @@
             ```
         - `obj.constructor` 相当于 `obj.__proto__.constructor`
             - 因为对象自身一般不会有 `constructor` 属性，所以自动到隐式原型中搜索
-            - 隐式原型与显示原型指向相同，所以 `obj.constructor` 就是 构造函数 本身
+            - 隐式原型与显式原型指向相同，所以 `obj.constructor` 就是 构造函数 本身
             - 在通过 `prototype` 即可访问到原型链的上一层原型对象
         - 本质上等同于 `构造函数.prototype`
         - 缺点
@@ -937,7 +947,7 @@
 ## 构建通用的继承关系设定方法
 [top](#catalog)
 - 为了完成父类与子类之间的继承，需要同时完成两件工作
-    1. 将子类的显示原型对象设置为父类的实例对象
+    1. 将子类的显式原型对象设置为父类的实例对象
     2. 将父类函数的静态方法绑定到子类函数
         - 一般会使用 `Object.setPrototypeOf`，但是该方法有兼容性问题，需要有相应的兼容性处理
 
@@ -1235,16 +1245,16 @@
 ## null作为原型--更加空白的对象
 [top](#catalog)
 - null 作为原型的两种情况
-    1. 将类的显示原型设为 null: `构造函数.prototype = null`
-    2. 将对象的显示原型改为 null: `Object.setPrototypeOf(实例对象, null)`
+    1. 将类的显式原型设为 null: `构造函数.prototype = null`
+    2. 将对象的显式原型改为 null: `Object.setPrototypeOf(实例对象, null)`
         - 通过 `Ojbect.getPrototype(实例对象) === null` 来检测
 
-- 将类的显示原型设为 null: `构造函数.prototype = null`
+- 将类的显式原型设为 null: `构造函数.prototype = null`
     - 实例化对象时，<span style='color:red'>对象的真实创建者</span>
     - nul本身无法创建对象，所以引擎会通过 `new Object()` 的方式创建对象
     - `new Object()` 创建的对象会作为 `this`，来执行构造函数内部的处理
     - 因为实例是由 `new Object()` 创建的，所以原型对象会变成 `Object.prototype`
-    - 这种情况下，实例的隐式原型与构造函数的显示原型是不相同的
+    - 这种情况下，实例的隐式原型与构造函数的显式原型是不相同的
         - `实例.__proto__ === Object`
         - `构造函数.prototype === null`
     - 示例
@@ -1264,7 +1274,7 @@
             var instance = new foo();
             // 4. foo.prototype 是 null，所以无法正常的执行类型判断
             try{
-                console.log(instance instanceof foo);    
+                console.log(instance instanceof foo);
             } catch (e){
                 console.log(e.message); // Function has non-object prototype 'null' in instanceof check
             }
@@ -1305,6 +1315,16 @@
             - 空白对象还有原型这种对象，这种对象连原型都没有，只剩一个 `object` 类型的空壳
     - 对这种对象是一个: 只有`自有属性表`的属性包
 
+- `Object.create(null)`，效果与 `Object.setPrototypeOf(实例对象, null)` 相同
+    - 也会创建一个只有 `object` 类型空壳的空白对象
+    - 相当于
+        ```js
+        var a = Object.create(null);
+
+        var a = new Objcet();
+        Object.setPrototypeOf(a, null);
+        ```
+
 ## 原型对象的复制与对象的自有属性表
 [top](#catalog)
 - JS中创建对象的方式
@@ -1344,16 +1364,16 @@
 ## 对象的内置属性与方法
 [top](#catalog)
 - 查看对象内置属性的方法
-    1. 查看 `Object.prototype` 上的成员（显示 + 隐式）。这是所有实例对象所共有的
+    1. 查看 `Object.prototype` 上的成员（显式 + 隐式）。这是所有实例对象所共有的
         ```js
         console.log(Object.getOwnPropertyNames(Object.prototype))
         ```
-    2. 查看构造器函数 `Function` 中包含的成员（显示 + 隐式）
+    2. 查看构造器函数 `Function` 中包含的成员（显式 + 隐式）
         ```js
         console.log(Object.getOwnPropertyNames(Function))
         console.log(Object.getOwnPropertyNames(Function.prototype))
         ```
-    3. 查看 `Object` 自身的成员（显示 + 隐式）。如果类以 `Object` 为基类，实例 对象可以使用这些方法
+    3. 查看 `Object` 自身的成员（显式 + 隐式）。如果类以 `Object` 为基类，实例 对象可以使用这些方法
         ```js
         console.log(Object.getOwnPropertyNames(Object))
         ```
@@ -1403,8 +1423,8 @@
 ## 成员的可枚举性
 [top](#catalog)
 - 成员的可枚举性属性: `enumerable`
-- <span style='color:red'>显示与隐式</span>
-    - 显示: `enumerable == true`
+- <span style='color:red'>显式与隐式</span>
+    - 显式: `enumerable == true`
     - 隐式: `enumerable == false`
 - 检查方法: `obj.propertyIsEnumerable('paramName')`
     - 检查属性是否是可枚举的
@@ -1414,18 +1434,18 @@
 
     |遍历范围|成员类型|语法|功能|
     |-|-|-|-|
-    |对象本身、原型对象|显示成员|for...in|遍历可枚举的成员名|
-    |对象本身、非symbol的|显示成员|Object.keys()|获取所有可枚举的成员名|
-    |对象本身、非symbol的|显示成员|Object.values()|获取所有可枚举的成员值|
-    |对象本身、非symbol的|显示成员|Object.entries()|获取所有可枚举的成员KV数据|
-    |对象本身、非symbol的|显示+隐式|Object.getOwnPropertyNames()|获取对象自身的所有成员名|
-    |对象本身、symbol的|显示+隐式|Object.getOwnPropertySymbols()|获取对象自身的所有Symbol成员名|
+    |对象本身、原型对象|显式成员|`for...in`|遍历可枚举的成员名|
+    |对象本身、非symbol的|显式成员|`Object.keys()`|获取所有可枚举的成员名|
+    |对象本身、非symbol的|显式成员|`Object.values()`|获取所有可枚举的成员值|
+    |对象本身、非symbol的|显式成员|`Object.entries()`|获取所有可枚举的成员KV数据|
+    |对象本身、非symbol的|显式+隐式|`Object.getOwnPropertyNames()`|获取对象自身的所有成员名|
+    |对象本身、symbol的|显式+隐式|`Object.getOwnPropertySymbols()`|获取对象自身的所有Symbol成员名|
 
 ## 对象及其成员的检查
 [top](#catalog)
 - 在JS中，取一个<span style="color:red">不存在的属性</span>的值，<span style="color:red">不会导致异常，会返回 undefined</span>
 - `in` 用来检查对象是否具有某个成员
-    - 成员范围: 显示 + 隐士
+    - 成员范围: 显式 + 隐士
     - 检查类型: 基本类型 + 对象类型
 - `instanceof` 检查一个对象是不是一个类/构造函数的实例
 
@@ -1667,19 +1687,25 @@
 
 ## 声明属性
 [top](#catalog)
-- 声明读写属性，与方法
+- 声明类实例的属性
     ```js
     class Foo{
+        // 普通属性，会添加到每个对象自身。对象之间相互隔离
+        prop = 'xxx'
+
+        // 作为 param1 的属性描述符，挂载到类的原型对象上
         // 属性的读方法
         get param1(){...}
         // 属性的写方法
         set param1(value){...}
+
+        // 挂载到类的原型对象上
         // 声明方法
         method(){...}
     }
     ```
 
-- 声明所有实例对象共享的属性
+- 通过**原型对象**，声明所有实例对象共享的属性
     ```js
     class Foo{...}
     Foo.prototype.param1 = '...'
@@ -1703,7 +1729,7 @@
     ```
 
 - 继承有参构造的父类，需要通过 `super(参数类表)` 来调用父类的构造器
-    - 无论父类的构造参数是否有参数，都应该显示调用 `super()`
+    - 无论父类的构造参数是否有参数，都应该显式调用 `super()`
         ```js
         class Foo{
             constructor(name, age){
@@ -2001,7 +2027,7 @@
 ## 通用函数---实例方法访问静态成员
 [top](#catalog)
 - 实例方法访问静态成员时的问题
-    - 必须**显示的**通过类名来调用静态成员
+    - 必须**显式的**通过类名来调用静态成员
     - 如果调用父类的静态成员，
     - 类代码中硬编码了类自身，会增加重构的难度
     - 示例
@@ -2094,7 +2120,7 @@
     class Foo{}
     console.log( typeof Foo );  // 输出 function
     ```
-- 只要是类，一定会有一个**显示或隐式**的构造方法
+- 只要是类，一定会有一个**显式或隐式**的构造方法
 - 当中没有声明**构造方法**时，引擎会添加一个**隐式**的构造方法
     - 没有父类的类
         ```js
@@ -2269,9 +2295,9 @@
     - 构造过程
         1. 通过 `new 子类()` 创建实例对象
         2. 执行子类的 `constructor` 函数
-        3. 调用 `constructor` 函数内部的 `super()` 函数（显示/隐式的）
+        3. 调用 `constructor` 函数内部的 `super()` 函数（显式/隐式的）
         4. 动态计算 `super()`，得到父类的构造函数
-        5. 执行父类的构造函数，遇到内部的 `super()` 函数（显示/隐式的）
+        5. 执行父类的构造函数，遇到内部的 `super()` 函数（显式/隐式的）
         6. **顺着原型链**，重复步骤 4--5，直到最底层的基类: `Object()`
             - 此时已经构成了一个递归形式的调用链
         7. 调用 `Object()`，创建实例对象，该对象作为 `this` 对象
@@ -2309,7 +2335,7 @@
 
 - 类继承和原型继承的混用
     - super 将会一直回溯到第一个非 `类声明` 构造器
-    - 即使父类是通过原型继承方式创建的，也需要在构造器中**显示的调用super**
+    - 即使父类是通过原型继承方式创建的，也需要在构造器中**显式的调用super**
     - 示例
         - 参考代码
             - [src/oop/class/super/mixin.js](src/oop/class/super/mixin.js)
@@ -2332,7 +2358,7 @@
             // 3. 使用类创建FooEx的子类
             class FooNext extends FooEx{
                 constructor(){
-                    super() // 即使父类是通过原型继承方式创建的也需要显示的调用super
+                    super() // 即使父类是通过原型继承方式创建的也需要显式的调用super
                     console.log('this is FooNext')
                 }
             }
@@ -2454,7 +2480,7 @@
 
 # 与原型访问相关的操作
 [top](#catalog)
-- 访问显示原型
+- 访问显式原型
     - `Class.prototype`
 
 - 访问隐式原型
@@ -2476,7 +2502,7 @@
 
 - 遍历原型链
     ```js
-    var proto = Object.getPrototypeOF(obj);
+    var proto = Object.getPrototypeOf(obj);
     // 会一直遍历到原型链的尽头: null
     while(proto){
         // 打印原型
@@ -2541,7 +2567,7 @@
         - 维护原型链
             - 原型继承的手动设置 `子类.prototype.constructor`
         - 属性定义
-            - 构造函数中直接在`this`对象（自由属性表）上添加的成员
+            - 构造函数中直接在`this`对象（自有属性表）上添加的成员
     - 直接创建对象的方法: `Object.create(原型对象, 属性描述符)`
         - 功能
             - 基于某个原型对象来创建对象
@@ -2830,31 +2856,453 @@
         ```
 
 # 定制对象属性
-## 属性描述符
+## 对象属性概述
 [top](#catalog)
+- 所有的属性，无论它在哪里，有什么对象持有，本质都是 **属性描述符**
 - 属性描述符的分类
     - 数据描述符
     - 存取描述符
+- 类声明中的描述符，就是属性描述符
+- 修改属性值，本质上就是在更新属性描述符，如何更新需要根据属性所处的位置进行判断
 
-- 数据描述符
-    - `{name: 'testName'}` 中，`name`对应的属性描述符
+## 属性描述符
+### 数据描述符
+[top](#catalog)
+- `{name: 'testName'}` 中，`name`对应的属性描述符
+    ```js
+    name: {
+        value: 'testName',
+        writable: 'true',
+        enumerable: 'true',
+        configurable: 'true',
+    }
+    ```
+- 数据描述符的构成
+
+    |类型|属性|值类型|默认值|含义|
+    |-|-|-|-|-|
+    |数据描述|value|任意|undefined|属性值|
+    |数据描述|writable|Boolean|false|可写性，false表示只读|
+    |性质描述|enumerable|Boolean|false|可枚举性，false时，不能被`for...in`枚举|
+    |性质描述|configurable|Boolean|false|是否可重新配置属性<br>true时，可以修改writable，enumerable<br>可以用delete删除当前属性|
+
+### 存取描述符
+[top](#catalog)
+- <span style='color:red'>带读写器的存取描述符、数据描述符，不能同时存在</span>
+- 描述组的构成
+
+    |类型|属性|值类型|默认值|含义|
+    |-|-|-|-|-|
+    |存取描述|get|Function|undefined|取值函数 getter|
+    |存取描述|set|Function|undefined|设值函数 setter|
+    |性质描述|enumerable|Boolean|false|可枚举性，false时，不能被`for...in`枚举|
+    |性质描述|configurable|Boolean|false|是否可重新配置属性<br>true时，可以修改writable，enumerable<br>可以用delete删除当前属性|
+
+- **get、set 两个属性必须要有一个**
+- 在 get、set 中可以调用this对象，表示当前持有属性的对象
+- 示例
+    - 参考代码
+        - [src/oop/property/descriptor/getter_setter.js](src/oop/property/descriptor/getter_setter.js)
+    - 代码内容
         ```js
-        name: {
-            value: 'testName',
-            writable: 'true',
-            enumerable: 'true',
-            configurable: 'true',
-        }
+        // 1. 创建空对象，并添加描述符
+        var obj = Object.create(null, {
+            x: {
+                value: 10,
+                writable: true,
+                enumerable: true,
+                configurable: true,
+            },
+            count:{
+                // 通过 getter、setter 来操作属性 x
+                get(){
+                    return this.x * 10
+                },
+                set(value){
+                    this.x = value / 100
+                },
+                enumerable: true,
+                configurable: true,
+            }
+        })
+
+        // 2. 通过 getter 取值
+        console.assert( obj.count === 100);
+        // 3. 通过 setter 设值
+        obj.count = 200;
+        console.assert( obj.count === 20);
         ```
-    - 描述符的构成
 
-        |类型|属性|值类型|默认值|含义|
-        |-|-|-|-|-|
-        |数据描述|value|任意|undefined|属性值|
-        |数据描述|writable|Boolean|true|可写性，false表示只读|
-        |性质描述|enumerable|Boolean|true|可枚举性，false时，不能被`for...in`枚举|
-        |性质描述|configurable|Boolean|true|是否可重新配置属性<br>true时，可以修改writable，enumerable<br>可以用delete删除当前属性|
+### 对象字面量形式下的隐式描述符
+[top](#catalog)
+- 隐式描述符的默认值
+    |属性|默认值|
+    |-|-|
+    |writable|成员是属性或方法: true<br>成员是getter、setter: 存取描述符|
+    |enumerable|true|
+    |configurable|true|
+- **隐式描述符的默认值 与 属性描述符的默认值不是同一概念**
+- 示例
+    - 参考代码
+        - [src/oop/property/descriptor/literal.js](src/oop/property/descriptor/literal.js)
+    - 代码内容
+        ```js
+        // 1. 创建字面量，使用默认描述符
+        var obj = {
+            x: 10,
+            // 相当于
+            // x: {
+            //     value: 10,
+            //     writable: true,
+            //     enumerable: true,
+            //     configurable: true,
+            // },
 
+            // 通过 getter、setter 来操作属性 x
+            get count(){
+                return this.x * 10
+            },
+            set count(value){
+                this.x = value / 100
+            }
+
+            // 相当于
+            // count:{
+            //     get(){
+            //         return this.x * 10
+            //     },
+            //     set(value){
+            //         this.x = value / 100
+            //     },
+            //     enumerable: true,
+            //     configurable: true,
+            // }
+        };
+
+        // 2. 通过 getter 取值
+        console.assert( obj.count === 100);
+        // 3. 通过 setter 设值
+        obj.count = 200;
+        console.assert( obj.count === 20);
+        ```
+
+### 类声明中的描述符
+[top](#catalog)
+- 类声明中，属性描述符的规则与普通声明的规则相同
+- 实例的成员，描述符设置在类的原型上
+- 静态成员，描述符设置在类本身
+- 注意事项
+    - 类的方法声明、静态方法声明、getter、setter，各属性的默认值
+    - `writable`: true
+    - `enumerable`: false
+    - `configurable`: true
+- 示例
+    - 参考代码
+        - [src/oop/property/descriptor/class.js](src/oop/property/descriptor/class.js)
+    - 代码内容
+        ```js
+        // 1. 创建类，并添加描述符
+        class Foo{
+            // 设置普通属性，会添加到对象内
+            x = 10
+
+            // 作为 count 的属性描述符，添加到类的原型对象
+            // 通过 getter、setter 来操作属性 x
+            get count(){
+                return this.x * 10
+            }
+            set count(value){
+                this.x = value / 100
+            }
+
+            // 普通函数，也会添加到类的原型对象
+            run(){
+                console.log('running');
+            }
+
+            // 静态方法，会添加到类自身
+            static work(){
+                console.log('working');
+            }
+        }
+
+        // 2. 实例化对象
+        var obj = new Foo();
+        // 3. 通过 getter 取值
+        console.assert( obj.count === 100);
+        // 4. 通过 setter 设值
+        obj.count = 200;
+        console.assert( obj.count === 20);
+        // 5. 调用方法
+        obj.run();  // running
+
+        // 6. 调用静态方法
+        Foo.work();
+        ```
+
+## 定制对象属性
+### 属性赋值行为的4种情况
+[top](#catalog)
+1. 属性不存在
+    - 隐式创建一个数据描述符
+        - writable: true
+        - enumerable: true
+        - configurable: true
+        - value: 需要设置的属性值
+2. 属性在对象的`自有属性表`中
+    - 更新属性的数据描述符中的 `value` 属性
+    - 只要 `writable` 不是 false，就能够更新
+    - 如果 `writable` 是 false，无法更新，也没有异常
+3. 属性是 `存取描述符`
+    - 将会直接使用自身或从原型对象继承来的属性
+4. 属性在原型对象中，并且使用了`数据描述符`
+    - 将在对象的 `自有属性表` 中**隐式创建**一个属性描述符
+
+### 属性的设置与获取方法
+[top](#catalog)
+- 设置属性
+
+    |方法|功能|
+    |-|-|
+    |`Object.defineProperty(obj, name, descriptor)`|为对象添加属性，或覆盖原有属性|
+    |`Object.defineProperties(obj, descriptors)`|为对象添加一组属性。如果属性存在，会覆盖原有属性|
+    |`Object.create(prototype, descriptors)`|以某个对象为原型创建新对象，并为新对象添加以组属性|
+
+- 获取属性
+
+    |获取内容|遍历范围|成员类型|方法|功能|
+    |-|-|-|-|-|
+    |属性描述符|对象本身|显式+隐式|`Object.getOwnPropertyDescriptors(obj)`|获取对象的所有属性描述符|
+    |属性描述符|指定属性|显式+隐式|`Object.getOwnPropertyDescriptor(obj, 'name')`|获取对象中指定的属性描述符|
+    |属性名|对象本身、非symbol的|显式+隐式|`Object.getOwnPropertyNames()`|获取对象自身的所有成员名|
+    |属性名|对象本身、symbol的|显式+隐式|`Object.getOwnPropertySymbols()`|获取对象自身的所有Symbol成员名|
+    |属性名|对象本身、非symbol的|显式成员|`Object.keys()`|获取所有可枚举的成员名|
+    |属性名|对象本身、原型对象|显式成员|`for...in`|遍历可枚举的成员名|
+    |属性值|对象本身、非symbol的|显式成员|`Object.values()`|获取所有可枚举的成员值|
+    |属性值|对象本身、非symbol的|显式成员|`Object.entries()`|获取所有可枚举的成员KV数据|
+    |属性值|-|-|`for...of`|遍历可迭代对象的元素|
+
+### 属性描述符的覆盖
+[top](#catalog)
+1. <span style='color:red'>如果一个属性是 `configurable: false`, 则无法用属性描述符覆盖</span>
+    - 参考代码
+        - [src/oop/property/setprop/configurable_false.js](src/oop/property/setprop/configurable_false.js)
+    - 代码内容
+        ```js
+        var a = {}
+        Object.defineProperty(a, 'count', {
+            value: 100,
+            writable:false,
+            configurable:false
+        });
+
+        console.assert( a.count === 100);
+        a.count = 200;
+        console.assert( a.count === 100);
+
+        // 无法修改属性
+        // Cannot redefine property: count
+        // Object.defineProperty(a, 'count', {
+        //     value: 200,
+        //     writable:true,
+        //     configurable:false
+        // });
+        ```
+2. 对象的某个属性是 `writable: false` 的，可以通过重新设置属性描述符来覆盖
+    - 参考代码
+        - [src/oop/property/setprop/cover_unwritable.js](src/oop/property/setprop/cover_unwritable.js)
+    - 代码内容
+        ```js
+        // 1. 为对象设置一个不可写的属性
+        var a = {}
+        Object.defineProperty(a, 'count', {
+            value:100,
+            writable:false,
+            configurable:true,
+        });
+        // 2. 无法对属性进行修改
+        a.count = 200
+        console.assert(a.count === 100);
+
+        // 3. 重新覆盖属性描述符，并设置为可写属性
+        Object.defineProperty(a, 'count', {
+            value:200,
+            writable: true,
+        });
+
+        // 4. 覆盖成功
+        console.assert(a.count === 200);
+        // 5. 可以正常修改属性
+        a.count = 300;
+        console.assert(a.count === 300);
+        ```
+- 父类属性描述符对子类的影响
+    - 影响内容
+        |父类属性的描述符|对子类的影响|
+        |-|-|
+        |`configurable:false`、`writable:true`|子类对象可以通过`赋值方式`添加属性。并在自由属性表中隐式创建属性描述符|
+        |`configurable:false`、`writable:false`|只能为子类对象添加属性描述符，来覆盖父类的属性描述符|
+    - `configurable:false`、`writable:true`
+        - 参考代码
+            - [src/oop/property/setprop/seal.js](src/oop/property/setprop/seal.js)
+        - 代码内容
+            ```js
+            // 1. 创建一个原型对象
+            var a = {}
+            Object.defineProperty(a, 'count', {
+                value:10,
+                writable:true,
+                enumerable:false,
+                configurable:false,
+            });
+
+            // 2. 通过原型对象创建一个新的对象
+            var b = Object.create(a);
+
+            // 3. 此时使用的是原型对象的 count 属性
+            console.assert( b.count === 10 );
+            // 4. 对象自身没有 count 属性
+            console.assert( b.hasOwnProperty('count') === false );
+
+            // 5. 修改属性时，会在自有属性表中添加一个 count 属性
+            b.count = 20
+            console.assert( b.count === 20 );
+            // 6. 此时对象中已经包含该属性了
+            console.assert( b.hasOwnProperty('count') === true );
+
+            // 7. 隐式创建的描述符
+            // { value: 20, writable: true, enumerable: false, configurable: true }
+            console.log( Object.getOwnPropertyDescriptor(b, 'count'));
+            ```
+        - `configurable:false`、`writable:false`
+            - 参考代码
+                - [src/oop/property/setprop/similar_freeze.js](src/oop/property/setprop/similar_freeze.js)
+            - 代码内容
+                ```js
+                // 1. 创建一个原型对象
+                var a = {}
+                Object.defineProperty(a, 'count', {
+                    value: 10,
+                    writable: false,    // 设置为不可写、不可修改
+                    enumerable: false,
+                    configurable: false,
+                });
+
+                // 2. 通过原型对象创建一个新的对象
+                var b = Object.create(a);
+
+                // 3. 此时使用的是原型对象的 count 属性
+                console.assert(b.count === 10);
+                // 4. 对象自身没有 count 属性
+                console.assert(b.hasOwnProperty('count') === false);
+
+                // 5. 修改属性时，因为原型上的属性是 writable: false 的，所以无法隐式创建的属性描述符
+                b.count = 20
+                // 6. 属性值无法修改
+                console.assert(b.count === 10);
+                // 7. 不会隐式创建的属性描述符
+                console.assert(b.hasOwnProperty('count') === false);
+
+                // 8. 使用 Object.defineProperty 设置属性描述符
+                Object.defineProperty(b, 'count', {
+                    value: 20,
+                    writable: true,
+                    enumerable: true,
+                    configurable: true
+                });
+
+                // 9. 在子类对象的自有属性表中添加的属性描述符
+                console.assert( b.count === 20 );
+                console.assert( b.hasOwnProperty('count') === true );
+                // { value: 20, writable: true, enumerable: true, configurable: true }
+                console.log(Object.getOwnPropertyDescriptor(b, 'count'));
+                ```
+
+## 自有属性表
+[top](#catalog)
+- 对象内部通过: `[[Extensible]]` + 属性描述符中的 `configurable`、`writable` 来管理自有属性表
+
+- 操作自有属性表的方法
+
+    |分类|方法|功能|对自有属性表的操作|
+    |-|-|-|-|
+    |状态维护|`Object.preventExtensions(obj)`|对象不能添加属性，也不能重置原型|禁止表add|
+    |状态维护|`Object.seal(obj)`|对象不能添加和删除属性|禁止表 add/delete|
+    |状态维护|`Object.freeze(obj)`|对象不能添加和删除属性，并且所有属性只读|禁止表 add/delete/update|
+    |状态检查|`Object.isExtensible`|返回 `[[Extensible]]` 的值|是否可以添加属性|
+    |状态检查|`Object.isSealed(obj)`|返回是否执行了 seal||
+    |状态检查|`Object.isFrozen(obj)`|返回是否执行了 freeze||
+
+- 自有属性表的操作与对应的管理属性
+    - `[[Extensible]]`，表add
+    - `configurable`，表delete
+    - `writable`，表update
+
+- seal 和 freeze 不是直接的状态值，是修改 `[[Extensible]]` 和 属性描述符得到的
+    - seal = `[[Extensible]] = false` + 所有自由属性的 `configurable = false`
+    - freeze = `[[Extensible]] = false` + 所有自由属性的 `configurable = false`、`writable = false`
+
+- 特例
+    - 存取属性不受 `freeze` 的影响
+        - 因为存取属性没有 `writable` 属性，所以可以正常调用 setter
+    - 如果父类被`freeze`，子类对象无法添加属性，但是可以添加属性描述符来覆盖父类的影响
+        - 参考代码
+            - [src/oop/property/setprop/freeze.js](src/oop/property/setprop/freeze.js)
+        - 代码内容
+            ```js
+            // 1. 创建一个原型对象
+            var a = {count: 10}
+            Object.freeze(a);
+
+            // 2. 通过原型对象创建一个新的对象
+            var b = Object.create(a);
+
+            // 3. 无法添加属性
+            b.count = 20
+            // 4. 属性值无法修改
+            console.assert(b.count === 10);
+            // 5. 不会隐式创建的属性描述符
+            console.assert(b.hasOwnProperty('count') === false);
+
+            // 6. 使用 Object.defineProperty 设置属性描述符
+            Object.defineProperty(b, 'count', {
+                value: 20,
+                writable: true,
+                enumerable: true,
+                configurable: true
+            });
+
+            // 7. 子类对象可以覆盖父类属性描述符的影响
+            console.assert( b.count === 20 );
+            console.assert( b.hasOwnProperty('count') === true );
+            // { value: 20, writable: true, enumerable: true, configurable: true }
+            console.log(Object.getOwnPropertyDescriptor(b, 'count'));
+            ```
+
+# 运行期侵入
+[top](#catalog)
+- 内部槽与内部方法
+    - 对象在JS内部可以被描述为：**具有一些内部槽的结构体**
+    - 操作这个结构体的方法是**内部方法**
+
+- 基本对象的内部槽与内部方法
+    - `[[Prototype]]`, 就是隐式原型 `__proto__`
+        - `Object.getPrototypeOf(obj)`
+        - `Object.setPrototypeOf(obj, obj2)`
+    - `[[Extensible]]`，自有属性表是否可以添加属性
+        - `Object.isExtensible(obj)`
+        - `Object.preventExtensions(obj)`
+
+- 函数对象的内部槽与内部方法
+    - `[[Realm]]`
+        - 表示函数所在的领域
+            - 可以当作执行环境的静态映像 ????? 静态作用域、执行上下文
+    - `[[ScriptOrModule]]`
+        - 表示初始化该函数的结构
+            - 脚本块
+            - 模块
+            - null
+    - JS不提供对这两个内部槽的操作方法
 
 # 其他
 - 通过`Reflect.construct(父类构造函数, [父类构造函数的实参列表], 子类构造函数)` 来更加精细的控制
