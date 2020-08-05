@@ -96,6 +96,14 @@
             - [二叉平衡树的右旋](#二叉平衡树的右旋)
             - [二叉平衡树的双旋](#二叉平衡树的双旋)
         - [二叉平衡树--旋转的实现](#二叉平衡树--旋转的实现)
+- [图](#图)
+    - [图简介](#图简介)
+    - [图的表示方式](#图的表示方式)
+    - [图的创建--使用邻接矩阵](#图的创建--使用邻接矩阵)
+    - [DFS--图的深度优先遍历](#DFS--图的深度优先遍历)
+    - [BFS--图的广度优先遍历](#BFS--图的广度优先遍历)
+[top](#catalog)
+
 - [](#)
 
 # 数据结构与算法概述
@@ -4390,5 +4398,289 @@
         }
     }
     ```
+
+# 图
+## 图简介
+[top](#catalog)
+- 为什么需要图？
+    - 线性表的局限
+        - 只有一个直接前驱和一个直接后继的关系
+    - 树的局限
+        - 只有一个父节点
+    - 为了表示**多对多关系**，所以需要图
+- 图的每一个结点可以有0个或多个相邻的元素
+
+- 图的概念
+    - 边 edge: 连接两个结点之间的称为边
+    - 顶点 vertex: 结点也称为顶点
+    - 路径: 一个顶点到另一个顶点的路线
+- 三种图
+    - 无向图: 顶点之间的连接没有方向
+    - 有向图: 顶点之间的连接是有方向的
+    - 带权图: 边带有权值
+        - 带权图也称为网
+- 示例
+    - 无向图
+        - ![undirected_graph](imgs/data_structure/graph/demo/undirected_graph.png)
+    - 有向图
+        - ![directed_graph](imgs/data_structure/graph/demo/directed_graph.png)
+    - 带权图
+        - ![weight_graph](imgs/data_structure/graph/demo/weight_graph.png)
+
+## 图的表示方式
+[top](#catalog)
+- 图的两种表示方式
+    1. 二维数组表示，即: 邻接矩阵
+    2. 链表表示，即: 邻接表
+
+- 邻接矩阵
+    - 主要表示顶点之间的相邻关系
+    - 对于n个顶点的图，矩阵大小是 `n x n`，每个值表示两个顶点是否能够相连
+    - 存在的边用 1 表示，不存在的边用 0 表示
+    - 邻接矩阵是对称的，即`arr[i][j] == arr[j][i]`
+    - 邻接矩阵的缺点
+        - 邻接矩阵需要为每个顶点都分配n个边的空间，有很多边是不存在的，会浪费空间
+    - 示例
+        - ![adjacency_matrix](imgs/data_structure/graph/express/adjacency_matrix.png)
+- 邻接表
+    - 邻接表只描述存在的边，没有空间浪费
+    - 邻接表由数组和链表组成
+        - 数组的索引表示顶点的值
+        - 链表不表示连接顺序，只表示与当前顶点相连的顶点
+    - 示例
+        - ![adjacency_table](imgs/data_structure/graph/express/adjacency_table.png)
+
+## 图的创建--使用邻接矩阵
+[top](#catalog)
+- 图的保存方式
+    1. 使用`字符串数组`保存顶点的数据
+    2. 使用`二维数组`保存邻接矩阵
+- 创建过程
+    1. 使用**顶点个数**初始化图
+        - 用顶点个数初始化保存邻接矩阵的二维数组
+    2. 将顶点数据添加到`字符串数组`中
+    3. 手动添加边到字符串数组中
+        - 添加时，应该说明是那两个顶点之间的边，以及边的权
+
+- 实现内容
+    - 参考代码
+        - [/algorithm/src/java-algorithm/datastructure/src/main/java/com/ljs/learn/datastructure/graph/matrix/Graph.java](/algorithm/src/java-algorithm/datastructure/src/main/java/com/ljs/learn/datastructure/graph/matrix/Graph.java)
+    - 代码内容
+        ```java
+        public class Graph {
+            private ArrayList<String> vertexList; // 存储顶点集合
+            private int[][] edges;  // 存储邻接矩阵
+            private int numOfEdges; // 记录边的数量
+        
+            // 通过结点个数初始化图
+            public Graph(int n){
+                // 初始化矩阵和vertexList
+                edges = new int[n][n];
+                vertexList = new ArrayList<String>(n);
+                // 初始化时不知道有多少条边，所以初始化为0
+                numOfEdges = 0;
+            }
+        
+            // 插入结点
+            public void addVertex(String vertex){
+                vertexList.add(vertex);
+            }
+        
+            /**
+             * 添加边
+             * @param v1 一个顶点对应的下标
+             * @param v2 另一个顶点对应的下标
+             * @param weight 表示边(的权值)
+             */
+            public void addEdge(int v1, int v2, int weight){
+                edges[v1][v2]=weight;
+                edges[v2][v1]=weight;
+                numOfEdges++;
+            }
+        }
+        ```
+
+- 测试内容
+    - 参考代码
+        - [/algorithm/src/java-algorithm/datastructure/src/test/java/com/ljs/learn/datastructure/graph/matrix/GraphTest.java](/algorithm/src/java-algorithm/datastructure/src/test/java/com/ljs/learn/datastructure/graph/matrix/GraphTest.java)
+    - 测试内容
+        ```java
+        @Test
+        public void createGraph(){
+            // 1. 定义顶点中的数据
+            String vertexes[] = {"A", "B", "C", "D", "E", "F"};
+    
+            // 2. 使用顶点个数初始化图
+            Graph graph = new Graph(vertexes.length);
+    
+            // 3. 添加结点
+            for (String vertex : vertexes) {
+                graph.addVertex(vertex);
+            }
+    
+            // 4. 添加边
+            graph.addEdge( 0, 1, 1);
+            graph.addEdge( 0, 4, 1);
+            graph.addEdge( 1, 4, 1);
+            graph.addEdge( 1, 2, 1);
+            graph.addEdge( 2, 5, 1);
+            graph.addEdge( 3, 4, 1);
+            graph.addEdge( 3, 5, 1);
+            graph.addEdge( 4, 5, 1);
+    
+            // 5. 输出图
+            graph.showGraph();
+    
+            // 输出:
+            // [0, 1, 0, 0, 1, 0]
+            // [1, 0, 1, 0, 1, 0]
+            // [0, 1, 0, 0, 0, 1]
+            // [0, 0, 0, 0, 1, 1]
+            // [1, 1, 0, 1, 0, 1]
+            // [0, 0, 1, 1, 1, 0]
+        }
+        ```
+
+## DFS--图的深度优先遍历
+[top](#catalog)
+- 遍历方法
+    1. 访问初始结点A，并标记结点A为已访问
+    2. 查找结点A的第一个邻接结点B
+    3. 若B存在，则继续执行4，如果B不存在，则回到第1步，将从邻接矩阵中A的下一个结点D继续
+    4. 若B未被访问，对B进行深度优先遍历递归(把B当作另一个A，然后进行步骤123)
+    5. 如果B已经访问过，从结点A的邻接结点B开始，查找下一个邻接结点C，转到步骤3
+
+- 实现内容
+    - 参考代码
+        - [/algorithm/src/java-algorithm/datastructure/src/main/java/com/ljs/learn/datastructure/graph/matrix/Graph.java](/algorithm/src/java-algorithm/datastructure/src/main/java/com/ljs/learn/datastructure/graph/matrix/Graph.java)
+    - 代码内容
+        1. 搜索邻接结点
+            ```java
+            // 定义一个数据，记录某个结点是否被访问过
+            private boolean[] isVisited;
+            
+            /**
+             * 遍历矩阵的第 index 行，搜索第一个有效的邻接结点
+             * @param index 邻接矩阵的行index
+             * @return 如果存在则返回列 index， 如果不存在则返回 -1
+             */
+            public int getFirstNeighbor(int index){
+                //
+                for (int i = 0; i < vertexList.size(); i++) {
+                    if (edges[index][i] > 0){
+                        return i;
+                    }
+                }
+        
+                // 如果没有找到则返回 -1
+                return -1;
+            }
+        
+            /**
+             * 搜索一个邻接结点的下一个邻接结点
+             * @param lineIndex 邻接矩阵的行index
+             * @param startIndex 搜索的起始邻接结点（应该从它的下一个开始搜索）
+             * @return 下一个邻接结点的index，没有则返回 -1
+             */
+            public int getNextNeighbor(int lineIndex, int startIndex){
+                // 从目标结点的下一个结点开始搜索
+                for (int i = startIndex + 1; i < vertexList.size(); i++) {
+                    if (edges[lineIndex][i] > 0){
+                        return i;
+                    }
+                }
+        
+                // 如果没有找到则返回 -1
+                return -1;
+            }
+            ```
+        2. 深度优先遍历
+            ```java
+            /**
+             * 深度优先遍历
+             * @param isVisited 访问状态列表
+             * @param lineIndex 从哪个结点开始遍历
+             */
+            public void dfs(boolean[] isVisited, int lineIndex){
+                // 1. 访问当前结点
+                System.out.println(getValueByIndex(lineIndex));
+        
+                // 2. 将当前结点设置为已访问
+                isVisited[lineIndex] = true;
+        
+                // 3. 查找当前结点的第一个邻接结点
+                int b = getFirstNeighbor(lineIndex);
+        
+                while (b != -1){
+                    // 4. 如果邻接结点存在，并且未被访问，则对该结点进行深度优先遍历
+                    if(!isVisited[b]){
+                        dfs(isVisited, b);
+                    }
+                    // 5. 如果 B 已被访问，则搜索B的下一个邻接结点
+                    b = getNextNeighbor(lineIndex, b);
+                }
+            }
+        
+            // 启动深度优先遍历
+            public void dfs(){
+                // 定义一个数组，记录某个结点是否被访问过
+                boolean[] isVisited = new boolean[vertexList.size()];
+                // 遍历每一个结点，并做深度优先遍历
+                // 即：如果B不存在，则回到第1步，将从邻接矩阵中A的下一个结点D继续
+                for (int i = 0; i < getNumOfVertex(); i++) {
+                    if (!isVisited[i]){
+                        dfs(isVisited, i);
+                    }
+                }
+            }
+            ```
+
+## BFS--图的广度优先遍历
+[top](#catalog)
+- BFS的基本思想
+    - BFS类似于一个分层搜索的过程
+    - 遍历过程中需要使用一个队列以保持访问过的结点的顺序
+    - 当一层被遍历完，通过队列，按照顺序继续访问结点的邻接结点
+- 实现内容
+    - 参考代码
+        - [/algorithm/src/java-algorithm/datastructure/src/main/java/com/ljs/learn/datastructure/graph/matrix/Graph.java](/algorithm/src/java-algorithm/datastructure/src/main/java/com/ljs/learn/datastructure/graph/matrix/Graph.java)
+    - 代码内容
+        ```java
+        public void bfs(){
+            // 初始化访问状态数组
+            boolean[] isVisited = new boolean[vertexList.size()];
+    
+            // 1. 将第一个顶点放入队的队尾
+            LinkedList<Integer> queue = new LinkedList<>();
+            queue.addLast(0);
+            isVisited[0] = true;
+    
+            // 2. 从第一个顶点开始遍历，直至遍历到队列为空
+            int curNode;
+            int[] curRow;
+            while (!queue.isEmpty()){
+                // 3. 从队列的对头弹出一个顶点A
+                curNode = queue.poll();
+    
+                // 4. 输出该结点
+                System.out.println(vertexList.get(curNode));
+                // 应该在顶点被添加到队列时，设置为已访问
+                // 防止多个结点与目标结点有关系，导致结点的重复访问
+                // isVisited[i] = true;
+    
+                // 5. 顺次访问顶点A的邻接结点
+                curRow = edges[curNode];
+                for (int i = 0; i < curRow.length; i++) {
+                    // 6. 如果邻接结点没有被访问过，则将邻接结点添加到队列中
+                    // tips:邻接矩阵的每列也是结点的index，将列的index当作结点添加到队列
+                    if (curRow[i] == 1 && isVisited[i] == false){
+                        queue.addLast(i);
+                        // 7. 将该结点设置为已访问
+                        isVisited[i] = true;
+                    }
+                }
+            }
+        }
+        ```
 
 [top](#catalog)
