@@ -89,9 +89,7 @@
             - [dom操作](javascript/base/dom.md)
             - [bom操作](javascript/base/bom.md)
             - [console控制台输出](javascript/base/console.md)
-        - js原理
-            - [js语法](javascript/underlyingPrinciple/base.md)
-            - [js的面向对象特性](javascript/underlyingPrinciple/oop.md)
+        - [js原理](javascript/underlyingPrinciple/index.md)
         - es标准
             - [es5、es6、es7](javascript/es/567.md)
         - 模块化开发
