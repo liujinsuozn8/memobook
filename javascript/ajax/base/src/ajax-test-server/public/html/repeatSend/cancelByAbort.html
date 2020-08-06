@@ -1,0 +1,37 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta charset='UTF-8'>
+        <title>处理方式1--终止旧请求、发送新请求</title>
+    </head>
+    <body>
+        <button id="repeat">repeat send</button>
+        <script>
+            // 1. 设置全局共享的ajax对象
+            var xhr;
+            document.getElementById('repeat').onclick = function(){
+                // 2. 检查xhr的状态
+                if (xhr && xhr.readyState !== 4){
+                    // 旧请求未完成，则终止就请求，并重新发送新请求
+                    xhr.abort();
+                }
+
+                /*
+                    执行到此处的几种可能
+                        - 尚未发送过请求
+                        - 旧请求已经响应完成，重新发送情趣
+                        - 旧请求已被终止，重新发送请求
+                */
+               // 3. 发送请求
+               xhr = new XMLHttpRequest();
+               xhr.open('get', '/timeout/test');
+               xhr.send();
+               xhr.onload = function(){
+                   console.log(xhr.responseText);
+                   // 4. 响应成功后，情况xhr对象
+                   xhr = null;
+               }
+            }
+        </script>
+    </body>
+</html>

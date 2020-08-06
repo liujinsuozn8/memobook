@@ -1,0 +1,37 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>终止已发送的ajax请求</title>
+    </head>
+    <body>
+        <button id="send">send</button>
+        <button id="abort">abort</button>
+        <script>
+            // 设置全局 xhr 对象
+            var xhr;
+            // 发送ajax请求
+            document.getElementById('send').onclick = function(){
+                xhr = new XMLHttpRequest();
+                xhr.open('get', '/timeout/test');
+                xhr.send();
+                xhr.onload = function(){
+                    console.log(xhr.responseText);
+                    // 响应成功后，将全局 xhr 对象清空
+                    xhr = null;
+                }
+            }
+
+            // 终止ajax请求
+            document.getElementById('abort').onclick = function(){
+                // 如果全局xhr对象存在，并且状态码不等于 4，则终止ajax请求
+                if (xhr && xhr.readyState !== 4){
+                    xhr.abort();
+                    // 终止请求后，将全局 xhr 对象清空
+                    xhr = null;
+                    console.log('request has been aborted');
+                }
+            }
+        </script>
+    </body>
+</html>

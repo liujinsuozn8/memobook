@@ -25,7 +25,7 @@
     - [保留父类的静态方法](#保留父类的静态方法)
     - [构建通用的继承关系设定方法](#构建通用的继承关系设定方法)
 - [原型继承](#原型继承)
-    - [JS中的继承实现方式](#JS的继承实现方式)
+    - [JS中的继承实现方式](#JS中的继承实现方式)
     - [空对象、空白对象](#空对象、空白对象)
     - [原型继承的实现与分析](#原型继承的实现与分析)
     - [原型对象的复制与对象的自有属性表](#原型对象的复制与对象的自有属性表)
@@ -1248,15 +1248,30 @@
 ## null作为原型--更加空白的对象
 [top](#catalog)
 - null 作为原型的两种情况
-    1. 将类的显式原型设为 null: `构造函数.prototype = null`
-    2. 将对象的显式原型改为 null: `Object.setPrototypeOf(实例对象, null)`
-        - 通过 `Ojbect.getPrototype(实例对象) === null` 来检测
+    1. 设置函数的隐式原型为 null : `Object.setPrototypeOf(构造函数.prototype, null)`
+    2. 将类的显式原型设为 null: `构造函数.prototype = null`
+    3. 将对象的显式原型改为 null: `Object.setPrototypeOf(实例对象, null)`
+        - 功能相同的处理: `Object.create(null)`
+        - 通过 `Object.getPrototype(实例对象) === null` 来检测
+
+- 设置函数的隐式原型为 null : `Object.setPrototypeOf(构造函数.prototype, null)`
+    - 在原型链中，去除了默认的基类: Object
+    - 创建的实例对象仍然是 构造函数 的实例，但是不是 Object 的实例
+    - 示例
+        ```js
+        function Foo(){}
+        Object.setPrototypeOf(Foo.prototype, null);
+        var x = new Foo;
+        console.log(x); // {}
+        console.log(x instanceof Foo);  // true
+        console.log(x instanceof Object);   // false
+        ```
 
 - 将类的显式原型设为 null: `构造函数.prototype = null`
-    - 实例化对象时，<span style='color:red'>对象的真实创建者</span>
-    - nul本身无法创建对象，所以引擎会通过 `new Object()` 的方式创建对象
-    - `new Object()` 创建的对象会作为 `this`，来执行构造函数内部的处理
-    - 因为实例是由 `new Object()` 创建的，所以原型对象会变成 `Object.prototype`
+    - 实例化对象时，<span style='color:red'>对象的真实创建者是 `Object()`</span>
+        - nul本身无法创建对象，所以引擎会通过 `new Object()` 的方式创建对象
+        - `new Object()` 创建的对象会作为 `this`，来执行构造函数内部的处理
+        - 因为实例是由 `new Object()` 创建的，所以原型对象会变成 `Object.prototype`
     - 这种情况下，实例的隐式原型与构造函数的显式原型是不相同的
         - `实例.__proto__ === Object`
         - `构造函数.prototype === null`
@@ -3311,6 +3326,18 @@
 ## 可以被符号影响的行为
 [top](#catalog)
 - 参考: [Symbol.md#可以被符号属性影响的行为](Symbol.md#可以被符号属性影响的行为)
+
+## 内部方法与反射机制
+[top](#catalog)
+- 自由内部方法
+    - 对象可以用自己的处理过程来覆盖内部方法
+    - JS在调用内部方法时，会优先使用对象的自有方法
+
+
+- 最小颗粒度的运算对象
+var a = Object.create(null)
+var Atom = new Function
+Object.setPrototypeOf(Atom, null)
 
 # 其他
 - 通过`Reflect.construct(父类构造函数, [父类构造函数的实参列表], 子类构造函数)` 来更加精细的控制

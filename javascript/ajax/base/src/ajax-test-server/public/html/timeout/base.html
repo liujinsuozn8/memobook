@@ -1,0 +1,26 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta charset='UTF-8'>
+        <title>timeout test</title>
+    </head>
+    <body>
+        <button id='timeout'>timeout</button>
+        <script>
+            document.getElementById('timeout').onclick = function(){
+                var xhr = new XMLHttpRequest();
+                xhr.open('get', '/timeout/test');
+                // 设置请求超时的时间
+                xhr.timeout = 2000;
+                // 设置请求超时的响应事件
+                xhr.ontimeout = function(){
+                    alert('timeout! please try again');
+                }
+                xhr.send();
+                xhr.onload = function(){
+                    console.log(xhr.requestText);
+                }
+            }
+        </script>
+    </body>
+</html>

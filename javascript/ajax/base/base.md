@@ -2,6 +2,8 @@
 
 ### 目录
 - [ajax概述](#ajax概述)
+    - [什么是ajax](#什么是ajax)
+    - [ajax的优点与缺点](#ajax的优点与缺点)
     - [ajax与传统网站请求方式的比较](#ajax与传统网站请求方式的比较)
     - [ajax的应用场景](#ajax的应用场景)
     - [ajax的运行环境](#ajax的运行环境)
@@ -22,6 +24,11 @@
     - [获取服务器端响应的两种方式](#获取服务器端响应的两种方式)
 - [ajax的错误处理](#ajax的错误处理)
 - [ajax在低版本IE浏览器中的缓存问题](#ajax在低版本IE浏览器中的缓存问题)
+- [ajax的超时处理](#ajax的超时处理)
+- [终止已发送的ajax请求](#终止已发出ajax请求)
+- [处理重复发送的ajax请求](处理重复发送的ajax请求)
+    - [处理方式1--终止旧请求、发送新请求](#处理方式1--终止旧请求、发送新请求)
+    - [处理方式2--延迟发送请求](#处理方式2--延迟发送请求)
 - [封装ajax](#封装ajax)
     - [封装ajax的思路](#封装ajax的思路)
     - [ajax封装的实现](#ajax封装的实现)
@@ -46,15 +53,33 @@
         - [CORS说明](#CORS说明)
         - [CORS的实现](#CORS的实现)
     - [解决方案3--在服务端发请求绕过同源策略](#解决方案3--在服务端发请求绕过同源策略)
-    - [在跨区请求中携带cookie](#在跨区请求中携带cookie)
+    - [在跨域请求中携带cookie](#在跨域请求中携带cookie)
 - [使用jquery发送ajax请求](#使用jquery发送ajax请求)
     - [$.ajax的基本用法](#$.ajax的基本用法)
     - [简化用法--$.get、$.post](#简化用法--$.get、$.post)
     - [将表达数据转换为data](#将表达数据转换为data)
     - [jquery发送JSONP请求](#jquery发送JSONP请求)
+    - [jquery中的ajax全局事件](#jquery中的ajax全局事件)
 - [](#)
 
 # ajax概述
+## 什么是ajax
+[top](#catalog)
+- AJAX全称: Asynchronous JavaScript And XML
+- ajax就是异步的js和xml
+- 通过ajax，可以在浏览器端发送异步请求，**可以无刷新获取数据**
+- ajax不是新的变成语言，而是一种将现有的标准组合在一起使用的新方式
+
+## ajax的优点与缺点
+[top](#catalog)
+- 优点
+    - 可以无刷新页面与服务端进行通信
+    - 允许根据事件来更新部分页面的内容
+- 缺点
+    - 没有浏览历史
+    - 存在跨域问题（同源策略的限制）
+    - SEO（搜索引擎优化）不友好
+
 ## ajax与传统网站请求方式的比较
 [top](#catalog)
 - 传统网站中存在的问题
@@ -67,10 +92,6 @@
     - 重复获取相同的资源
         - 在一个大型的web应用中，页面中的很多组成元素是相同的
         - 页面跳转时，需要**重新加载整个页面**，造成资源浪费，增加用户的等待时间
-
-- 什么是ajax
-    - ajax 相当于浏览器发送请求与接受响应的代理，可以在**不刷新页面**的情况下，**局部更新页面数据**
-
 
 - 传统网站与ajax的交互过程比较
     - 传统网站: 浏览器与服务器的交互过程
@@ -120,7 +141,8 @@
     |responseText|响应数据|
     |readyState|ajax 状态码|
     |upload|一个对象，用于处理与文件上传相关的内容|
-    |||
+    |withCredentials|是否可以携带cookie|
+    |timeout|请求的超时时间，单位: 毫秒|
 
 - 方法
 
@@ -130,20 +152,34 @@
     |send|发送请求|
     |setRequestHeader|设置请求头|
     |getResponseHeader|获取响应头|
-    |||
+    |abort|终止**已发送的**ajax请求|
 
 - 事件
 
     |事件名|触发时间|
     |-|-|
-    |onload|响应返回时|
-    |onreadystatechange|ajax 状态码发生变化时|
-    |onerror|请求未能发送时|
-    |||
+    |onload|响应返回时触发|
+    |onreadystatechange|ajax 状态码发生变化时触发|
+    |onerror|网络异常|
+    |ontimeout|请求超时时触发|
 
 - 与文件上传相关的内容
     - `xhr.upload`，所有与文件上传相关的内容都保存在该对象中
     - `xhr.upload.onprogress`，文件上传时会**持续触发**的事件
+
+- 相关请求头
+    - `Content-Type: application/x-www-form-urlencoded`，请求参数为分隔符类型
+    - `Content-Type: application/json`，请求参数为JSON类型
+
+- （服务端需要设置的）相关响应头
+    - 设置允许的访问的跨域地址
+        - `Access-Control-Allow-Origin: 跨域地址`
+        - `Access-Control-Allow-Origin: *`，所有的都可以访问
+            - 如果需要携带cookie，则不能使用 `*`
+    - 设置允许的跨域请求类型
+        - `Access-Control-Allow-Methods`
+    - 设置跨域请求是否可以携带cookie
+        - `Access-Control-Allow-Credentials: true`
 
 # ajax的使用步骤
 [top](#catalog)
@@ -440,7 +476,7 @@
 ## 使用属性状态码
 [top](#catalog)
 - `xhr.readyState` 属性获取状态码
-    - 数据类型是: `number`
+    - <span style='color:red'>数据类型是: `number` </span>
     - 该属性在 ajax 不同阶段获取到的值
 
         |阶段|`xhr.readyState`的值|
@@ -698,7 +734,7 @@
                 console.log(abc);
             })
             ```
-    3. 网络中断
+    3. 网络中断测试，需要手动将浏览器设置为 `offline` 状态
         - 参考代码
             - [src/ajax-test-server/public/html/error/net-disconnected.html](src/ajax-test-server/public/html/error/net-disconnected.html)
         - 浏览器访问地址
@@ -761,6 +797,158 @@
         xhr.send();
         ```
 
+# ajax的超时处理
+[top](#catalog)
+- `xhr.timeout = 超时时间`
+    - 通过 `timeout` 属性来设置请求的超时时间
+    - 最好在 `xhr.send()` 发送请求之前设置超时时间
+    - 如果请求超时，在控制台中，请求状态会变成 `canceled`
+- `xhr.ontimeout = function(){...}`
+    - 设置请求超时的响应事件
+- 示例
+    - 参考代码
+        - 浏览器端代码
+            - [src/ajax-test-server/public/html/timeout/base.html](src/ajax-test-server/public/html/timeout/base.html)
+        - 服务端代码
+            - [src/ajax-test-server/routers/timeout.js](src/ajax-test-server/routers/timeout.js)
+    - 浏览器访问地址
+        - http://localhost:3333/html/timeout/base.html
+    - 浏览器请求代码
+        ```js
+        document.getElementById('timeout').onclick = function(){
+            var xhr = new XMLHttpRequest();
+            xhr.open('get', '/timeout/test');
+            // 设置请求超时的时间
+            xhr.timeout = 2000;
+            // 设置请求超时的响应事件
+            xhr.ontimeout = function(){
+                alert('timeout! please try again');
+            }
+            xhr.send();
+            xhr.onload = function(){
+                console.log(xhr.requestText);
+            }
+        }
+        ```
+    - 服务端代码
+        ```js
+        router.get('/test', async ctx=>{
+            // 设置一个比较长的等待时间
+            await new Promise( (resolve)=>{
+                setTimeout(()=>{resolve()}, 3000)
+            })
+            ctx.body = {msg:'success'};
+        });
+        ```
+
+# 终止已发送的ajax请求
+[top](#catalog)
+- `xhr.abort()`
+    - 通过该方法终止**已发送的**ajax请求
+        - 如果在 `xhr.send()` 之前使用，该方法无效
+    - 请被终止后，控制台中的请求状态会变成 `canceled`
+- 注意事项
+    - 如果发送请求和终止请求在不同的事件中，需要设置全局的 `xhr` 对象来处理
+- 示例
+    - 参考代码
+        - 浏览器端代码
+            - [src/ajax-test-server/public/html/abort/base.html](src/ajax-test-server/public/html/abort/base.html)
+        - 服务端代码
+            - [src/ajax-test-server/routers/timeout.js](src/ajax-test-server/routers/timeout.js)
+    - 浏览器访问地址
+        - http://localhost:3333/html/abort/base.html
+    - 浏览器端代码
+        1. 设置全局 xhr 对象，并发送请求
+            ```js
+            // 设置全局 xhr 对象
+            var xhr;
+            // 发送ajax请求
+            document.getElementById('send').onclick = function(){
+                xhr = new XMLHttpRequest();
+                xhr.open('get', '/timeout/test');
+                xhr.send();
+                xhr.onload = function(){
+                    console.log(xhr.responseText);
+                    // 响应成功后，将全局 xhr 对象清空
+                    xhr = null;
+                }
+            }
+            ```
+        2. 终止ajax请求
+            ```js
+            document.getElementById('abort').onclick = function(){
+                // 如果全局xhr对象存在，并且状态码不等于 4，则终止ajax请求
+                if (xhr && xhr.readyState !== 4){
+                    xhr.abort();
+                    // 终止请求后，将全局 xhr 对象清空
+                    xhr = null;
+                    console.log('request has been aborted');
+                }
+            }
+            ```
+
+# 处理重复发送的ajax请求
+## 处理方式1--终止旧请求、发送新请求
+[top](#catalog)
+- 使用场景
+    - 按钮等页面事件的连续触发
+- 处理思路
+    1. 将 xhr 对象设置为全局的或能够共享的对象
+    2. 正常发送请求
+    3. 重复发送相同请求时，检查xhr对象的状态
+        - 如果: `ajax状态码 === 4`，即请求已完成，可以在此发送
+        - 如果: `ajax状态码 !== 4`，即请求未完成，终止旧请求，并发送新请求
+- 示例
+    - 参考代码
+        - 浏览器端代码
+            - [src/ajax-test-server/public/html/repeatSend/cancelByAbort.html](src/ajax-test-server/public/html/repeatSend/cancelByAbort.html)
+        - 服务端代码
+            - [src/ajax-test-server/routers/timeout.js](src/ajax-test-server/routers/timeout.js)
+    - 浏览器访问地址
+        - http://localhost:3333/html/repeatSend/cancelByAbort.html
+    - 浏览器端代码
+        ```js
+        // 1. 设置全局共享的ajax对象
+        var xhr;
+        document.getElementById('repeat').onclick = function(){
+            // 2. 检查xhr的状态
+            if (xhr && xhr.readyState !== 4){
+                // 旧请求未完成，则终止就请求，并重新发送新请求
+                xhr.abort();
+            }
+
+            /*
+                执行到此处的几种可能
+                    - 尚未发送过请求
+                    - 旧请求已经响应完成，重新发送情趣
+                    - 旧请求已被终止，重新发送请求
+            */
+            // 3. 发送请求
+            xhr = new XMLHttpRequest();
+            xhr.open('get', '/timeout/test');
+            xhr.send();
+            xhr.onload = function(){
+                console.log(xhr.responseText);
+                // 4. 响应成功后，情况xhr对象
+                xhr = null;
+            }
+        }
+        ```
+
+## 处理方式2--延迟发送请求
+[top](#catalog)
+- 适用场景
+    - 检索输入框的提示列表
+
+- 处理思路
+    1. 在全局作用域中设置一个 延时器`setTimeout` 对象的标识
+    2. 在可能会连续触发的事件中，将用于发送 ajax 请求的函数，包在 `setTimeout` 中，并设置一定的延迟
+    3. 如果事件连续触发，**在事件处理开始前**，清除旧的`setTimeout`，创建一个新的`setTimeout`
+    4. 在一定时间内，如果事件没有再次发生，则触发延时器，发送请求
+
+- 参考
+    - [检索输入框提示列表](../inaction/02searchList.md#实现代码)
+
 # 封装ajax
 ## 封装ajax的思路
 [top](#catalog)
@@ -770,6 +958,9 @@
 - 可转换为参数的部分有
     - 请求类型: get、post
     - 请求地址: url
+    - 超时处理
+        - 超时的时间
+        - 超时响应函数
     - 请求参数及其格式
     - 成功时的处理方法
     - 失败时的处理方法
@@ -796,11 +987,13 @@
         success: function(data, xhr){
             // data是响应成功时的 xhr.responseText, xhr是ajax对象本身
             // ...
-        }
+        },
         error: function(data, xhr){
             // data是响应成功时的 xhr.responseText, xhr是ajax对象本身
             // ...
-        }
+        },
+        timeout: '超时时间',
+        timeoutHandle: function(){} // 超时响应函数
     })
     ```
 
@@ -823,6 +1016,8 @@
             type: 'get',
             url: '',
             data: {},
+            timeout:null,
+            timeoutHandle:function(){},
             contentType: ajax.PARAM_TYPE_COMMON,
             success: function(){},
             error: function(){},
@@ -831,11 +1026,19 @@
         // 2. 将选项参数拷贝到默认对象中，后续只使用默认对象
         Object.assign(defaults, options);
 
+        // 3. 初始化 ajax 请求对象
         var xhr = new XMLHttpRequest();
-        // 3. 根据请求类型，来处理路径、参数、http请求头
+
+        // 4. 设置请求超时处理
+        if (defaults.timeout){
+            xhr.timeout = defaults.timeout;
+            xhr.ontimeout = defaults.timeoutHandle;
+        }
+
+        // 5. 根据请求类型，来处理路径、参数、http请求头
         if (defaults.type === 'get') {
             var url = defaults.url;
-            // 如果data选项的参数个数不为0，则在地址后面拼接请求参数
+            // 如果包含 data 选项，并且参数个数不为0，则在地址后面拼接请求参数
             if (Object.keys(defaults.data).length > 0) {
                 url += '?' + ajax.paramFormat(ajax.PARAM_TYPE_COMMON, defaults.data);
             }
@@ -846,7 +1049,7 @@
         } else if (defaults.type === 'post') {
             var contentType = defaults.contentTyp || ajax.PARAM_TYPE_COMMON;
             var params = '';
-            // 如果 data 选项的参数个数不为0，则在地址后面拼接请求参数
+            // 如果包含 data 选项，并且参数个数不为0，则在地址后面拼接请求参数
             if (Object.keys(defaults.data).length > 0) {
                 params = ajax.paramFormat(contentType, defaults.data);
             }
@@ -858,15 +1061,15 @@
             xhr.send(params);
         }
 
-        // 4. 监听服务器返回的响应
+        // 6. 监听服务器返回的响应
         xhr.onload = function () {
-            // 4.1 获取响应头信息，如果是JSON格式，则转换为对象类型
+            // 6.1 获取响应头信息，如果是JSON格式，则转换为对象类型
             var resData = xhr.responseText;
             if (xhr.getResponseHeader('Content-Type').indexOf(ajax.RES_TYPE_JSON) !== -1){
                 resData = JSON.parse(resData);
             }
 
-            // 4.2 根据http状态码，调用不同的处理函数
+            // 6.2 根据http状态码，调用不同的处理函数
             if (xhr.status === 200) {
                 defaults.success(resData, xhr);
             } else {
@@ -2080,3 +2283,18 @@
                 console.log(data);
             }
             ```
+
+## jquery中的ajax全局事件
+[top](#catalog)
+- 两个全局事件
+    - `ajaxStart`，当前请求开始发送时触发
+    - `ajaxComplete`，当前请求完成时触发
+- 全局事件需要绑定在 `document` 上
+    ```js
+    // 当页面中有ajax请求发送时触发
+    $(document).on('ajaxStart', function(){});
+    // 当页面中有ajax请求完成时触发
+    $(document).on('ajaxComplete', function(){});
+    ```
+
+[top](#catalog)

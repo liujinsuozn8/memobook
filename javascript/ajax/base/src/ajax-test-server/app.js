@@ -1,5 +1,5 @@
-const Koa = require('koa');
-// const Koa = require('./node_modules/koa');
+// const Koa = require('koa');
+const Koa = require('./node_modules/koa');
 const Router = require('koa-router');
 const static = require('koa-static');
 const body = require('koa-body');
@@ -36,6 +36,8 @@ router.use('/formData', require('./routers/formData').routes());
 router.use('/serverCross', require('./routers/serverCross').routes());
 // jquery 测试
 router.use('/jquery', require('./routers/jqueryTest').routes());
+// 请求超时测试
+router.use('/timeout', require('./routers/timeout').routes());
 
 app.use(router.routes());
 app.use(router.allowedMethods());

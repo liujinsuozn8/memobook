@@ -4,6 +4,8 @@ function ajax(options) {
         type: 'get',
         url: '',
         data: {},
+        timeout:null,
+        timeoutHandle:function(){},
         contentType: ajax.PARAM_TYPE_COMMON,
         success: function(){},
         error: function(){},
@@ -12,8 +14,16 @@ function ajax(options) {
     // 2. 将选项参数拷贝到默认对象中，后续只使用默认对象
     Object.assign(defaults, options);
 
+    // 3. 初始化 ajax 请求对象
     var xhr = new XMLHttpRequest();
-    // 3. 根据请求类型，来处理路径、参数、http请求头
+
+    // 4. 设置请求超时处理
+    if (defaults.timeout){
+        xhr.timeout = defaults.timeout;
+        xhr.ontimeout = defaults.timeoutHandle;
+    }
+
+    // 5. 根据请求类型，来处理路径、参数、http请求头
     if (defaults.type === 'get') {
         var url = defaults.url;
         // 如果包含 data 选项，并且参数个数不为0，则在地址后面拼接请求参数
@@ -39,15 +49,15 @@ function ajax(options) {
         xhr.send(params);
     }
 
-    // 4. 监听服务器返回的响应
+    // 6. 监听服务器返回的响应
     xhr.onload = function () {
-        // 4.1 获取响应头信息，如果是JSON格式，则转换为对象类型
+        // 6.1 获取响应头信息，如果是JSON格式，则转换为对象类型
         var resData = xhr.responseText;
         if (xhr.getResponseHeader('Content-Type').indexOf(ajax.RES_TYPE_JSON) !== -1){
             resData = JSON.parse(resData);
         }
 
-        // 4.2 根据http状态码，调用不同的处理函数
+        // 6.2 根据http状态码，调用不同的处理函数
         if (xhr.status === 200) {
             defaults.success(resData, xhr);
         } else {
