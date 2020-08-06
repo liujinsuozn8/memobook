@@ -16,7 +16,7 @@ app.use(body({
 app.use(static(__dirname + '/public'));
 
 router.get('/data', async ctx=>{
-    ctx.body = {data:'same origin test data'};
+    ctx.body = {data:'cross origin test data'};
 });
 
 

@@ -4,8 +4,8 @@
   "description": "ajax test sever by koa",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js",
-    "same": "node sameOrigin.js",
+    "3333": "node app.js",
+    "5555": "node origin5555.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",

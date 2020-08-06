@@ -1,5 +1,5 @@
-// const Koa = require('koa');
-const Koa = require('./node_modules/koa');
+const Koa = require('koa');
+// const Koa = require('./node_modules/koa');
 const Router = require('koa-router');
 const static = require('koa-static');
 const body = require('koa-body');

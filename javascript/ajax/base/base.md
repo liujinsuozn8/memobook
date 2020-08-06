@@ -8,6 +8,7 @@
     - [ajax的应用场景](#ajax的应用场景)
     - [ajax的运行环境](#ajax的运行环境)
 - [ajax对象内容速查](#ajax对象内容速查)
+- [测试服务器搭建](#测试服务器搭建)
 - [ajax的使用步骤](#ajax的使用步骤)
 - [响应数据格式](#响应数据格式)
 - [传递请求参数](#传递请求参数)
@@ -41,7 +42,6 @@
         - [显示FormData文件上传进度](#显示FormData文件上传进度)
         - [FormData文件上传图片及时预览](#FormData文件上传图片及时预览)
 - [Ajax请求限制](#Ajax请求限制)
-    - [Ajax请求限制--测试设置](#Ajax请求限制--测试设置)
     - [同源策略导致的ajax请求限制](#同源策略导致的ajax请求限制)
     - [解决方案1--使用JSONP](#解决方案1--使用JSONP)
         - [JSONP简介](#JSONP简介)
@@ -180,6 +180,20 @@
         - `Access-Control-Allow-Methods`
     - 设置跨域请求是否可以携带cookie
         - `Access-Control-Allow-Credentials: true`
+
+# 测试服务器搭建
+[top](#catalog)
+- 主要服务器代码
+    - [src/ajax-test-server/app.js](src/ajax-test-server/app.js)
+- 非同源测试服务器代码
+    - [src/ajax-test-server/origin5555.js](src/ajax-test-server/origin5555.js)
+- 启动服务
+    - 需要在[src/ajax-test-server](src/ajax-test-server) 下同时启动两个服务器
+    - 主要服务器: `npm run 3333`
+    - 非同源测试服务器: `npm run 5555`
+- 使用端口
+    - 主要服务器代码: 3333
+    - 非同源测试服务器: 5555
 
 # ajax的使用步骤
 [top](#catalog)
@@ -1149,7 +1163,7 @@
 
 - 示例
     - 参考代码
-        - [src/ajax-test-server/public/html/formData\usage.html](src/ajax-test-server/public/html/formData\usage.html)
+        - [src/ajax-test-server/public/html/formData/usage.html](src/ajax-test-server/public/html/formData/usage.html)
         - [src/ajax-test-server/routers/formData.js](src/ajax-test-server/routers/formData.js)
     - 浏览器访问地址
         - http://localhost:3333/html/formData/usage.html
@@ -1448,19 +1462,6 @@
             ```
 
 # Ajax请求限制
-## Ajax请求限制--测试设置
-[top](#catalog)
-- 需要在[src\ajax-test-server](src\ajax-test-server) 下同时启动两个服务器
-    - 普通服务器: npm run start
-    - 同源测试服务器: npm run same
-- 使用端口
-    - 普通服务器: 3333
-    - 同源测试服务器: 5555
-- 同源服务器代码
-    - [src/ajax-test-server/sameOrigin.js](src/ajax-test-server/sameOrigin.js)
-- 普通服务器代码
-    - [src/ajax-test-server/app.js](src/ajax-test-server/app.js)
-
 ## 同源策略导致的ajax请求限制
 [top](#catalog)
 - 浏览器存的同源策略对ajax请求的限制
@@ -1476,9 +1477,9 @@
 
 - 示例
     - 参考代码
-        - [src/ajax-test-server/public/html/sameOrigin/sameOriginError.html](src/ajax-test-server/public/html/sameOrigin/sameOriginError.html)
+        - [src/ajax-test-server/public/html/crossOrigin/origin5555Error.html](src/ajax-test-server/public/html/crossOrigin/origin5555Error.html)
     - 浏览器访问地址
-        - http://localhost:3333/html/sameOrigin/sameOriginError.html
+        - http://localhost:3333/html/crossOrigin/origin5555Error.html
 
     - 从端口 3333 向 端口 5555 发送请求
         ```js
@@ -1492,7 +1493,7 @@
         ```
     - 控制台的监视结果
         - 有request，有respponse，但是浏览器拒绝接受服务器响应
-        - ![](?????)
+        - ![cross_origin_error](img/base/cross_origin/cross_origin_error.png)
 
 ## 解决方案1--使用JSONP
 ### JSONP简介
@@ -1542,10 +1543,10 @@
 
 - 示例
     - 参考代码
-        - [src/ajax-test-server/public/html/sameOrigin/JSONP/base.html](src/ajax-test-server/public/html/sameOrigin/JSONP/base.html)
-        - [src/ajax-test-server/sameOrigin.js](src/ajax-test-server/sameOrigin.js)
+        - [src/ajax-test-server/public/html/crossOrigin/JSONP/base.html](src/ajax-test-server/public/html/crossOrigin/JSONP/base.html)
+        - [src/ajax-test-server/origin5555.js](src/ajax-test-server/origin5555.js)
     - 浏览器访问地址
-        - http://localhost:3333/html/sameOrigin/JSONP/base.html
+        - http://localhost:3333/html/crossOrigin/JSONP/base.html
     - 浏览器端代码
         ```html
         <!-- 1. 在 sricpt 标签之前，创建响应函数 -->
@@ -1595,9 +1596,9 @@
 
 - 示例
     - 参考代码
-        - [src/ajax-test-server/public/html/sameOrigin/JSONP/dynamic_request.html](src/ajax-test-server/public/html/sameOrigin/JSONP/dynamic_request.html)
+        - [src/ajax-test-server/public/html/crossOrigin/JSONP/dynamic_request.html](src/ajax-test-server/public/html/crossOrigin/JSONP/dynamic_request.html)
     - 浏览器访问地址
-        - http://localhost:3333/html/sameOrigin/JSONP/dynamic_request.html
+        - http://localhost:3333/html/crossOrigin/JSONP/dynamic_request.html
     - 浏览器端代码
         ```js
         const getBtn = document.getElementById('getBtn');
@@ -1641,10 +1642,10 @@
 
 - 示例
     - 参考代码
-        - [src/ajax-test-server/public/html/sameOrigin/JSONP/funcName.html](src/ajax-test-server/public/html/sameOrigin/JSONP/funcName.html)
-        - [javascript/ajax/base/src/ajax-test-server/sameOrigin.js](javascript/ajax/base/src/ajax-test-server/sameOrigin.js)
+        - [src/ajax-test-server/public/html/crossOrigin/JSONP/funcName.html](src/ajax-test-server/public/html/crossOrigin/JSONP/funcName.html)
+        - [src/ajax-test-server/origin5555.js](src/ajax-test-server/origin5555.js)
     - 浏览器访问地址
-        - http://localhost:3333/html/sameOrigin/JSONP/funcName.html
+        - http://localhost:3333/html/crossOrigin/JSONP/funcName.html
     - 浏览器端代码
         ```js
         // 1. 设置两个不同的服务端响应函数
@@ -1769,7 +1770,7 @@
             ```
     - 服务端响应
         - 参考代码
-            - [src/ajax-test-server/sameOrigin.js](src/ajax-test-server/sameOrigin.js)
+            - [src/ajax-test-server/origin5555.js](src/ajax-test-server/origin5555.js)
         - 代码内容
             ```js
             // 处理优化后的JSONP请求，需要处理随机函数名和请求参数
@@ -1783,9 +1784,9 @@
             ```
     - 测试代码
         - 参考代码
-            - [src/ajax-test-server/public/html/sameOrigin/JSONP/jsonpfn.html](src/ajax-test-server/public/html/sameOrigin/JSONP/jsonpfn.html)
+            - [src/ajax-test-server/public/html/crossOrigin/JSONP/jsonpfn.html](src/ajax-test-server/public/html/crossOrigin/JSONP/jsonpfn.html)
         - 浏览器访问地址
-            - http://localhost:3333/html/sameOrigin/JSONP/jsonpfn.html
+            - http://localhost:3333/html/crossOrigin/JSONP/jsonpfn.html
         - 代码内容
             ```js
             document.getElementById('btn01').onclick = function(){
@@ -1850,10 +1851,10 @@
 
 - 示例
     - 参考代码
-        - [src/ajax-test-server/public/html/sameOrigin/CORS/base.html](src/ajax-test-server/public/html/sameOrigin/CORS/base.html)
-        - [src/ajax-test-server/sameOrigin.js](src/ajax-test-server/sameOrigin.js)
+        - [src/ajax-test-server/public/html/crossOrigin/CORS/base.html](src/ajax-test-server/public/html/crossOrigin/CORS/base.html)
+        - [src/ajax-test-server/origin5555.js](src/ajax-test-server/origin5555.js)
     - 浏览器访问地址
-        - http://localhost:3333/html/sameOrigin/CORS/base.html
+        - http://localhost:3333/html/crossOrigin/CORS/base.html
     - 浏览器端代码
         ```js
         ajax({
@@ -1894,14 +1895,14 @@
 - 示例
     - 参考代码
         - 浏览器代码
-            - [src/ajax-test-server/public/html/sameOrigin/serverCross.html](src/ajax-test-server/public/html/sameOrigin/serverCross.html)
+            - [src/ajax-test-server/public/html/crossOrigin/serverCross.html](src/ajax-test-server/public/html/crossOrigin/serverCross.html)
         - 服务端代码
             - [src/ajax-test-server/routers/serverCross.js](src/ajax-test-server/routers/serverCross.js)
         - 非同源服务端代码
-            - [src/ajax-test-server/sameOrigin.js](src/ajax-test-server/sameOrigin.js)
+            - [src/ajax-test-server/origin5555.js](src/ajax-test-server/origin5555.js)
 
     - 浏览器访问地址
-        - http://localhost:3333/html/sameOrigin/serverCross.html
+        - http://localhost:3333/html/crossOrigin/serverCross.html
     - 代码内容
         1. 浏览器代码
             ```js
@@ -1968,7 +1969,7 @@
         - 浏览器代码
             - [src/ajax-test-server/public/html/cookie/base.html](src/ajax-test-server/public/html/cookie/base.html)
         - 非同源服务端代码
-            - [src/ajax-test-server/sameOrigin.js](src/ajax-test-server/sameOrigin.js)
+            - [src/ajax-test-server/origin5555.js](src/ajax-test-server/origin5555.js)
     - 浏览器代码
         ```js
         var loginBtn = document.getElementById('login');
