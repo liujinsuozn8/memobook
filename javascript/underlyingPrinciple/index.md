@@ -1,4 +1,5 @@
 - js原理
     - [js语法](base.md)
     - [js的面向对象特性](oop.md)
+    - [JS的结构化特性](#structured.md)
     - [Symobl符号属性](Symbol.md)

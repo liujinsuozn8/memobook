@@ -69,6 +69,8 @@
 - ajax就是异步的js和xml
 - 通过ajax，可以在浏览器端发送异步请求，**可以无刷新获取数据**
 - ajax不是新的变成语言，而是一种将现有的标准组合在一起使用的新方式
+- ajax是由浏览器的ajax引擎发送的
+- 服务端无法区分普通的http请求和ajax发送的http请求，区别只存在于浏览器端
 
 ## ajax的优点与缺点
 [top](#catalog)
@@ -170,6 +172,7 @@
 - 相关请求头
     - `Content-Type: application/x-www-form-urlencoded`，请求参数为分隔符类型
     - `Content-Type: application/json`，请求参数为JSON类型
+    - `Content-Type: multipart/form-data`，上传文件
 
 - （服务端需要设置的）相关响应头
     - 设置允许的访问的跨域地址
@@ -1269,7 +1272,7 @@
         ```js
         const formData = new FormData();
         ```
-    3. 将选择的文件作为请求参数添加到 FomrData 对象中
+    3. 将选择的文件作为请求参数添加到 FormData 对象中
         - 需要获取文件选择控件，通过 `files[0]` 属性获取当前选择的文件
             ```js
             formData.append('attr', file.files[0]);
@@ -1280,6 +1283,10 @@
         ```
 
     5. 在服务器端接收二进制数据，并保存文件
+
+- 上传文件时的请求头
+    - `Content-Type: multipart/form-data`
+    - 该请求头将由浏览器自动添加
 
 - 示例
     - 参考代码
