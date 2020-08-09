@@ -14,7 +14,7 @@ public class InsertSearch {
      * @param array     有序的升序序列
      * @param left      左侧索引
      * @param right     右侧索引
-     * @param findVal   需要超找的值
+     * @param findVal   需要寻找的值
      * @return          目标值的索引，没有找到返回-1
      */
     public static int searchASC(int[] array, int left, int right, int findVal){

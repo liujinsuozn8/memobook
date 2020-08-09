@@ -3,6 +3,8 @@ package com.ljs.learn.myalgorithm.search;
 import org.junit.Test;
 
 import java.util.List;
+import static org.junit.Assert.*;
+
 
 public class BinarySearchTest {
     // 测试二分查找的基本实现
@@ -22,5 +24,15 @@ public class BinarySearchTest {
         List<Integer> idxList = BinarySearch.searchAll(array, 5);
         System.out.println(idxList);
         // 输出: [4, 5, 6, 7]
+    }
+
+    // 测试非递归的二分查找
+    @Test
+    public void testSearchByLoop(){
+        // 创建一个有序的升序序列
+        int[] array = {1,2,3,4,5,6,7,8,9};
+
+        assertEquals(BinarySearch.searchByLoop(array, 3), 2);
+        assertEquals(BinarySearch.searchByLoop(array, 0), -1);
     }
 }

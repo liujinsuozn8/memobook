@@ -56,6 +56,7 @@
     - [二分查找基本思想](#二分查找基本思想)
     - [二分查找的基本实现](#二分查找的基本实现)
     - [二分查找的扩展--查找所有相同的值](#二分查找的扩展--查找所有相同的值)
+    - [二分查找的非递归实现](#二分查找的非递归实现)
 - [查找算法--插值查找](#查找算法--插值查找)
     - [插值查找的基本思想](#插值查找的基本思想)
     - [插值查找的基本实现](#插值查找的基本实现)
@@ -68,7 +69,16 @@
     - [堆排序简介](#堆排序简介)
     - [堆排序的基本思想](#堆排序的基本思想)
     - [堆排序的实现--升序](#堆排序的实现--升序)
-- [](#)
+- [分治算法](#分治算法)
+    - [分治算法的设计模式](#分治算法的设计模式)
+    - [分治算法求解汉诺塔](#分治算法求解汉诺塔)
+- [动态规划](#动态规划)
+    - [引入问题--背包问题](#引入问题--背包问题)
+    - [动态规划说明](#动态规划说明)
+    - [动态规划解决背包问题--0-1背包](#动态规划解决背包问题--0-1背包)
+- [KMP算法](#KMP算法)
+    - [KMP算法原理](#KMP算法原理)
+    - [KMP算法实现](#KMP算法实现)
 - [](#)
 
 # 算法复杂度
@@ -1735,7 +1745,7 @@
          * @param array     有序的升序序列
          * @param left      左侧索引
          * @param right     右侧索引
-         * @param findVal   需要超找的值
+         * @param findVal   需要寻找的值
          * @return          目标值的索引，没有找到返回-1
          */
         public static int searchASC(int[] array, int left, int right, int findVal){
@@ -1856,6 +1866,58 @@
         }
         ```
 
+## 二分查找的非递归实现
+[top](#catalog)
+- 实现内容
+    - 参考代码
+        - [/algorithm/src/java-algorithm/myalgorithm/src/main/java/com/ljs/learn/myalgorithm/search/BinarySearch.java](/algorithm/src/java-algorithm/myalgorithm/src/main/java/com/ljs/learn/myalgorithm/search/BinarySearch.java)
+    - 代码内容
+        ```java
+        /** 3. 非递归的二分查找
+        *
+        * @param array 升序排列的数组
+        * @param target 查找的目标值
+        * @return 目标值的索引。如果没有找到则返回 -1
+        */
+        public static int searchByLoop(int[] array, int target){
+            int left = 0;
+            int right = array.length - 1;
+            int mid;
+            while(left <= right){
+                mid = (left + right) / 2;
+                if (array[mid] == target){
+                    // 中间值等于目标值，则找到，返回中间值的索引
+                    return mid;
+                }else if (target < array[mid]){
+                    // 向左递归
+                    right = mid-1;
+                } else {
+                    // 向右递归
+                    // target > array[mid]
+                    left = mid+1;
+                }
+            }
+            // 如果没有找到则返回 -1
+            return -1;
+        }
+        ```
+
+- 测试内容
+    - 参考代码
+        - [/algorithm/src/java-algorithm/myalgorithm/src/test/java/com/ljs/learn/myalgorithm/search/BinarySearchTest.java](/algorithm/src/java-algorithm/myalgorithm/src/test/java/com/ljs/learn/myalgorithm/search/BinarySearchTest.java)
+    - 测试代码
+        ```java
+        // 测试非递归的二分查找
+        @Test
+        public void testSearchByLoop(){
+            // 创建一个有序的升序序列
+            int[] array = {1,2,3,4,5,6,7,8,9};
+
+            assertEquals(BinarySearch.searchByLoop(array, 3), 2);
+            assertEquals(BinarySearch.searchByLoop(array, 0), -1);
+        }
+        ```
+
 # 查找算法--插值查找
 ## 插值查找的基本思想
 [top](#catalog)
@@ -1913,7 +1975,7 @@
         * @param array     有序的升序序列
         * @param left      左侧索引
         * @param right     右侧索引
-        * @param findVal   需要超找的值
+        * @param findVal   需要寻找的值
         * @return          目标值的索引，没有找到返回-1
         */
         public static int searchASC(int[] array, int left, int right, int findVal){
@@ -2237,6 +2299,360 @@
 
             // 3. 以i为父节点子树构建完成，将temp保存到调整后的位置
             array[i] = temp;
+        }
+        ```
+
+# 分治算法
+## 分治算法的设计模式
+[top](#catalog)
+- 分治法在每一层递归上都有三个步骤
+    1. 分解: 将原问题分解为若干个规模较小，相互独立，与原问题形式相同的自问题
+    2. 解决: 若子问题规模较小而容易被解决则直接解决，否则递归分解问题
+    3. 合并: 将各子问题的解合并为原问题的解
+- 分治算法的设计模式
+    ```java
+    // P是当前问题规模，n0是问题可解的最小规模
+    if P < n0
+      then return ADHOC(P)    // ADHOC是分治算法中的基本子算法
+    // 将P分解为更小的问题
+    for i = 1 to k
+    do yl = Divide-and-Conquer(Pi)    // 递归的解决Pi
+    T = MERGE(y1, y2, ..., yk)    // 合并子问题
+    return T
+    ```
+## 分治算法求解汉诺塔
+[top](#catalog)
+- 汉诺塔规则
+    1. 有三个柱子用来方圆盘 A、B、C
+    2. n个带有数值的圆盘从上到下，从小到大排列在A
+    3. 需要将n个圆盘从A移动到另一个柱子
+    4. 移动时，大圆盘不能放在小圆盘上面
+- 求解思路
+    1. 如果只有一个圆盘: A-->B，或者 A--> C
+    2. 如果 n >= 2
+        1. 可以将n个圆盘看作 2 个圆盘，即最上面的盘、最下面的盘
+        2. 将最上面的盘 A --> B
+        3. 将最下面的盘 A --> C
+        4. 将B上的所有圆盘移动到C : B --> C
+- 实现内容
+    - 参考代码
+        - [/algorithm/src/java-algorithm/myalgorithm/src/main/java/com/ljs/learn/myalgorithm/dac/Hanoi.java](/algorithm/src/java-algorithm/myalgorithm/src/main/java/com/ljs/learn/myalgorithm/dac/Hanoi.java)
+    - 代码内容
+        ```java
+        /**
+         * 移动汉诺塔
+         * @param count 圆盘的数量
+         * @param a 起始位置
+         * @param b 临时存放位置
+         * @param c 移动目标
+         */
+        public static void move(int count, char a, char b, char c) {
+            if (count == 1) {
+                System.out.println("第" + count + "个，" + a + "-->" +c );
+            } else {
+                // n >= 2 时
+                // 将最上面的盘: A -> B
+                move(count - 1, a, c, b);
+                // 将最下面的盘: A -> C
+                System.out.println("第" + count + "个，" + a + "-->" +c );
+                // 将最上面的盘: B -> C
+                move(count - 1, b, a, c);
+            }
+        }
+        ```
+- 测试内容
+    - 参考代码
+        - [/algorithm/src/java-algorithm/myalgorithm/src/test/java/com/ljs/learn/myalgorithm/dac/HanoiTest.java](/algorithm/src/java-algorithm/myalgorithm/src/test/java/com/ljs/learn/myalgorithm/dac/HanoiTest.java)
+    - 测试代码
+        ```java
+        @Test
+        public void move() {
+            Hanoi.move(3, 'A','B','C');
+    
+            // 第1个，A-->C
+            // 第2个，A-->B
+            // 第1个，C-->B
+            // 第3个，A-->C
+            // 第1个，B-->A
+            // 第2个，B-->C
+            // 第1个，A-->C
+        }
+        ```
+
+# 动态规划
+## 引入问题--背包问题
+[top](#catalog)
+- 背包问题
+    - 有一个背包，最大容量为 C
+    - 有若干具有一定价值和重量的物品，如
+        
+        |物品|重量|价值|
+        |-|-|-|
+        |A|1|1500|
+        |B|4|3000|
+        |C|3|2000|
+    - 目标
+        - 装入背包的总价值最大，并且重量不超出 n
+- 问题的分类
+    - 0-1背包问题: 装入的物品不能重复
+    - 完全背包: 或者每件物品都有无限件可用
+
+## 动态规划说明
+[top](#catalog)
+- 动态规划的核心思想
+    - 将大问题划分为小问题进行求解，并获取最优解
+- 动态规划与分治算法的异同
+    - 相同点
+        - 将问题分解成若干个子问题进行求解
+    - 不同点
+        - 动态规划求解的问题中，每个子问题之间可能不是相互独立的
+            - 即下一个子问题的求解是建立在上一个子问题的解的基础上
+- 动态规划可以通过 **填表** 的方式来逐步推进，来获取最优解
+
+## 动态规划解决背包问题--0-1背包
+[top](#catalog)
+- 每个物品是一个一个放
+- 假设 C 为背包的容量
+- 每次遍历到第 i 个物品时，根据 `w[i]`、`val[i]`来确定是否需要将物品放入背包
+    - `w[i]` 表示重量
+    - `val[i]` 表示价值
+- 再令 `v[i][j]` 表示在前i个物品中能够装入容量为j的背包中的最大价值，则有下面的结果
+    - j表示表格中连续变化的容量
+    - i表示第i个物品
+    - `v[i][0] = v[0][i] = 0`
+        - 第一行、第一列都为0
+    - `w[i] > j`时，`v[i][j] = v[i-1][j]`
+        - 当新商品的重量大于背包的容量时，直接使用上一个单元格的策略
+    - `w[i] <= j`时，`v[i][j] = max(v[i-1][j], v[i-1][j-w[i]]+val[i])`
+        - 当新商品的重量小于当前背包的容量
+        - 可能的装入方式
+            - `v[i-1][j]`: 上一个单元格的装入的最大值
+            - `v[i-1][j-w[i]]+v[i]`
+                - `val[i]`，先装入当前商品
+                - `j-w[i]`，表示装入当前商品后剩余的容量
+                - `v[i-1][j-w[i]]`，表示装入 i-1 商品到剩余空间 `j-w[i]` 的最大值
+
+- 实现内容
+    - 参考代码
+        - [/algorithm/src/java-algorithm/myalgorithm/src/main/java/com/ljs/learn/myalgorithm/dynamic/Knapsack.java](/algorithm/src/java-algorithm/myalgorithm/src/main/java/com/ljs/learn/myalgorithm/dynamic/Knapsack.java)        
+    - 代码内容
+        ```java
+        public static void work(){
+            // 物品的重量
+            int[] w = {1, 4, 3};
+            // 物品的价值
+            int[] val = {1500, 3000, 2000};
+    
+            int m = 4; // 背包的容量
+            int n = val.length; // 物品的个数
+    
+            // 创建二维数组，表示表格
+            // +1 表示默认为0的第一行和第一列
+            int[][] v = new int[n+1][m+1];
+    
+            // 创建一个和表格大小相同二维数组
+            // 用于记录每个单元格中放入的物品的组合
+            int[][] path = new int[n+1][m+1];
+    
+            // 根据公式进行动态规划处理，需要跳过第一行和第一列
+            for (int i=1; i < v.length; i++){
+                for(int j=1;j<v[0].length;j++){
+                    if (w[i - 1] > j){
+                        // 如果物品的容量超过的当前允许的最大容量，
+                        // 则直接拷贝上一次的结果
+                        v[i][j] = v[i-1][j];
+    
+                        // 因为没有使用新物品，所以物品组合中记为0
+                        path[i][j] = 0;
+                    } else {
+                        // v[i][j] = Math.max(v[i-1][j], val[i-1] + v[i-1][j-w[i-1]]);
+    
+                        if (v[i-1][j] > val[i-1] + v[i-1][j-w[i-1]]){
+                            // 则直接拷贝上一次的结果
+                            v[i][j] = v[i-1][j];
+    
+                            // 因为没有使用新物品，所以物品组合中记为0
+                            path[i][j] = 0;
+                        } else {
+                            // 添加了新物品，所以物品组合中记为1
+                            // 则直接拷贝上一次的结果
+                            v[i][j] = val[i-1] + v[i-1][j-w[i-1]];
+    
+                            // 因为没有使用新物品，所以物品组合中记为0
+                            path[i][j] = 1;
+                        }
+                    }
+                }
+            }
+    
+            // 输出当前表格
+            for(int i=0; i<v.length; i++){
+                System.out.println(Arrays.toString(v[i]));
+            }
+            for(int i=0; i<path.length; i++){
+                System.out.println(Arrays.toString(path[i]));
+            }
+    
+            // 输出添加物品的组合
+            int i = path.length - 1; // i为物品的个数，即path的行数
+            int j = path[0].length - 1; // j为最大的容量，即path的列数
+    
+            // 倒叙遍历path
+            while (i>0 && j>0){ // 不需要等于0，第一行第一列都是0，没有意义
+                if (path[i][j] == 1){
+                    System.out.println("放入物品：" + i);
+                    j -= w[i-1];
+                }
+                i--;
+            }
+        }
+        ```
+
+# KMP算法
+## KMP算法原理
+[top](#catalog)
+- 应用场景-字符串拼配问题
+    - 有一个字符串 str1 和一个字串 str2
+    - 现在要判断str1是否含有str2，如果存在，就返回第一次出现的位置，如果没有，返回-1
+- KMP算法
+    1. 计算前缀表
+    2. 使用前缀表完成KMP匹配
+
+- 计算前缀表的方法，如： `ABCDABD`
+    1. 前缀为，不需要包含字符串本身
+        - `A`
+        - `AB`
+        - `ABC`
+        - `ABCD`
+        - `ABCDA`
+        - `ABCDAB`
+        - `ABCDABD`
+    2. 找出最长公共前后缀的**长度**
+        - 如 `ABCDAB` ，最长公共前后缀为: `AB`，其长度为2
+        - 公共前后缀及其长度
+            
+            |前缀|公共前后缀|长度|
+            |-|-|-|
+            |A|-|0|
+            |AB|-|0|
+            |ABC|-|0|
+            |ABCD|-|0|
+            |ABCDA|A|1|
+            |ABCDAB|AB|2|
+            |ABCDABD|-|0|
+        - 前缀表
+            ```
+            A B C D A B D
+            0 0 0 0 1 2 0
+            ```
+- 如何使用前缀表完成KMP匹配
+    - 示例
+        - str1 = `BBCABCDABABCDABCDABDE`
+        - str2 = `ABCDABD`
+    - str2与str1进行比较，每次不一致时，向后移动：`已匹配字符数 - 前缀表数值` 位
+        ```
+        B B C A B C D A B A B C D A B C D A B D E
+              A B C D A B D
+              0 0 0 0 1 2 0
+                        - 相同的部分到此结束，匹配了6位，向后移动: 6 - 2 = 4
+        ```
+        ```
+        B B C A B C D A B A B C D A B C D A B D E
+                      A B C D A B D
+                      0 0 0 0 1 2 0
+                        - 相同的部分到此结束，匹配了2位，向后移动: 2 - 0 = 2
+        ```
+        ```
+        B B C A B C D A B A B C D A B C D A B D E
+                          A B C D A B D
+                          0 0 0 0 1 2 0
+                                    - 
+             相同的部分到此结束，匹配了6位，向后移动: 6 - 2 = 4
+        ```
+        ```
+        B B C A B C D A B A B C D A B C D A B D E
+                                  A B C D A B D
+                                  0 0 0 0 1 2 0 - 匹配成功
+        ```
+    - 在整个匹配过程中
+        1. 每次遇到不同的字符时，参照前缀表，按照`已匹配字符数 - 前缀表数值`来移动位置
+        2. 移动后，不用再匹配已经匹配过的部分
+            - 防止了暴力搜索中的重复搜索
+
+## KMP算法实现
+[top](#catalog)
+- 实现内容
+    - 参考代码
+        - [/algorithm/src/java-algorithm/myalgorithm/src/main/java/com/ljs/learn/myalgorithm/string/KMP.java](/algorithm/src/java-algorithm/myalgorithm/src/main/java/com/ljs/learn/myalgorithm/string/KMP.java)
+    - 代码内容
+        ```java
+        // 获取一个字符串的前缀表
+        public static int[] kmpNext(String dest){
+            // 创建一个长度与 dest 相同的整型数组
+            int[] next = new int[dest.length()];
+            // 第一个字符的匹配值默认为0
+            next[0] = 0;
+    
+            // i表示当前循环的索引，j表示比较的索引
+            // i比j更快
+            for(int i=1, j=0;i<dest.length(); i++){
+                /*
+                【这是KMP算法的核心】
+                 当i、j的字符不同时，需要重新获取j
+                 将 j 回溯到与当前字符相等的位置
+                 因为公共前后缀，无论时从前往后，还是从后往前，都是连续的
+                 所以 j 就是字符相同位置的索引
+                 */
+                while(j > 0 && dest.charAt(i) != dest.charAt(j)){
+                    j = next[j-1];
+                }
+    
+                // 当i、j上的字符相同时，则说明截止到i，出现了公共的前后缀
+                // 不停的累加公共的前后缀长度
+                if (dest.charAt(i) == dest.charAt(j)){
+                    j++;
+                }
+    
+                // 将公共的前后缀长度保存到表中
+                next[i] = j;
+            }
+            return next;
+        }
+    
+        /** kmp搜索算法
+         *
+         * @param str1 原字符串
+         * @param str2 比较字符串
+         * @return 返回第一个匹配的位置，未找到返回-1
+         */
+        public static int kmpSearch(String str1, String str2){
+            // 获取前缀表
+            int[] next = kmpNext(str2);
+    
+            // i表示 str1 的扫描位置
+            // j表示已经匹配成功的字符数量，匹配失败时需要重置
+            for (int i=0, j=0; i<str1.length(); i++){
+                /*
+                【这是KMP算法的核心】
+                 当 i、j 的字符不想等时，需要重置 j
+                 */
+                while(j > 0 && str1.charAt(i) != str2.charAt(j)){
+                    j = next[j - 1];
+                }
+    
+                // 如果两个字符相等，则增加已匹配的字符数量
+                if (str1.charAt(i) == str2.charAt(j)){
+                    j++;
+                }
+    
+                // 如果已匹配的字符串与str2的长度相等，则说明已经找到了匹配的位置
+                if (j == str2.length()){
+                    return i - j + 1;
+                }
+            }
+    
+            // 如果在for循环中没有匹配成功，则说明未找到
+            return -1;
         }
         ```
 

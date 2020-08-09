@@ -15,7 +15,7 @@ public class BinarySearch {
      * @param array     有序的升序序列
      * @param left      左侧索引
      * @param right     右侧索引
-     * @param findVal   需要超找的值
+     * @param findVal   需要寻找的值
      * @return          目标值的索引，没有找到返回-1
      */
     public static int searchASC(int[] array, int left, int right, int findVal){
@@ -86,5 +86,34 @@ public class BinarySearch {
 
             return idxList;
         }
+    }
+
+
+    /** 3. 非递归的二分查找
+     *
+     * @param array 升序排列的数组
+     * @param target 查找的目标值
+     * @return 目标值的索引。如果没有找到则返回 -1
+     */
+    public static int searchByLoop(int[] array, int target){
+        int left = 0;
+        int right = array.length - 1;
+        int mid;
+        while(left <= right){
+            mid = (left + right) / 2;
+            if (array[mid] == target){
+                // 中间值等于目标值，则找到，返回中间值的索引
+                return mid;
+            }else if (target < array[mid]){
+                // 向左递归
+                right = mid-1;
+            } else {
+                // 向右递归
+                // target > array[mid]
+                left = mid+1;
+            }
+        }
+        // 如果没有找到则返回 -1
+        return -1;
     }
 }
