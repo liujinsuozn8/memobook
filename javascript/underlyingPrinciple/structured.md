@@ -20,11 +20,18 @@
         - [代码块内的提升](#代码块内的提升)
         - [与提升相关的问题](#与提升相关的问题)
 - [语句与代码分块](#语句与代码分块)
-    - [代码分块与非代码分块](#代码分块与非代码分块)
+    - [代码分块](#代码分块)
     - [if语句中的代码分块](#if语句中的代码分块)
     - [switch中的代码分块](#switch中的代码分块)
     - [for循环中的代码分块](#for循环中的代码分块)
     - [异常中的代码分块](#异常中的代码分块)
+- [语句的值](#语句的值)
+    - [不同的语句及其返回值](#不同的语句及其返回值)
+    - [语句的执行状态](#语句的执行状态)
+    - [语句有值与无值](#语句有值与无值)
+- [组织代码分块的方式](#组织代码分块的方式)
+    - [词法作用域--模块化层次的主要体现之一](#词法作用域--模块化层次的主要体现之一)
+    - [词法作用域之间的相关性](#词法作用域之间的相关性)
 - [](#)
 
 # JS是多范型语言
@@ -192,6 +199,11 @@
         ```
 - 非声明语句
     - 非声明语句都是动态执行的
+- 非声明语句的作用
+    - 描述一个过程
+        - 描述被组织的元素
+        - 描述上述元素间的结构方法，即<span style='color:red'>代码分块</span>
+    - 表达经过上述语句陈述过程之后的结果值
 
 ## 模块
 [top](#catalog)
@@ -252,6 +264,14 @@
 - JS约定: 所有的声明都必须在<span style='color:red'>语法分析期</span>处理
     - 这也表示JS在结构化方向上，更偏向于实现为静态语言
     - 这样更容易做类型化、静态语义分析，更容易将类型推导、预编译、JIT等特性引入JS
+
+- <span style='color:red'>JS中的声明方式</span>
+    - 变量声明: `var`，`function xxx(...args){...}`
+        - 会创建变量作用域
+        - 这两者会产生提升效果
+    - 词法声明: `let`、`const`
+        - 会创建词法作用域
+
 - 声明可以用来表明标识符的3种性质
     - 标识
     - 值
@@ -527,84 +547,108 @@
             - 使用函数表达式的方式创建函数，js执行时，只有变量 fn3部分被提升，并且只有定义部分，值是undefined，所以无法执行函数
 
 # 语句与代码分块
-## 代码分块与非代码分块
+## 代码分块
 [top](#catalog)
-- 非代码分块的结构---简单语句
-    - 表达式语句
-        - 表达式本身的计算环境依赖于它所在的语句，因此表达式本身不需要分块
-    - 空语句
-    - debugger
-    - if语句
+- 代码分块的最终目的: <span style='color:red'>顺序执行</span>
+- <span style='color:red'>代码分块是语句的唯一结构方法</span>
+    - 被组织的元素只有:标签声明、标识符声明、表达式、语句
+- 语句的结构方法
+    - 非代码分块的结构---简单语句
+        - 表达式语句
+            - 表达式本身的计算环境依赖于它所在的语句，因此表达式本身不需要分块
+        - 空语句
+        - debugger
+        - if语句
 
-- 代码分块结构
-    - 逻辑结构
-        - 循环语句，块的数量 = 2
-            - `for(let/const...)`
-            - `for await(let/const...)`
-        - 多重分支语句，块的数量 = 1
-            - `switch`
-    - 控制结构
-        - 异常语句，块的数量 = 2～3
-            ```js
-            try{...}
-            catch(...){...}
-            finally{...}
-            ```
-    - 其他
-        - 块语句，块的数量 = 1
-            - `{}`
-        - with语句，块的数量 = 1
-- 只能在代码分块结构中，用 let/const 声明变量
-    - 非代码块结构没有属于自己的环境，也无法创建初始化一个用于注册变量名字的环境
-    - 所以无法利用 let/const 声明变量
+    - 代码分块结构
+        - 逻辑结构
+            - 循环语句，块的数量 = 2
+                - `for(let/const...)`
+                - `for await(let/const...)`
+            - 多重分支语句，块的数量 = 1
+                - `switch`
+        - 控制结构
+            - 异常语句，块的数量 = 2～3
+                ```js
+                try{...}
+                catch(...){...}
+                finally{...}
+                ```
+        - 其他
+            - 块语句，块的数量 = 1
+                - `{}`
+            - with语句，块的数量 = 1
+
+- 代码分块的作用
+    - 支持语法中的标识符声明
+    - 支持语法上**多语句**的结构需求
+    - 满足语句自身的语义要求
 
 ## if语句中的代码分块
 [top](#catalog)
-- 条件语句的条件判断的执行环境是**if外层的块**
-- 条件分支的**块语句是单独的代码分块**
-    - 说明
+- <span style='color:red'>if语句自身没有代码分块</span>
+    - 无论条件分支有没有 `{}`，<span style='color:red'>if本身都是一个简单语句</span>
+    - 如果条件分支有 `{}`，<span style='color:red'>这个代码分块是有块语句创建的，不属于if语句</span>
+- if的形式
+    - 条件分支的是**块语句**。
         ```js
-        if (condition1){ // 代码分块
+        if (condition1){ // 块语句创建的代码分块
             statements1
-        } else if (condition2){ // 代码分块
+        } else if (condition2){ // 块语句创建的代码分块
             statements2
-        } else { // 代码分块
+        } else { // 块语句创建的代码分块
             statements3
         }
         ```
-    - statements 和 condition 执行在两个环境
-        - 分支条件在**if外层的块**执行
-        - 代码分块块语句内部执行
-- 条件分支是一个表达式
-    - 这种情况下，没有代码分块
-    - 说明
+    - 条件分支是一个表达式
         ```js
         if (condition) statements
         ```
-    - statements 和 condition 都执行在**if外层的块**中
+
+- 在if 的`{}`内，用let声明的变量属于`{}`；而函数声明类似于var声明，都会自动提升到if所在的环境中
+    - 参考代码
+        - [src/structured/block/if_block.js](src/structured/block/if_block.js)
+    - 代码内容
+        ```js
+        let x = 1;
+        function foo(){
+            if (true){
+                let x = 12;
+                let y = 13;
+                console.log(x); // 12
+                function bar(){console.log('this is bar')}
+            }
+            bar();
+            // 无法使用 `{}` 内部用let声明的变量
+            // console.log(y); // ReferenceError: y is not defined
+        }
+
+        foo(); // this is bar
+        console.log(x); // 1
+        ```
 
 ## switch中的代码分块  
 [top](#catalog)
 - swtich的形式
-    - 形式
-        ```js
-        switch (expression){
-            case value1:
-                statements
-                [break;]
-            case value2:
-                statements
-                [break;]
-            default:
-                statements
-        }
-        ```
-    - 注意事项
-        - case内，如果不用 break 中断，会继续执行下一个 statements
+    ```js
+    switch (expression){
+        case value1:
+            statements
+            [break;]
+        case value2:
+            statements
+            [break;]
+        default:
+            statements
+    }
+    ```
+- 注意事项
+    - case内，如果不用 break 中断，会继续执行下一个 statements
 
 - expression 是执行在**外部的代码块**中的
 - switch只有 1 个代码分块
     - 所有 value 和 statements 都执行在同一个块中
+    - case **不会产生**一个子级的代码分块，它只是**标识一行代码的起始位置**
     - 每个 case 中的内容之间，共享变量名，也会受到块之间执行效果的影响
         1. 如果用 let 声明了同名的变量，会产生编译异常
             ```js
@@ -801,5 +845,188 @@
             console.log('finally a = ', a);         // finally a =  30
         }
         ```
+
+# 语句的值
+## 不同的语句及其返回值
+[top](#catalog)
+
+|类型|子类型|语法|返回值|
+|-|-|-|-|
+|声明语句|函数声明语句|function<br>function*<br>|**无返回值**|
+|声明语句|类声明语句|class className{...}|**无返回值**|
+|表达式语句|变量赋值语句|variable = value|表达式的值|
+|表达式语句|函数调用语句|foo()|表达式的值|
+|表达式语句|属性赋值语句|object.property = value|表达式的值|
+|表达式语句|方法调用语句|object.method()|表达式的值|
+|表达式语句|单值表达式语句|value;|表达式的值|
+|块|块/复合语句|{ statements }|最后语句的值。如果没有任何语句生成值，则按空语句处理|
+|块|标签化语句|labelname: statements|最后语句的值。如果没有任何语句生成值，则按空语句处理|
+|块|with语句|with (object) statements;|最后语句的值。如果没有任何语句生成值，则按空语句处理|
+|分支语句|条件分支语句|if(condition) statements|返回最后产生的值，如果没有语句产生值，则返回undefined|
+|分支语句|多重分支语句|switch case|返回最后产生的值，如果没有语句产生值，则返回undefined|
+|循环语句||for|返回最后产生的值，如果没有语句产生值，则返回undefined|
+|循环语句||for...in|返回最后产生的值，如果没有语句产生值，则返回undefined|
+|循环语句||for...of|返回最后产生的值，如果没有语句产生值，则返回undefined|
+|循环语句||while|返回最后产生的值，如果没有语句产生值，则返回undefined|
+|循环语句||do...while|返回最后产生的值，如果没有语句产生值，则返回undefined|
+|控制结构|异常捕获处理|try...catch|无|
+|控制结构|函数返回子句|return [expression]<br>yield [expression]|返回值|
+|控制结构|异常抛出语句|throw exception|异常对象|
+|控制结构|继续执行子句|continue [label]|无|
+|控制结构|中断执行子句|break [label]|无|
+|模块化|导入|import...|无|
+|模块化|导出|export...|无|
+|其他|调试语句|debugger|无|
+|其他|空语句|`;`<br>`{}`|无|
+
+## 语句的执行状态
+[top](#catalog)
+- 代码中的任何异常都可以归纳为**4种状态**
+    1. throw: 执行失败，并抛出异常
+    2. continue: 继续，语句循环中，并被continue子句指示返回到指定位置继续
+    3. break: 中断，语句在循环或switch中，被break子句终止
+    4. return: 返回，语句从函数中返回并带有某个值Value，包括默认返回的undefined
+
+- 所有语句都是用称为 `normal` 状态的结果来返回自身的值
+    - `normal` 只表示语句正常结束，但不代表是否返回一个可计算的值
+
+## 语句有值与无值
+[top](#catalog)
+- 语句最终都是有值的，包括undefined
+- ES规定: 所有逻辑语句、有代码分块的语句中
+    - 子句或块无值时，将返回undefined
+
+- `eval` 的返回值
+    - 当`eval`执行的代码无值时，将返回 `undefined`
+    - 在一个语句的返回值中，无值语句将会被忽略
+        - 即如果将一个无值语句放在有值的语句后，不会影响语句的结果
+        - 示例
+            ```js
+            var a = eval(';');  // 无值语句，返回 undefined
+            var b = eval('1;'); // 单值表达式，返回自身
+            var c = eval('1;;;;;'); // 最后有多个无值语句，不影响结果，返回 1
+            var d = eval('1;{};');  // 最后有1个无值语句，不影响结果，返回 1
+            var e = eval('1; let x = 100;');    // 最后有多个无值语句，不影响结果，返回 1
+            console.log(a); // undefined
+            console.log(b); // 1
+            console.log(c); // 1
+            console.log(d); // 1
+            console.log(e); // 1
+            ```
+    - case 和 continue 只改变语句的执行流程，不会影响返回值
+        - 当一个 switch 语句的case子句为空，或分支不存在时，返回undefined
+            ```js
+            var a = eval('1; switch (true) {case false:}');
+            var b = eval('1; switch (true) {case true:}');
+            console.log(a); // undefined
+            console.log(b); // undefined
+            ```
+        - 如果一个分支以break结束，返回值不受break;的影响
+            ```js
+            var a = eval('1; switch (true) {case true: 2; break;}');
+            console.log(a); // 2
+            ```
+
+# 组织代码分块的方式
+## 词法作用域--模块化层次的主要体现之一
+[top](#catalog)
+- 什么是作用域？
+    - 代码分块的效果是`信息屏蔽`
+    - `信息屏蔽` 是指变量或成员的可见性， 这个可见性区域，就是作用域
+- 什么是词法作用域？
+    - 通过静态词法分析得到的是词法作用域
+- 代码分块与词法作用域的区别
+
+    |分类|状态|创建时期|实现方式|执行结果|
+    |-|-|-|-|-|
+    |代码分块|**物理上的**/静态的|在语法分析阶段识别|`{ statements }`|-|
+    |词法作用域|**逻辑上的**/动态的|在执行期动态创建|`词法环境`|将`代码分块`**映射**为`词法环境记录`，实例化块级别的词法作用域|
+
+- JS中的词法作用域
+
+    |级别|作用域|分类|示例|说明|
+    |-|-|-|-|:--|
+    |1|表达式|-|eval()|-|
+    |2|语句|数据声明|var...<br>let...<br>const...||
+    |2|语句|一般语句|if ()...else...;<br>for()...;<br>do...while...;<br>with()...;|被省略的部分既可以是单行语句，也可以是用`{}`标识的块|
+    |2|语句|块|{...};<br>switch(){...};<br>try{...}<br>catch(){...}<br>finally{...};|这些语法关键字本身也是语句，并且用`{}`来限制一个新的代码分块，并作为它的**子级**词法作用域|
+    |3|函数|-|function x(){...}|以函数声明的代码分块为作用域。<br>函数调用时`()`，JS会为函数创建一个词法环境，将代码分块实例化为一个函数级的词法作用域|
+    |4|模块|-|export...;||
+    |5|全局|-|依赖于HOST的实现||
+    
+- 在 if 中无法声明函数
+    - 参考代码
+        - [src/structured/block/if_block.js](src/structured/block/if_block.js)
+    - 代码内容
+        ```js
+        let x = 1;
+        function foo(){
+            if (true){
+                let x = 12;
+                let y = 13;
+                console.log(x); // 12
+                function bar(){console.log('this is bar')}
+            }
+            bar(); // this is bar
+            // 无法使用 `{}` 内部用let声明的变量
+            // console.log(y); // ReferenceError: y is not defined
+        }
+
+        foo();
+        console.log(x); // 1
+        ```
+    - 对于语句内的函数声明，其名字将提升到语句之外的函数或全局作用域
+    - 函数作用域可以接受函数声明，但是**语句级的作用域无法接受函数声明** 的根本原因是
+        - <span style='color:red'>函数的名字是一个变量名(var)，而不是一个词法名字(let)</span>
+        - 语句级的作用域无法保存变量名
+- 模块作用域的特殊性
+    - 模块的代码分块如何产生？
+        - 由模块的export声明决定
+    - 模块的词法作用域如何产生？
+        - 执行环境将预先扫描所有声明并进行词法分析，然后在实例化时创建一个自有的词法环境来登记声明
+        - 实例化过程只在执行 import 导入模块时才会发生，用来绑定全部的顶层声明
+    - 模块中的代码只会执行一次，如果模块中的名字被导出，那么所有导入它的模块将共享同一个实例
+    - 所有 import 的名字会使用`本地名字`在当前的词法作用域中登记
+        - 这些`本地名字`都是只读的
+    - 在模块词法作用域中，访问`this`时，总会返回`undefined`
+
+- 全局作用域
+    - 全局环境中，3种用来登记名字的组件
+        1. 变量作用域
+            - 保存 `var` 声明的内容，和函数声明: `function xxx(...args){...}`
+        2. 词法作用域
+            - 保存 `let`、`const` 声明的内容
+        3. 全局对象，window/global
+            - 未通过 `var`、`let`、`const`声明的内容
+            - 访问**不存在的变量名**时，导致创建的名字
+    - 获取全局对象的方法（如果运行环境不提供全局对象）
+        ```js
+        var global = Function('return false')();
+        ```
+
+## 词法作用域之间的相关性
+[top](#catalog)
+- 作用域是互不相交的
+- 作用域只有**平行**、**嵌套**两种相关性
+- 词法作用域的**嵌套规则**
+    - 相同级别的词法作用域可以相互嵌套
+    - **高级**词法作用域可以包含**低级**词法作用域
+    - **低级**词法作用域不能包含**高级**词法作用域
+        - 因为无法包含，所以语言实现时，一般处理成语法上的违例或强制解释为平行关系
+- **低级**词法作用域包含**高级**词法作用域时，转换为平行关系
+    - 转换前
+        ```js
+        if (true){  // 作用域1: 级别2
+            function foo(){ // 作用域2: 级别3}
+        }
+        ```
+    - 转换后，转换为平行关系
+        ```js
+        if (true){  // 作用域1: 级别2
+        }
+
+        function foo(){ // 作用域2: 级别3}
+        ```
+        
 
 [top](#catalog)
