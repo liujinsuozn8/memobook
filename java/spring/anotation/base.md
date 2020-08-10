@@ -2,7 +2,7 @@
 
 ### 目录
 - [总结--注解与相关类](#总结--注解与相关类)
-- 组件注册注解
+- [组件注册注解](#组件注册注解)
     - [@Configuration--创建配置类](#@Configuration--创建配置类)
     - [向容器中注册组件的几种方法](#向容器中注册组件的几种方法)
     - [@Bean](#@Bean)
@@ -19,9 +19,9 @@
         - [ImportBeanDefinitionRegistrar接口--手动注册某些组件](#ImportBeanDefinitionRegistrar接口--手动注册某些组件)
         - [Import示例](#Import示例)
     - [FactoryBean接口--工厂Bean](#FactoryBean接口--工厂Bean)
-- bean的生命周期
+- [bean的生命周期](#bean的生命周期)
     - [设置bean的生命周期的几种方法](#设置bean的生命周期的几种方法)
-    - [@Bean--注册日某个bean的初始化和销毁方法](#@Bean--注册日某个bean的初始化和销毁方法)
+    - [@Bean--注册某个bean的初始化和销毁方法](#@Bean--注册某个bean的初始化和销毁方法)
     - [InitializingBean和DisposableBean接口--自定义某个bean的初始化和销毁方法](#InitializingBean和DisposableBean接口--自定义某个bean的初始化和销毁方法)
     - [JSR250注解--自定义某个bean的初始化和销毁方法](#JSR250注解--自定义某个bean的初始化和销毁方法)
     - [BeanPostProcessor接口--所有bean的后置处理器](#BeanPostProcessor接口--所有bean的后置处理器)
@@ -36,43 +36,73 @@
         - [BeanValidationPostProcessor--数据校验处理](#BeanValidationPostProcessor--数据校验处理)
         - [InitDestroyAnnotationBeanPostProcessor--JSR250注解的识别与方法调用](#InitDestroyAnnotationBeanPostProcessor--JSR250注解的识别与方法调用)
         - [AutowiredAnnotationBeanPostProcessor--自动装配注解处理](#AutowiredAnnotationBeanPostProcessor--自动装配注解处理)
-- @Value--属性赋值
+- [@Value--属性赋值](#@Value--属性赋值)
     - [属性赋值的三种方式](#属性赋值的三种方式)
-    - [@PropertySource--使用方法](#@PropertySource--使用方法)
-- [](#)
+    - [@PropertySource--设置配置文件](#@PropertySource--设置配置文件)
+- [自动装配](#自动装配)
+    - [@Autowired--自动注入](#@Autowired--自动注入)
+    - [@Autowired的位置](#@Autowired的位置)
+    - [JSR250注解--@Resource](#JSR250注解--@Resource)
+    - [JSR330注解--@Inject](#JSR330注解--@Inject)
+    - [为什么自动装配支持这些注解](#为什么自动装配支持这些注解)
+    - [Aware接口注入Spring底层组件](#Aware接口注入Spring底层组件)
+    - [@Profile--设置激活环境](#@Profile--设置激活环境)
 - [](#)
 
 # 总结--注解与相关类
 [top](#catalog)
-- @Configuration，创建配置类
-- @Scope，设置单实例bean、多实例bean
-- @Lazy，延迟加载。在获取bean时加载
+- `@Configuration`，创建配置类
+- `@Scope`，设置单实例bean、多实例bean
+- `@Lazy`，延迟加载。在获取bean时加载
 - 组件注册
-    - @Bean，注册bean
-    - @ComponentScan + @Component/@Controller/@Service/@Repository，扫描包
-        - FilterType，过滤规则
-        - TypeFilter，自定义过滤规则
-    - @Conditional + Condition，按照自定义条件注册bean
-    - @Import，快速导入
-        - ImportSelector接口，返回需要注册的组件数组
-        - ImportBeanDefinitionRegistrar接口，手动注册某些组件
-    - FactoryBean接口，用工厂方法返回bean
+    - `@Bean`，注册bean
+    - `@ComponentScan` + `@Component`/`@Controller`/`@Service`/`@Repository`，扫描包
+        - `FilterType`，过滤规则
+        - `TypeFilter`，自定义过滤规则
+    - <span style='color:red'>@Conditional</span> + `Condition`，按照自定义条件注册bean
+    - `@Import`，快速导入
+        - <span style='color:red'>ImportSelector接口</span>，返回需要注册的组件数组
+        - `ImportBeanDefinitionRegistrar` 接口，手动注册某些组件
+    - `FactoryBean` 接口，用工厂方法返回bean
 - 生命周期
-    - @Bean(initMethod="初始化方法", destroyMethod="销毁方法")， 设置bean的初始化方法、销毁方法
+    - `@Bean(initMethod="初始化方法", destroyMethod="销毁方法")`， 设置bean的初始化方法、销毁方法
     - bean实现 `InitializingBean`和`DisposableBean`接口
     - JSR250的注解
         - `@PostConstruct`
         - `@PreDestroy`
     - `BeanPostProcessor`接口，在bean**初始化**前后执行一些操作
     - 执行顺序
-        - BeanPostProcessor
-        - JSR250的注解
-        - bean实现 `InitializingBean`和`DisposableBean`接口
-        - @Bean(initMethod="初始化方法", destroyMethod="")
+        1. `BeanPostProcessor.applyBeanPostProcessorsBeforeInitialization` 接口方法
+        2. bean的构造器
+        3. 初始化
+            1. JSR250的注解: `@PostConstruct`
+            2. 实现 `InitializingBean` 接口
+            3. `@Bean(initMethod="初始化方法")`
+        4. `BeanPostProcessor.applyBeanPostProcessorsAfterInitialization` 接口方法
+        5. 容器创建完成
+        6. 销毁
+            1. JSR250的注解: `@PreDestroy`
+            2. 实现 `DisposableBean` 接口
+            3. `@Bean(destroyMethod="销毁方法")`
 - 属性赋值
-    - @Value，设置属性值
-    - @PropertySource，添加配置文件到配置类
-
+    - `@Value`，设置属性值
+    - `@PropertySource`，添加配置文件到配置类
+- 自动装配
+    - spring标准
+        - `@Autowired(required=true/false)`
+        - `@Qualifier("beanId")`，明确指定需要装配的bean的id
+        - `@Primary`, 设置首选Bean
+            - 通过类型获取bean时，会优先使用首选bean
+    - JSR250注解
+        - `@Resource`
+    - JSR330注解
+        - `@Inject`
+    - `@Profile`，设置激活环境
+        - 激活方式
+            - 通过命令行参数
+            - 创建空的IOC容器，并设置环境 `context.getEnvironment().setActiveProfiles`
+        - 可以装饰 bean、或配置类
+    - 实现 `Aware` 接口，容器启动后，注入Spring的底层组件
 # 组件注册注解
 ## @Configuration--创建配置类
 [top](#catalog)
@@ -108,7 +138,7 @@
         - 方法可以返回一个空数组，但是不能返回null，会产生空数组异常
     - `ImportBeanDefinitionRegistrar` 接口
         - 对所有需要添加到容器中的bean，调用`BeanDefinitionRegistry.registerBeanDefinition()` 手动注册
-5. 使用Spring提供的FactoryBean，即工厂bean
+5. 使用Spring提供的`FactoryBean`，即工厂bean
     - <label style='color:red'>与其他框架整合时</label>，该接口使用的非常多
 
 ## @Bean
@@ -779,7 +809,7 @@
         - 由容器调用无参构造器，创建对象后注册到容器中，然后从容器中直接获取实例对象
     - 工厂Bean
         - 是一个工厂，也是一个接口
-        - 注册到容器后，也是有容器负责创建并注册工厂bean对象自身
+        - 注册到容器后，也是由容器负责创建并注册工厂bean对象自身
         - 通过ID获取工厂bean时，会调用 `getObject()` 方法，将方法返回值作为结果返回给使用者
 - FactoryBean接口源码
     ```java
@@ -909,7 +939,7 @@
     5. `BeanPostProcessor` 接口
         - 在bean**初始化**前后执行一些操作
 
-## @Bean--注册日某个bean的初始化和销毁方法
+## @Bean--注册某个bean的初始化和销毁方法
 [top](#catalog)
 - 不同scope的生命周期
     - 单实例bean
@@ -928,6 +958,7 @@
     - 注解
         - `@Bean(initMethod="初始化方法", destroyMethod="销毁方法")`
         - 指定的方法不能包含参数
+        - 初始化方法和销毁方法都需要在bean类中声明
 
 - 适用场景
     - 数据源的开启和销毁
@@ -1618,23 +1649,29 @@
     - 初始化
         1. 为配置类调用 `BeanPostProcessor.applyBeanPostProcessorsBeforeInitialization`，`BeanPostProcessor.applyBeanPostProcessorsAfterInitialization`
         2. 调用当前 bean 的构造器，创建对象
-            - 因为会先执行 `AbstractAutowireCapableBeanFactory.populateBean()`，创建bean的示例
+            - 因为会先执行 `AbstractAutowireCapableBeanFactory.populateBean()`，创建bean的实例
         3. 为当前 bean 调用`BeanPostProcessor.applyBeanPostProcessorsBeforeInitialization` 
         4. 当前bean中标识了JSR250 `@PostConstruct` 接口的方法
         5. 当前bean中实现的 `InitializingBean.afterPropertiesSet` 接口方法，
         6. 当前bean在配置陪中注册的`@Bean(initMethod="初始化方法")`
-        3. 为当前 bean 调用`BeanPostProcessor.applyBeanPostProcessorsAfterInitialization` 
+        7. 为当前 bean 调用`BeanPostProcessor.applyBeanPostProcessorsAfterInitialization` 
     - 关闭容器时销毁
         1. 当前bean中标识了JSR250 `@PreDestroy` 接口的方法
         2. 当前bean中实现的 `DisposableBean.destroy` 接口方法
         3. 当前bean在配置陪中注册的`@Bean(destroyMethod="销毁方法")`
-- 大体上的执行顺序是
-    1. bean的构造器
-    2. `BeanPostProcessor.applyBeanPostProcessorsBeforeInitialization` 接口方法
-    3. JSR250的注解: `@PostConstruct`、`@PreDestroy`
-    4. 实现 `InitializingBean` 和 `DisposableBean` 接口
-    2. `BeanPostProcessor.applyBeanPostProcessorsAfterInitialization` 接口方法
-    5. `@Bean(initMethod="初始化方法", destroyMethod="销毁方法")`
+- 整体执行顺序
+    1. `BeanPostProcessor.applyBeanPostProcessorsBeforeInitialization` 接口方法
+    2. bean的构造器
+    3. 初始化
+        1. JSR250的注解: `@PostConstruct`
+        2. 实现 `InitializingBean` 接口
+        3. `@Bean(initMethod="初始化方法")`
+    4. `BeanPostProcessor.applyBeanPostProcessorsAfterInitialization` 接口方法
+    5. 容器创建完成
+    6. 销毁
+        1. JSR250的注解: `@PreDestroy`
+        2. 实现 `DisposableBean` 接口
+        3. `@Bean(destroyMethod="销毁方法")`
 
 ### 多个生命周期方法的执行顺序--测试
 [top](#catalog)
@@ -1859,8 +1896,7 @@
         - `@Value("testName")`
     2. 通过SpEL设置属性值
         - `@Value("#{22-2}")`
-    3. `@PropertySource`设置配置文件 + `${}`，从配置文件中读取数据，即从运行环境变量中获取值
-        - `@Value("${配置文件中的变量名}")`
+    3. `@PropertySource` 设置配置文件 + `@Value("${配置文件中的变量名}")`，从配置文件中读取数据，即从运行环境变量中获取值
 
 - 示例
     - 实现内容
@@ -1916,9 +1952,10 @@
             }
             ```
 
-## @PropertySource--使用方法
+## @PropertySource--设置配置文件
 [top](#catalog)
 - 注解的使用方法
+    - 用于装饰配置类
     - `@PropertySource({配置文件数组})`
     - `@PropertySource`本身是可重复注解，可以通过 `@PropertySources` 设置多个
     - `@PropertySource`，路径的两种设置方法
@@ -2009,5 +2046,484 @@
             assertEquals(address, "testAddress");
         }
         ```
+
+# 自动装配
+## @Autowired--自动注入
+[top](#catalog)
+- `@Autowired` 
+    - 默认会将装饰的变量名作为beanId，到容器中搜索
+    - 默认状态下的bean搜索顺序
+        1. 按**类型**到容器中搜索对应的组件，如果有唯一的一个bean，则直接使用
+        2. 如果在 1 中找到了多个相同类型的bean，再将属性名称作为组件的id在容器中搜索
+- `@Autowired(required=true/false)`
+    - required 参数默认为true
+    - required = true
+        - 表示在启动容器后，必须要有对应的beanID
+        - 在启动容器后，如果没有找到对应的bean，会保存
+    - required = false
+        - 表示装配时，可以没有对应的bean实例
+- `@Qualifier("beanId")`，明确指定需要装配的bean的id
+- `@Primary`, 设置首选Bean
+    - 在通过类型搜索bean时，会优先返回该注解标识的bean
+    - 应为 `@Autowired` 会先按照类型搜索，所以 `@Primary` **会影响** `@Autowired` **的装配目标**
+    - 当通过 `BookDao dao2 =  context.getBean(BookDao.class);` 来获取bean时，会使用该注标识的类
+- 自动装配的优先级
+    1. `@Qualifier("beanId")`
+    2. `@Primary`
+
+- 示例
+    - 配置类
+        - 参考代码
+            - [/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/autowired/AutoWiredConfig.java](/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/autowired/AutoWiredConfig.java)
+        - 代码内容
+            ```java
+            @Configuration
+            @ComponentScan("com.ljs.learn.myspringannotation.autowired.demo")
+            public class AutoWiredConfig {
+                @Primary    // 设置当前类为首选bean
+                @Bean(name="bookDao02")
+                public BookDao bookDao(){
+                    BookDao bookDao = new BookDao();
+                    bookDao.setName("bookDao02");
+                    return bookDao;
+                }
+            }
+            ```
+    - 在类中使用 `@Qualifier`，指定装配目标
+        - 参考代码
+            - [/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/autowired/demo/BookService.java](/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/autowired/demo/BookService.java)
+        - 代码内容
+            ```java
+            @Service
+            public class BookService {
+                @Qualifier("bookDao") // 指定装配目标
+                @Autowired
+                private BookDao bookDao;
+            
+                public BookDao getBookDao() {
+                    return bookDao;
+                }
+            }
+            ```
+    - 测试类
+        - 参考代码
+            - [/java/mylearn/myspring-annotation/src/test/java/com/ljs/learn/myspringannotation/autowired/AutoWiredConfigTest.java](/java/mylearn/myspring-annotation/src/test/java/com/ljs/learn/myspringannotation/autowired/AutoWiredConfigTest.java)    
+        - 测试内容
+            ```java
+            @Test
+            public void getService(){
+                AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(AutoWiredConfig.class);
+                BookService service = context.getBean(BookService.class);
+        
+                // 获取 bookDao
+                BookDao dao = (BookDao) context.getBean("bookDao");
+                // BookDao{name='null'}
+                System.out.println(service.getBookDao());
+        
+                // 获取 bookDao02
+                // 因为 bookDao02 设置了 @Primary，所以会优先使用
+                BookDao dao2 =  context.getBean(BookDao.class);
+                // BookDao{name='bookDao02'}
+                System.out.println(dao2);
+        
+                assertEquals(service.getBookDao(), dao);
+            }
+            ```
+
+## @Autowired的位置
+[top](#catalog)
+- 可标记的位置
+    - 构造器
+        - 如果组件**只有一个有参构造器**，这个有参构造器的`@Autowired`可以省略
+    - 参数
+        - 可以是方法参数、有参构造器的参数
+        - 不能标记setter的参数
+    - 方法
+        - 在**配置类**中使用: `@Bean` + 方法参数 时，可以省略`@Autowired`。将会从ioc容器获取bean进行装配
+    - 属性
+- 示例
+    1. 在类内部做自动装配
+        - 参考代码
+            - [/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/autowired/demo02/Person.java](/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/autowired/demo02/Person.java)
+            - [/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/autowired/demo02/Teacher.java](/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/autowired/demo02/Teacher.java)
+        - 代码内容
+            ```java
+            @Component
+            public class Person {
+                // 1. 添加在 属性 上
+                @Autowired
+                private House house;
+            
+                private Car car;
+            
+                private Work work;
+            
+                // 3. 添加在有参构造器
+                @Autowired
+                public Person(Work work) {
+                    this.work = work;
+                    System.out.println("Person 有参构造");
+                }
+            
+                // 2. 添加在setter方法上
+                @Autowired
+                public void setCar(Car car) {
+                    System.out.println("call setCar");
+                    this.car = car;
+                }
+                
+                // house、work 的 getter、setter
+            }
+            ```
+            ```java
+            @Component
+            public class Teacher {
+                private Work work;
+                private Car car;
+            
+                // 如果组件只有一个有参构造器，这个有参构造器的@Autowired可以省略
+                public Teacher(Work work, Car car) {
+                    this.work = work;
+                    this.car = car;
+                }
+                // getter、setter
+            }
+            ```
+    2. 在配置类中做自动装配
+        - 参考代码
+            - [/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/autowired/demo02/Engineer.java](/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/autowired/demo02/Engineer.java)
+            - [/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/autowired/AutoWiredConfig.java](/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/autowired/AutoWiredConfig.java)
+        - 代码内容
+            ```java
+            public class Engineer {
+                private Car car;
+                private Work work;
+                // getter、setter
+            }
+            ```
+            ```java
+            public class AutoWiredConfig {
+                // 6. 在配置类中使用: @Bean + 方法参数 时，可以省略@Autowired
+                @Bean
+                public Engineer engineer(Car car, Work work){
+                    Engineer engineer = new Engineer();
+                    engineer.setCar(car);
+                    engineer.setWork(work);
+                    return engineer;
+                }
+            }
+            ```
+    3. 测试内容
+        - 参考代码
+            - [/java/mylearn/myspring-annotation/src/test/java/com/ljs/learn/myspringannotation/autowired/AutoWiredConfigTest.java](/java/mylearn/myspring-annotation/src/test/java/com/ljs/learn/myspringannotation/autowired/AutoWiredConfigTest.java)
+        - 测试代码
+            ```java
+            @Test
+            public void autowiredLocation(){
+                AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(AutoWiredConfig.class);
+                // 通用bean
+                Car car = context.getBean(Car.class);
+                House house = context.getBean(House.class);
+                Work work = context.getBean(Work.class);
+                
+                // 1. 获取person类及其内部装配的对象
+                Person person = context.getBean(Person.class);
+                assertEquals(person.getCar(), car);
+                assertEquals(person.getHouse(), house);
+                assertEquals(person.getWork(), work);
+        
+                // 2. @Autowired 标记在参数上，获取boss类及其内部装配的类
+                Boss boss = context.getBean(Boss.class);
+                assertEquals(boss.getCar(), car);
+                assertEquals(boss.getWork(), null);
+        
+                // 3. 只有一个有参构造器，并且不适用 @Autowired，有Spring自动注入
+                Teacher teacher = context.getBean(Teacher.class);
+                assertEquals(teacher.getCar(), car);
+                assertEquals(teacher.getWork(), work);
+        
+                // 4. 在配置类中使用: @Bean + 方法参数 时，可以省略@Autowired
+                Engineer engineer = context.getBean(Engineer.class);
+                assertEquals(engineer.getCar(), car);
+                assertEquals(engineer.getWork(), work);
+            }
+            ```
+
+## JSR250注解--@Resource
+[top](#catalog)
+- 装配方法
+    - `@Resource`, 按照**组件名**进行装配的
+    - `@Resource(name="beanID")`，转配指定beanID的对象
+- 功能与 `@Autowired` 类似，但是无法设置 `required` 属性
+- 不支持 `@Primary`
+
+## JSR330注解--@Inject
+[top](#catalog)
+- 需要导入包: javax.inject
+- 功能与 `@Autowired` 类似，但是无法设置 `required` 属性
+- 支持 `@Primary`
+
+## 为什么自动装配支持这些注解
+[top](#catalog)
+- 在 `AutowiredAnnotationBeanPostProcessor` 累的构造器中添加了对这些注解的支持
+- 源码内容
+    ```java
+    /**
+     * Create a new {@code AutowiredAnnotationBeanPostProcessor} for Spring's
+     * standard {@link Autowired @Autowired} and {@link Value @Value} annotations.
+     * <p>Also supports JSR-330's {@link javax.inject.Inject @Inject} annotation,
+     * if available.
+     */
+    @SuppressWarnings("unchecked")
+    public AutowiredAnnotationBeanPostProcessor() {
+        this.autowiredAnnotationTypes.add(Autowired.class);
+        this.autowiredAnnotationTypes.add(Value.class);
+        try {
+            this.autowiredAnnotationTypes.add((Class<? extends Annotation>)
+                    ClassUtils.forName("javax.inject.Inject", AutowiredAnnotationBeanPostProcessor.class.getClassLoader()));
+            logger.trace("JSR-330 'javax.inject.Inject' annotation found and supported for autowiring");
+        }
+        catch (ClassNotFoundException ex) {
+            // JSR-330 API not available - simply skip.
+        }
+    }
+    ```
+
+## Aware接口注入Spring底层组件
+[top](#catalog)
+- 自定义实现`Aware`接口的类
+    - 在创建对象的时候，会调用接口规定的方法注入Spring相关组件
+- 所有 `Aware` 接口，都有对应的`BeanPostProcessor`来做处理
+- 示例
+    - `Aware` 接口实现
+        - 参考代码
+            - 接口实现类
+                - [/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/autowired/aware/MyAware.java](/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/autowired/aware/MyAware.java)
+            - 配置类
+                - [/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/autowired/AwareConfig.java](/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/autowired/AwareConfig.java)
+        - 代码内容
+            ```java
+            @Component
+            public class MyAware implements ApplicationContextAware, BeanNameAware, EmbeddedValueResolverAware {
+                // 保存注入的IOC容器
+                private ApplicationContext applicationContext;
+            
+                // ApplicationContextAware 实现
+                @Override
+                public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+                    System.out.println("IOC = " + applicationContext);
+                    this.applicationContext = applicationContext;
+                }
+            
+                // BeanNameAware 实现
+                @Override
+                public void setBeanName(String name) {
+                    System.out.println("bean name = " + name);
+                }
+            
+                // EmbeddedValueResolverAware 实现
+                // resolver可以解析字符串中的Spring占位符
+                @Override
+                public void setEmbeddedValueResolver(StringValueResolver resolver) {
+                    // 分别获取配置文件中的数据，并执行一个计算
+                    String result = resolver.resolveStringValue("name = ${name}, compute:11+22= #{11 + 22}");
+                    System.out.println(result);
+                }
+            }
+            ```
+            ```java
+            // 扫描包，并添加配置文件
+            @Configuration
+            @ComponentScan("com.ljs.learn.myspringannotation.autowired.aware")
+            @PropertySource("classpath:/autowired/application.properties")
+            public class AwareConfig {
+            }
+            ```
+    - 测试内容
+        - 参考代码
+            - [/java/mylearn/myspring-annotation/src/test/java/com/ljs/learn/myspringannotation/autowired/AwareConfigTest.java](/java/mylearn/myspring-annotation/src/test/java/com/ljs/learn/myspringannotation/autowired/AwareConfigTest.java)
+        - 测试代码
+            ```java
+            @Test
+            public void awareTest(){
+                AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(AwareConfig.class);
+                System.out.println(context);
+                
+                // 输出
+                // bean name = myAware
+                // name = awaretest, compute:11+22= 33
+                // IOC = ...
+                
+                // 两个IOC容器的输出相同，是同一个对象
+            }
+            ```
+
+## @Profile--设置激活环境
+[top](#catalog)
+- 什么是Profile？
+    - 由Spring提供的，可以根据当前环境，动态的激活和切换一系列bean组件的功能
+- `@Profile("环境名")` 的功能
+    - 使组件在指定的环境下，才能被注册到容器中
+    - 用于装饰: bean、配置类
+        - 装饰bean时，只在指定的激活环境下才加载bean
+        - 装饰配置类时，只在指定的激活环境下才加载整个配置类
+    - 默认使用的是: `@Profile("default")`
+    - **没有使用`@Profile`的bean，在任何环境下都会加载**
+- 环境的切换方式
+    - 方式1，使用命名行参数: `-Dspring.profiles.active=环境名`
+        - idea添加命令行参数
+            - Edit Configurations ----> VM options
+            - 添加命令行参数
+    - 方式2，在容器中设置需要激活的环境
+        - 设置方式：`context.getEnvironment().setActiveProfiles("环境名");`
+        - 不能使用`ApplicationContext`的有参构造器
+            - 有参构造器会在启动时加载配置类，**无法设置需要激活的环境**
+    - 方式3，`@Profile` 装饰配置类，只有激活指定环境时，配置类才能生效
+- 示例
+    - 装饰bean
+        - 实现内容
+            - 参考代码
+                - [/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/autowired/ProfileConfig.java](/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/autowired/ProfileConfig.java)
+            - 代码内容
+                ```java
+                public class ProfileConfig {
+                    @Profile("dev")
+                    @Bean
+                    public Env devEnv(){
+                        System.out.println("create dev env");
+                        return new DevEnv();
+                    }
+                
+                    @Profile("test")
+                    @Bean
+                    public Env testEnv(){
+                        return new TestEnv();
+                    }
+                
+                    @Profile("product")
+                    @Bean
+                    public Env productEnv(){
+                        return new ProductEnv();
+                    }
+                
+                    @Profile("default")
+                    @Bean
+                    public Env defaultEnv(){
+                        return new DefaultEnv();
+                    }
+                
+                    @Bean
+                    public Env otherEnv(){
+                        return new OtherEnv();
+                    }
+                }
+                ```
+        - 测试内容
+            - 参考代码
+                - [/java/mylearn/myspring-annotation/src/test/java/com/ljs/learn/myspringannotation/autowired/ProfileConfigTest.java](/java/mylearn/myspring-annotation/src/test/java/com/ljs/learn/myspringannotation/autowired/ProfileConfigTest.java)
+            - 测试代码
+                ```java
+                // 不指定激活环境，将会使用 default 环境
+                @Test
+                public void defaultEnvTest(){
+                    AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(ProfileConfig.class);
+                    String[] names = context.getBeanDefinitionNames();
+                    for (String name : names) {
+                        System.out.println(name);
+                    }
+                    // 输出:
+                    // profileConfig
+                    // defaultEnv
+                    // otherEnv
+                }
+            
+                // 通过命令行参数来设置环境
+                // -Dspring.profiles.active=test
+                @Test
+                public void VMoptionTest(){
+                    AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(ProfileConfig.class);
+                    String[] names = context.getBeanDefinitionNames();
+                    for (String name : names) {
+                        System.out.println(name);
+                    }
+                    // 输出:
+                    // profileConfig
+                    // testEnv
+                    // otherEnv
+                }
+            
+                // 在容器中设置需要激活的环境
+                @Test
+                public void productEnvTest(){
+                    // 1. 创建空的IOC容器
+                    AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
+            
+                    // 2. 设置需要激活的环境，可以一次设置多个
+                    context.getEnvironment().setActiveProfiles("product", "dev");
+            
+                    // 3. 注册配置类
+                    context.register(ProfileConfig.class);
+            
+                    // 4. 刷新容器
+                    context.refresh();
+            
+                    String[] names = context.getBeanDefinitionNames();
+                    for (String name : names) {
+                        System.out.println(name);
+                    }
+                    // 输出:
+                    // profileConfig
+                    // devEnv
+                    // productEnv
+                    // otherEnv
+                }
+                ```
+    - 装饰配置类
+        - 实现内容
+            - 参考代码
+                - [/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/autowired/ProfileForClassConfig.java](/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/autowired/ProfileForClassConfig.java)
+            - 代码内容
+                ```java
+                @Profile("dev")
+                public class ProfileForClassConfig {...}
+                ```
+        - 测试内容
+            - 参考代码
+                - [/java/mylearn/myspring-annotation/src/test/java/com/ljs/learn/myspringannotation/autowired/ProfileForClassConfigTest.java](/java/mylearn/myspring-annotation/src/test/java/com/ljs/learn/myspringannotation/autowired/ProfileForClassConfigTest.java)
+            - 测试代码
+                ```java
+                // 测试dev环境
+                @Test
+                public void devEnvTest(){
+                    AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
+                    context.getEnvironment().setActiveProfiles("dev");
+                    context.register(ProfileForClassConfig.class);
+                    context.refresh();
+            
+                    for (String name : context.getBeanDefinitionNames()) {
+                        System.out.println(name);
+                    }
+            
+                    // 输出
+                    // profileForClassConfig
+                    // devEnv
+                    // otherEnv
+                }
+            
+                // 测试product环境
+                @Test
+                public void productEnvTest(){
+                    AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
+                    context.getEnvironment().setActiveProfiles("product");
+                    context.register(ProfileForClassConfig.class);
+                    context.refresh();
+            
+                    for (String name : context.getBeanDefinitionNames()) {
+                        System.out.println(name);
+                    }
+            
+                    // 没有配置类的输出
+                }
+                ```
 
 [top](#catalog)

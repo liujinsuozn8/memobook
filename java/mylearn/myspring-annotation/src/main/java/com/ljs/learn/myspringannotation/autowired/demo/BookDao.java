@@ -1,5 +1,6 @@
 package com.ljs.learn.myspringannotation.autowired.demo;
 
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Repository;
 
 @Repository
