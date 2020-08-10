@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+
+<body>
+    <button id="get">get</button>
+    <button id="post">post</button>
+    <button id="put">put</button>
+    <button id="delete">delete</button>
+    <script src='../../js/myaxios.js'></script>
+    <script>
+        // 调用封装的 axios 发送请求
+        document.getElementById('get').onclick = function () {
+            axios({
+                url: '/base/handle',
+                method: 'get',
+                params: { name: 123, age: 345 },    // get请求使用 params 发送参数
+            }).then(resp => {
+                console.log(resp.data)
+            });
+        }
+        document.getElementById('delete').onclick = function () {
+            axios({
+                url: '/base/handle/0123',
+                method: 'delete',
+                params: { name: 123, age: 345 },  // get请求使用 data 发送参数
+            }).then(resp => {
+                console.log(resp.data)
+            });
+        }
+
+        document.getElementById('post').onclick = function () {
+            axios({
+                url: '/base/handle',
+                method: 'post',
+                data: { name: 123, age: 345 },  // get请求使用 data 发送参数
+            }).then(resp => {
+                console.log(resp.data)
+            });
+        }
+        document.getElementById('put').onclick = function () {
+            axios({
+                url: '/base/handle',
+                method: 'put',
+                data: { name: 123, age: 345 },  // get请求使用 data 发送参数
+            }).then(resp => {
+                console.log(resp.data)
+            });
+        }
+
+    </script>
+</body>
+
+</html>

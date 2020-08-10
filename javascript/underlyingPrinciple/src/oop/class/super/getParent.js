@@ -1,6 +1,6 @@
 // 1. 创建通用函数，解析创建实例对象的类
 // 因为父类和子类实在一条原型链上，所以通过子类可以访问到父类中的静态成员
-function parent(instance){
+function getClass(instance){
     return Object.getPrototypeOf(instance).constructor;
 }
 
@@ -21,12 +21,12 @@ class FooEx extends Foo{
     }
     // 访问父类中的静态成员
     printParentStaticProperty(){
-        console.log('count = '+ parent(this).count);
+        console.log('count = '+ getClass(this).count);
     }
 
     // 访问当前类中的静态成员
     printSelfStaticProperty(){
-        parent(this).print()
+        getClass(this).print()
     }
 }
 

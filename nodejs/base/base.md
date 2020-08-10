@@ -29,7 +29,9 @@
     - [流式文件读取](#流式文件读取)
     - [通过管道进行流式读写](#通过管道进行流式读写)
     - [fs中的其他方法](#fs中的其他方法)
-- [supervisor--nodejs的自启动工具](#supervisor--nodejs的自启动工具)
+- [nodejs的自启动工具](#nodejs的自启动工具)
+    - [supervisor](#supervisor)
+    - [nodemon](#nodemon)
 - [服务器应用开发](#服务器应用开发)
     - [HTTP模块](#HTTP模块)
     - [url模块](#url模块)
@@ -783,9 +785,10 @@
         - curr 当前文件状态，fs.Stat对象
         - prev 修改前文件状态，fs.Stat对象
 
-# supervisor--nodejs的自启动工具
+# nodejs的自启动工具
+## supervisor
 [top](#catalog)
-- 自启动工具: upervisor 是什么？
+- 自启动工具: supervisor 是什么？
     - upervisor 会一直watch应用下的所有文件，当发现文件被修改时，就重新载入文件，进行自动部署
     - 使用 upervisor 后，每次修改后不需要手动重启，便于服务器应用的开发与调试
 - 安装 supervisor
@@ -793,6 +796,17 @@
     npm install -g supervisor
     ```
 - 使用 `supervisor` 代替 `npm` 来执行js文件
+
+## nodemon
+[top](#catalog)
+- 全局安装 `nodemon`
+    ```shell
+    npm install -g nodemon
+    ```
+- 启动js文件
+    ```js
+    nodemon xxx.js
+    ```
 
 # 服务器应用开发
 ## HTTP模块

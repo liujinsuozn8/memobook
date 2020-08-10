@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+
+<body>
+    <button id="get">get</button>
+    <button id="post">post</button>
+    <button id="put">put</button>
+    <button id="delete">delete</button>
+    <script src="https://cdn.bootcdn.net/ajax/libs/axios/0.20.0-0/axios.js"></script>
+    <script>
+        // 原生XHR发送请求
+        // 为按钮注册发送ajax请求的事件
+        // document.getElementById('get').onclick = function () {
+        //     var xhr = new XMLHttpRequest();
+        //     xhr.open('get', '/base/handle?aaa=123&bbb=234');
+        //     xhr.send();
+        //     xhr.onload = function () {
+        //         console.log(JSON.parse(xhr.responseText));
+        //     }
+        // }
+
+        // document.getElementById('put').onclick = function () {
+        //     var xhr = new XMLHttpRequest();
+        //     xhr.open('put', '/base/handle');
+        //     xhr.setRequestHeader('Content-type', 'application/json')
+        //     xhr.send(JSON.stringify({ name: 123, age: 345 }));
+        //     xhr.onload = function () {
+        //         console.log(JSON.parse(xhr.responseText));
+        //     }
+        // }
+
+        // document.getElementById('post').onclick = function () {
+        //     var xhr = new XMLHttpRequest();
+        //     xhr.open('post', '/base/handle');
+        //     xhr.setRequestHeader('Content-type', 'application/json')
+        //     xhr.send(JSON.stringify({ name: 123, age: 345 }));
+        //     xhr.onload = function () {
+        //         console.log(JSON.parse(xhr.responseText));
+        //     }
+        // }
+
+        // document.getElementById('delete').onclick = function () {
+        //     var xhr = new XMLHttpRequest();
+        //     xhr.open('delete', '/base/handle/123');
+        //     xhr.setRequestHeader('Content-type', 'application/json')
+        //     xhr.send();
+        //     xhr.onload = function () {
+        //         console.log(JSON.parse(xhr.responseText));
+        //     }
+        // }
+
+        // 使用发 axios 送请求
+        // 为按钮注册发送ajax请求的事件
+        document.getElementById('get').onclick = function () {
+            axios.get('/base/handle?aaa=123&bbb=234').then(resp => {
+                console.log(resp.data)
+            });
+        }
+
+        document.getElementById('post').onclick = function(){
+            axios.post('/base/handle', { name: 123, age: 345 }).then(resp => {
+                console.log(resp.data)
+            });
+        }
+
+        document.getElementById('put').onclick = function(){
+            axios.put('/base/handle', { name: 256, age: 345 }).then(resp => {
+                console.log(resp.data)
+            });
+        }
+
+        document.getElementById('delete').onclick = function(){
+            axios.delete('/base/handle/001').then(resp => {
+                console.log(resp.data)
+            });
+        }
+    </script>
+</body>
+
+</html>

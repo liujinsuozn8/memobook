@@ -172,6 +172,7 @@
 - 相关请求头
     - `Content-Type: application/x-www-form-urlencoded`，请求参数为分隔符类型
     - `Content-Type: application/json`，请求参数为JSON类型
+        - `application/json;charset=utf-8`，可以附加 `charset` 来防止中文乱码
     - `Content-Type: multipart/form-data`，上传文件
 
 - （服务端需要设置的）相关响应头
@@ -436,15 +437,20 @@
 [top](#catalog)
 - JSON格式参数的设置方法
     1. 设置JSON参数的请求头
-        ```js
-        xhr.setRequestHeader('Content-Type', 'application/json');
-        ```
+        - 基本设置
+            ```js
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            ```
+        - <span style='color:red'>可以附加 charset 来防止中文乱码</span>
+            ```js
+            xhr.setRequestHeader('Content-Type', 'application/json;charset=utf-8');
+            ```
     2. 将请求参数组合成对象，转换成JSON字符串，作为请求参数
         ```js
         xhr.send(JSON.stringify(paramObj));
         ```
 - 注意事项
-    - 需要客户端解析路由时，能够识别 `application/json` 的请求头
+    - 需要服务端解析路由时，能够识别 `application/json` 的请求头
         - `koa-body` 默认两种格式的参数都支持
 - 示例
     - 参考代码
