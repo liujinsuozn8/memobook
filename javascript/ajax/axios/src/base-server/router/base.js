@@ -23,4 +23,20 @@ router.put('/handle', async ctx => {
     ctx.body = ctx.request.body
 })
 
+// 异常测试
+router.get('/error', async ctx=>{
+    ctx.status = 404;
+    ctx.body = {msg: 'error test'}
+})
+
+// 超时测试
+router.get('/timeout', async ctx=>{
+    ctx.query.type = 'get';
+    await new Promise(reject=>{
+        setTimeout(()=>reject(), 3000);
+    })
+    ctx.body = ctx.query;
+})
+
+
 module.exports = router;

@@ -1,0 +1,79 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>拦截器简化取消请求操作</title>
+</head>
+
+<body>
+    <button onclick="sendTimeOut()">sendTimeOut</button>
+    <button onclick="abort()">abort</button>
+    <script src="https://cdn.bootcdn.net/ajax/libs/axios/0.20.0-0/axios.js"></script>
+    <script>
+        // 1. 设置一个全局变量，用于保存请求取消函数对象
+        let cancel;
+
+        // 2. 设置请求拦截器
+        axios.interceptors.request.use(config => {
+            // 2.1 检查 cancel 是否是函数对象，防止重复发送请求
+            if (typeof cancel === 'function') {
+                cancel('init cancel');
+            }
+
+            /* 2.2
+              设置 cancel 对象，此时 config已经创建完了
+              必须在这里 (检查完 cancel 之后) 设置
+
+              如果在 axios({...}) 内部设置，
+              执行顺序会变成 先设置 cancel，然后检查 cancel 是否是函数对象，
+              这样每次都会因为已经创建了 cancel 而取消操作，导致永远无法发送请求
+            */ 
+            config.cancelToken = new axios.CancelToken(function executor(c) {
+                cancel = c;
+            })
+            return config;
+        })
+
+        // 3. 设置响应拦截器
+        axios.interceptors.response.use(
+            resp => {
+                cancel = null;  // 3.1 成功响应后，清除 cancel
+                return resp;
+            },
+            error => {
+                if (axios.isCancel(error)) {
+                    // 3.2 如果是 cancel 造成的异常，返回一个包含空对象的 Promise 对象
+                    console.log(error.message);
+                    return Promise.resolve({});
+                } else {
+                    // 3.3 如果是异常，则清空 cancel， 并返回一个包含异常的 Promise 对象
+                    cancel = null;
+                    return new Promise.reject(error);
+                }
+            }
+        )
+
+        // 4. 按照正常的方式发送请求
+        function sendTimeOut() {
+            axios({
+                url: '/base/timeout',
+                params: { name: 'bob', age: 22 },
+            }).then(resp => {
+                console.log(resp.data);
+            }).catch(error => {
+                console.log(error)
+            })
+        }
+
+        // 5. 取消发送请求
+        function abort() {
+            if (typeof cancel === 'function') {
+                cancel('button cancel');
+            }
+        }
+
+    </script>
+</body>
+
+</html>

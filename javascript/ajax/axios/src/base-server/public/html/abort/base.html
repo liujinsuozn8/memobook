@@ -1,0 +1,51 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>取消请求的基本步骤</title>
+</head>
+
+<body>
+    <button onclick="sendTimeOut()">sendTimeOut</button>
+    <button onclick="abort()">abort</button>
+    <script src="https://cdn.bootcdn.net/ajax/libs/axios/0.20.0-0/axios.js"></script>
+    <script>
+        // 1. 设置一个全局变量，用于保存请求取消函数对象
+        let cancel;
+        function sendTimeOut() {
+            if (typeof cancel === 'function'){
+                cancel('init cancel');
+            }
+            axios({
+                url: '/base/timeout',
+                params: { name: 'bob', age: 22 },
+                // 2. 保存请求取消函数对象
+                cancelToken: new axios.CancelToken(function executor(c){
+                    cancel = c;
+                })
+            }).then(resp => {
+                cancel = null;  // 3. 请求结束时，清空取消函数
+                console.log(resp.data);
+            }).catch(error=>{
+                if (axios.isCancel(error)){
+                    console.log(error)
+                } else {
+                    cancel = null;  // 3. 请求结束时，清空取消函数
+                    console.log(error)
+                }
+            })
+        }
+
+        // 取消请求事件
+        function abort() {
+            // 4. 如果 cancel 存在，并且是一个函数对象，则取消请求
+            if (typeof cancel === 'function'){
+                cancel('button cancel');
+            }
+        }
+
+    </script>
+</body>
+
+</html>

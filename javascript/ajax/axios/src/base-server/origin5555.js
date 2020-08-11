@@ -1,10 +1,9 @@
 const Koa = require('koa');
-const static = require('koa-static');
 const router = require('koa-router')();
-
 const app = new Koa();
+
 app.use(require('koa-body')());
-app.use(static('./public'));
+app.use(require('koa-static')('./public'));
 
 app.use(async (ctx, next)=>{
     ctx.set('Access-Control-Allow-Origin', '*');
@@ -17,4 +16,4 @@ router.use('/base', require('./router/base').routes());
 app.use(router.routes());
 app.use(router.allowedMethods());
 
-app.listen(3333);
+app.listen(5555);

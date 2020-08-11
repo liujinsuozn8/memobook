@@ -1,0 +1,49 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>自定义axios</title>
+</head>
+
+<body>
+    <button id="get3333">get3333</button>
+    <button id="get5555">get5555</button>
+    <script src="https://cdn.bootcdn.net/ajax/libs/axios/0.20.0-0/axios.js"></script>
+    <script>
+        // 根据请求的基础路径，创建自定义 axios
+        const instance3333 = axios.create({
+            // 指定基础请求路径
+            baseURL: 'http://localhost:3333',
+        });
+
+        const instance5555 = axios.create({
+            // 指定基础请求路径
+            baseURL: 'http://localhost:5555',
+        });
+
+        // 向 3333 发送请求
+        document.getElementById('get3333').onclick = function(){
+            instance3333({
+                url: '/base/handle',
+                params: {
+                    name:'bob',
+                    age:13
+                }
+            }).then(resp => console.log(resp.data));
+        }
+
+        // 向 5555 发送请求
+        document.getElementById('get5555').onclick = function(){
+            instance5555({
+                url: '/base/handle',
+                params: {
+                    name:'tom',
+                    age:24
+                }
+            }).then(resp => console.log(resp.data));
+        }
+    </script>
+</body>
+
+</html>

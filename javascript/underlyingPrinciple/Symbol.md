@@ -13,6 +13,34 @@
 
 
 # 可以被符号属性影响的行为
+## 已公布的符号属性
+[top](#catalog)
+- JS公布了一组面向内部机制的符号属性，来访问内部槽
+- 符号属性被声明在对象的 `自有属性表`
+- 通过符号属性来影响内部机制**有很大的局限性**
+- 已公布的11个符号属性
+    - 影响通用行为的符号属性
+
+        |Symbol.xxx属性|影响行为|属性值|
+        |-|-|-|
+        |species|隐式创建对象|function|
+        |hasInstance|obj instance target|function(obj){}|
+        |unscopables|with(target)|{keyName:booleanValue,...}|
+        |toStringTag|target.toString()|string|
+        |toPrimitive|值运算|function(hint){}|
+        |iterator|for...of<br>new CollectionTypes(target)<br>Promise.allOrRace(target)<br>arr.from(target)|迭代函数?????|
+
+    - 与数组、字符串相关的属性
+
+        |Symbol.xxx属性|影响行为|属性值|
+        |-|-|-|
+        |isConcatSpreadable|arr.concat(target)|true/false|
+        |mathc|str.match(target)<br>str.endsWith(target,...)<br>str.includes(target,...)<br>str.startWith(target,...)<br>new RegExp(target,...)|function(str){}|
+        |replace|str.replace(target,newString)|function(str,newString){}|
+        |search|str.search(target)|function(str){}|
+        |split|str.split(target, limit)|function(str,limit){}|
+
+## 隐式创建对象--有影响的符号属性
 [top](#catalog)
 - Symbol.species
     - 功能
@@ -100,38 +128,6 @@
                 console.log(newArr instanceof Foo);     // false
                 console.log(newArr instanceof Array);   // true
                 ```js
-
-## 已公布的符号属性
-[top](#catalog)
-- JS公布了一组面向内部机制的符号属性，来访问内部槽
-- 符号属性被声明在对象的 `自有属性表`
-- 通过符号属性来影响内部机制**有很大的局限性**
-- 已公布的11个符号属性
-    - 影响通用行为的符号属性
-
-        |Symbol.xxx属性|影响行为|属性值|
-        |-|-|-|
-        |species|隐式创建对象|function|
-        |hasInstance|obj instance target|function(obj){}|
-        |unscopables|with(target)|{keyName:booleanValue,...}|
-        |toStringTag|target.toString()|string|
-        |toPrimitive|值运算|function(hint){}|
-        |iterator|for...of<br>new CollectionTypes(target)<br>Promise.allOrRace(target)<br>arr.from(target)|迭代函数?????|
-
-    - 与数组、字符串相关的属性
-
-        |Symbol.xxx属性|影响行为|属性值|
-        |-|-|-|
-        |isConcatSpreadable|arr.concat(target)|true/false|
-        |mathc|str.match(target)<br>str.endsWith(target,...)<br>str.includes(target,...)<br>str.startWith(target,...)<br>new RegExp(target,...)|function(str){}|
-        |replace|str.replace(target,newString)|function(str,newString){}|
-        |search|str.search(target)|function(str){}|
-        |split|str.split(target, limit)|function(str,limit){}|
-
-## 隐式创建对象--有影响的符号属性
-[top](#catalog)
-
-
 
 ## 通用行为--有影响的符号属性
 [top](#catalog)
@@ -361,6 +357,45 @@
                 var obj2 = { className: 'Other' };
                 console.log(obj2 instanceof Foo);  // false
                 ```
+
+- Symbol.unscopables
+    - 该属性指向一个对象
+    - 指向的对象标识是否从 `with(obj){...}` 的闭包中强制排除 `obj.xxx` 属性
+    - 对象内容
+        ```js
+        obj[Symbol.unscopables] = {
+            prop1: true,    // prop1 在 with 闭包中【 禁 用 】
+            prop2: true,    // prop2 在 with 闭包中可以使用
+        }
+        ```
+    - 原理
+        1. 在闭包中使用 `obj` 的 `xxx` 属性之前，会查询 `unscopables` 对象
+        2. 如果可以访问则调用 `obj.xxx`；如果不能访问，则到外部作用域中搜索
+    - 示例
+        - 参考代码
+            - [src/oop/property/symbol/unscopables.js](src/oop/property/symbol/unscopables.js)
+        - 代码内容
+            ```js
+            function foo(){}
+            var constructor = 'abcd';
+
+            // 1. 访问 foo 的原型对象
+            with(foo.prototype){
+                // 相当于在比较 foo === foo.prototype.constructor
+                console.log(foo === constructor);   // true
+            }
+
+            // 2. 在 with 闭包中，进制访问 foo.prototype.constructor
+            foo.prototype[Symbol.unscopables] = {constructor:true};
+            with(foo.prototype){
+                // foo.prototype.constructor 被禁用了
+                // 所以会使用外部作用域的 constructor
+                console.log(foo === constructor);   // false
+
+                // 输出外部作用域的 constructor
+                console.log(constructor);   // abcd
+            }
+            ```
 
 ## 集合对象--有影响的符号属性
 [top](#catalog)

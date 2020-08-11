@@ -3,17 +3,23 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Document</title>
+    <title>使用XHR和axios发送请求</title>
 </head>
 
 <body>
     <button id="get">get</button>
     <button id="post">post</button>
     <button id="put">put</button>
-    <button id="delete">delete</button>
+    <button id="delete">delete</button><br>
+
+    <button id="getAxios">getAxios</button>
+    <button id="postAxios">postAxios</button>
+    <!-- <button id="putAxios">putAxios</button>
+    <button id="deleteAxios">deleteAxios</button><br> -->
+
     <script src="https://cdn.bootcdn.net/ajax/libs/axios/0.20.0-0/axios.js"></script>
     <script>
-        // 原生XHR发送请求
+        // 1. 原生XHR发送请求
         // 为按钮注册发送ajax请求的事件
         // document.getElementById('get').onclick = function () {
         //     var xhr = new XMLHttpRequest();
@@ -54,7 +60,7 @@
         //     }
         // }
 
-        // 使用发 axios 送请求
+        // 2. 使用axios中指定的请求方式发送请求
         // 为按钮注册发送ajax请求的事件
         document.getElementById('get').onclick = function () {
             axios.get('/base/handle?aaa=123&bbb=234').then(resp => {
@@ -79,6 +85,30 @@
                 console.log(resp.data)
             });
         }
+
+        // 3. 直接使用 `axios` 函数对象发送请求
+        document.getElementById('getAxios').onclick = function(){
+            axios({
+                url:'/base/handle',
+                params:{
+                    name: 'tom',
+                    age:22
+                }
+            }).then(resp => console.log(resp.data));
+        }
+
+        document.getElementById('postAxios').onclick = function(){
+            axios({
+                url:'/base/handle',
+                method: 'post',
+                data:{
+                    name: 'tom',
+                    age:22
+                }
+            }).then(resp => console.log(resp.data));
+        }
+        // putAxios
+        // deleteAxios
     </script>
 </body>
 

@@ -1,0 +1,96 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>拦截器</title>
+</head>
+
+<body>
+    <button id="success">success</button>
+    <button id="error">error</button>
+    <script src="https://cdn.bootcdn.net/ajax/libs/axios/0.20.0-0/axios.js"></script>
+    <script>
+        // 1. 设置 请求拦截器
+        axios.interceptors.request.use(
+            // 接收 config 参数，并且必须返回 config
+            // config 就是 axios 发送请求时所需的 config对象
+            config =>{
+                console.log('request interceptors01 success');
+                return config;
+            },
+            // 接收一个异常对象，并且必须返回一个异常的Promise对象
+            error =>{
+                console.log('request interceptors01 error');
+                return Promise.reject(error);
+            }
+        )
+        axios.interceptors.request.use(
+            config =>{
+                console.log('request interceptors02 success');
+                return config;
+            },
+            error =>{
+                console.log('request interceptors02 error');
+                return Promise.reject(error);
+            }
+        )
+
+        // 2. 设置 响应拦截器
+        axios.interceptors.response.use(
+            // 正常处理的拦截器
+            // 接收 response 参数，并且必须返回 response
+            resp =>{
+                console.log('response interceptors01 success');
+                return resp;
+            },
+            // 接收一个异常对象，并且必须返回一个异常的Promise对象
+            error =>{
+                console.log('request interceptors01 error');
+                return Promise.reject(error);
+            }
+        )
+        axios.interceptors.response.use(
+            resp =>{
+                console.log('response interceptors02 success');
+                return resp;
+            },
+            error =>{
+                console.log('request interceptors02 error');
+                return Promise.reject(error);
+            }
+        )
+
+        // 3. 发送正常请求
+        document.getElementById('success').onclick = function(){
+            axios.post('/base/handle', {
+                name:'bob',
+                age:13
+            }).then(resp => {
+                console.log(resp.data);
+            }).catch(error => console.log(error))
+        }
+        // 输出:
+        // request interceptors02 success  <<<<<<<< 请求拦截器倒序输出
+        // request interceptors01 success
+        // response interceptors01 success <<<<<<<< 响应拦截器正序输出
+        // response interceptors02 success
+        // {name: "bob", age: 13, type: "post"}
+
+        // 4. 发送异常请求
+        document.getElementById('error').onclick = function(){
+            axios.get('/base/error').then(resp => {
+                console.log(resp.data);
+            }).catch(error => console.log(error))
+        }
+        // 输出
+        // request interceptors02 success
+        // request interceptors01 success
+        // GET http://localhost:3333/base/error 404 (Not Found)
+        // request interceptors01 error
+        // request interceptors02 error
+        // Error: Request failed with status code 404
+    </script>
+</body>
+
+</html>
