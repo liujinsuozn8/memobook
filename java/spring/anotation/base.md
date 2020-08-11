@@ -41,12 +41,18 @@
     - [@PropertySource--设置配置文件](#@PropertySource--设置配置文件)
 - [自动装配](#自动装配)
     - [@Autowired--自动注入](#@Autowired--自动注入)
+        - [@Autowired及其相关注解](#@Autowired及其相关注解)
+        - [bean的搜索顺序](#bean的搜索顺序)
+        - [@Autowired的可标识位置](#@Autowired的可标识位置)
     - [@Autowired的位置](#@Autowired的位置)
     - [JSR250注解--@Resource](#JSR250注解--@Resource)
     - [JSR330注解--@Inject](#JSR330注解--@Inject)
     - [为什么自动装配支持这些注解](#为什么自动装配支持这些注解)
     - [Aware接口注入Spring底层组件](#Aware接口注入Spring底层组件)
     - [@Profile--设置激活环境](#@Profile--设置激活环境)
+- [AOP](#AOP)
+    - [AOP注解](#AOP注解)
+    - [AOP注解的使用流程](#AOP注解的使用流程)
 - [](#)
 
 # 总结--注解与相关类
@@ -103,6 +109,20 @@
             - 创建空的IOC容器，并设置环境 `context.getEnvironment().setActiveProfiles`
         - 可以装饰 bean、或配置类
     - 实现 `Aware` 接口，容器启动后，注入Spring的底层组件
+- AOP
+    - `@EnableAspectJAutoProxy`，开启AOP注解支持
+    - `@Aspect`，标识 AOP 类
+    - `@Pointcut("切入点表达式")`，将AOP类的某个方法设置成公共的切入点
+    - AOP切面注解
+
+        |方法名|功能|参数|
+        |-|-|-|
+        |`@Before(value="切入点")`|前置通知||
+        |`@After(value="切入点")`|后置通知<br>无论方法是正常结束还是异常结束，都会调用||
+        |`@AfterReturning(value="切入点", returning="result")`|返回通知|`returning` 指定接收返回值的参数名|
+        |`@AfterThrowing(value="切入点", throwing = "exception")`|异常通知|`throwing` 指定接收异常的参数名|
+        |`@Around(value="切入点")`|环绕通知<br>使用动态代理，手动推进目标方法运行，JoinPoint.procced()||
+
 # 组件注册注解
 ## @Configuration--创建配置类
 [top](#catalog)
@@ -2049,12 +2069,10 @@
 
 # 自动装配
 ## @Autowired--自动注入
+### @Autowired及其相关注解
 [top](#catalog)
 - `@Autowired` 
     - 默认会将装饰的变量名作为beanId，到容器中搜索
-    - 默认状态下的bean搜索顺序
-        1. 按**类型**到容器中搜索对应的组件，如果有唯一的一个bean，则直接使用
-        2. 如果在 1 中找到了多个相同类型的bean，再将属性名称作为组件的id在容器中搜索
 - `@Autowired(required=true/false)`
     - required 参数默认为true
     - required = true
@@ -2130,9 +2148,15 @@
             }
             ```
 
-## @Autowired的位置
+### bean的搜索顺序
 [top](#catalog)
-- 可标记的位置
+- 默认状态下的bean搜索顺序
+    1. 按**类型**到容器中搜索对应的组件，如果有<span color='color:red'>唯一</span>的一个bean，则直接使用
+    2. 如果在 1 中找到了多个相同类型的bean，再将属性名称作为`组件id`在容器中搜索
+
+### @Autowired的可标识位置
+[top](#catalog)
+- 可标识的位置
     - 构造器
         - 如果组件**只有一个有参构造器**，这个有参构造器的`@Autowired`可以省略
     - 参数
@@ -2526,4 +2550,137 @@
                 }
                 ```
 
+# AOP
+## AOP注解
+[top](#catalog)
+- `@EnableAspectJAutoProxy`
+    - 标识位置: 在配置类中使用，装饰配置类
+    - 功能: 开启AOP注解支持，默认使用cglibs代理
+    - 相当于XML注解
+        ```xml
+        <aop:aspectj-autoproxy proxy-target-class="true"/>
+        ```
+- `@Pointcut("切入点表达式")`
+    - 功能: 将AOP类的某个方法设置成公共的切入点
+    - 一般直接修饰一个空方法，如
+        ```java
+        class A {
+            @Pointcut("...")
+            public void pointCut(){}
+        }
+        ```
+- `@Aspect`
+    - 标识位置: AOP类
+    - 功能: 表示当前类是切面类，是配置类可以识别
+
+- AOP切面注解
+    - 几种位置的注解，标识方法
+    
+        |方法名|功能|参数|
+        |-|-|-|
+        |`@Before(value="切入点")`|前置通知||
+        |`@After(value="切入点")`|后置通知<br>无论方法是正常结束还是异常结束，都会调用||
+        |`@AfterReturning(value="切入点", returning="result")`|返回通知|`returning` 指定接收返回值的参数名|
+        |`@AfterThrowing(value="切入点", throwing = "exception")`|异常通知|`throwing` 指定接收异常的参数名|
+        |`@Around(value="切入点")`|环绕通知<br>使用动态代理，手动推进目标方法运行，JoinPoint.procced()||
+
+    - 如何设置切入点
+        1. 可以使用当前类中，由`@Pointcut`配置的切入点
+            ```java
+            class A {
+                @Pointcut("...")
+                public void pointCut(){}
+                
+                // 引用类内部的公共切入点
+                @Before("pointCut()")
+                public void xxx(){...}
+            }
+            ```
+        2. 直接使用 **切入点表达式**
+    - 对**被装饰方法**的要求
+        - 如果要获取被切面方法的信息，`JoinPoint` 参数必须是方法的第一个参数
+            ```java
+            @AfterReturning(value="切入点", returning="result")
+            public void method(JoinPoint joinPoint, Object result){
+              // ...
+            }
+            ``` 
+
+## AOP注解的使用流程
+[top](#catalog)
+- 使用流程
+    1. 导入aop模块，Spring AOP，spring-aspects
+    2. 定义一个业务类
+    3. 定义一个切面类，在业务运行时，附加一些额外的操作
+    4. 用注解标识切面类的方法，标注切入点
+    5. 将业务类、切面类，都添加到容器中
+    6. 在配置类中，使用 `@EnableAspectJAutoProxy` 装饰类，开启AOP注解支持
+    
+- 示例
+    - 参考代码
+        - 业务类
+            - [/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/aop/MathCalculator.java](/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/aop/MathCalculator.java)
+        - 切面类
+            - [/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/aop/LogAspects.java](/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/aop/LogAspects.java) 
+        - 测试类
+            - [/java/mylearn/myspring-annotation/src/test/java/com/ljs/learn/myspringannotation/aop/AopConfigTest.java](/java/mylearn/myspring-annotation/src/test/java/com/ljs/learn/myspringannotation/aop/AopConfigTest.java)
+    - 业务类
+        ```java
+        public class MathCalculator {
+            public int div(int i, int j){
+                return i/j;
+            }
+        }
+        ```
+    - 切面类
+        ```java
+        @Aspect
+        public class LogAspects {
+            // 设置公共的切入表达式
+            @Pointcut("execution(* com.ljs.learn.myspringannotation.aop.MathCalculator.*(..))")
+            public void pointCut(){}
+        
+            @Before("pointCut()")
+            public void logStart(JoinPoint joinPoint){
+                Object[] args = joinPoint.getArgs();
+                System.out.println(joinPoint.getSignature().getName() + " 开始，参数列表: {"+ Arrays.toString(args) +"}");
+            }
+        
+            @After(value="pointCut()")
+            public void logEnd(JoinPoint joinPoint){
+                System.out.println(joinPoint.getSignature().getName() + " 结束");
+            }
+        
+            // 指定 returning 参数接收函数返回值
+            @AfterReturning(value="pointCut()", returning="result")
+            public void logReturn(JoinPoint joinPoint, Object result){
+                System.out.println(joinPoint.getSignature().getName() + " 正常返回，运行结果: {"+ result +"}");
+            }
+        
+            // 指定 throwing 参数接收异常
+            @AfterThrowing(value="pointCut()", throwing = "exception")
+            public void logException(JoinPoint joinPoint, Exception exception){
+                System.out.println(joinPoint.getSignature().getName() + " 异常，异常信息: " + exception);
+            }
+        }
+        ```
+    - 测试内容
+        ```java
+        @Test
+        public void calculatorTest(){
+            AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(AopConfig.class);
+            MathCalculator calculator = context.getBean(MathCalculator.class);
+            int result = calculator.div(6, 3);
+            System.out.println(result);
+            // div 开始，参数列表: {[6, 3]}
+            // div 结束
+            // div 正常返回，运行结果: {2}
+            // 2
+    
+            result = calculator.div(6, 0);
+            // div 开始，参数列表: {[6, 0]}
+            // div 结束
+            // div 异常，异常信息: java.lang.ArithmeticException: / by zero
+        }
+        ```
 [top](#catalog)
