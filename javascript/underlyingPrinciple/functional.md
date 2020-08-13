@@ -1,6 +1,7 @@
 <span id="catalog"></span>
 - 参考
     - 《JavaScript语言精髓与编程实战》
+    - https://www.bilibili.com/video/BV14s411E7qf
 
 ### 目录--JS的函数式语言特性
 - [函数式语言的特点](#函数式语言的特点)
@@ -8,22 +9,30 @@
 - [将逻辑结构转换为表达式](#将逻辑结构转换为表达式)
     - [条件语句的转换](#条件语句的转换)
     - [循环语句转换为尾递归](#循环语句转换为尾递归)
-- [函数](#函数)
-    - [函数声明](#函数声明)
-    - [函数参数](#函数参数)
-    - [与函数相关的几个基本问题](#与函数相关的几个基本问题)
-    - [回调函数](#回调函数)
-    - [立即执行函数IIFE](#立即执行函数IIFE)
-    - [函数中的this对象](#函数中的this对象)
-    - [闭包](#闭包)
-        - [利用闭包的示例-循环变量添加事件监听](#利用闭包的示例-循环变量添加事件监听)
-        - [闭包的基本知识](#闭包的基本知识)
-        - [常见的闭包](#常见的闭包)
-        - [闭包的作用](#闭包的作用)
-        - [闭包的应用-创建独立的作用域](#闭包的应用-创建独立的作用域)
-        - [闭包的应用-自定义js模块](#闭包的应用-自定义js模块)
-        - [闭包的缺点-内存溢出与内存泄露](#闭包的缺点-内存溢出与内存泄露)
-        - [与闭包相关的问题](#与闭包相关的问题)
+- [函数声明](#函数声明)
+- [函数参数](#函数参数)
+    - [普通参数/可变参数](#普通参数/可变参数)
+    - [默认参数](#默认参数)
+    - [剩余参数](#剩余参数)
+    - [模板参数](#模板参数)
+    - [arguments--参数对象](#arguments--参数对象)
+    - [非简单参数](#非简单参数)
+    - [参数的数量](#参数的数量)
+    - [非惰性求值---函数参数的特性](#非惰性求值---函数参数的特性)
+    - [传值参数与引用求值](#传值参数与引用求值)
+- [与函数相关的几个基本问题](#与函数相关的几个基本问题)
+- [回调函数](#回调函数)
+- [立即执行函数IIFE](#立即执行函数IIFE)
+- [函数中的this对象](#函数中的this对象)
+- [闭包](#闭包)
+    - [利用闭包的示例-循环变量添加事件监听](#利用闭包的示例-循环变量添加事件监听)
+    - [闭包的基本知识](#闭包的基本知识)
+    - [常见的闭包](#常见的闭包)
+    - [闭包的作用](#闭包的作用)
+    - [闭包的应用-创建独立的作用域](#闭包的应用-创建独立的作用域)
+    - [闭包的应用-自定义js模块](#闭包的应用-自定义js模块)
+    - [闭包的缺点-内存溢出与内存泄露](#闭包的缺点-内存溢出与内存泄露)
+    - [与闭包相关的问题](#与闭包相关的问题)
 - [](#)
 - [](#)
 
@@ -246,8 +255,7 @@
         foo(0);
         ```
 
-# 函数
-## 函数声明
+# 函数声明
 [top](#catalog)
 - 函数声明是**变量声明**的一种特殊形式
     - 所以在**不支持**`变量作用域`的位置，会逃逸到外部的作用域中
@@ -260,69 +268,655 @@
     console.log(typeof foo);    // undefined
     ```
 
-## 函数参数
+# 函数参数
+## 普通参数/可变参数
 [top](#catalog)
-- 如果函数不声明参数，可以在函数体中通过内部对象 `arguments` 来获取形参
+- 调用函数时参数的数量是任意
+    ```js
+    // 有参函数
+    function foo(a, b, c){}
+    // 无参函数
+    function bar(){}
 
-- 检查函数参数个数
-    - 调用函数时传入的参数个数: `arguments.length`
-    - 检查函数声明时的参数个数: `函数名.length`
-        - 对于包含默认参数的函数，从第一个默认参数开始，后面的**所有参数**都不会计入`函数名.length`
+    foo('aaa', 'bbb', 'cccc');
+    bar(1,2,3,4);
+    ```
+
+## 默认参数
+[top](#catalog)
+- 默认参数可以使用在任何位置
+    ```js
+    function foo(a, b=1234, c){}
+
+    foo('aaa');
+    foo('aaa', 2345);
+    foo('aaa', 2345, 'ccc');
+    ```
+## 剩余参数
+[top](#catalog)
+- 剩余参数只能**声明在参数列表的最后**
+- 剩余参数最终是一个**数组变量**
+- <span style='color:red'>剩余参数与展开运算没有关系，只是运算符相同</span>
+- 如果**没有传入剩余参数**，剩余参数将会是**一个空数组对象**
+- 使用方式
+    - 参考代码
+        - [src/functional/fn_args/rest.js](src/functional/fn_args/rest.js)
+    - 基本使用
+        ```js
+        function foo01(a, ...more){
+            console.log(a);
+            console.log(more);
+        }
+        foo01('aaa', 1, 2, 3, 4);
+        // aaa
+        // [ 1, 2, 3, 4 ]
+        ```
+    - 用模板捕获部分参数
+        ```js
+        function foo02(a, ...[x, y]){
+            console.log(`a = ${a}`);
+            console.log(`x = ${x}`);
+            console.log(`y = ${y}`);
+        }
+        foo02('aaa', 1, 2, 3);
+        // a = aaa
+        // x = 1
+        // y = 2
+        ```
+    - 在模板中，继续捕获剩余参数
+        ```js
+        function foo03(a, ...[x, y, ...z]) {
+            console.log(`a = ${a}`);
+            console.log(`x = ${x}`);
+            console.log(`y = ${y}`);
+            console.log(`z = ${z}`);
+        }
+        foo03('aaa', 1, 2, 3, 4, 5, 6, 7, 8);
+        // a = aaa
+        // x = 1
+        // y = 2
+        // z = 3,4,5,6,7,8
+        ```
+    - 如果**没有传入剩余参数**，剩余参数将会是**一个空数组对象**
+        ```js
+        function foo04(a, ...b){
+            console.log(a);
+            console.log(b);
+        }
+
+        foo04('aaa');
+        // aaa
+        // []
+        ```
+
+## 模板参数
+[top](#catalog)
+- 不能传入null 或 undefined
+- 调用函数时，会通过解构赋值的方式将实参绑定到多个标识符中
+- 参数的书写
+    - 对象模板
+        - 需要传入一个对象
+        - 如果全部是普通变量，需要按照对象字面量的形式传递参数
+    - 数组模板
+        - 需要传入一个数组
+        - 如果全部是普通变量，需要按照数组字面量的形式传递参数
+        - 如果传递一个**值数据类型**作为参数，会产生异常
+        - 可以在数组模板中添加**剩余参数**来吸收参数
+            - 如果剩余参数没有吸收到任何参数，则是一个 **空数组对象**
+    - 可以为**模板整体**，或者**模板中的某个参数** 设置默认值
+- 使用方式
+    - 参考代码
+        - [src/functional/fn_args/model_args.js](src/functional/fn_args/model_args.js)
+    - 对象模板参数
+        ```js
+        function fooObj(a, { b, c, d }) {
+            console.log(arguments);
+            console.log(a);
+            console.log(b);
+            console.log(c);
+            console.log(d);
+        }
+
+        var obj = {
+            b: 'bbb',
+            c: 'ccc',
+            d: 'ddd',
+            e: 'eee'
+        }
+
+        // 1.1 向对象模板传递一个对象
+        fooObj('aaa', obj);
+        // [Arguments] {
+        // '0': 'aaa',
+        // '1': { b: 'bbb', c: 'ccc', d: 'ddd', e: 'eee' }
+        // }
+        // aaa
+        // bbb
+        // ccc
+        // ddd
+
+        // 1.2 通过对象字面量传递参数
+        fooObj('aaa', {b:1, c:2, d:3, e:4})
+        // [Arguments] { '0': 'aaa', '1': { b: 1, c: 2, d: 3, e: 4 } }
+        // aaa
+        // 1
+        // 2
+        // 3
+        ```
+    - 数组模板参数
+        ```js
+        function fooArray(a, [b, c, d]){
+            console.log(arguments);
+            console.log(a);
+            console.log(b);
+            console.log(c);
+            console.log(d);
+        }
+
+        fooArray(1, [2, 3, 4, 5, 6]);
+        // fooArray(1, 2);  // TypeError: undefined is not a function
+        ```
+    - 在数组模板中，使用**剩余参数**来吸收参数
+        ```js
+        function fooArray02(a, [b, c, ...more]){
+            console.log(arguments);
+            console.log(a);
+            console.log(b);
+            console.log(c);
+            console.log(more);
+        }
+        fooArray02(1, [2]);
+        // [Arguments] { '0': 1, '1': [ 2 ] }
+        // 1
+        // 2
+        // undefined
+        // []
+
+        fooArray02(1, [2, 3, 4, 5, 6, 7]);
+        // [Arguments] { '0': 1, '1': [ 2, 3, 4, 5, 6, 7 ] }
+        // 1
+        // 2
+        // 3
+        // [ 4, 5, 6, 7 ]
+        ```
+    - 为**模板整体**设置默认值
+        - 为对象模板的整体设置默认值
             ```js
-            function foo(a,b,c=1234,d, e, f='test'){
-                console.log(`arguments.length = ${arguments.length}`);
-                console.log(`foo.length = ${foo.length}`);
-                console.log(`a=${a}, b=${b}, c=${c}, d=${d}, e=${e}, f=${f}`)
+            var objDefault = {b: 'bbb', c:'ccc', d:'ddd'};
+            function objModelDefault(a, {b, c, d}=objDefault){
+                console.log(arguments);
+                console.log(a);
+                console.log(b);
+                console.log(c);
+                console.log(d);
             }
 
-            foo(1,2,3);
-            // arguments.length = 3
-            // foo.length = 2
-            // a=1, b=2, c=3, d=undefined, e=undefined, f=test
+            // 使用模板的默认值
+            objModelDefault(1234);
+            // [Arguments] { '0': 1234 }
+            // 1234
+            // bbb
+            // ccc
+            // ddd
+
+            // 自定义模板参数的数据
+            objModelDefault(1234, {b: 'abc', c:'def', d:'ghi'});
+            // [Arguments] { '0': 1234, '1': { b: 'abc', c: 'def', d: 'ghi' } }
+            // 1234
+            // abc
+            // def
+            // ghi
+            ```
+
+        - 为数组模板的整体设置默认值
+            ```js
+            var arrDefault = ['bbb', 'ccc', 'ddd']
+            function arrModelDefault(a, [b, c, d]=arrDefault){
+                console.log(arguments);
+                console.log(a);
+                console.log(b);
+                console.log(c);
+                console.log(d);
+            }
+
+            // 使用模板的默认值
+            arrModelDefault(1234);
+            // [Arguments] { '0': 1234 }
+            // 1234
+            // bbb
+            // ccc
+            // ddd
+
+            // 自定义模板参数的数据
+            arrModelDefault(1234, ['abc', 'def', 'ghi']);
+            // [Arguments] { '0': 1234, '1': [ 'abc', 'def', 'ghi' ] }
+            // 1234
+            // abc
+            // def
+            // ghi
+            ```
+    - 为**模板中的某个参数** 设置默认值
+        - 为对象模板中的参数设置默认值
+            ```js
+            function objModelParamDefault(a, {b, c=100, d}){
+                console.log(arguments);
+                console.log(a);
+                console.log(b);
+                console.log(c);
+                console.log(d);
+            }
+
+            objModelParamDefault('aaa', {b:'bbb', d:'ddd'});
+            // [Arguments] { '0': 'aaa', '1': { b: 'bbb', d: 'ddd' } }
+            // aaa
+            // bbb
+            // 100
+            // ddd
+
+            objModelParamDefault('aaa', {b:'bbb', d:'ddd', c:'ccc'});
+            // [Arguments] { '0': 'aaa', '1': { b: 'bbb', d: 'ddd', c: 'ccc' } }
+            // aaa
+            // bbb
+            // ccc
+            // ddd
+            ```
+        - 为数组模板中的参数设置默认值
+            ```js
+            function arrModelParamDefault(a, [b, c, d=1234]){
+                console.log(arguments);
+                console.log(a);
+                console.log(b);
+                console.log(c);
+                console.log(d);
+            }
+
+            // 使用默认值
+            arrModelParamDefault('aaa', ['bbb', 'ccc']);
+            // [Arguments] { '0': 'aaa', '1': [ 'bbb', 'ccc' ] }
+            // aaa
+            // bbb
+            // ccc
+            // 1234
+
+            // 使用自定义数据
+            arrModelParamDefault('aaa', ['bbb', 'ccc', 'ddd']);
+            // [Arguments] { '0': 'aaa', '1': [ 'bbb', 'ccc', 'ddd' ] }
+            // aaa
+            // bbb
+            // ccc
+            // ddd
+            ```
+
+## arguments--参数对象
+[top](#catalog)
+- `arguments` 是一个类数组对象
+    - 可以对 `arguments` 使用绝大多数数组的操作，包括:
+        - 模板赋值
+        - 展开
+        - 解构
+- `arguments` <span style='color:red'>严格等于</span>调用函数时，传入的参数
+    - `arguments` 不会受 非简单参数的影响
+    - `arguments` 只是用来反映: 调用函数时，传递了什么数据
+- <span style='color:red'>除了箭头函数</span>，每个函数<span style='color:red'>被调用时</span>，都会创建 `arguments`
+- `arguments.length`，可以获取实参数量
+- 不存在 `Arguments` 类/构造函数
+- 手动构造一个与 `arguments` 类似的对象
+    - 参考代码
+        - [src/functional/fn_args/create_arguments.js](src/functional/fn_args/create_arguments.js)
+
+    - 代码内容
+        ```js
+        // 1. 创建一个 arguments 的构造器
+        // 2. 通过剩余参数的方式，吸收所有参数到一个【数组】中
+        function Arguments(...args){
+            // 3. 直接将数组 args 的原型设置为 Arguments，使 args 成为 Arguments 的实例
+            // 4. 将设置后的 args 对象【作为实例化结果】返回，替代默认生成的 this
+            return Object.setPrototypeOf(args, Arguments.prototype);
+        }
+        /* 5. 为 Arguments 添加 和 Array 相同的迭代方法
+            使 Arguments 可以具有和数组类似的操作
+        */
+        Arguments.prototype[Symbol.iterator] = Array.prototype[Symbol.iterator];
+
+        // 6. 实例化对象
+        var args = new Arguments('aaa', 'bbb', 'ccc', 'ddd');
+
+        // 7. 以数组的方式操作 args
+        console.log(args.length);
+        console.log(args[1]);
+        ```
+
+- <span style='color:red'>（简单参数）</span> 形参 与 `arguments[x]` 是绑定的
+    - <span style='color:red'>非简单参数 无法 与 arguments绑定</span>
+    - 直接修改形参的值，会影响 `arguments[x]`; 修改 `arguments[x]` 也会影响形参
+    - 参考代码
+        - [src/functional/fn_args/arguments.js](src/functional/fn_args/arguments.js)
+    - 代码内容
+        ```js
+        function foo(p1, p2){
+            // 1.1 初始值
+            console.log(arguments);
+            console.log(`p1 = ${p1}`);
+            console.log(`p2 = ${p2}`);
+
+            // 1.2 修改形参 p1
+            p1 = p1 + '12345';
+            console.log(`arguments[0] = ${arguments[0]}`);
+            console.log(`p1 = ${p1}`);
+
+            // 1.3 修改 arguments[1]
+            arguments[1] = arguments[1] + 'abcde';
+            console.log(`arguments[1] = ${arguments[1]}`);
+            console.log(`p2 = ${p2}`);
+        }
+
+        foo('aaa', 'bbb');
+        // [Arguments] { '0': 'aaa', '1': 'bbb' }
+        // p1 = aaa
+        // p2 = bbb
+        // arguments[0] = aaa12345  <<<< 直接修改形参
+        // p1 = aaa12345
+        // arguments[1] = bbbabcde  <<<< 直接修改 arguments[1]
+        // p2 = bbbabcde
+        ```
+
+- 对 `arguments` 解构得到的变量，与 `arguments[x]` **不是绑定的**
+    - 无论解构得到的是一个变量，还是剩余参数，与 `arguments[x]` 都不绑定
+    - 参考代码
+        - [src/functional/fn_args/arguments.js](src/functional/fn_args/arguments.js)
+    - 代码内容
+        - 普通的解构
+            ```js
+            function foo2(p1, p2){
+                // 解构获取参数
+                var [x1, x2] = arguments
+                console.log(`x1 = ${x1}`)
+                console.log(`x2 = ${x2}`)
+
+                // 1.2 修改解构得到的变量
+                x1 = x1 + '12345';
+                console.log(`arguments[0] = ${arguments[0]}`);
+                console.log(`x1 = ${x1}`);
+
+                // 1.3 修改 arguments[1]
+                arguments[1] = arguments[1] + 'abcde';
+                console.log(`arguments[1] = ${arguments[1]}`);
+                console.log(`x2 = ${x2}`);
+            }
+
+            foo2('aaa', 'bbb');
+            // x1 = aaa                     <<<<< 解构的结果
+            // x2 = bbb
+            // arguments[0] = aaa           <<<<< 修改解构得到的变量，不会影响arguments
+            // x1 = aaa12345
+            // arguments[1] = bbbabcde      <<<<< 修改 arguments[1]，不会影响解构得到的变量
+            // x2 = bbb
+            ```
+        - 包含剩余参数的解构
+            ```js
+            function foo3(p1){
+                // 解构获取参数
+                var [x1, ...more] = arguments
+                console.log(`x1 = ${x1}`);
+                console.log(`more = ${more}`);
+
+                // 1.2 修改解构得到的变量
+                more[0] = 1000;
+                console.log(`arguments[1] = ${arguments[1]}`);
+                console.log(`more = ${more}`);
+
+                // 1.3 修改 arguments[1]
+                arguments[1] = arguments[1] + 'abcde';
+                console.log(`arguments[1] = ${arguments[1]}`);
+                console.log(`more = ${more}`);
+            }
+
+            foo3('aaa', 'bbb', 'ccc','ddd','eee');
+            // x1 = aaa                     <<<<< 解构的结果
+            // more = bbb,ccc,ddd,eee
+            // arguments[1] = bbb           <<<<< 修改剩余参数，不会影响arguments
+            // more = 1000,ccc,ddd,eee
+            // arguments[1] = bbbabcde      <<<<< 修改arguments，不会影响剩余参数
+            // more = 1000,ccc,ddd,eee
+            ```
+
+## 非简单参数
+[top](#catalog)
+- 非简单参数包括
+    - 默认参数
+    - 剩余参数
+    - 模板参数
+- 非简单参数会产生 3 种限制
+    1. 无法直接使用严格模式
+        - 函数内，不能通过 `use strict` 切换到严格模式
+        - 可以将函数包含在一个 **严格模式的环境内**，来使用严格模式
+    2. 不接受重名参数
+    3. 形参 与 `arguments` 自动解除绑定关系
+
+- 调用函数时的参数设置方式
+    - 两种参数设置方式
+        1. **非简单参数**用: 初始器赋值
+        2. **简单参数**与参数对象 `arguments` 绑定
+
+    - `初始器` 如何为 非简单参数赋值？
+        - 前提
+            - 非简单参数中包含默认值，如 `x=100`
+            - 必须在实参传入之间，执行设置默认值的表达式
+        - 何时设置？
+            - 在创建执行上下文时
+            - 先执行表达式，并用表达式的返回值作为该形参的初始值
+    - 形参与参数对象 `arguments` 绑定的方式
+        - 直接将形参，<span style='color:red'>按顺序</span>与`arguments`中的每一个实参进行绑定
+
+- 非简单参数产生的**限制**基本都**来自**: `初始器`
+    1. 如果重名，初始器无法正常赋值
+    2. 用初始器赋值就已经脱离了 `arguments`，无法再实现绑定
+
+- <span style='color:red'>如果使用了非简单参数，则不应该再使用 arguments</span>
+    - 保证参数的使用、修改是有效的
+
+- 示例
+    - 非简单参数与 `arguments` 脱离绑定
+        - 参考代码
+            - [src/functional/fn_args/unsimple_args.js](src/functional/fn_args/unsimple_args.js)
+        - 代码内容
+            ```js
+            function foo (a, {b, c, d}){
+                console.log(arguments);
+                console.log(a, b, c, d);
+
+                a = 100;
+                console.log(a);
+                console.log(arguments);
+
+                b = 200;
+                console.log(b);
+                console.log(arguments);
+            }
+
+            foo(1, {b:2, c:3, d:4});
+            // [Arguments] { '0': 1, '1': { b: 2, c: 3, d: 4 } }
+            // 1 2 3 4
+            // 100      <<<< 修改普形参
+            // [Arguments] { '0': 1, '1': { b: 2, c: 3, d: 4 } }    <<<< 无法影响arguments
+            // 200      <<<< 修改模板内的形参
+            // [Arguments] { '0': 1, '1': { b: 2, c: 3, d: 4 } }    <<<< 无法影响arguments
             ```
 
 
-- 普通参数/可变参数
-    - 调用函数时参数的数量是任意
+## 参数的数量
+[top](#catalog)
+- 如果函数不声明参数，可以在函数体中通过内部对象 `arguments` 来获取形参
+
+- 实参数量: `arguments.length`
+    - 实参数量与函数声明中的形参数量没有任何关系
+    - **实参的数量只取决于调用函数时，传递的参数数量**
+- 形参数量: `函数名.length`
+    - 对于包含默认参数的函数，从第一个默认参数开始，后面的**所有参数**都不会计入形参数量
         ```js
-        // 有参函数
-        function foo(a, b, c){}
-        // 无参函数
-        function bar(){}
+        function fooDefault(a,b,c=1234,d, e, f='test'){
+            console.log(`arguments.length = ${arguments.length}`);
+            console.log(`fooDefault.length = ${fooDefault.length}`);
+            console.log(`a=${a}, b=${b}, c=${c}, d=${d}, e=${e}, f=${f}`)
+        }
 
-        foo('aaa', 'bbb', 'cccc');
-        bar(1,2,3,4);
+        fooDefault(1,2,3);
+        // arguments.length = 3
+        // fooDefault.length = 2
+        // a=1, b=2, c=3, d=undefined, e=undefined, f=test
         ```
-- 默认参数
-    - 默认参数可以使用在任何位置
+    - 剩余参数会计入形参数量中，但是**只能算 1 个**
         ```js
-        function foo(a, b=1234, c){}
+        function fooRest(a, b, other) {
+            console.log(`a = ${a}, b = ${b}`);
+            console.log(`other = ${other}`);
+            console.log(`arguments.length = ${arguments.length}`)
+            console.log(`fooRest.length = ${fooRest.length}`)
+        }
 
-        foo('aaa');
-        foo('aaa', 2345);
-        foo('aaa', 2345, 'ccc');
+        fooRest(1, 2, 3, 4, 5, 6);
+        // a = 1, b = 2
+        // other = 3
+        // arguments.length = 6
+        // fooRest.length = 3
         ```
-- 剩余参数
-    ```js
-    function foo(a, ...more){}
-    foo('aaa', 1, 2, 3, 4)
-    ```
-- 剩余参数，只捕获部分参数
-    ```js
-    function foo(a, ...[x, y]){}
-    foo('aaa', 1, 2, 3) //只捕获到： 'aaa', 1, 2
-    foo('aaa', 1, 2)
-    ```js
-- 对象参数解构
-    ```js
-    function foo({a, b, c:c的别名}){
-        console.log(a)
-        console.log(b)
-        console.log(c的别名)
-    }
-    ```
+    - 模板参数会计入形参数量中，但是无论模板内部有多少个变量，整体上**只能算 1 个**
+        ```js
+        function fooModel(a, { b, c, d }) {
+            console.log(`arguments.length=${arguments.length}`);
+            console.log(`fooModel.length=${fooModel.length}`);
+        }
 
-## 与函数相关的几个基本问题
+        fooModel('aaa', {b: 'bbb', c:'ccc', d:'ddd', e:'eee'});
+        // arguments.length=2
+        // fooModel.length=2
+        ```
+
+## 非惰性求值---函数参数的特性
+[top](#catalog)
+- 参数的`非惰性求值`特性
+    - 如果参数中包含表达式，在调用函数之前，将会从左向右，计算所有的表达式计算
+    - 真正发起函数调用是，<span style='color:red'>实参都会变成表达式的计算结果</span>
+
+- `非惰性求值` 的最终目的
+    - 完成**传值**操作
+    - 而不是传递表达式、操作数等，ES规范类型中的**引用**
+
+- 每个实参是对应位置的表达式计算结果
+    - 表达式之间可以通过使用相同的变量而互相影响，但是最后的实参不会被影响
+    - 示例
+        1. 如函数
+            ```js
+            function print(msg){}
+            ```
+        2. 当使用多个表达式作为参数时
+            ```js
+            var a = 20;
+            print(a+=20, a*=2, 'value:'+a);
+            ```
+        3. 表达式全部运算后的结果是
+            ```js
+            a+=20   // 赋值表达式，返回 40
+            a*=2    // 赋值表达式，返回 80
+            'value:'+a  // 单值表达式语句，返回 'value:80'
+            ```
+        4. 最终发起调用的实参
+            ```js
+            print(40, 80, 'value:80');
+            ```
+        5. 函数的 `arguments` 会包含全部的参数
+        6. 因为 `print(msg)` 只有一个形参，所以 ，但是形参 `msg` 只会<span style='color:red'>按顺序绑定</span>第一个实参 `40`
+
+- 示例
+    - 参考代码
+        - [src/functional/fn_args/unlazy.js](src/functional/fn_args/unlazy.js)
+    - 代码内容
+        1. 函数只有一个参数
+            ```js
+            function print(msg){
+                console.log(arguments);
+                console.log(msg);
+            }
+            var a = 20;
+
+            // 向只有一个参数的函数传递多个表达式实参
+            print(a+=20, a*=2, 'value:'+a);
+            // 输出:
+            // [Arguments] { '0': 40, '1': 80, '2': 'value:80' } <<<< 表达式全部计算完成
+            // 40       <<<<< 但是只有第一个参数有效
+            ```
+        2. 函数有多个参数
+            ```js
+            function restPrint(a, b, c){
+                console.log(arguments);
+                console.log(a, b, c);
+            }
+
+            var b = 20;
+
+            // 向函数传递多个表达式实参
+            restPrint(b+=20, b*=2, 'value:'+b);
+
+            // 输出:
+            // [Arguments] { '0': 40, '1': 80, '2': 'value:80' } <<<< 表达式全部计算完成
+            // 40 80 value:80
+            ```
+
+## 传值参数与引用求值
+[top](#catalog)
+- 什么是传值参数？
+    - 调用函数时，传递的是值，而不是表达式、操作数等ES规范类型中的引用
+    - 通过使用传值参数，可以隔离函数的内部与外部，使两部分作用域不会互相干扰
+        - 即使直接操作 `arguments` 也无法干扰函数外部
+    - `非惰性求值` 本身就是对 传值参数的一种实现
+
+- 什么是 引用求值？
+    - 一个引用同时包括: 值 和 引用 的含义
+        - 即传递某个<span style='color:red'>表达式运算结果的非值信息</span>
+    - 引用求值 与 传值参数 的**作用相反**，函数内的运算可能会影响函数外部
+        - 因为缺失了 `非值的信息`，所以无法到达函数外部
+    - 如 `obj.methods()` 中的 `obj.methods`
+        - `obj.methods` 是从对象中获取一个方法成员
+        - `obj.methods` 操作的结果在后续运算中会作为<span style='color:red'>引用</span>使用
+            - 这使得 `obj` 可以当作 `this` 对象
+
+- 涉及到**引用求值**的操作
+
+    |使用引用求值的代码|引用求值的部分|操作内容|
+    |-|-|-|
+    |`obj.methods()`|`obj.methods`|对象方法获取|
+    |`(obj.methods)()`|`(obj.methods)`|分组运算符不会影响内部的运算结果，相当于`obj.methods`|
+
+- 涉及到**传值参数**的操作
+    - `(1, 2, 3.., obj.methods)()`，`()`中使用 `,` 进行多次运算
+        - 最终返回的是 `obj.methods`
+        - 但是 `,`的连续运算结果是最后一个表达式的<span style='color:red'>值</span>
+        - 运算结果只有值，缺失了`非值的信息`，导致 `obj` 无法被当作 `this` 对象
+    - `fn(obj.method)`，将对象的方法作为函数的参数
+        - 如
+            ```js
+            function fn (cb){
+                cb();   // 只有函数对象本身，无法使用 this
+            }
+
+            fn(obj.method);
+            ```
+        - 执行 `fn(obj.method)` 时，实参表达式的运算结果是<span style='color:red'>值</span>，缺失了`非值的信息`，导致 `obj` 无法被当作 `this` 对象
+    - 普通的对象调用
+        - 如
+            ```js
+            var obj = {name:'bob'}
+
+            function foo(o){
+                // 虽然看起来改变了函数外部，但实际是改变了 o 自身的内存空间
+                o.name='test';
+            }
+
+            foo(obj);   // 传递的仍然是值
+            ```
+        - 
+
+# 与函数相关的几个基本问题
 [top](#catalog)
 - 什么是函数
     - 实现了特定功能的多行代码的封装
@@ -351,7 +945,7 @@
     - 局部变量
     - 形参的值是实参值的拷贝
 
-## 回调函数
+# 回调函数
 [top](#catalog)
 - 回调函数的特征
     - 自定义函数
@@ -364,7 +958,7 @@
     - ajax的回调函数
     - 生命周期回调函数
 
-## 立即执行函数IIFE
+# 立即执行函数IIFE
 [top](#catalog)
 - IIFE，等同于**匿名函数自调用**
     - 这样的函数只需要执行一次，执行后就可以丢弃
@@ -435,7 +1029,7 @@
         console.log(a); // 1234
         ```
 
-## 函数中的this对象
+# 函数中的this对象
 [top](#catalog)
 - this对象是什么
     - 所有函数内部都有一个this对象
@@ -505,8 +1099,8 @@
         // fn2 this = Window
         ```
 
-## 闭包
-### 利用闭包的示例-循环变量添加事件监听
+# 闭包
+## 利用闭包的示例-循环变量添加事件监听
 [top](#catalog)
 - 示例的功能
     - 页面上有三个button
@@ -546,7 +1140,7 @@
         }
         ```
 
-### 闭包的基本知识
+## 闭包的基本知识
 [top](#catalog)
 - 如何理解闭包
     - 理解方式一：嵌套函数的内部函数
@@ -609,7 +1203,7 @@
         ```
     - `f = null`，执行后，闭包 fn2的引用次数为0，成为垃圾对象，将会被 gc 回收
 
-### 常见的闭包
+## 常见的闭包
 [top](#catalog)
 - 常见的闭包
     1. 将函数作为另一个函数的返回值
@@ -656,7 +1250,7 @@
         function(){console.log(msg)},
         ```
 
-### 闭包的作用
+## 闭包的作用
 [top](#catalog)
 - 闭包的作用
     1. 延长局部变量/函数的生命周期
@@ -700,7 +1294,7 @@
         - 一般不能
         - 可以通过闭包来访问
 
-### 闭包的应用-创建独立的作用域
+## 闭包的应用-创建独立的作用域
 [top](#catalog)
 - 通过闭包函数，可创建独立的作用域。将变量保存在自身的作用域之后，既可以使用，不会受外部变量的影响
 
@@ -730,7 +1324,7 @@
             btn03s[i].onclick = function(){ console.log(i)};
         }
         ```
-### 闭包的应用-自定义js模块
+## 闭包的应用-自定义js模块
 [top](#catalog)
 - 什么是js模块
     - 具有特定功能的js文件
@@ -781,7 +1375,7 @@
         </html>
         ```
 
-### 闭包的缺点-内存溢出与内存泄露
+## 闭包的缺点-内存溢出与内存泄露
 [top](#catalog)
 - 闭包的缺点
     - 函数执行完后，函数内的局部变量没有释放，占用内存的时间变长
@@ -802,7 +1396,7 @@
         - 没有及时清理的计时器或回调函数
         - 闭包
 
-### 与闭包相关的问题
+## 与闭包相关的问题
 [top](#catalog)
 1. 代码输出什么?
     - 代码

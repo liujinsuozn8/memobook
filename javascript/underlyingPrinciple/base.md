@@ -1,7 +1,8 @@
 <span id="catalog"></span>
 - 参考
-    - https://segmentfault.com/a/1190000016278115
     - 《JavaScript语言精髓与编程实战》
+    - https://www.bilibili.com/video/BV14s411E7qf
+    - https://segmentfault.com/a/1190000016278115
 
 ### 目录
 - [声明标识符](#声明标识符)

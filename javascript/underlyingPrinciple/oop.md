@@ -1,7 +1,7 @@
 <span id="catalog"></span>
 - 参考
-    - https://segmentfault.com/a/1190000016278115
     - 《JavaScript语言精髓与编程实战》
+    - https://www.bilibili.com/video/BV14s411E7qf
 
 ### 目录--JS的面向对象特性
 - [对象](#对象)
