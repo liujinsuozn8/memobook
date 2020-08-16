@@ -1030,6 +1030,7 @@
         - 就是 `axios(config)`，或者 `Axios.prototype.request(config)`
         - 功能
             - 构建 request 链: `请求拦截器 | dispatchRequest | 响应拦截器`
+            - 串联整个请求过程中的各个步骤
             - 发送请求，完成 promise 对象的链式调用
     2. `dispatchRequest(config)`
         - 功能
@@ -1224,6 +1225,116 @@
     - 转换响应数据
 
 - 执行流程分析流程，参考: `core/dispatchRequest.js`
+    ```js
+    module.exports = function dispatchRequest(config) {
+      // 3. 根据请求头转换请求数据
+      config.data = transformData(
+        config.data,
+        config.headers,
+        config.transformRequest
+      );
+
+      // 处理请求头
+      // ...
+
+      // 1. 设置 adapter，没有配置adapter时，使用默认的adapter
+      // 浏览器使用XHR，Nodejs使用process
+      var adapter = config.adapter || defaults.adapter;
+      
+      // 2. 调用xhrAdapter发送请求，并封装成Promise
+      return adapter(config).then(function onAdapterResolution(response) {
+        throwIfCancellationRequested(config);
+    
+        // 4. 转换响应数据
+        response.data = transformData(
+          response.data,
+          response.headers,
+          config.transformResponse
+        );
+    
+        return response;
+      }, function onAdapterRejection(reason) {
+        if (!isCancel(reason)) {
+          throwIfCancellationRequested(config);
+    
+          // 4. 转换响应数据
+          if (reason && reason.response) {
+            reason.response.data = transformData(
+              reason.response.data,
+              reason.response.headers,
+              config.transformResponse
+            );
+          }
+        }
+    
+        return Promise.reject(reason);
+      });
+    };
+    ```
+- 转换数据的方法: `lib/core/transformData.js`
+    ```js
+    /*
+        对数据调用所有转换函数，并根据头信息转换数据
+        data: 请求/响应数据
+        headers: 请求/响应头
+        fns: 转换函数
+    */
+    module.exports = function transformData(data, headers, fns) {
+      /*eslint no-param-reassign:0*/
+      utils.forEach(fns, function transform(fn) {
+        data = fn(data, headers);
+      });
+    
+      return data;
+    };
+    ```
+
+- 数据转换方法`lib/defaults.js`
+    - 转换请求数据
+        ```js
+        transformRequest: [function transformRequest(data, headers) {
+          normalizeHeaderName(headers, 'Accept');
+          normalizeHeaderName(headers, 'Content-Type');
+          if (utils.isFormData(data) ||
+            utils.isArrayBuffer(data) ||
+            utils.isBuffer(data) ||
+            utils.isStream(data) ||
+            utils.isFile(data) ||
+            utils.isBlob(data)
+          ) {
+            return data;
+          }
+          if (utils.isArrayBufferView(data)) {
+            return data.buffer;
+          }
+          // 如果是拼接的请求参数，则使用 x-www-form-urlencoded 请求头发送请求
+          if (utils.isURLSearchParams(data)) {
+            setContentTypeIfUnset(headers, 'application/x-www-form-urlencoded;charset=utf-8');
+            return data.toString();
+          }
+          // 如果数据是对象，则转换为JSON字符串，并通过 application/json 请求头发送请求
+          if (utils.isObject(data)) {
+            setContentTypeIfUnset(headers, 'application/json;charset=utf-8');
+            return JSON.stringify(data);
+          }
+          return data;
+        }],
+        ```
+    - 转换响应数据
+        ```js
+        transformResponse: [function transformResponse(data) {
+          /*
+            无论返回的是何种类型的数据，只要是string，都尝试作为JSON字符串转换为对象类型。
+            如果无法正常转换，则直接返回原始数据
+          */
+          if (typeof data === 'string') {
+            try {
+              data = JSON.parse(data);
+            } catch (e) { /* Ignore */ }
+          }
+          return data;
+        }],
+        ```
 
 ### xhrAdapter的处理过程
 [top](#catalog)
@@ -1231,5 +1342,187 @@
     - 创建XHR对象，根据config进行设置，并发送请求
     - 接收响应数据，返回 Promise 对象
 
+- 流程分析
+    ```js
+    module.exports = function xhrAdapter(config) {
+      // 封装Promise，在内部发送请求
+      return new Promise(function dispatchXhrRequest(resolve, reject) {
+        var requestData = config.data;
+        var requestHeaders = config.headers;
+    
+        if (utils.isFormData(requestData)) {
+          delete requestHeaders['Content-Type']; // Let the browser set it
+        }
+    
+        if (
+          (utils.isBlob(requestData) || utils.isFile(requestData)) &&
+          requestData.type
+        ) {
+          delete requestHeaders['Content-Type']; // Let the browser set it
+        }
+    
+        // 1. 创建 XHR 对象
+        var request = new XMLHttpRequest();
+    
+        // HTTP basic authentication
+        if (config.auth) {
+          var username = config.auth.username || '';
+          var password = unescape(encodeURIComponent(config.auth.password)) || '';
+          requestHeaders.Authorization = 'Basic ' + btoa(username + ':' + password);
+        }
+    
+        // 2. 建立请求
+        var fullPath = buildFullPath(config.baseURL, config.url);
+        request.open(config.method.toUpperCase(), buildURL(fullPath, config.params, config.paramsSerializer), true);
+    
+        // 3. 设置超时时间，单位ms
+        request.timeout = config.timeout;
+    
+        // 4. 监听响应是否返回，需要检查 XHR 对象是否存在、并且ajax状态码为 4
+        request.onreadystatechange = function handleLoad() {
+          if (!request || request.readyState !== 4) {
+            return;
+          }
+    
+          // The request errored out and we didn't get a response, this will be
+          // handled by onerror instead
+          // With one exception: request that using file: protocol, most browsers
+          // will return status as 0 even though it's a successful request
+          if (request.status === 0 && !(request.responseURL && request.responseURL.indexOf('file:') === 0)) {
+            return;
+          }
+    
+          // 构建响应结果
+          var responseHeaders = 'getAllResponseHeaders' in request ? parseHeaders(request.getAllResponseHeaders()) : null;
+          var responseData = !config.responseType || config.responseType === 'text' ? request.responseText : request.response;
+          var response = {
+            data: responseData,
+            status: request.status,
+            statusText: request.statusText,
+            headers: responseHeaders,
+            config: config,
+            request: request
+          };
+    
+          settle(resolve, reject, response);
+    
+          // Clean up request
+          request = null;
+        };
+    
+        // 5. 设置取消响应事件
+        request.onabort = function handleAbort() {
+          if (!request) {
+            return;
+          }
+
+          // 创建异常并返回
+          reject(createError('Request aborted', config, 'ECONNABORTED', request));
+    
+          // 取消响应之后，删除 request
+          request = null;
+        };
+    
+        // 添加异常响应
+        request.onerror = function handleError() {
+          // Real errors are hidden from us by the browser
+          // onerror should only fire if it's a network error
+          reject(createError('Network Error', config, null, request));
+    
+          // Clean up request
+          request = null;
+        };
+    
+        // 设置超时响应事件
+        request.ontimeout = function handleTimeout() {
+          var timeoutErrorMessage = 'timeout of ' + config.timeout + 'ms exceeded';
+          if (config.timeoutErrorMessage) {
+            timeoutErrorMessage = config.timeoutErrorMessage;
+          }
+          reject(createError(timeoutErrorMessage, config, 'ECONNABORTED',
+            request));
+    
+          // Clean up request
+          request = null;
+        };
+    
+        // Add xsrf header
+        // This is only done if running in a standard browser environment.
+        // Specifically not if we're in a web worker, or react-native.
+        if (utils.isStandardBrowserEnv()) {
+          // Add xsrf header
+          var xsrfValue = (config.withCredentials || isURLSameOrigin(fullPath)) && config.xsrfCookieName ?
+            cookies.read(config.xsrfCookieName) :
+            undefined;
+    
+          if (xsrfValue) {
+            requestHeaders[config.xsrfHeaderName] = xsrfValue;
+          }
+        }
+    
+        // 设置请求头
+        if ('setRequestHeader' in request) {
+          utils.forEach(requestHeaders, function setRequestHeader(val, key) {
+            if (typeof requestData === 'undefined' && key.toLowerCase() === 'content-type') {
+              // Remove Content-Type if data is undefined
+              delete requestHeaders[key];
+            } else {
+              // Otherwise add header to the request
+              request.setRequestHeader(key, val);
+            }
+          });
+        }
+    
+        // Add withCredentials to request if needed
+        if (!utils.isUndefined(config.withCredentials)) {
+          request.withCredentials = !!config.withCredentials;
+        }
+    
+        // Add responseType to request if needed
+        if (config.responseType) {
+          try {
+            request.responseType = config.responseType;
+          } catch (e) {
+            // Expected DOMException thrown by browsers not compatible XMLHttpRequest Level 2.
+            // But, this can be suppressed for 'json' type as it can be parsed by default 'transformResponse' function.
+            if (config.responseType !== 'json') {
+              throw e;
+            }
+          }
+        }
+    
+        // Handle progress if needed
+        if (typeof config.onDownloadProgress === 'function') {
+          request.addEventListener('progress', config.onDownloadProgress);
+        }
+    
+        // Not all browsers support upload events
+        if (typeof config.onUploadProgress === 'function' && request.upload) {
+          request.upload.addEventListener('progress', config.onUploadProgress);
+        }
+    
+        if (config.cancelToken) {
+          // Handle cancellation
+          config.cancelToken.promise.then(function onCanceled(cancel) {
+            if (!request) {
+              return;
+            }
+    
+            request.abort();
+            reject(cancel);
+            // Clean up request
+            request = null;
+          });
+        }
+    
+        if (!requestData) {
+          requestData = null;
+        }
+    
+        // 6. 发送请求
+        request.send(requestData);
+      });
+    };
+    ```
 
 [top](#catalog)

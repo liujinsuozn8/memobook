@@ -9,6 +9,7 @@
 - [将逻辑结构转换为表达式](#将逻辑结构转换为表达式)
     - [条件语句的转换](#条件语句的转换)
     - [循环语句转换为尾递归](#循环语句转换为尾递归)
+- [函数的特殊成员](#函数的特殊成员)
 - [函数声明](#函数声明)
 - [函数参数](#函数参数)
     - [普通参数/可变参数](#普通参数/可变参数)
@@ -20,6 +21,23 @@
     - [参数的数量](#参数的数量)
     - [非惰性求值---函数参数的特性](#非惰性求值---函数参数的特性)
     - [传值参数与引用求值](#传值参数与引用求值)
+- [函数的名字](#函数的名字)
+- [函数与一般对象的区别](#函数与一般对象的区别)
+- [JS中支持的函数](#JS中支持的函数)
+    - [JS中的10种函数](#JS中的10种函数)
+    - [一般函数--具名函数与匿名函数](#一般函数--具名函数与匿名函数)
+    - [生成器函数](#生成器函数)
+    - [类](#类)
+    - [类/对象的方法](#类/对象的方法)
+    - [箭头函数](#箭头函数)
+    - [bind--绑定函数](#bind--绑定函数)
+    - [代理函数](#代理函数)
+- [函数的数据性质](#函数的数据性质)
+- [函数与逻辑结构](#函数与逻辑结构)
+    - [函数与递归](#函数与递归)
+- [函数的行为](#函数的行为)
+    - [构造](#构造)
+    - [调用](#调用)
 - [与函数相关的几个基本问题](#与函数相关的几个基本问题)
 - [回调函数](#回调函数)
 - [立即执行函数IIFE](#立即执行函数IIFE)
@@ -254,6 +272,20 @@
 
         foo(0);
         ```
+
+# 函数的特殊成员
+[top](#catalog)
+
+|成员|类型|分类|含义|
+|-|-|-|-|
+|call|function|动态特性，继承自 `Function.prototype`||
+|apply|function|动态特性，继承自 `Function.prototype`||
+|bind|function|动态特性，继承自 `Function.prototype`|创建绑定函数|
+|name|string|函数式语言，总是重写为自有的成员|函数名|
+|arguments|object|函数式语言，总是重写为自有的成员|函数的形参对象|
+|length|number|函数式语言，总是重写为自有的成员|函数的形参数量|
+|caller|function|函数式语言，总是重写为自有的成员|函数自身，严格模式下无法使用|
+|prototype|object|对象系统:原型|函数的原型|
 
 # 函数声明
 [top](#catalog)
@@ -914,8 +946,723 @@
 
             foo(obj);   // 传递的仍然是值
             ```
-        - 
 
+# 函数的名字
+[top](#catalog)
+- 函数的名字: `函数.name`
+    - 该属性是不可靠的，可修改、可删除
+        - 函数名可以和函数声明时的标识符不同
+    - `name`属性是每个函数的`自有属性`
+    - **匿名函数的函数名**等于赋值表达式的**标识符名**
+- 函数名的默认数据描述符
+    ```js
+    { value: '函数名', writable: false, enumerable: false, configurable: true }
+    ```
+- 函数名的操作
+    - 查询
+        - `函数.name`，直接通过属性名访问
+        - 通过  `Object.getOwnPropertyDescriptor(函数, 'name')` 获取数据描述符
+    - 删除
+        - `delete 函数.name`
+            - 因为默认数据描述符中 `configurable === true`, 所以属性名可以删除
+    - 修改
+        - `Object.defineProperty(函数, 'name', {...})`
+            - 只能通过覆盖描述符的方式来修改函数名
+        - 无法通过**属性赋值**的方式来修改函数名
+
+- 示例
+    - 参考代码
+        - [src/functional/fn_type/fn_name.js](src/functional/fn_type/fn_name.js)
+    - 代码内容
+        ```js
+        // 0. 创建一个匿名函数、一个具名函数
+        var x = function(){};
+        var y = function foo(){};
+
+        // 1. 输出函数名
+        console.log(x.name);    // x
+        console.log(y.name);    // foo
+
+        // 2. name 属性是函数的【自有属性】
+        console.log(x.hasOwnProperty('name'));
+
+        // 3. 输出函数名的数据描述符
+        // { value: 'x', writable: false, enumerable: false, configurable: true }
+        console.log(Object.getOwnPropertyDescriptor(x, 'name'));
+        // { value: 'foo', writable: false, enumerable: false, configurable: true }
+        console.log(Object.getOwnPropertyDescriptor(y, 'name'));
+
+        // 4. 删除函数名
+        delete x.name;
+        delete y.name;
+        console.log(Object.getOwnPropertyDescriptor(x, 'name'));    // undefined
+        console.log(Object.getOwnPropertyDescriptor(y, 'name'));    // undefined
+
+        // 5. 无法通过属性赋值的方式来修改函数名
+        x.name = 'aaa';
+        console.log( x.hasOwnProperty('name') ); // false，不包含 name 属性
+
+        // 6. 通过数据描述符来修改函数名
+        Object.defineProperty(x, 'name', {value:'aaa', writable:false, enumerable:false, configurable:true});
+        console.log(x.name);    // aaa
+        // { value: 'aaa', writable: false, enumerable: false, configurable: true }
+        console.log(Object.getOwnPropertyDescriptor(x, 'name'));
+        ```
+
+# 函数与一般对象的区别
+[top](#catalog)
+- 函数的内部初始化了两个内部槽
+    1. `[[Construct]]`，决定了 `new` 的构造行为
+    2. `[[Call]]`，决定了函数调用的行为
+- 初始化了两个或其中一个
+- 类中虽然有 `[[Call]]`，但是无法作为函数来调用
+    - 如果以函数的方式调用会产生异常
+    - 可以通过Proxy为类添加 apply，来进行函数调用
+
+# JS中支持的函数
+## JS中的10种函数
+[top](#catalog)
+
+|函数|是否有<br>声明语法|能否用于<br>表达式|是否支持<br>函数名|限制|
+|-|-|-|-|-|
+|一般函数: `function xxx(){}`|Y|Y|可选|-|
+|生成器:  `function* xxx(){}`|Y|Y|可选|不能用作`构造器`|
+|类: `class XXX{}`|Y|Y|可选|不能用作函数，如`Class()`<br>只能通过 `new` 调用|
+|异步函数: `async function xxx(){}`|Y|Y|可选|不能用作`构造器`|
+|异步生成器函数: `async function* xxx(){}`|Y|Y|可选|不能用作`构造器`|
+|异步箭头函数: `async x=>y`|N|Y|N|不能用作`构造器`|
+|方法: `obj.xxx()`|Y|N|N|不能用作`构造器`|
+|箭头函数: `x=> y`|X|Y|N|不能用作`构造器`|
+|绑定函数: `fn.bind(thisArgs)`|N|N|N|取决于被绑定的函数|
+|代理函数: ?????|N|N|N|取决于被代理的函数|
+
+- 有且只有通过<span style='color:red'>声明方式</span>得到的函数<span style='color:red'>才可以是具名的</span>
+
+## 一般函数--具名函数与匿名函数
+[top](#catalog)
+- 具名函数与匿名函数的区别
+
+    ||是否有一个可影响当前作用域的标识符|是否可以作为声明语句|
+    |-|-|-|
+    |具名函数|Y|Y|
+    |匿名函数|N|N|
+
+## 生成器函数
+[top](#catalog)
+- 生成器函数<span style='color:red'>不是构造器</span>
+    - 生成器函数不能作为 `构造器` 使用
+    - 生成器对象**不是**由生成器函数创建并初始化的
+- 生成器函数的职责
+    - 只负责提供执行逻辑，不用于产生实例
+- 生成器对象: `Generator`
+    - 调用生成器函数时，不执行函数体，只是返回一个: `Generator`
+        - 该对象是一个可迭代对象: `Iterator`
+    - 生成器对象: `Generator` **可以被检测为生成器函数的实例**
+        ```js
+        function* foo(){}
+        var g = foo();
+        console.log(g instanceof foo);  // true
+        ```
+    - 生成器对象的有效执行次数 = `yield次数 + 1`
+- 生成器函数内，`this`<span style='color:red'>指向调用者</span>
+- 两个关键的操作
+    1. `yield`，暂停函数 ---> 保存函数现场 ---> 退出函数现场
+    2. `next(arg)`，恢复函数现场 ---> 传入参数`arg` ---> 继续执行函数
+- `yield` 运算符
+    - `yield` 是只能在生成器函数内使用的运算符
+    - 调用的结果与内部的结果
+        - 外部调用的结果
+            1. 调用 `next()` 执行到 `yield xxx` 时，运算后边的表达式
+            2. `yield`的运算结果作为调用的结果返回
+        - 内部得到的结果
+            1. 如: `let v = yield xxx`
+            2. `xxx` 的运算结果作为调用结果返回，**与函数内部无关**
+            3. 并且 `yield xxx` 完成之后，会**暂停**
+            4. <span style='color:red'>下一次</span>调用 `next(arg)` 时，继续执行函数，arg将作为 `yield` 在内部的值，赋值给变量`v`
+    - 只使用 `yield`，将会给外部返回
+        ```js
+        { value: undefined, done: false/true }
+        ```
+    - 在生成器内部，`yield` 的结果，是**下一次** `next(arg)` 时传入的**第一个参数**
+    - <span style='color:red'>第一次调用 `next()` 时，传入的参数无效</span>
+        - 因为第一次调用是从: 函数体开始到第一个 `yield`
+        - 因为是第一次执行到 `yield`，没有变量来接收第 `0` 次的 `yield` 的结果，导致传参无效
+            - 本身也没有第 `0` 次的 `yield`
+    - 示例
+        - 参考代码
+            - [src/functional/fn_type/yield.js](src/functional/fn_type/yield.js)
+        - 代码内容
+            ```js
+            function* myGenerator(a){
+                console.log('first run');
+                let v2 = yield;
+                console.log('second run, v2 = ', v2);
+                let v3 = yield a + 1
+                console.log('third run, v3 = ', v3);
+            }
+
+            var g = myGenerator(100);
+            console.log('next 01', g.next('aaaa'));
+            console.log('next 02', g.next('bbbb'));
+            console.log('next 03', g.next('cccc'));
+
+            // 输出
+            // first run                                    // 第一次调用 next()，第一次的参数无效
+            // next 01 { value: undefined, done: false }    // 第一次调用 next() 的返回
+            // second run, v2 =  bbbb                       // 第二次调用 next()
+            // next 02 { value: 101, done: false }          // 第二次调用 next() 的返回
+            // third run, v3 =  cccc                        // 第三次调用 next()
+            // next 03 { value: undefined, done: true }     // 第三次调用 next() 的返回
+            //                                   ^^^^ 生成器执行结束
+            ```
+        - 代码的执行流程图
+            - ![yield_flow](imgs/functional/generator/yield_flow.png)
+
+- `yield* Iterator` 展开另一个可迭代的对象
+    - 相当于循环执行 `yield`
+    - 每次迭代出一个值后，会暂停展开，并返回这一次的迭代结果
+    - ``yield*` 运算没有内部结果，只负责展开
+    - 示例
+        - 参考代码
+            - [src/functional/fn_type/yield_spread.js](src/functional/fn_type/yield_spread.js)
+        - 代码内容
+            ```js
+            function* foo(){
+                let a = yield* [1,2,3,4]
+                console.log(`a = ${a}`);
+            }
+            var g = foo();
+            console.log(g.next('aaa'));
+            console.log(g.next('bbb'));
+            console.log(g.next('ccc'));
+            console.log(g.next('ddd'));
+            console.log(g.next('eee'));
+
+            // 输出
+            // { value: 1, done: false }
+            // { value: 2, done: false }
+            // { value: 3, done: false }
+            // { value: 4, done: false }
+            // a = undefined    // yield* 没有内部结果
+            // { value: undefined, done: true }
+            ```
+
+## 类
+[top](#catalog)
+- 类本身就是构造函数，因为
+    ```js
+    Class === Class.prototype.constructor
+    ```
+- 类只能通过 `new` 调用，**无法执行函数调用**
+- 类可以以声明形式存在，也可以以表达式的形式存在
+- 类可以赋值给对象成员，但是仍然需要通过 `new` 来执行
+- 示例
+    - 声明形式
+        ```js
+        class Foo{}
+        ```
+    - 表达式形式---作为对象的成员
+        ```js
+        var obj = {
+            cls:class{
+                print(){
+                    console.log('cls');
+                }
+            }
+        }
+
+        var c = new obj.cls();
+        c.print();  // cls
+        ```
+
+## 类/对象的方法
+[top](#catalog)
+- 方法的存在方式
+    - 存在方式
+        1. 具名函数
+        2. 匿名函数
+        3. ES6 风格的函数
+        4. 生成器
+        5. 异步函数
+        6. 属性读写器
+    - 示例
+        - 参考代码
+            - [src/functional/fn_type/obj_methods.js](src/functional/fn_type/obj_methods.js)
+        - 代码内容
+            ```js
+            // 类/对象的方法测试
+
+            var obj = {
+                // 1. 具名函数
+                fn1: function foo(){
+                    console.log('this is fn1');
+                },
+
+                // 2. 匿名函数
+                fn2: function (){
+                    console.log('this is fn2');
+                },
+
+                // 3. ES6 风格的方法
+                fn3(){
+                    console.log('this is fn3');
+                },
+
+                // 4. 生成器-----ES6 风格
+                *fn4(){
+                    yield* [1,2,3,4];
+                },
+                // 5. 异步函数-----ES6 风格
+                async fn5(){
+                    return Promise.resolve('fn5 resolved');
+                },
+
+                // 6. 属性读写器-----ES6 风格
+                get value(){ return 'value is 100'}
+            }
+
+            // 1. 具名函数
+            obj.fn1();
+
+            // 2. 匿名函数
+            obj.fn2();
+
+            // 3. ES6 风格的方法
+            obj.fn3();
+
+            // 4. 生成器-----ES6 风格
+            for(let n of obj.fn4()) console.log(`fn4 n = ${n}`);
+
+            // 5. 异步函数-----ES6 风格
+            obj.fn5().then(console.log);
+
+            // 6. 属性读写器-----ES6 风格
+            console.log(obj.value);
+
+            // 输出:
+            // this is fn1
+            // this is fn2
+            // this is fn3
+            // fn4 n = 1
+            // fn4 n = 2
+            // fn4 n = 3
+            // fn4 n = 4
+            // value is 100
+            // fn5 resolved
+            ```
+
+- **ES6 风格的方法** 与 **一般函数** 的不同
+    - 3点不同
+        1. 不能作为构造器
+            - 引擎没有为方法初始化 `[[Construct]]` 内部槽
+        2. 没有 `prototype` 属性，除了生成器
+            - 但仍然是 `Function` 的实例
+        3. 方法不能具名
+    - 这些方法的方法名，在方法内部不可见
+        - 因为ES6风格的方法**只是声明，不是函数**，不能在声明内引用自己
+        - <span style='color:red'>即这些声明都不是上下文中的标识符</span>
+        - 参考
+            - [JS的面向对象特性](oop.md#类声明是静态声明)
+
+## 箭头函数
+[top](#catalog)
+- 箭头函数的特性
+    - 箭头函数使用字面量方式声明，但是<span style='color:red'>箭头函数不是字面量</span>
+    - **只能作为表达式的操作数**，并将表达式所在的上下文作为执行环境
+    - **无法声明标识符**，所以**总是匿名的**
+    - 可以是异步的，函数体中可以包含 `await`
+    - 没有 `this` 对象
+    - 没有 `arguments` 参数对象
+- 注意事项
+    - 箭头函数不能作为**构造器**
+    - 函数体中的 `this`，总会访问到函数所在**上下文**的 `this`
+        - 如果在全局作用域声明，则 `this` 是 `window`，或 `global`
+        - 如果声明在函数/方法中，则 `this` 是函数/方法的**调用者**
+    - 无法重新设置箭头函数的 `this`
+        - `apply`、`call` 无法为箭头函数设置 `this` 对象
+        - `bind` 无法为箭头函数绑定 `this` 对象
+        - 示例
+            - 参考代码
+                - [src/functional/fn_type/arrow_this.js](src/functional/fn_type/arrow_this.js)
+            - 代码内容
+                ```js
+                function foo(){
+                    var fn = ()=>this.name;
+                    var obj = {name:'tom'};
+                    // 1. 将箭头函数绑定为函数内部的 obj
+                    console.log('call: ', fn.call(obj) );
+                    console.log('bind: ', fn.bind(obj)() );
+                }
+
+                var other = {name:'bob'};
+
+                // 2. 将执行 foo 时的 this 替换为 other
+                foo.call(other);
+
+                // 输出
+                // call:  bob       <<<< 绑定失败，仍然使用了上下文中的this
+                // bind:  bob       <<<< 绑定失败，仍然使用了上下文中的this
+                ```
+
+## bind--绑定函数
+[top](#catalog)
+- `bind()`
+    - 语法
+        ```js
+        var 绑定函数 = 目标函数.bind(thisArgs [, args....]);
+        ```
+    - bind 的功能
+        - 绑定目标函数的 `this`对象 和 参数，并返回一个`绑定函数`
+
+- bind 绑定的内容
+    - `this`
+        - 如果 `thisArgs` 是`null`/`undefined`
+            - 普通模式: 使用当前执行作用域中的`this`
+            - 严格模式: 使用 `null`
+        - 对绑定函数调用 `call`、`apply` 时，**不会修改已绑定的** `this`
+    - 参数 `args`
+        - 被绑定的 `args` 是**不可替换的**
+            - 调用`绑定函数`时传递的参数，会追加到 `args` 的后面
+    - 因为类本质也是函数，所以可以为类绑定 `this`
+
+- `绑定函数` 的特性
+    1. 隐式原型与目标函数相同
+        - 相当于执行了
+            ```js
+            Object.setPrototypeOf(绑定函数, Object.getPrototypeOf(目标函数));
+            ```
+        - 所以可以访问目标函数继承自原型的成员，<span style='color:red'>不能访问目标函数的自由成员</span>
+            - 也导致了: 在类声明中，绑定函数**不能**替代目标函数**作父类**
+    2. 没有自有的 `prototype` 属性 （虽然它也是一个函数）
+        - 动态添加`prototype`是**无效的**
+
+- `绑定函数` 作为 构造器
+    - 已绑定的 `args` **有效**
+    - 已绑定的 `thisArg` **无效**
+    - `绑定函数`作为构造器的执行流程
+        1. `new` 运算符创建 `this` 对象
+        2. 将对象的原型设置为 **目标函数**的原型
+        3. 将 `new.target` 设为目标函数
+    - 构造器的执行流程是`绑定函数`**固有的**
+
+- 因为 `绑定函数` 作为构造器、普通函数时都有自己的处理逻辑，所以**可以被当作一类独立的函数**
+    - 主要是对 `this`、`args`、原型的处理
+
+- 示例
+    1. bind 绑定的内容
+        - 参考代码
+            - [src/functional/fn_type/bind_args_this.js](src/functional/fn_type/bind_args_this.js)
+        - 参数绑定、与调用时附加参数
+            ```js
+            function foo() {
+                'use strict';
+                console.log('this: ', this);
+                console.log('args: ', ...arguments);
+            }
+
+            var newFoo = foo.bind(null, 1, 2, 3);
+            newFoo(4, 5, 6);
+
+            // 输出
+            // this:  null
+            // args:  1 2 3 4 5 6
+            ```
+
+    2. `绑定函数` 的特性: 可以使用目标函数继承自原型的方法
+        - 参考代码
+            - [src/functional/fn_type/bind_proto_method.js](src/functional/fn_type/bind_proto_method.js)
+        - 代码内容
+            ```js
+            // 0 通过类继承构造继承关系
+            // 0.1 基类
+            class Foo{
+                static run(){
+                    console.log('this is foo');
+                    console.log(`this === Foo : ${this === Foo}`);
+                    console.log(this);
+                }
+            }
+
+            // 0.2 子类
+            class FooEx extends Foo{
+                static run(){
+                    console.log('this is FooEx');
+                    console.log(`this === FooEx : ${this === FooEx}`);
+                    console.log(this);
+                }
+            }
+
+            /*
+                0.3 此时相当于 Object.getPrototypeOf(FooEx) === Foo
+                    Foo 相当与 FooEx 的原型，所以 FooEx 的绑定函数可以使用 Foo.run 方法
+            */
+
+            // 1. 创建 FooEx 的绑定函数
+            var f = FooEx.bind();
+
+            // 2. 直接执行类的静态函数
+            FooEx.run();
+            // this is FooEx
+            // this === FooEx : true
+            // [Function: FooEx]
+
+            // 3. 通过绑定函数来执行静态函数
+            f.run();
+            // this is foo
+            // this === Foo : false
+            // [Function: bound FooEx]
+            ```
+
+    3. `绑定函数` 作为构造器
+        - 参考代码
+            - [src/functional/fn_type/bind_as_constructor.js](src/functional/fn_type/bind_as_constructor.js)
+        - 代码内容
+            ```js
+            // 0. 创建构造函数
+            function Foo(arg){
+                console.log(`arg = ${arg}`);
+                console.log(Object.getPrototypeOf(this) === Foo.prototype);
+                console.log(new.target === Foo);
+            }
+
+            // 1. 直接只用构造函数创建对象
+            new Foo(12345);
+            // arg = 12345
+            // true
+            // true
+
+            // 2. 通过绑定函数创建对象
+            var newFoo = Foo.bind(null, 2345);
+            new newFoo('abcd');
+            // arg = 2345
+            // true
+            // true
+            ```
+
+## 代理函数
+[top](#catalog)
+- 使用 `Proxy` 创建函数的代理对象也具有函数的性质
+- 代理的情况
+    - 两种情况
+        1. 定制过的 apply/constructor 行为的对象
+        2. 没有使用陷阱而直接穿透到源对象
+    - 代码无法检测这两种情况
+- 如果没有定制 apply/constructor 行为，代理函数的调用、构造行为与源对象一致
+    - 如果函数没有 `[[Construct]]`，constructor 陷阱不会被触发
+    - 如果对象没有 `[[Call]]`，内部槽，apply 陷阱也不会被触发
+        - class 声明的类有 `[[Call]]`，但是不能类不能当作函数来调用
+        - 但是可以为类设置 apply 陷阱
+
+# 函数的数据性质
+[top](#catalog)
+- 函数的数据态
+    - 函数是值，可以作为数据保存到变量中
+- 函数的类与对象态
+    - 对象态的表现
+        - JS将所有函数的原型链顶端都设为`Function.prototype`
+        - 不是所有函数都是由`Function()`创建的
+        - 由于`Function.prototype`，所有函数看起来都是 `Function` 的示例
+    - 创建函数的构造函数
+        - `Function`，普通函数
+        - 继承自`Function`的构造函数，**但是无法直接使用**
+            1. `GeneratorFunction`，生成器函数
+            2. `AsyncFunction`，异步函数
+            3. `AsyncGeneratorFunction`，异步生成器函数
+        - 检测构造函数
+            ```js
+            // [Function: GeneratorFunction]
+            console.log( (function*(){}).constructor );
+            // [Function: AsyncFunction]
+            console.log( (async x=>x).constructor );
+            // [Function: AsyncGeneratorFunction]
+            console.log( (async function* (){}).constructor );
+            ```
+    - 对象态函数的性质
+
+        |函数（obj）|函数的构造器<br>`obj = new C`|函数的父类<br>`obj instanceif Cls`|能否作为构造器<br>`x = new obj`|
+        |-|-|-|-|
+        |一般函数: `function xxx(){}`|Function|Function|Y|
+        |类: `class XXX{}`|-|Function|Y|
+        |生成器:  `function* xxx(){}`|GeneratorFunction|GeneratorFunction|N|
+        |异步函数: ` async function xxx(){}`|AsyncFunction|AsyncFunction|N|
+        |异步生成器函数: `async function* xxx(){}`|AsyncGeneratorFunction|AsyncGeneratorFunction|N|
+        |异步箭头函数: `async x=>y`|-|Function|N|
+        |箭头函数: `x=> y`|-|Function|N|
+        |方法: `obj.xxx()`|-|Function|N|
+
+- 函数的代理态
+
+# 函数与逻辑结构
+## 函数与递归
+[top](#catalog)
+- 函数递归的关键问题
+    - 在函数内如何识别函数自身
+- 不同的函数内，如何识别自身
+    - 具名函数，直接使用函数名
+        ```js
+        function foo(){
+            return foo();
+        }
+        ```
+    - 匿名函数
+        - 非严格模式下
+            - 通过 `arguments.callee()` 访问函数自身
+                ```js
+                function(){ return arguments.callee(); }
+                ```
+        - 严格模式下
+            - 无法使用 `arguments.callee()`
+                - 10种JS函数中的前8种的匿名函数都不能使用 `callee`
+            - 在外部作用域中，使用 `const` 为匿名函数声明一个标识符
+                - 为什么使用 `const`？
+                    1. 可以创建块级作用域
+                    2. 声明不会重复
+                    3. 不可写
+                - 通过 `const` 创建标识后，在块作用域内不会发生修改，可以在匿名函数内访问到
+                    - 匿名函数内找不到标识符，将会顺着作用域链到外部的块级作用域中搜索
+                - 示例
+                    ```js 
+                    const fact = x => x && x * fact(x-1) || 1;
+                    console.log( fact(9) ); // 362880
+                    ```
+    - 类/对象的方法进行递归
+        - 方法迭代时的问题: 如何维护 `this`
+            - 在递归时，无法传递 `this`
+        - 使用**箭头函数**，在箭头函数内部使用 `this`
+            - 因为箭头函数没有this，使用的是上下文中的`this`
+            - 所以箭头函数无论在哪里执行，都可以通过上下文来维护`this`
+        - 在何处使用箭头函数维护 `this` ？
+            1. `get` 方法中
+            2. 普通的方法中
+        - 示例
+            1. `get` 方法中，返回一个箭头函数
+                ```js
+                var obj = {
+                    power: 100,
+                    get fact(){
+                        const fact = x => x && x * fact(x-1) || this.power || 1;
+                        // 将箭头函数返回
+                        return fact;
+                    }
+                }
+
+                // 函数返回后通过闭包维持 this
+                console.log(obj.fact(9));   // 36288000
+                ```
+            2. 普通方法中，递归调用箭头函数
+                ```js
+                var obj = {
+                    power: 100,
+                    fact(...args){
+                        const fn = x => x && x * fn(x-1) || this.power || 1;
+                        return fn(...args);
+                    }
+                }
+                console.log(obj.fact(9));   // 36288000
+                ```
+    - 对绑定函数进行递归调用
+        - 因为绑定函数没有函数体，所以不能在绑定函数内调用自身
+        - 可以通过 `const` 声明标识符，并在绑定函数内部使用来进行递归
+        - 示例
+            ```js
+            var obj = {power:100};
+            // 使用const创建一个标识符来保存绑定函数
+            const fact = (function(x){
+                // 使用标识符fact，来递归调用绑定函数
+                return  x && x*fact(x-1) || this.power|| 1;
+            }).bind(obj);
+
+            console.log(fact(9));   // 36288000
+            ```
+
+# 函数的行为
+## 构造
+[top](#catalog)
+- `new fn()` 运算的两个操作
+    1. 创建`this`
+    2. 调用 `fn()`，将 `new.target` 设为 `fn`
+- 一般函数、生成器、异步函数的构造过程不同，但是`new`**运算过程中的逻辑是相同的**
+- `this` 的创建
+    - `this`的标准构建过程被设置在 `[[Construct]]` 内部槽中
+    - 两种标准构建过程
+        - 函数
+            1. 以 `fn.prototype`, 或 `Object.prototype` 为原型，创建 `this` 对象
+            2. 初始化实例 `fn.call(this)`，其结果为 `result` 
+            3. 将 `result`、`this` 中的有效值作为 `new` 的运算结果返回
+                - 如果 `result` 不是 Object，则返回 `this`
+                - 如果 `result` 是 Object，则返回 `result`
+        - 类
+            1. 通过`super()`调用父类的构造方法产生`this`
+            2. **后两步与函数构造相同**
+    - 类中 `this` 对象的几种来源: <span style='color:red'>当前类或基类通过`super()`创建了`this`，或者手动返回一个对象作为 `this`</spam>
+        1. 非派生类，来源: `fn.prototype`
+            ```js
+            class MyClass
+            ```
+        2. 其他类的派生: 通过 `super()` 回溯到基类来创建 `this`
+            ```js
+            class MyClass extends ParentClass{}
+            ```
+        3. 父类是 Object，来源: `new Object()`
+            ```js
+            class MyClass extends Object{}
+            ```
+        4. 父类是 null，需要在构造函数中，手动创建实例并返回
+            ```js
+            class MyClass extends null{
+                constructor(){
+                    return ...;
+                }
+            }
+            ```
+        5. 在constructor中，手动返回一个对象，作为 `this`
+            ```js
+            class MyClass ...{
+                constructor(){
+                    return {...};   // 手动返回一个对象
+                }
+            }
+            ```
+- 谁、什么时候调用基类
+    - 在创建 `this` 时，由 `super()` 回溯到基类，调用基类的构造器函数
+
+- **类声明与一般函数在构造时的不同**
+    - 对于类
+        - 如果基类没有创建 `this`，则类的构造器必须返回一个对象，否则会触发异常
+    - 对于一般函数
+        - 总会有new创建一个 `this`
+            - 即使原型对象是null，也会由Object来创建 `this`
+        - 可以手动返回一个对象，来替换 `this`
+
+## 调用
+[top](#catalog)
+- 作为函数调用时，对`this`的处理方式
+    1. 默认将 `undefined` 传入函数
+    2. 处理 `this` 对象的引用
+        - 严格模式下，`this = undefined`
+        - 普通模式下，`this = window/global`，即使用全局对象
+- 函数的调用方式
+    1. `()` 调用: `fn()`
+    2. 使用约定的调用界面来**隐式调用函数**
+        - 模版函数调用
+            ```js
+            fn`xxx ${param}...`;
+            ```
+        - 属性读取器
+            ```js
+            obj = {
+                get xxx(){}
+                set xxx(value){}
+            }
+            ```
+        - `bind`创建的绑定函数，隐式调用原函数
+        - Proxy创建的代理对象，隐式调用原函数
+        - `new` 变相的调用函数
+        - 将符号属性设置为函数，在触发相应行为时，执行函数
+        - 某些语句的隐式调用
+            - 如 `for...of` 调用迭代器
+        - 某些运算符的隐式调用
+            - 如 `yield *` 调用迭代器
 # 与函数相关的几个基本问题
 [top](#catalog)
 - 什么是函数

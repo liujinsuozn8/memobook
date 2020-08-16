@@ -3,7 +3,13 @@ const static = require('koa-static');
 const router = require('koa-router')();
 
 const app = new Koa();
-app.use(require('koa-body')());
+app.use(require('koa-body')({
+    multipart: true,
+    // 设置上传文件的最大值 1M
+    formidable: {
+        maxFileSize: 100*1024*1024
+    }
+}));
 app.use(static('./public'));
 
 app.use(async (ctx, next)=>{

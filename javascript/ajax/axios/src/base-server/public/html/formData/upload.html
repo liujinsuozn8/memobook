@@ -1,0 +1,34 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <meta charset='UTF-8'>
+    <title>上传文件测试</title>
+</head>
+
+<body>
+    <input type="file" id="fileSelector" style='border: 1px black solid; padding: 10px;'><br>
+    <input type="button" value="upload" onclick="uploadFile()">
+    <script src="https://cdn.bootcdn.net/ajax/libs/axios/0.20.0-0/axios.js"></script>
+    <script>
+        // 0. 获取文件选择器
+        var fileSelector = document.getElementById('fileSelector');
+        function uploadFile(){
+            // 1. 获取文件信息
+            var file = fileSelector.files[0];
+            if (!file) return ;
+
+            // 2. 创建FromData
+            var formData = new FormData();
+
+            // 3. 将文件信息设置文请求参数
+            formData.set('attr', file);
+
+            // 4. 将FormData作为数据发送post请求
+            axios.post('/upload/addFile', formData)
+                .then(resp=>console.log(resp.data));
+        }
+    </script>
+</body>
+
+</html>
