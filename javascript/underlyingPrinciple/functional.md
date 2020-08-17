@@ -37,7 +37,10 @@
     - [函数与递归](#函数与递归)
 - [函数的行为](#函数的行为)
     - [构造](#构造)
-    - [调用](#调用)
+    - [函数调用](#函数调用)
+    - [方法调用](#方法调用)
+    - [调用时的this](#调用时的this)
+    - [迭代](#迭代)
 - [与函数相关的几个基本问题](#与函数相关的几个基本问题)
 - [回调函数](#回调函数)
 - [立即执行函数IIFE](#立即执行函数IIFE)
@@ -1449,7 +1452,7 @@
     - 代码无法检测这两种情况
 - 如果没有定制 apply/constructor 行为，代理函数的调用、构造行为与源对象一致
     - 如果函数没有 `[[Construct]]`，constructor 陷阱不会被触发
-    - 如果对象没有 `[[Call]]`，内部槽，apply 陷阱也不会被触发
+    - 如果对象没有 `[[Call]]` 内部槽，apply 陷阱也不会被触发
         - class 声明的类有 `[[Call]]`，但是不能类不能当作函数来调用
         - 但是可以为类设置 apply 陷阱
 
@@ -1508,7 +1511,11 @@
         - 非严格模式下
             - 通过 `arguments.callee()` 访问函数自身
                 ```js
-                function(){ return arguments.callee(); }
+                (function (x){
+                    console.log(x);
+                    // 通过 arguments.callee() 调用自身
+                    return x && arguments.callee(x-1);
+                })(9)
                 ```
         - 严格模式下
             - 无法使用 `arguments.callee()`
@@ -1582,12 +1589,12 @@
     1. 创建`this`
     2. 调用 `fn()`，将 `new.target` 设为 `fn`
 - 一般函数、生成器、异步函数的构造过程不同，但是`new`**运算过程中的逻辑是相同的**
-- `this` 的创建
+- `this` 的**标准构建过程**
     - `this`的标准构建过程被设置在 `[[Construct]]` 内部槽中
     - 两种标准构建过程
         - 函数
             1. 以 `fn.prototype`, 或 `Object.prototype` 为原型，创建 `this` 对象
-            2. 初始化实例 `fn.call(this)`，其结果为 `result` 
+            2. 初始化实例 `fn.call(this)`，其结果为 `result`
             3. 将 `result`、`this` 中的有效值作为 `new` 的运算结果返回
                 - 如果 `result` 不是 Object，则返回 `this`
                 - 如果 `result` 是 Object，则返回 `result`
@@ -1634,13 +1641,16 @@
             - 即使原型对象是null，也会由Object来创建 `this`
         - 可以手动返回一个对象，来替换 `this`
 
-## 调用
+## 函数调用
 [top](#catalog)
-- 作为函数调用时，对`this`的处理方式
-    1. 默认将 `undefined` 传入函数
-    2. 处理 `this` 对象的引用
-        - 严格模式下，`this = undefined`
-        - 普通模式下，`this = window/global`，即使用全局对象
+- <span style='color:red'>`调用函数` 这个行为由三个主要步骤构成</span>
+    - 3个主要步骤
+        1. 预处理
+            - 包括创建 arguments、设置 callee
+            - 设置调用栈 caller
+        2. 绑定this
+        3. 执行函数体
+    - 这3个步骤被写在了函数的 `[[Call]]` 内部槽中
 - 函数的调用方式
     1. `()` 调用: `fn()`
     2. 使用约定的调用界面来**隐式调用函数**
@@ -1663,6 +1673,197 @@
             - 如 `for...of` 调用迭代器
         - 某些运算符的隐式调用
             - 如 `yield *` 调用迭代器
+- `arguments.callee`: 表明是哪个函数
+    - arguments.callee 的指向
+        - 创建 `arguments` 的函数
+    - callee 的功能
+        1. 保持匿名函数和函数可被重写的特性
+        2. 匿名函数递归，即在匿名函数内部调用函数自身
+    - 与callee相关的等式
+        ```js
+        function myFn(){
+            console.log( arguments.callee === myFn.arguments.callee );  // true
+
+            // callee 指向的就是函数本身
+            console.log( arguments.callee === myFn );   // true
+        }
+
+        myFn();
+        ```
+    - 向 `arguments` 中添加 `callee` 的时间
+        - 执行函数调用时: `fn()`，会创建 arguments，同时添加 `callee`
+    - 不同模式下的 `arguments.callee`
+        - 普通模式
+            - callee 是一个`数据描述符`，value 指向函数本身
+            - 获取示例
+                ```js
+                function foo(){
+                    console.log( Object.getOwnPropertyDescriptor(arguments, 'callee'));
+                }
+
+                foo();
+                ```
+            - `arguments.callee` 的标识符
+                ```js
+                {
+                    value: [Function: foo],
+                    writable: true,     // 普通模式下可以修改 callee
+                    enumerable: false,
+                    configurable: true
+                }
+                ```
+        - 严格模式
+            - callee 是一个`存取描述符`
+            - 严格模式下，无法获取 callee，否则会抛出异常
+            - 获取示例
+                ```js
+                function foo(){
+                    'use strict';
+                    console.log( Object.getOwnPropertyDescriptor(arguments, 'callee'));
+
+                    // TypeError: 'caller', 'callee', and 'arguments' properties may not be accessed on strict mode functions or the arguments objects for calls to them
+                    arguments.callee;
+                }
+
+                foo();
+                ```
+            - `arguments.callee` 的标识符
+                ```js
+                {
+                    get: [Function],
+                    set: [Function],
+                    enumerable: false,
+                    configurable: false // 严格模式下无法修改callee
+                }
+                ```
+
+- caller: <span style='color:red'>谁调用我</span>
+    - 功能
+        - 保存函数的调用信息，即哪个函数在调用当前函数
+        - 即栈顶中的调用者
+    - caller的访问方式
+        - `arguments.callee.caller`
+        - `函数名.cller`
+    - 通过 `caller` 遍历调用栈
+        - 参考代码
+            - [src/functional/fn_behaviour/enum_stack.js](src/functional/fn_behaviour/enum_stack.js)
+        - 代码内容
+            ```js
+            // 显示函数名
+            var showIt = f => console.log('->' + f.name);
+
+            // 遍历调用栈
+            function enumStack(callback){
+                var f = arguments.callee;
+                // 通过 callee 遍历调用栈
+                while(f.caller){
+                    callback(f = f.caller);
+                }
+            }
+
+            // 创建一个调用关系
+            // test --> level_2 --> level_n --> enumStack
+            function level_n(){
+                enumStack(showIt);
+            }
+
+            function level_2(){
+                level_n();
+            }
+
+            function test(){
+                level_2();
+            }
+
+            test();
+            // ->level_n
+            // ->level_2
+            // ->test
+            // ->
+            ```
+    - caller、arguments无法准确的处理递归，会产生死循环
+        - 虽然递归有停止条件，但是每个 caller 的执行都是相同的，会产生死循环
+        - 参考代码
+            - [src/functional/fn_behaviour/enum_stack_dead.js](src/functional/fn_behaviour/enum_stack_dead.js)
+        - 代码内容
+            ```js
+            // 显示函数名
+            var showIt = f => console.log('->' + f.name);
+
+            // 遍历调用栈
+            function enumStack(callback){
+                var f = arguments.callee;
+                // 通过 callee 遍历调用栈
+                while(f.caller){
+                    callback(f = f.caller);
+                }
+            }
+
+            // 创建一个掉用关系
+            // <---------- max = 1 ----------><----------- max > 1 ---------->
+            // test --> level_2 --> level_n --> level_2 --> level_n...
+            var i = 0, max = 0;
+            function level_n(){
+                if ( ++i < max){
+                    level_2();
+                }
+                enumStack(showIt);
+            }
+
+            function level_2(){
+                level_n();
+            }
+
+            function test(){
+                level_2();
+            }
+
+            /*
+                1. max = 1 不会出现死循环
+                - level_n.caller ---> level_2
+                - level_2.test ---> test
+            */
+            // max = 1;
+            // test();
+
+            // max > 1，会出现死循环
+            /*
+                2. max > 1，会出现死循环
+                - 顶层部分是:
+                    - level_n.caller ---> level_2
+                    - level_2.caller ---> level_n
+                - 最底层是： level_2.test ---> test
+
+                - 栈顶的 level_2、level_n 已经出现了死循环，所以无法遍历到栈底
+            */
+            max = 2;
+            test();
+            ```
+
+## 方法调用
+[top](#catalog)
+- 方法调用与函数调用的区别
+    - 方法调用会**持有有效的 this 对象**
+
+## 调用时的this
+[top](#catalog)
+- 作为函数调用时的`this`
+    1. 默认将 `undefined` 传入函数
+    2. 处理 `this` 对象的引用
+        - 严格模式下，`this = undefined`
+        - 普通模式下，`this = window/global`，即使用全局对象
+- 作为方法调用时的`this`
+    - `this`取决与调用者
+    - 或者通过 apply、call、bind、Reflect.apply 传入的有效`this`
+- 箭头函数的`this`
+    - 在绑定`this`时，将忽略传入的this，而直接执行函数体，所以箭头函数只能使用上下文中的 `this`
+    - bind等方法无法影响箭头函数的这种特性
+
+## 迭代
+[top](#catalog)
+- `[[Iterator]]` 内部槽设置了`可迭代方法` 对象就是可迭代的
+- `[[Iterator]]` 由 `Symbol.iterator` 属性来设置
+
 # 与函数相关的几个基本问题
 [top](#catalog)
 - 什么是函数

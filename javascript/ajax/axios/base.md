@@ -12,6 +12,8 @@
 - [取消请求](#取消请求)
     - [取消请求的步骤](#取消请求的步骤)
     - [使用拦截器简化取消操作](#使用拦截器简化取消操作)
+- [FormData上传文件](#FormData上传文件)
+- [并行发送多个请求](#并行发送多个请求)
 - [axios源码分析](#axios源码分析)
     - [整体结构分析](#整体结构分析)
     - [axios与Axios](#axios与Axios)
@@ -22,6 +24,8 @@
         - [request的处理过程](#request的处理过程)
         - [dispatchRequest的处理过程](#dispatchRequest的处理过程)
         - [xhrAdapter的处理过程](#xhrAdapter的处理过程)
+    - [执行结果的构建](#执行结果的构建)
+    - [取消请求的流程分析](#取消请求的流程分析)
 - [](#)
 
 # axios的特性
@@ -574,8 +578,6 @@
         ```js
         let cancel;
         ```
-        ```js
-        ```js
     2. 创建`axios.CancelToken()`对象，并保存在`config`对象中。在实例化时，将取消函数对象保存到`cancel`
         ```js
         axios({
@@ -602,7 +604,7 @@
             cancel = null;  // 3. 请求结束时，清空取消函数
         }).catch(error=>{
             // 如果是请求取消导致的异常，则不清空
-            // 如果清空则会情况当前的新创建的对象，而不是上一次请求产生的对象
+            // 如果清空则会清空当前的新创建的对象，而不是上一次请求产生的对象
             if (axios.isCancel(error)){
                 console.log(error)
             } else {
@@ -622,7 +624,8 @@
     - 在 `catch()` 中可以通过 `axios.isCancel(error)` 来判断是不是取消异常
 - 什么时候清除全局变量 `cancel`?
     - 执行 `then()` 时清除
-    - 执行 `catch()` 时，并且不是执行取消操作触法的 `catch`时，清除 `cancel`
+    - 执行 `catch()` 时
+        - 执行取消操作触发 `catch` 时，不清除 `cancel`
 
 - `cancel('取消信息')`
     - 执行取消时，可以携带取消信息
@@ -638,6 +641,7 @@
         // 1. 设置一个全局变量，用于保存请求取消函数对象
         let cancel;
         function sendTimeOut() {
+            // 防止重复发送请求
             if (typeof cancel === 'function'){
                 cancel('init cancel');
             }
@@ -740,6 +744,95 @@
         }
     }
     ```
+
+# FormData上传文件
+[top](#catalog)
+- 上传文件的步骤
+    - 与原生的XHR利用FormData上传文件没有区别
+    - 上传步骤
+        1. 从文件上传控件中获取文件信息
+            ```js
+            fileSelector.files[0];
+            ```
+        2. 创建FromData
+            ```js
+            var formData = new FormData();
+            ```
+        3. 将文件信息设置文请求参数
+            ```js
+            formData.set('接口约定的请求参数', fileSelector.files[0]);
+            ```
+        4. 将FormData作为数据发送post请求
+            ```js
+            axios.post('请求地址', formData);
+            ```
+- 示例
+    - 参考代码
+        - 浏览器端代码
+            - [src/base-server/public/html/formData/upload.html](src/base-server/public/html/formData/upload.html)
+        - 服务端代码
+            - [src/base-server/router/upload.js](src/base-server/router/upload.js)
+    - 浏览器访问地址
+        - http://localhost:3333/html/formData/upload.html
+    - 浏览器端代码
+        ```js
+        // 0. 获取文件选择器
+        var fileSelector = document.getElementById('fileSelector');
+        function uploadFile(){
+            // 1. 获取文件信息
+            var file = fileSelector.files[0];
+            if (!file) return ;
+
+            // 2. 创建FromData
+            var formData = new FormData();
+
+            // 3. 将文件信息设置文请求参数
+            formData.set('attr', file);
+
+            // 4. 将FormData作为数据发送post请求
+            axios.post('/upload/addFile', formData)
+                .then(resp=>console.log(resp.data));
+        }
+        ```
+
+# 并行发送多个请求
+[top](#catalog)
+- 请求步骤
+    1. 将多个并行请求的处理封装在多个函数中
+        ```js
+        function request(){
+            return axios.xxx('...');
+        }
+        ```
+    2. `Promise.all([method01(), method02(),...])`
+        - 调用所有的函数，并保存在一个数组中
+    3. 在`then(resp => {...})` 函数中处理响应结果
+        - resp是一个数组，每个元素都是一个请求函数的 response 结果
+
+- 示例
+    - 参考代码
+        - 浏览器端代码
+            - [src/base-server/public/html/multiple/base.html](src/base-server/public/html/multiple/base.html)
+    - 浏览器访问地址
+        - http://localhost:3333/html/multiple/base.html
+    - 浏览器端代码
+        ```js
+        // 1. 创建两个请求
+        function request01() {
+            return axios.get('/base/handle?name=bob&&age=22');
+        }
+
+        function request02() {
+            return axios.get('/base/data');
+        }
+
+        // 2. 通过Promise.all 发送多个请求请求
+        Promise.all([request01(), request02()])
+            .then(resp => {
+                console.log(resp[0].data);
+                console.log(resp[1].data);
+            });
+        ```
 
 # axios源码分析
 ## 整体结构分析
@@ -1240,23 +1333,23 @@
       // 1. 设置 adapter，没有配置adapter时，使用默认的adapter
       // 浏览器使用XHR，Nodejs使用process
       var adapter = config.adapter || defaults.adapter;
-      
+
       // 2. 调用xhrAdapter发送请求，并封装成Promise
       return adapter(config).then(function onAdapterResolution(response) {
         throwIfCancellationRequested(config);
-    
+
         // 4. 转换响应数据
         response.data = transformData(
           response.data,
           response.headers,
           config.transformResponse
         );
-    
+
         return response;
       }, function onAdapterRejection(reason) {
         if (!isCancel(reason)) {
           throwIfCancellationRequested(config);
-    
+
           // 4. 转换响应数据
           if (reason && reason.response) {
             reason.response.data = transformData(
@@ -1266,7 +1359,7 @@
             );
           }
         }
-    
+
         return Promise.reject(reason);
       });
     };
@@ -1284,7 +1377,7 @@
       utils.forEach(fns, function transform(fn) {
         data = fn(data, headers);
       });
-    
+
       return data;
     };
     ```
@@ -1342,59 +1435,58 @@
     - 创建XHR对象，根据config进行设置，并发送请求
     - 接收响应数据，返回 Promise 对象
 
-- 流程分析
+- 流程分析: `lib/adapters/xhr.js`
     ```js
     module.exports = function xhrAdapter(config) {
       // 封装Promise，在内部发送请求
       return new Promise(function dispatchXhrRequest(resolve, reject) {
         var requestData = config.data;
         var requestHeaders = config.headers;
-    
+
         if (utils.isFormData(requestData)) {
           delete requestHeaders['Content-Type']; // Let the browser set it
         }
-    
+
         if (
           (utils.isBlob(requestData) || utils.isFile(requestData)) &&
           requestData.type
         ) {
           delete requestHeaders['Content-Type']; // Let the browser set it
         }
-    
+
         // 1. 创建 XHR 对象
         var request = new XMLHttpRequest();
-    
+
         // HTTP basic authentication
         if (config.auth) {
           var username = config.auth.username || '';
           var password = unescape(encodeURIComponent(config.auth.password)) || '';
           requestHeaders.Authorization = 'Basic ' + btoa(username + ':' + password);
         }
-    
+
         // 2. 建立请求
         var fullPath = buildFullPath(config.baseURL, config.url);
+        // 根据请求数据，设置url
         request.open(config.method.toUpperCase(), buildURL(fullPath, config.params, config.paramsSerializer), true);
-    
+
         // 3. 设置超时时间，单位ms
         request.timeout = config.timeout;
-    
-        // 4. 监听响应是否返回，需要检查 XHR 对象是否存在、并且ajax状态码为 4
+
+        // 4. 监听ajax状态的改变
         request.onreadystatechange = function handleLoad() {
+          // 需要检查 XHR 对象是否存在、并且ajax状态码为 4 时，才进行响应
           if (!request || request.readyState !== 4) {
             return;
           }
-    
-          // The request errored out and we didn't get a response, this will be
-          // handled by onerror instead
-          // With one exception: request that using file: protocol, most browsers
-          // will return status as 0 even though it's a successful request
+
           if (request.status === 0 && !(request.responseURL && request.responseURL.indexOf('file:') === 0)) {
             return;
           }
-    
-          // 构建响应结果
+
           var responseHeaders = 'getAllResponseHeaders' in request ? parseHeaders(request.getAllResponseHeaders()) : null;
           var responseData = !config.responseType || config.responseType === 'text' ? request.responseText : request.response;
+
+          // 5. 构建响应结果
           var response = {
             data: responseData,
             status: request.status,
@@ -1403,14 +1495,15 @@
             config: config,
             request: request
           };
-    
+          // 根据response来调用 resolve、reject
           settle(resolve, reject, response);
-    
+
           // Clean up request
           request = null;
         };
-    
-        // 5. 设置取消响应事件
+
+        // 6. 设置 xhr 事件响应函数
+        // 取消响应事件
         request.onabort = function handleAbort() {
           if (!request) {
             return;
@@ -1418,21 +1511,19 @@
 
           // 创建异常并返回
           reject(createError('Request aborted', config, 'ECONNABORTED', request));
-    
+
           // 取消响应之后，删除 request
           request = null;
         };
-    
+
         // 添加异常响应
         request.onerror = function handleError() {
-          // Real errors are hidden from us by the browser
-          // onerror should only fire if it's a network error
           reject(createError('Network Error', config, null, request));
-    
+
           // Clean up request
           request = null;
         };
-    
+
         // 设置超时响应事件
         request.ontimeout = function handleTimeout() {
           var timeoutErrorMessage = 'timeout of ' + config.timeout + 'ms exceeded';
@@ -1441,88 +1532,202 @@
           }
           reject(createError(timeoutErrorMessage, config, 'ECONNABORTED',
             request));
-    
+
           // Clean up request
           request = null;
         };
-    
-        // Add xsrf header
-        // This is only done if running in a standard browser environment.
-        // Specifically not if we're in a web worker, or react-native.
-        if (utils.isStandardBrowserEnv()) {
-          // Add xsrf header
-          var xsrfValue = (config.withCredentials || isURLSameOrigin(fullPath)) && config.xsrfCookieName ?
-            cookies.read(config.xsrfCookieName) :
-            undefined;
-    
-          if (xsrfValue) {
-            requestHeaders[config.xsrfHeaderName] = xsrfValue;
-          }
-        }
-    
-        // 设置请求头
-        if ('setRequestHeader' in request) {
-          utils.forEach(requestHeaders, function setRequestHeader(val, key) {
-            if (typeof requestData === 'undefined' && key.toLowerCase() === 'content-type') {
-              // Remove Content-Type if data is undefined
-              delete requestHeaders[key];
-            } else {
-              // Otherwise add header to the request
-              request.setRequestHeader(key, val);
-            }
-          });
-        }
-    
-        // Add withCredentials to request if needed
-        if (!utils.isUndefined(config.withCredentials)) {
-          request.withCredentials = !!config.withCredentials;
-        }
-    
-        // Add responseType to request if needed
-        if (config.responseType) {
-          try {
-            request.responseType = config.responseType;
-          } catch (e) {
-            // Expected DOMException thrown by browsers not compatible XMLHttpRequest Level 2.
-            // But, this can be suppressed for 'json' type as it can be parsed by default 'transformResponse' function.
-            if (config.responseType !== 'json') {
-              throw e;
-            }
-          }
-        }
-    
-        // Handle progress if needed
-        if (typeof config.onDownloadProgress === 'function') {
-          request.addEventListener('progress', config.onDownloadProgress);
-        }
-    
-        // Not all browsers support upload events
-        if (typeof config.onUploadProgress === 'function' && request.upload) {
-          request.upload.addEventListener('progress', config.onUploadProgress);
-        }
-    
-        if (config.cancelToken) {
-          // Handle cancellation
-          config.cancelToken.promise.then(function onCanceled(cancel) {
-            if (!request) {
-              return;
-            }
-    
-            request.abort();
-            reject(cancel);
-            // Clean up request
-            request = null;
-          });
-        }
-    
-        if (!requestData) {
-          requestData = null;
-        }
-    
-        // 6. 发送请求
+
+        // ... 其他设置
+
+        // 7. 发送请求
         request.send(requestData);
       });
     };
     ```
+- 如何根据 `response` 来判断是否异常
+    1. `lib/core/settle.js`，根据response来调用 resolve、reject
+        ```js
+        module.exports = function settle(resolve, reject, response) {
+            // 用于判断http状态码是否成功
+            var validateStatus = response.config.validateStatus;
+            // 请求成功则直接返回构造好的 response
+            if (!response.status || !validateStatus || validateStatus(response.status)) {
+                resolve(response);
+            } else {
+                // 如果请求失败，则创建一个error对象
+                reject(createError(
+                'Request failed with status code ' + response.status,
+                response.config,
+                null,
+                response.request,
+                response
+                ));
+            }
+        };
+        ```
+    2. `defaults.js`, `settle` 方法主要根据http状态码来判断是否成功
+        - http状态码的验证规则 : `[200, 300)` 之间的整数为响应成功
+            ```js
+            validateStatus: function validateStatus(status) {
+                return status >= 200 && status < 300;
+            }
+            ```
+    3. `lib/core/createError.js`，请求异常时，构建error对象
+        ```js
+        module.exports = function createError(message, config, code, request, response) {
+        var error = new Error(message);
+        return enhanceError(error, config, code, request, response);
+        };
+        ```
+    4. `lib/core/enhanceError.js`，为error添加额外的属性
+        ```js
+        module.exports = function enhanceError(error, config, code, request, response) {
+        error.config = config;
+        if (code) {
+            error.code = code;
+        }
+
+        error.request = request;
+        error.response = response;
+        error.isAxiosError = true;
+
+        // 为error对象封装了一个方法来输出详细的异常内容
+        error.toJSON = function toJSON() {
+            return {
+            // Standard
+            message: this.message,
+            name: this.name,
+            // Microsoft
+            description: this.description,
+            number: this.number,
+            // Mozilla
+            fileName: this.fileName,
+            lineNumber: this.lineNumber,
+            columnNumber: this.columnNumber,
+            stack: this.stack,
+            // Axios
+            config: this.config,
+            code: this.code
+            };
+        };
+        return error;
+        };
+        ```
+
+## 执行结果的构建
+[top](#catalog)
+- 构建响应结果:  `lib/adapters/xhr.js`
+    ```js
+    // 构建响应结果
+    var response = {
+        data: responseData,
+        status: request.status,
+        statusText: request.statusText,
+        headers: responseHeaders,
+        config: config,
+        request: request
+    };
+    ```
+- 构建异常结果: `lib/core/settle.js`、`lib/core/createError.js`、`lib/core/enhanceError.js`
+    ```js
+    var error = new Error(message);
+    error.config = config;
+    error.code = code;
+    error.request = request;
+    error.response = response;
+    error.isAxiosError = true;
+    // 封装了一个方法来输出相信的异常对象
+    error.toJSON = function toJSON(){...}
+    ```
+- 异常时，如何检查http状态码?
+    - `error.response.status`
+- 异常时，如何检查数据?
+    - `error.response.data`
+    - 什么异常会有数据?
+        - 如 `401`，表示没有访问权限，但是可能会有响应数据
+
+## 取消请求的流程分析
+[top](#catalog)
+- 设置取消函数的基本写法
+    ```js
+    axios({
+        url: '/base/timeout',
+        params: { name: 'bob', age: 22 },
+        // 2. 保存请求取消函数对象
+        cancelToken: new axios.CancelToken(function executor(c){
+            cancel = c;
+        })
+    })
+    ```
+
+- `lib/cancel/CancelToken.js`，创建 `cancelToken`对象，并保存 `cancel` 函数
+    ```js
+    function CancelToken(executor) {
+        if (typeof executor !== 'function') {
+            throw new TypeError('executor must be a function.');
+        }
+
+        var resolvePromise;
+
+        // 因为是通过 cancelToken: new axios.CancelToken(...)，创建的对象
+        // 所以 this 就是 cancelToken
+
+        // 1. 创建一个用于之后中断请求的promise对象
+        // 2. 将 resolve 对象暴露到 Promise 对象外部
+        this.promise = new Promise(function promiseExecutor(resolve) {
+            resolvePromise = resolve;
+        });
+
+        // 3. 将token设置为this
+        var token = this;
+
+        // 4. 调用执行器
+        // 【定义、并将取消函数暴露给外部】
+        executor(function cancel(message) {// 取消函数
+            // 如果token中有reason，说明请求已取消
+            if (token.reason) {
+                return;
+            }
+
+            // 将 token 的 reason 指定为一个Cancel对象
+            token.reason = new Cancel(message);
+
+            // 5. 【如果在外部调用了取消请求函数 :cancel()，则会通过 resolve 将 Cancel 对象传给外部的then函数】
+            // 相当于在Promise内执行了: resolve(token.reason)
+            // 以成功的方式停止，然后调用外部的then
+            resolvePromise(token.reason);
+        });
+    }
+    ```
+
+- `lib/adapters/xhr.js`，设置取消函数执行后的处理
+    ```js
+    if (config.cancelToken) {
+        // 设置中断请求
+        /*
+            这里的 cancel 就是 【lib/cancel/CancelToken.js】中
+            通过 【resolvePromise(token.reason)】 传递的 token.reason
+
+            当执行取消函数时: cancel()，取消函数内部会将 token.reason 传出来作为这里的 cancel
+        */
+        config.cancelToken.promise.then(function onCanceled(cancel) {
+            // 每次请求结束时（无论以什么方式结束的），request都会被清除
+            // 所以通过判断 request 是否为空，来判断当前请求是否结束
+            if (!request) {
+                return;
+            }
+
+            // 中断任务
+            request.abort();
+            // 让请求任务的 promise 对象失败
+            reject(cancel);         // cancel就是reason
+            // Clean up request
+            request = null;
+        });
+    }
+
+- 取消流程图
+    - ![cancel_flow](imgs/cancel_flow.png)
+
 
 [top](#catalog)

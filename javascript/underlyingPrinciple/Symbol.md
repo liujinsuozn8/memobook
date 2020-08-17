@@ -10,7 +10,9 @@
     - [通用行为--有影响的符号属性](#通用行为--有影响的符号属性)
     - [集合对象--有影响的符号属性](#集合对象--有影响的符号属性)
     - [字符串--有影响的符号属性](#字符串--有影响的符号属性)
-
+- [对象中的符号属性](#对象中的符号属性)
+    - [符号属性](#符号属性)
+    - [全局符号表](#全局符号表)
 
 # 可以被符号属性影响的行为
 ## 已公布的符号属性
@@ -515,3 +517,122 @@
         }
         ```
     - RegExp.prototype 上的符号属性能够**改变字符串方法的行为**，所以正则表达式可以作为字符串方法的参数
+
+# 对象中的符号属性
+## 符号属性
+[top](#catalog)
+- 符号类型数据的创建
+    ```js
+    var a = Symbol();
+    ```
+- 符号数据也被称为**符号**
+- 符号可以作为对象的属性
+    - 符号属性无法被 `for ... in ` 枚举
+    - 符号属性具有一般成员的全部性质
+    - 符号属性可以被继承
+    - 符号类型成员需要特殊的方式才能列举、存取、使用
+- `Object.getOwnpropertySymbols(obj)`
+    - 可以获取对象中，非继承的所有符号属性
+    - 是唯一能有效列举符号属性的方法
+
+- 一般对象自身没有符号属性
+- 改变对象内部行为的符号属性
+    - 所有对象的行为都受到一些**与内部行为相关的**符号属性的影响
+    - 包括
+        |符号|影响的行为|类型|
+        |-|-|-|
+        |Symobl.hasInstance|instanceof 的类型检查|function|
+        |Symobl.iterator|for...of|function|
+        |Symobl.unscopables|with(object){...}|object|
+        |Symobl.toPrimitive|Object.prototype.valueOf()|function|
+        |Symobl.toStringTag|Object.prototype.toString()|string|
+    - 添加符号属性时，为了避免原型性质的影响，可以使用 `Object.defineProperty` 来添加
+    - 示例
+        - 参考代码
+            - []()
+        - 代码内容
+            ```js
+            var str = new String('hi');
+            // 1. 修改符号属性，返回一个数字 1
+            str[Symbol.toPrimitive] = ()=>1;
+            console.log(100 + str); // 输出: 101
+
+            // 2. 修改 instanceOf 的符号属性
+            class Foo{}
+            class FooEx{
+                static [Symbol.hasInstance](){
+                    return false;   // 无论什么类型，都会返回 false
+                }
+            }
+
+            var fooex = new FooEx();
+            console.log(fooex instanceof FooEx);    // 输出: false
+
+            class Bar{}
+            Object.defineProperty(Bar, Symbol.hasInstance, {value: ()=>false});
+            var bar = new Bar();
+            console.log(bar instanceof Bar);    // 输出: false
+            ```
+
+## 全局符号表
+[top](#catalog)
+- 引入问题: **模块中，对象内的符号属性在模块外无法直接访问**
+    - 问题描述
+        1. 在 `模块A` 中，创建一个对象 `obj`
+        2. 创建一个符号数据 `mySymbol`
+        3. 将 `mySymbol` 作为 `obj` 的属性名
+        4. 导出 `obj`
+        5. 在 `模块B` 中，导入并使用 `模块A` 中的内容
+            - 可以使用 `模块A.obj`
+            - 无法使用 `模块A.obj[mySymbol]`
+                - 因为 `mySymbol` 没有导出，并且无法创建一个相同的符号数据，所以无法使用
+    - 示例
+        - temp.js
+            ```js
+            var mySymbol = Symbol();    // 不导出符号数据
+            module.exports = {          // 只导出对象
+                [mySymbol]: 'abcd'
+            };
+            ```
+        - temp2.js
+            ```js
+            const obj = require('./temp')
+            console.log(obj);   // 输出: { [Symbol()]: 'abcd' }
+            // 但是无法直接访问属性
+            ```
+- `Symbol.for("符号名")`，创建全局符号表
+    - 符号数据的创建与获取
+        - 该方法**只在第一次调用**时创建符号数据
+        - 第N次调用时，会直接返回已有的符号数据
+    - 该方法的优点
+        1. 该方法的**内建机制**保证了符号的<span style='color:red'>全局唯一性</span>
+        2. 没有直接使用全局变量，避免了对其他模块和全局环境产生干扰
+    - 解决引入问题
+        - 参考代码
+            - [src/datatype/symbol/globalTable/moduleA.js](#src/datatype/symbol/globalTable/moduleA.js)
+            - [src/datatype/symbol/globalTable/moduleB.js](#src/datatype/symbol/globalTable/moduleB.js)
+        - moduleA.js
+            ```js
+            var mySymbol = Symbol.for('mySymbol');    // 创建全局符号数据
+            module.exports = {          // 只导出对象
+                [mySymbol]: 'abcd'
+            };
+            ```
+        - moduleB.js
+            ```js
+            // 导入模块A
+            const obj = require('./moduleA');
+            console.log(obj);   // 输出: { [Symbol(mySymbol)]: 'abcd' }
+
+            // 通过全局符号表访问符号属性
+            var mySymbol = Symbol.for("mySymbol");
+            console.log(obj[mySymbol]); // 输出: abcd
+            ```
+
+- `Symbol.keyFor(符号数据)`，通过符号数据在全局符号表中**反查符号名**
+    - 示例
+        ```js
+        var mySymbol = Symbol.for('testSymbol');
+        var symbolName = Symbol.keyFor(mySymbol);
+        console.log(symbolName);    // 输出: testSymbol
+        ```

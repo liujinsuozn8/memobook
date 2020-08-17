@@ -38,5 +38,12 @@ router.get('/timeout', async ctx=>{
     ctx.body = ctx.query;
 })
 
+// 并行请求测试-------------------
+router.get('/data', async ctx=>{
+    ctx.body = {
+        type: 'get',
+        data: 'testData'
+    };
+})
 
 module.exports = router;

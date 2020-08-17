@@ -53,6 +53,7 @@
     - [super表达多态性](#super表达多态性)
     - [super是静态的、对多态逻辑绑定的、动态的](#super是静态的、对多态逻辑绑定的、动态的)
     - [通用函数---实例方法访问静态成员](#通用函数---实例方法访问静态成员)
+    - [动态添加方法时设置super](#动态添加方法时设置super)
 - [类的特性](#类的特性)
     - [类声明是静态声明](#类声明是静态声明)
     - [类是由构造函数实现的](#类是由构造函数实现的)
@@ -1455,7 +1456,7 @@
 
     |遍历范围|成员类型|语法|功能|
     |-|-|-|-|
-    |对象本身、原型对象|显式成员|`for...in`|遍历可枚举的成员名|
+    |对象本身、原型对象、非symbol的|显式成员|`for...in`|遍历可枚举的成员名|
     |对象本身、非symbol的|显式成员|`Object.keys()`|获取所有可枚举的成员名|
     |对象本身、非symbol的|显式成员|`Object.values()`|获取所有可枚举的成员值|
     |对象本身、非symbol的|显式成员|`Object.entries()`|获取所有可枚举的成员KV数据|
@@ -1558,123 +1559,9 @@
     3. 调用时，自动传入 `this` 对象
 
 # 对象中的符号属性
-## 符号属性
 [top](#catalog)
-- 符号类型数据的创建
-    ```js
-    var a = Symbol();
-    ```
-- 符号数据也被称为**符号**
-- 符号可以作为对象的属性
-    - 符号属性无法被 `for ... in ` 枚举
-    - 符号属性具有一般成员的全部性质
-    - 符号属性可以被继承
-    - 符号类型成员需要特殊的方式才能列举、存取、使用
-- `Object.getOwnpropertySymbols(obj)`
-    - 可以获取对象中，非继承的所有符号属性
-    - 是唯一能有效列举符号属性的方法
-
-- 一般对象自身没有符号属性
-- 改变对象内部行为的符号属性
-    - 所有对象的行为都受到一些**与内部行为相关的**符号属性的影响
-    - 包括
-        |符号|影响的行为|类型|
-        |-|-|-|
-        |Symobl.hasInstance|instanceof 的类型检查|function|
-        |Symobl.iterator|for...of|function|
-        |Symobl.unscopables|with(object){...}|object|
-        |Symobl.toPrimitive|Object.prototype.valueOf()|function|
-        |Symobl.toStringTag|Object.prototype.toString()|string|
-    - 添加符号属性时，为了避免原型性质的影响，可以使用 `Object.defineProperty` 来添加
-    - 示例
-        - 参考代码
-            - []()
-        - 代码内容
-            ```js
-            var str = new String('hi');
-            // 1. 修改符号属性，返回一个数字 1
-            str[Symbol.toPrimitive] = ()=>1;
-            console.log(100 + str); // 输出: 101
-
-            // 2. 修改 instanceOf 的符号属性
-            class Foo{}
-            class FooEx{
-                static [Symbol.hasInstance](){
-                    return false;   // 无论什么类型，都会返回 false
-                }
-            }
-
-            var fooex = new FooEx();
-            console.log(fooex instanceof FooEx);    // 输出: false
-
-            class Bar{}
-            Object.defineProperty(Bar, Symbol.hasInstance, {value: ()=>false});
-            var bar = new Bar();
-            console.log(bar instanceof Bar);    // 输出: false
-            ```
-
-## 全局符号表
-[top](#catalog)
-- 引入问题: **模块中，对象内的符号属性在模块外无法直接访问**
-    - 问题描述
-        1. 在 `模块A` 中，创建一个对象 `obj`
-        2. 创建一个符号数据 `mySymbol`
-        3. 将 `mySymbol` 作为 `obj` 的属性名
-        4. 导出 `obj`
-        5. 在 `模块B` 中，导入并使用 `模块A` 中的内容
-            - 可以使用 `模块A.obj`
-            - 无法使用 `模块A.obj[mySymbol]`
-                - 因为 `mySymbol` 没有导出，并且无法创建一个相同的符号数据，所以无法使用
-    - 示例
-        - temp.js
-            ```js
-            var mySymbol = Symbol();    // 不导出符号数据
-            module.exports = {          // 只导出对象
-                [mySymbol]: 'abcd'
-            };
-            ```
-        - temp2.js
-            ```js
-            const obj = require('./temp')
-            console.log(obj);   // 输出: { [Symbol()]: 'abcd' }
-            // 但是无法直接访问属性
-            ```
-- `Symbol.for("符号名")`，创建全局符号表
-    - 符号数据的创建与获取
-        - 该方法**只在第一次调用**时创建符号数据
-        - 第N次调用时，会直接返回已有的符号数据
-    - 该方法的优点
-        1. 该方法的**内建机制**保证了符号的<span style='color:red'>全局唯一性</span>
-        2. 没有直接使用全局变量，避免了对其他模块和全局环境产生干扰
-    - 解决引入问题
-        - 参考代码
-            - [src/datatype/symbol/globalTable/moduleA.js](#src/datatype/symbol/globalTable/moduleA.js)
-            - [src/datatype/symbol/globalTable/moduleB.js](#src/datatype/symbol/globalTable/moduleB.js)
-        - moduleA.js
-            ```js
-            var mySymbol = Symbol.for('mySymbol');    // 创建全局符号数据
-            module.exports = {          // 只导出对象
-                [mySymbol]: 'abcd'
-            };
-            ```
-        - moduleB.js
-            ```js
-            // 导入模块A
-            const obj = require('./moduleA');
-            console.log(obj);   // 输出: { [Symbol(mySymbol)]: 'abcd' }
-
-            // 通过全局符号表访问符号属性
-            var mySymbol = Symbol.for("mySymbol");
-            console.log(obj[mySymbol]); // 输出: abcd
-            ```
-
-- `Symbol.keyFor(符号数据)`，通过符号数据在全局符号表中**反查符号名**
-    - 示例
-        ```js
-        var mySymbol = Symbol.for('testSymbol');
-        var symbolName = Symbol.keyFor(mySymbol);
-        console.log(symbolName);    // 输出: testSymbol
-        ```
+- 参考
+    - [Symbol.md----对象中的符号属性](Symbol.md#对象中的符号属性)
 
 # 类继承的体系
 ## 声明类
@@ -2191,6 +2078,199 @@
         fooEx.printParentStaticProperty();  // 输出: count = 123
         fooEx.printSelfStaticProperty();    // 输出: this is FooEX
         ```
+
+## 动态添加方法时设置super
+[top](#catalog)
+- 通过 `Object.defineProperty` 动态添加方法时，无法直接使用 `super`
+- 无法使用 `super` 的原因
+    1. `super` 是动态计算的
+    2. `super` 在动态计算时，需要依赖 `[[HomeObject]]`
+    3. 使用 `Object.defineProperty` 时，方法被包含在一个新的对象中
+        - 如果方法中用了 `super`，则 `[[HomeObject]]` <span style='color:red'>不是目标对象，而是包含方法的新对象</span>
+- `this` 与 `super` 的不同
+    1. `super` 是动态计算的，依赖于 `[[HomeObject]]`
+    2. `this` 是执行时，根据上下文环境计算出来的，是动态传入的
+        - 所以在 `Object.defineProperty` 添加的方法内，使用 `this` 没有问题
+
+- `Object.defineProperty` 动态添加的方法无法使用 `super` 的示例
+    - 参考代码
+        - [src/oop/class/super/dynamic_super_error.js](src/oop/class/super/dynamic_super_error.js)
+    - 代码内容
+        ```js
+        // 1. 创建一个父类对象
+        var superObj = {
+            foo(){
+                console.log('superObj foo');
+            }
+        }
+
+        // 2. 创建一个新对象，并设置原型对象
+        var obj = {
+            test(){
+                super.foo();    // 在对象内直接声明的中，可以使用super，
+                console.log('test');
+            }
+        };
+        Object.setPrototypeOf(obj, superObj);
+
+        // 3. 为子类对象【动态添加方法】
+        Object.defineProperty(obj, 'foo', {
+            value(){
+                /*
+                    无法访问super，因为super使用的 `[[HomeObject]]` 是当前对象，
+                    脱离了 obj 对象，所以无法访问到 superObj
+                    抛出异常:
+                    TypeError: (intermediate value).foo is not a function
+                */
+                super.foo();
+                console.log('obj foo');
+            }
+        });
+
+        // 4. 执行方法，并尝试调用 super
+        // 4.1
+        obj.test();
+        // 输出
+        // superObj foo
+        // test
+
+        // 4.2 抛出异常，无法找到super.foo
+        obj.foo();
+        ```
+
+- 使动态添加的方法可以使用 `super` 的主要思路
+    1. 使用具名的配置对象，然后用作 `Object.defineProperty` 的配置参数
+        - 方式1: 直接声明配置对象
+            ```js
+            var configObj = {
+                value(){
+                    super.xxx()
+                }
+            }
+            Object.defineProperty(target, 'yyy', config);
+            ```
+        - 方式2: 在`Object.defineProperty`内部为配置对象赋值
+            ```js
+            var configObj;
+            Object.defineProperty(target, 'yyy', configObj = {
+                value(){
+                    super.xxx()
+                }
+            });
+            ```
+         - 对于<span style='color:red'>类声明</span>，要设置在类的原型上
+            ```js
+            Object.defineProperty(TargetClass.prototype, 'yyy', configObj);
+            ```
+    2. 将配置对象的原型设置为父类的原型
+        - 对于<span style='color:red'>对象</span>
+            ```js
+            Object.setPrototypeOf(configObj, Object.getPrototypeOf(target));
+
+            // 或者已知父类对象的情况下，直接使用父类对象
+            Object.setPrototypeOf(configObj, superObj);
+            ```
+        - 对于<span style='color:red'>类声明</span>
+            ```js
+            Object.setPrototypeOf(configObj, SuperClass.prototype);
+            ```
+- 为什么为配置对象设置了原型对象之后，可以访问 `super`
+    1. 在设置原型对象之前，配置对象的 `super` 是 `Object.prototype`
+        - 无法访问到真实父类的方法
+        - 同时动态添加的方法实际上**脱离了原始的对象**
+    2. 设置原型对象后
+        - 仍然**脱离了原始的对象**
+        - 但是两者的 `super` 指向同一个原型对象，所以 `super` 变得可用了
+            ```js
+                        __proto__
+            target      ----------->
+                                    SuperObj/SuperClass.prototype
+            configObj   ----------->
+                        __proto__
+            ```
+
+- `super`有效化的示例
+    - 对于**对象**
+        - 参考代码
+            - [src/oop/class/super/dynamic_super_obj.js](src/oop/class/super/dynamic_super_obj.js)
+        - 代码内容
+            ```js
+            // 1. 创建一个父类对象
+            var superObj = {
+                foo(){
+                    console.log('superObj foo');
+                }
+            }
+
+            // 2. 创建一个新对象，并设置原型对象
+            var obj = {};
+            Object.setPrototypeOf(obj, superObj);
+
+            // 3. 设置【具名的配置对象】
+            var configObj = {
+                value(){
+                    super.foo();
+                    console.log('obj foo');
+                }
+            };
+            // 4. 为子类对象【动态添加方法】
+            Object.defineProperty(obj, 'foo', configObj);
+
+            // 5. 为配置对象【设置原型对象 为父类对象】
+            Object.setPrototypeOf(configObj, superObj);
+
+            // 4. 执行方法，并尝试调用 super
+            obj.foo();
+            // 输出
+            // superObj foo
+            // obj foo
+            ```
+    - 对于**类声明**
+        - 参考代码
+            - [src/oop/class/super/dynamic_super_class.js](src/oop/class/super/dynamic_super_class.js)
+        - 代码内容
+            ```js
+            // 1. 创建父类
+            class Foo {
+                foo(){
+                    console.log('Foo');
+                }
+            }
+
+            // 2. 创建一个子类
+            class FooEx extends Foo{
+                foo(){
+                    super.foo();
+                    console.log('FooEx')
+                }
+            }
+
+            // 3. 设置【具名的配置对象】
+            var configObj = {
+                value(){
+                    super.foo();
+                    console.log('this is configObj');
+                }
+            }
+            // 4. 为子类对象【动态添加方法】
+            Object.defineProperty(FooEx.prototype, 'newFoo', configObj);
+
+            // 5. 为配置对象【设置原型对象 为父类对象】
+            Object.setPrototypeOf(configObj, Foo.prototype);
+
+            // 6. 调用方法
+            var obj = new FooEx();
+            obj.foo();
+            // 输出:
+            // Foo
+            // FooEx
+
+            obj.newFoo();
+            // 输出:
+            // Foo
+            // this is configObj
+            ```
+
 
 # 类的特性
 ## 类是由构造函数实现的
@@ -3197,7 +3277,7 @@
     |属性名|对象本身、非symbol的|显式+隐式|`Object.getOwnPropertyNames()`|获取对象自身的所有成员名|
     |属性名|对象本身、symbol的|显式+隐式|`Object.getOwnPropertySymbols()`|获取对象自身的所有Symbol成员名|
     |属性名|对象本身、非symbol的|显式成员|`Object.keys()`|获取所有可枚举的成员名|
-    |属性名|对象本身、原型对象|显式成员|`for...in`|遍历可枚举的成员名|
+    |属性名|对象本身、原型对象、非symbol的|显式成员|`for...in`|遍历可枚举的成员名|
     |属性值|对象本身、非symbol的|显式成员|`Object.values()`|获取所有可枚举的成员值|
     |属性值|对象本身、非symbol的|显式成员|`Object.entries()`|获取所有可枚举的成员KV数据|
     |属性值|-|-|`for...of`|遍历可迭代对象的元素|
@@ -3260,7 +3340,7 @@
     - 影响内容
         |父类属性的描述符|对子类的影响|
         |-|-|
-        |`configurable:false`、`writable:true`|子类对象可以通过`赋值方式`添加属性。并在自由属性表中隐式创建属性描述符|
+        |`configurable:false`、`writable:true`|子类对象可以通过`赋值方式`添加属性。并在自有属性表中隐式创建属性描述符|
         |`configurable:false`、`writable:false`|只能为子类对象添加属性描述符，来覆盖父类的属性描述符|
     - `configurable:false`、`writable:true`
         - 参考代码
@@ -3359,8 +3439,8 @@
     - `writable`，表update
 
 - seal 和 freeze 不是直接的状态值，是修改 `[[Extensible]]` 和 属性描述符得到的
-    - seal = `[[Extensible]] = false` + 所有自由属性的 `configurable = false`
-    - freeze = `[[Extensible]] = false` + 所有自由属性的 `configurable = false`、`writable = false`
+    - seal = `[[Extensible]] = false` + 所有自有属性的 `configurable = false`
+    - freeze = `[[Extensible]] = false` + 所有自有属性的 `configurable = false`、`writable = false`
 
 - 特例
     - 存取属性不受 `freeze` 的影响

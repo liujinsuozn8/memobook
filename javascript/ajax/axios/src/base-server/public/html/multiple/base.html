@@ -1,0 +1,30 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <meta charset='UTF-8'>
+    <title></title>
+</head>
+
+<body>
+    <script src="https://cdn.bootcdn.net/ajax/libs/axios/0.20.0-0/axios.js"></script>
+    <script>
+        // 1. 创建两个请求
+        function request01() {
+            return axios.get('/base/handle?name=bob&&age=22');
+        }
+
+        function request02() {
+            return axios.get('/base/data');
+        }
+
+        // 2. 通过Promise.all 发送多个请求请求
+        Promise.all([request01(), request02()])
+            .then(resp => {
+                console.log(resp[0].data);
+                console.log(resp[1].data);
+            });
+    </script>
+</body>
+
+</html>
