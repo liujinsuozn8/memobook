@@ -3,4 +3,5 @@
     - [JS的面向对象特性](oop.md)
     - [JS的结构化特性](structured.md)
     - [JS的函数式语言特性](functional.md)
+    - [Promise](promise.md)
     - [Symobl符号属性](Symbol.md)

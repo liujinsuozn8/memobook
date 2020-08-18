@@ -1150,6 +1150,41 @@
             // { value: undefined, done: true }
             ```
 
+- 生成器函数的**返回值**
+    - 不同的调用界面及其结果
+
+        |调用界面|获取到的结果|
+        |-|-|
+        |`next()`|第一次`done === true`时的 `value` 值: `{ value: '返回值', done: true }`|
+        |`for...of`|无法获得返回值|
+
+    - 示例
+        - 参考代码
+            - [src/functional/fn_type/generator_return.js](src/functional/fn_type/generator_return.js)
+        - 代码内容
+            ```js
+            function* foo(){
+                yield 1;
+                yield 2;
+                return 'x';
+            }
+
+            // 1. 通过 `next()` 获取数据
+            var f = foo();
+            console.log(f.next());  // { value: 1, done: false }
+            console.log(f.next());  // { value: 2, done: false }
+            console.log(f.next());  // { value: 'x', done: true }  <<<< 迭代结束，第一次会获得返回值
+            console.log(f.next());  // { value: undefined, done: true } <<<< 迭代结束，第二次之后，无法获得返回值
+
+            // 2. for...of 无法获取生成器函数的返回值
+            for(let n of foo()) console.log(n);
+            // 1
+            // 2
+            ```
+
+- 生成器的`return(param)`
+    - `return` 方法将会终止生成过程
+
 ## 类
 [top](#catalog)
 - 类本身就是构造函数，因为
@@ -1861,9 +1896,58 @@
 
 ## 迭代
 [top](#catalog)
-- `[[Iterator]]` 内部槽设置了`可迭代方法` 对象就是可迭代的
+- `[[Iterator]]` 内部槽设置了 `可迭代方法` 的对象就是可迭代对象
 - `[[Iterator]]` 由 `Symbol.iterator` 属性来设置
+- 可迭代对象的使用场景
+    - 使用 `for...of` 进行遍历
+        ```js
+        for( let n of ['a', 'b', 'c']) console.log(n);
+        ```
+    - 作为参数展开
+        ```js
+        console.log(...'abc');
+        ```
+    - 作为数组成员展开
+        ```js
+        console.log([...'abc'])
+        ```
+    - 作为集合对象的初始数据，或者相互转换
+        - 包括 `Set`、`Map`、`WeakSet`、`WeakMap`
+        ```js
+        new Set('abc');
 
+        // 以可迭代对象作为数据源，将数据复制到数组中
+        Array.from(new Set('abc'));
+        ```
+    - 匹配解构时的参数
+        ```js
+        var [a, ...more] = 'cdef';
+        console.log(a); // a
+        console.log(more);  // [ 'd', 'e', 'f' ]
+        ```
+    - `Promise.all()`、`Promise.race()` 会列举所有的promise对象
+        ```js
+        Promise.all(new Set('abcd')).then(console.log);  // [ 'a', 'b', 'c', 'd' ]
+        ```
+- 不使用可迭代对象的场景
+    - 数组的 `forEach`、`filter` 等方法是基于数组下标遍历的，所以不支持可迭代对象
+    - `对象展开`使用的是**对象属性存取，包括下标索引**，不是迭代器
+        ```js
+        var obj1 = {name:'bob'}
+        var obj2 = {age:22, address:'wer'}
+        // 1. 解构对象
+        // 2. 解构数组， 数组将按照下标的方式分写
+        // 3. 不支持可迭代对象，所以无法结构 Set 对象
+        var obj3 = {...obj1, ...obj2, ...['dd','cc'], ...new Set('xyz')};
+
+        // { '0': 'dd', '1': 'cc', name: 'bob', age: 22, address: 'wer' }
+        ```
+
+- 迭代器的 `return()`、`throw()`
+    - 在迭代过程中使用 `break`，JS会调用 `return()` 来提前退出
+    - 不是所有的异常都会导致 `return()`、`throw()` 的触发
+    - 异常也不一定会触发 `throw()`
+        - 如`for...of`中通过 `throw` 抛出异常，引擎只会当作 `for` 循环出错，迭代本身没有出错，而使用 `return()`
 # 与函数相关的几个基本问题
 [top](#catalog)
 - 什么是函数
