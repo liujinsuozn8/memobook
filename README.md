@@ -105,6 +105,7 @@
             - Vue
                 - [Vue的基本使用](javascript/vue/base/base.md)
                 - [Vue开发实战](javascript/vue/inaction/index.md)
+            - [Angular基本使用](javascript/angular/base.md)
             - [axios--http请求框架](javascript/ajax/axios/base.md)
 
     - nodejs

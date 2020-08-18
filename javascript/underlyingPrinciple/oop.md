@@ -1467,7 +1467,7 @@
 [top](#catalog)
 - 在JS中，取一个<span style="color:red">不存在的属性</span>的值，<span style="color:red">不会导致异常，会返回 undefined</span>
 - `in` 用来检查对象是否具有某个成员
-    - 成员范围: 显式 + 隐士
+    - 成员范围: 显式 + 隐式 + 符号型成员
     - 检查类型: 基本类型 + 对象类型
 - `instanceof` 检查一个对象是不是一个类/构造函数的实例
 
@@ -1671,7 +1671,7 @@
         Object.setPrototypeOf(FooEx, Foo);
         ```
 
-- 通过 `super` 关键字调用父类方法。调用时，会隐士的传入`this`对象
+- 通过 `super` 关键字调用父类方法。调用时，会隐式的传入`this`对象
     ```js
     class Foo{
         method01(x){...}

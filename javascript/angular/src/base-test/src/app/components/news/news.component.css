@@ -1,0 +1,9 @@
+.text__deleted--bule {
+  color: #47e;
+  font-size: 15px;
+  text-decoration: line-through;
+}
+.text__danger--red {
+  color: red;
+  font-size: 15px;
+}

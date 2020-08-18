@@ -1,0 +1,50 @@
+<p>this is news component</p>
+
+<!-- Mustache插值语法 -->
+<p>{{title1}}-{{title2}}</p>
+
+<!-- 属性绑定 -->
+<p [class]='changeText'>changeText</p>
+
+<!-- 渲染html测试 -->
+<span [innerHTML]=htmlText></span>
+
+<!-- 遍历数组测试 -->
+<!-- 遍历key和数据 -->
+<ul>
+    <li *ngFor="let item of arr; let key = index">{{key}}---{{item}}</li>
+</ul>
+<!-- 遍历数据 -->
+<ul>
+    <li *ngFor="let item of arr">{{item}}</li>
+</ul>
+
+<!-- ngIf测试 -->
+<div *ngIf="flag">show</div>
+<div *ngIf="!flag">hidden</div>
+
+<!-- ngAwitch测试 -->
+<div [ngSwitch]="switchValue">
+    <div *ngSwitchCase="1">aaa</div>
+    <div *ngSwitchCase="2">bbb</div>
+    <div *ngSwitchCase="3">ccc</div>
+    <div *ngSwitchCase="4">ddd</div>
+    <div *ngSwitchDefault>default</div>
+</div>
+
+<!-- ngClass测试 -->
+<div [ngClass]="{'text__deleted--bule': flag, 'text__danger--red': !flag}">ngClass</div>
+
+<!-- ngStyle测试 -->
+<div [ngStyle]="{'height': styleObj.height, 'width':styleObj.height, 'background-color': styleObj.bc}"></div>
+
+<!-- 事件绑定测试 -->
+<hr>
+<button (click)="add()">+</button>
+<span>{{count}}</span>
+<button (click)="sub()">-</button>
+
+<hr>
+<!-- 双向数据绑定测试 -->
+<input type="text" [(ngModel)]="dynamicVal">
+<span>{{dynamicVal}}</span>
