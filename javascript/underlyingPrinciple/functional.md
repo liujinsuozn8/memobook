@@ -11,6 +11,7 @@
     - [循环语句转换为尾递归](#循环语句转换为尾递归)
 - [函数的特殊成员](#函数的特殊成员)
 - [函数声明](#函数声明)
+- [函数表达式的形式](#函数表达式的形式)
 - [函数参数](#函数参数)
     - [普通参数/可变参数](#普通参数/可变参数)
     - [默认参数](#默认参数)
@@ -47,6 +48,7 @@
 - [函数中的this对象](#函数中的this对象)
 - [闭包](#闭包)
     - [利用闭包的示例-循环变量添加事件监听](#利用闭包的示例-循环变量添加事件监听)
+    - [函数实例](#函数实例)
     - [闭包的基本知识](#闭包的基本知识)
     - [常见的闭包](#常见的闭包)
     - [闭包的作用](#闭包的作用)
@@ -54,7 +56,6 @@
     - [闭包的应用-自定义js模块](#闭包的应用-自定义js模块)
     - [闭包的缺点-内存溢出与内存泄露](#闭包的缺点-内存溢出与内存泄露)
     - [与闭包相关的问题](#与闭包相关的问题)
-- [](#)
 - [](#)
 
 
@@ -302,6 +303,14 @@
     // 不会影响条件表达式所在的作用域
     console.log(typeof foo);    // undefined
     ```
+# 函数表达式的形式
+[top](#catalog)
+- `var a = fucntion(){}`
+- `obj = {a :function(){}}`
+- `dom.onclick = function(){}`
+- `(function foo(){})()`
+- `return function xxx(){}`
+    - **这种形式容易被当作函数声明，实际是函数表达式**
 
 # 函数参数
 ## 普通参数/可变参数
@@ -1051,139 +1060,8 @@
     |匿名函数|N|N|
 
 ## 生成器函数
-[top](#catalog)
-- 生成器函数<span style='color:red'>不是构造器</span>
-    - 生成器函数不能作为 `构造器` 使用
-    - 生成器对象**不是**由生成器函数创建并初始化的
-- 生成器函数的职责
-    - 只负责提供执行逻辑，不用于产生实例
-- 生成器对象: `Generator`
-    - 调用生成器函数时，不执行函数体，只是返回一个: `Generator`
-        - 该对象是一个可迭代对象: `Iterator`
-    - 生成器对象: `Generator` **可以被检测为生成器函数的实例**
-        ```js
-        function* foo(){}
-        var g = foo();
-        console.log(g instanceof foo);  // true
-        ```
-    - 生成器对象的有效执行次数 = `yield次数 + 1`
-- 生成器函数内，`this`<span style='color:red'>指向调用者</span>
-- 两个关键的操作
-    1. `yield`，暂停函数 ---> 保存函数现场 ---> 退出函数现场
-    2. `next(arg)`，恢复函数现场 ---> 传入参数`arg` ---> 继续执行函数
-- `yield` 运算符
-    - `yield` 是只能在生成器函数内使用的运算符
-    - 调用的结果与内部的结果
-        - 外部调用的结果
-            1. 调用 `next()` 执行到 `yield xxx` 时，运算后边的表达式
-            2. `yield`的运算结果作为调用的结果返回
-        - 内部得到的结果
-            1. 如: `let v = yield xxx`
-            2. `xxx` 的运算结果作为调用结果返回，**与函数内部无关**
-            3. 并且 `yield xxx` 完成之后，会**暂停**
-            4. <span style='color:red'>下一次</span>调用 `next(arg)` 时，继续执行函数，arg将作为 `yield` 在内部的值，赋值给变量`v`
-    - 只使用 `yield`，将会给外部返回
-        ```js
-        { value: undefined, done: false/true }
-        ```
-    - 在生成器内部，`yield` 的结果，是**下一次** `next(arg)` 时传入的**第一个参数**
-    - <span style='color:red'>第一次调用 `next()` 时，传入的参数无效</span>
-        - 因为第一次调用是从: 函数体开始到第一个 `yield`
-        - 因为是第一次执行到 `yield`，没有变量来接收第 `0` 次的 `yield` 的结果，导致传参无效
-            - 本身也没有第 `0` 次的 `yield`
-    - 示例
-        - 参考代码
-            - [src/functional/fn_type/yield.js](src/functional/fn_type/yield.js)
-        - 代码内容
-            ```js
-            function* myGenerator(a){
-                console.log('first run');
-                let v2 = yield;
-                console.log('second run, v2 = ', v2);
-                let v3 = yield a + 1
-                console.log('third run, v3 = ', v3);
-            }
-
-            var g = myGenerator(100);
-            console.log('next 01', g.next('aaaa'));
-            console.log('next 02', g.next('bbbb'));
-            console.log('next 03', g.next('cccc'));
-
-            // 输出
-            // first run                                    // 第一次调用 next()，第一次的参数无效
-            // next 01 { value: undefined, done: false }    // 第一次调用 next() 的返回
-            // second run, v2 =  bbbb                       // 第二次调用 next()
-            // next 02 { value: 101, done: false }          // 第二次调用 next() 的返回
-            // third run, v3 =  cccc                        // 第三次调用 next()
-            // next 03 { value: undefined, done: true }     // 第三次调用 next() 的返回
-            //                                   ^^^^ 生成器执行结束
-            ```
-        - 代码的执行流程图
-            - ![yield_flow](imgs/functional/generator/yield_flow.png)
-
-- `yield* Iterator` 展开另一个可迭代的对象
-    - 相当于循环执行 `yield`
-    - 每次迭代出一个值后，会暂停展开，并返回这一次的迭代结果
-    - ``yield*` 运算没有内部结果，只负责展开
-    - 示例
-        - 参考代码
-            - [src/functional/fn_type/yield_spread.js](src/functional/fn_type/yield_spread.js)
-        - 代码内容
-            ```js
-            function* foo(){
-                let a = yield* [1,2,3,4]
-                console.log(`a = ${a}`);
-            }
-            var g = foo();
-            console.log(g.next('aaa'));
-            console.log(g.next('bbb'));
-            console.log(g.next('ccc'));
-            console.log(g.next('ddd'));
-            console.log(g.next('eee'));
-
-            // 输出
-            // { value: 1, done: false }
-            // { value: 2, done: false }
-            // { value: 3, done: false }
-            // { value: 4, done: false }
-            // a = undefined    // yield* 没有内部结果
-            // { value: undefined, done: true }
-            ```
-
-- 生成器函数的**返回值**
-    - 不同的调用界面及其结果
-
-        |调用界面|获取到的结果|
-        |-|-|
-        |`next()`|第一次`done === true`时的 `value` 值: `{ value: '返回值', done: true }`|
-        |`for...of`|无法获得返回值|
-
-    - 示例
-        - 参考代码
-            - [src/functional/fn_type/generator_return.js](src/functional/fn_type/generator_return.js)
-        - 代码内容
-            ```js
-            function* foo(){
-                yield 1;
-                yield 2;
-                return 'x';
-            }
-
-            // 1. 通过 `next()` 获取数据
-            var f = foo();
-            console.log(f.next());  // { value: 1, done: false }
-            console.log(f.next());  // { value: 2, done: false }
-            console.log(f.next());  // { value: 'x', done: true }  <<<< 迭代结束，第一次会获得返回值
-            console.log(f.next());  // { value: undefined, done: true } <<<< 迭代结束，第二次之后，无法获得返回值
-
-            // 2. for...of 无法获取生成器函数的返回值
-            for(let n of foo()) console.log(n);
-            // 1
-            // 2
-            ```
-
-- 生成器的`return(param)`
-    - `return` 方法将会终止生成过程
+- 参考
+    - [iterator.md---生成器](iterator.md#生成器)
 
 ## 类
 [top](#catalog)
@@ -1896,58 +1774,9 @@
 
 ## 迭代
 [top](#catalog)
-- `[[Iterator]]` 内部槽设置了 `可迭代方法` 的对象就是可迭代对象
-- `[[Iterator]]` 由 `Symbol.iterator` 属性来设置
-- 可迭代对象的使用场景
-    - 使用 `for...of` 进行遍历
-        ```js
-        for( let n of ['a', 'b', 'c']) console.log(n);
-        ```
-    - 作为参数展开
-        ```js
-        console.log(...'abc');
-        ```
-    - 作为数组成员展开
-        ```js
-        console.log([...'abc'])
-        ```
-    - 作为集合对象的初始数据，或者相互转换
-        - 包括 `Set`、`Map`、`WeakSet`、`WeakMap`
-        ```js
-        new Set('abc');
+- 参考
+    - [iterator.md---可迭代对象](iterator.md#可迭代对象)
 
-        // 以可迭代对象作为数据源，将数据复制到数组中
-        Array.from(new Set('abc'));
-        ```
-    - 匹配解构时的参数
-        ```js
-        var [a, ...more] = 'cdef';
-        console.log(a); // a
-        console.log(more);  // [ 'd', 'e', 'f' ]
-        ```
-    - `Promise.all()`、`Promise.race()` 会列举所有的promise对象
-        ```js
-        Promise.all(new Set('abcd')).then(console.log);  // [ 'a', 'b', 'c', 'd' ]
-        ```
-- 不使用可迭代对象的场景
-    - 数组的 `forEach`、`filter` 等方法是基于数组下标遍历的，所以不支持可迭代对象
-    - `对象展开`使用的是**对象属性存取，包括下标索引**，不是迭代器
-        ```js
-        var obj1 = {name:'bob'}
-        var obj2 = {age:22, address:'wer'}
-        // 1. 解构对象
-        // 2. 解构数组， 数组将按照下标的方式分写
-        // 3. 不支持可迭代对象，所以无法结构 Set 对象
-        var obj3 = {...obj1, ...obj2, ...['dd','cc'], ...new Set('xyz')};
-
-        // { '0': 'dd', '1': 'cc', name: 'bob', age: 22, address: 'wer' }
-        ```
-
-- 迭代器的 `return()`、`throw()`
-    - 在迭代过程中使用 `break`，JS会调用 `return()` 来提前退出
-    - 不是所有的异常都会导致 `return()`、`throw()` 的触发
-    - 异常也不一定会触发 `throw()`
-        - 如`for...of`中通过 `throw` 抛出异常，引擎只会当作 `for` 循环出错，迭代本身没有出错，而使用 `return()`
 # 与函数相关的几个基本问题
 [top](#catalog)
 - 什么是函数
@@ -2172,13 +2001,48 @@
         }
         ```
 
+# 函数实例
+[top](#catalog)
+- 函数只是一段代码文本，在运行环境中，需要变成可处理的对象
+- `代码 --->>> 对象` 的变化行为**细分**
+    - 两种创建函数的方式
+        - 对于`函数声明`: `function method(args){...}`，是实例化
+        - 对于`函数表达式`: `let val = function(args){...}`，是创建函数的实例
+    - 两种方式的操作结构是相同的
+- 变换的结果
+    - 获得一个**可参与运算的函数实例**
+- 示例
+    - 函数中返回一个函数实例，每次调用返回的都是新的实例
+    ```js
+    function foo(){
+        return function test(){}
+    }
+    var f1 = foo();
+    var f2 = foo();
+    console.log(f1 === f2); // false
+    ```
+
 ## 闭包的基本知识
 [top](#catalog)
-- 如何理解闭包
+- 闭包是什么
+    - 闭包是一种数据结构
+        - 一种用于记录`函数实例`在运行期的`可访问标识符`的**结构**
+- 闭包的功能
+    - 为每个函数维护其执行期的信息，指代<span style='color:red'>一个函数实例在运行期的作用域</span>
+    - 通过闭包可以获取执行期的信息
+        - 可以在: 函数再次被执行时获取
+        - 可以在: 通过某种方法进行函数体时获取
+- 闭包的产生
+    - 一个函数实例的一次执行，就会创建一个新的执行期作用域，即创建一个闭包
+        - 即: 只要**函数被调用**，就会产生一个新的闭包
+- 闭包的销毁
+    - **闭包中的数据**被有没引用时，函数实例与闭包将被同时回收
+
+- 如何理解闭包的持续存在
     - 理解方式一：嵌套函数的内部函数
     - 理解方式二：包含被引用变量/函数的对象
 
-- 闭包产生的条件
+- 闭包的持续条件
     1. 存在函数嵌套
     2. 内部函数引用了外部函数的变量/函数
     3. 执行了外部函数
@@ -2186,9 +2050,6 @@
         - 不需要调用内部函数，只要有函数对象即可
         - 只有执行外部函数，才能观测到闭包的产生
             - chrome最新版的debug模式中，如果没有使用闭包(包括`console.log()`)，控制台中没有显示
-
-- 闭包何时销毁
-    - 闭包对象没有被任何变量引用时，成为垃圾对象，将会被 gc 回收
 
 - 不同的函数创建方式，闭包的生成时间不同
 

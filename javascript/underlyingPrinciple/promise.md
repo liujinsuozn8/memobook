@@ -21,11 +21,12 @@
     - [Promise如何串联多个操作任务](#Promise如何串联多个操作任务)
     - [Promise异常穿透](#Promise异常穿透)
     - [如何中断Promise链](#如何中断Promise链)
-    - [resolve、reject也是异步执行的](#resolve、reject也是异步执行的)
+    - [resolve、reject内是异步执行回调函数的](#resolve、reject内是异步执行回调函数的)
 - [手写Promise](#手写Promise)
     - [定义Promise的整体结构](#定义Promise的整体结构)
     - [Promise构造函数的实现](#Promise构造函数的实现)
-    - [promise.then的实现](#promise.then的实现)
+    - [then、catch的实现](#then、catch的实现)
+    - [resolve、reject的实现](#resolve、reject的实现)
 - [](#)
 
 # 基本知识
@@ -167,6 +168,7 @@
     - 返回一个成功/失败的 Promise 对象
 - Promise.reject: `(reason) => {}`
     - reason: 失败的原因
+        - 不能是一个 Promise
     - 返回一个失败的 Promise 对象
 - Promise.all: `([promise01, promise02,...])=>{}`
     - `[promise01, promise02,...]`: 包含 n 个 Promise 对象的数组
@@ -794,12 +796,16 @@
         )
         ```
 
-## resolve、reject也是异步执行的
+## resolve、reject内是异步执行回调函数的
 [top](#catalog)
-- resolve、reject是异步执行的
-    - resolve、reject的执行只是启动 `then`、`catch`
-    - `then`、`catch` 的真实调用，需要等到Promise中的逻辑执行完成之后
-        - 无论Promise中多少延迟
+- 在resolve、reject内
+    - 修改状态时同步的
+    - 回调函数的执行时异步的
+
+- resolve、reject的执行只是启动 `then`、`catch`
+- `then`、`catch` 的真实调用，需要等到Promise中的逻辑执行完成之后
+    - 无论Promise中有多少延迟
+
 - 示例
     ```js
     new Promise(resolve=>{
@@ -854,9 +860,10 @@
 ## Promise构造函数的实现
 [top](#catalog)
 - 实现的要点
-    1. 需要在构造函数内执行 `executor`
+    1. 需要在构造函数内，用<span style='color:red'>同步的方式</span>执行 `executor`
     2. 执行 `executor` 前，需要创建 `resolve`、`reject` 函数
-    3. `resolve`、`reject` 需要异步执行，所以需要通过 `setTimeout` 异步执行所有的回调函数
+    3. `resolve`、`reject` 内部，用<span style='color:red'>异步的方式</span>执行所有的回调函数
+        - 通过 `setTimeout` 异步执行所有的回调函数
     4. 需要将状态保存在promise对象中，如`status`
         - 执行 `resolve`、`reject` 时需要修改状态
         - <span style='color:red'>promise只能修改一次状态</span>，所以需要在`resolve`、`reject`内检查状态是由已被修改
@@ -864,9 +871,7 @@
         - 保存的格式: `{onResolved(){}, onRejected(){}}`
 
 - 保留的问题
-    - `then`、`catch` 中回调函数的添加时间
-    - `then` 的链式调用，并接收上一层的数据
-        - 现在只能一直使用 `resolve`、`reject` 传递的数据
+    - `then`、`catch` 无法链式调用
 
 - 参考代码
     - [src/promise/mypromise/02constructor.js](src/promise/mypromise/02constructor.js)
@@ -927,13 +932,146 @@
     }
     ```
 
-## promise.then的实现
+## then、catch的实现
 [top](#catalog)
+- `then` 的实现要点
+    1. `then`中要返回一个 Promise 对象，这样才能链式调用
+    2. 回调函数 `onResolved`、`onRejected` 的执行方法
+        - 如果回调函数返回的是 Promise 对象
+            - 当前返回的结果与状态，由回调函数的结果决定
+            - `result.then(新Promise--resolve, 新Promise--reject)`
+        - 如果回调函数返回的不是 Promise 对象
+            - 返回 `fulfilled` 状态的 Promise 对象
+            - 回调函数的返回值就是 Promise 对象返回的数据
+            - `新Promise的resolve(result)`
+        - 如果回调函数抛出异常
+            - 返回 `rejected` 状态的 promise
+            - reason就是error
+            - `新Promise--reject(error)`
+    3. 如果当前状态已经变成: `fulfilled`、`rejected`，则需要**异步调用**回调函数
+    4. 如果当前状态是: `pending`，需要将 `onResolved`、`onRejected` 添加到回到函数列表中
+        - 回调函数列表中的函数都是异步执行的，所以不需要做异步处理
+        - 最终需要返回一个新的 Promise 对象，而原始的回调函数没有这种功能，需要按照 `要点2` 对回调函数进行包装
+    5. 需要设置默认的回调函数
+        - onResolve: `value => value`
+            - 未设置 `onResolve` 时，直接将数据传递给下一层 Promsie
+        - onRejected: `error => { throw error }`
+            - 未设置 `onRejected` 时，需要有异常穿透的能力
+                - 参考: [Promise异常穿透](#Promise异常穿透)
 
+- `catch` 的实现要点
+    - 直接使用 `then` 实现
+    - 将 `onResolved` 设为 `undefined`，来使用 `then` 中的默认回调函数
 
+- `then`的执行流程图
+    - ![图](?????)
 
-promise.then()/catch() 的实现，立即成功/立即失败
-Promise.resolve()/reject() 的实现
+- 参考代码
+    - [src/promise/mypromise/03then.js](src/promise/mypromise/03then.js)
+- 测试代码
+    - [src/promise/mypromise/03test.js](src/promise/mypromise/03test.js)
+- 实现内容
+    ```js
+    // 接收成功、失败的响应函数，并返回一个新的Promise对象
+    MyPromise.prototype.then = function (onResolved, onRejected) {
+        const self = this;
+
+        // 设置默认回调函数
+        onResolved = typeof onResolved === 'function' ? onResolved : value => value;
+        onRejected = typeof onRejected === 'function' ? onRejected : error => { throw error };
+
+        // 返回一个 Promise 对象，其结果由回调函数 onResolved, onRejected 的执行结果决定
+        return new MyPromise((resolve, reject) => {
+            function handle(callback) {
+                try {
+                    /*
+                        - 如果回调函数返回的是 promise 对象
+                            - 当前返回的结果与状态，由回调函数的结果决定
+                            - result.then(resolve, reject);
+
+                        - 如果回调函数返回的不是promise
+                            - 返回fulfilled状态的promise，value就是回调函数的返回值
+                            - resolve(result);
+                    */
+                    const result = callback(self.data);
+                    result instanceof MyPromise ? result.then(resolve, reject) : resolve(result);
+                } catch (e) {
+                    reject(e);  // 如果抛出异常，返回rejected状态的promise，reason就是error
+                }
+            }
+
+            // 1. 如果状态是 `pending`，说明还没有得到异步的结果，先添加到回调函数
+            if (self.status === status.PENDING) {
+                // 需要用 handle 来包装回调函数，根据返回结果来修改promise的状态
+                self.callbacks.push({
+                    onResolved() { handle(onResolved) },
+                    onRejected() { handle(onRejected) }
+                });
+            } else if (self.status === status.FULFILLED) {
+                // 2. 如果状态是 `fulfilled`，说明异步调用成功，异步执行 onResolved
+                setTimeout(() => handle(onResolved));
+            } else {
+                // 3. 状态是 `rejected`，说明异步调用失败，异步执行 onRejected
+                setTimeout(() => handle(onRejected));
+            }
+        });
+
+    }
+
+    // 接收失败的响应函数，并返回一个新的Promise对象
+    MyPromise.prototype.catch = function (onRejected) {
+        // this.callbacks.push({ onResolved: undefined, onRejected });
+        this.then(undefined, onRejected);
+    }
+    ```
+
+## resolve、reject的实现
+[top](#catalog)
+- `resolve` 的实现要点
+    - 原生 Promise 对象的处理分析
+        ```js
+        const p1 = Promise.resolve(1234);   // 数据是一个非 Promise 数据，
+        p1.then(console.log);   // 1234
+
+        const p2 = Promise.resolve(Promise.resolve(2345)); // 数据是一个成功的Promise，
+        p2.then(console.log);   // 2345
+
+        const p3 = Promise.resolve(Promise.reject('err')); // 数据是一个失败的Promise
+        p3.then(value => console.log('then:', value))
+            .catch(reason => console.log('catch:', reason));
+            // catch: err，失败的Promise，需要由onRejected处理
+        ```
+    - 原生 `resolve` 的特点，与 `then` 的 `fulfilled` 处理类似
+        1. 如果参数是 Promise 对象
+            - 当前返回的结果与状态，由参数自身决定
+            - `result.then(新Promise--resolve, 新Promise--reject)`
+        2. 如果参数不是 Promise 对象
+            - 返回 `fulfilled` 状态的 Promise 对象
+            - 将参数作为 Promise 对象向外传递的数据
+
+- `reject` 的实现要点
+    - 需要创建一个 `rejected` 状态的 Promise 对象
+    - `reason` 作为 Promise 对象向外传递的数据
+
+- 参考代码
+    - [src/promise/mypromise/04resolve.js](src/promise/mypromise/04resolve.js)
+- 测试代码
+    - [src/promise/mypromise/04test.js](src/promise/mypromise/04test.js)
+- 实现内容
+    ```js
+    // 返回一个成功的Promise对象
+    MyPromise.resolve = function (value) {
+        return new Promise((resolve, reject)=>{
+            value instanceof MyPromise? value.then(resolve, reject):resolve(value);
+        })
+    }
+
+    // 返回一个失败的Promise对象
+    MyPromise.reject = function (reason) {
+        return new Promise((_, reject)=>{reject(reason)});
+    }
+    ```
+
 Promise.all/race() 的实现
 promise.thenDelay()/catchDelay() 的实现，延迟处理
 

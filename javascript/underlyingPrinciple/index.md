@@ -4,4 +4,5 @@
     - [JS的结构化特性](structured.md)
     - [JS的函数式语言特性](functional.md)
     - [Promise](promise.md)
+    - [迭代、可迭代对象、生成器](iterator.md)
     - [Symobl符号属性](Symbol.md)

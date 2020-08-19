@@ -112,10 +112,16 @@ MyPromise.prototype.catch = function (onRejected) {
 }
 
 // 返回一个成功的Promise对象
-MyPromise.resolve = function (value) { }
+MyPromise.resolve = function (value) {
+    return new Promise((resolve, reject)=>{
+        value instanceof MyPromise? value.then(resolve, reject):resolve(value);
+    })
+}
 
 // 返回一个失败的Promise对象
-MyPromise.reject = function (reason) { }
+MyPromise.reject = function (reason) {
+    return new Promise((_, reject)=>{reject(reason)});
+}
 
 // 返回一个Promise
 // 只有所有Promise都成功时，才成功；只要有一个失败，则立刻返回一个失败的Promise
