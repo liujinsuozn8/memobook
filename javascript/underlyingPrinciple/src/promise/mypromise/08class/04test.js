@@ -1,5 +1,4 @@
-// const MyPromise = require('./03then');
-const MyPromise = require('./04resolve');
+const MyPromise = require('./08class');
 
 // 04 测试resolve
 

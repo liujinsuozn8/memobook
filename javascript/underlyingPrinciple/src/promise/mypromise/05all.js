@@ -1,4 +1,4 @@
-// 03 promise.then的实现
+// 05 Promise.all的实现
 
 const status = {
     PENDING: 'pending',
@@ -113,21 +113,56 @@ MyPromise.prototype.catch = function (onRejected) {
 
 // 返回一个成功的Promise对象
 MyPromise.resolve = function (value) {
-    return new MyPromise((resolve, reject)=>{
-        value instanceof MyPromise? value.then(resolve, reject):resolve(value);
+    return new MyPromise((resolve, reject) => {
+        value instanceof MyPromise ? value.then(resolve, reject) : resolve(value);
     })
 }
 
 // 返回一个失败的Promise对象
 MyPromise.reject = function (reason) {
-    return new MyPromise((_, reject)=>{reject(reason)});
+    return new MyPromise((_, reject) => { reject(reason) });
 }
 
 // 返回一个Promise
 // 只有所有Promise都成功时，才成功；只要有一个失败，则立刻返回一个失败的Promise
-MyPromise.all = function (promises) { }
+MyPromise.all = function (promises) {
+    return new MyPromise((resolve, reject) => {
+        // 1. promises是空对象，返回一个 `resolved` 状态的 Promise对象
+        if (!promises || promises instanceof Array && promises.length === 0) {
+            resolve();
+        } else {
+            // 创建一个数组，保存每个 Promise 的返回结果
+            let results = new Array(promises.length);
+            // 通过变量记录已经成功的 Promise 数量
+            let successCount = 0;
+            promises.forEach((p, idx) => {
+                if (p instanceof MyPromise) {
+                    // 3. 如果是 Promise 对象，则返回结果是这个对象的结果
+                    p.then(
+                        value => {
+                            successCount++;
+                            results[idx] = value;
+
+                            // 当成功的结果数量与 Promise对象的数量相等时，返回所有结果
+                            if (successCount === promises.length) resolve(results);
+                        },
+                        // 如果出现异常请求，立刻失败
+                        reject  // reason => reject(reason)
+                    )
+                } else {
+                    // 2. 如果不是 Promise 对象，则直接返回 fulfilled 状态的新 Promise 对象
+                    successCount++;
+                    results[idx] = p;
+
+                    // 当成功的结果数量与 Promise对象的数量相等时，返回所有结果
+                    if (successCount === promises.length) resolve(results);
+                }
+            })
+        }
+    })
+}
 
 // 返回一个Promise。返回第一个完成的 Promise
-MyPromise.race = function (promises) { }
+MyPromise.race = function (promises) {}
 
 module.exports = MyPromise

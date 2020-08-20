@@ -108,7 +108,7 @@ MyPromise.prototype.then = function (onResolved, onRejected) {
 // 接收失败的响应函数，并返回一个新的Promise对象
 MyPromise.prototype.catch = function (onRejected) {
     // this.callbacks.push({ onResolved: undefined, onRejected });
-    this.then(undefined, onRejected);
+    return this.then(undefined, onRejected);
 }
 
 // 返回一个成功的Promise对象

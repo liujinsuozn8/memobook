@@ -22,12 +22,16 @@
     - [Promise异常穿透](#Promise异常穿透)
     - [如何中断Promise链](#如何中断Promise链)
     - [resolve、reject内是异步执行回调函数的](#resolve、reject内是异步执行回调函数的)
+- [Promise输出分析](#Promise输出分析)
 - [手写Promise](#手写Promise)
     - [定义Promise的整体结构](#定义Promise的整体结构)
     - [Promise构造函数的实现](#Promise构造函数的实现)
-    - [then、catch的实现](#then、catch的实现)
-    - [resolve、reject的实现](#resolve、reject的实现)
-- [](#)
+    - [promise.then、promise.catch的实现](#promise.then、promise.catch的实现)
+    - [Promise.resolve、Promise.reject的实现](#Promise.resolve、Promise.reject的实现)
+    - [Promise.all的实现](#Promise.all的实现)
+    - [Promise.race的实现](#Promise.race的实现)
+    - [自定义实现---resolveDelay、rejectDelay](#自定义实现---resolveDelay、rejectDelay)
+- [async、await](#async、await)
 
 # 基本知识
 ## 回调函数
@@ -199,7 +203,7 @@
 - 修改 `Promise对象` 的状态
     - `resolve(data)`
         - 异步任务成功 时执行
-        - 修改promise的状态为`resolved`
+        - 修改promise的状态为`fulfilled`
         - 通过data参数向外部传值
     - `reject(data)`
         - 异步任务失败 时执行
@@ -211,12 +215,12 @@
         - 处理方式方式
             ```js
             new Promise(...).then(
-                data=>{...},    // resolved 状态的响应函数, 执行 resolve(data) 后触发
+                data=>{...},    // fulfilled 状态的响应函数, 执行 resolve(data) 后触发
                 error=>{...}    // rejected 状态的响应函数, 执行 reject(error) 后触发
             )
             ```
         - 响应的触发条件
-            - Promise对象的状态从 `pending` 变为 `resolved` 或 `rejected`
+            - Promise对象的状态从 `pending` 变为 `fulfilled` 或 `rejected`
                 - 即: 在`Promise对象`中主动调用 `resolve()` 或 `reject()`
             - 如果 `Promise对象` 的状态将一直是 `pending`，将会一直等待
         - 一般开发中，不会将 `rejected`状态 的响应写在 `then()` 中，会通过 `catch()` 来处理
@@ -273,7 +277,6 @@
         // promise inner timer
         // success timer data
         ```
-
 
 ## 解构嵌套的异步调用
 [top](#catalog)
@@ -546,11 +549,11 @@
 
         |参数内容|返回值|
         |-|-|
-        |iterator是空对象|一个 `resolved` 状态的 Promise对象|
-        |iterator中不包含 Promise对象|一个 `resolved` 状态的 Promise对象|
+        |iterator是空对象|一个 `fulfilled` 状态的 Promise对象|
+        |iterator中不包含 Promise对象|一个 `fulfilled` 状态的 Promise对象|
         |iterator中包含 Promise对象|一个 `pending` 状态的 Promise对象|
     - Promise对象整体的状态
-        - 所有Promise对象都变成 `resolved` 状态，则整体为 `resolve` 状体
+        - 所有Promise对象都变成 `fulfilled` 状态，则整体为 `resolve` 状体
         - 当有一个 Promise对象变成 `rejected` 状态时，立刻将整体设为 `rejected` 状态，并忽略未完成的异步操作
 - 异步结束后，返回的数据
     - 当整体为 `resolve` 状态
@@ -562,7 +565,7 @@
     - 参考代码
         - [src/promise/usage/all.js](src/promise/usage/all.js)
     - 代码内容
-        1. 全部 Promise对象是 resolved 状态
+        1. 全部 Promise对象是 fulfilled 状态
             ```js
             Promise.all([
                 new Promise((resolve, reject)=>{
@@ -619,13 +622,16 @@
 - 可能的操作顺序
     1. 常规顺序: 先指定回调函数、再改变状态
         ```js
-        new Promise((resolve, reject)=>{
+        const p1 = new Promise((resolve, reject)=>{
             setTimeout(
                 ()=>{ resolve() },  // 2. 再改变状态
                 2000
             );
-        }).then(
-            value=>{},  // 1. 先指定回调函数
+        })
+
+        // 1. 先指定回调函数
+        p1.then(
+            value=>{},
             error=>{}
         )
         ```
@@ -644,7 +650,7 @@
 - 简单表达: 由 `then()` 指定的回调函数的执行结果决定
 - 详细表达:
     1. 如果抛出异常，新 Promise 对象变为rejected，reason为抛出的异常
-    2. 如果返回的是非 Promise 的任意值，新 Promise 变为**resolved**，value为返回值
+    2. 如果返回的是非 Promise 的任意值，新 Promise 变为**fulfilled**，value为返回值
         - 如果没有返回值，则 value 为 `undefined`
     3. 如果返回了一个新的 Promise，则结果为新 Promise 的结果
 - 示例
@@ -810,7 +816,7 @@
     ```js
     new Promise(resolve=>{
         setTimeout(()=>{
-            resolve('resolved');
+            resolve('fulfilled');
             for(let i = 0 ;i < 1000000000; i++);    // 创建一个延迟
             console.log('after resolve');
         }, 2000)
@@ -821,8 +827,142 @@
     // 输出:
     // end
     // after resolve <<<< 先输出了延时器中的代码
-    // resolved      <<<< 然后执行了 resolve
+    // fulfilled      <<<< 然后执行了 resolve
     ```
+
+# Promise输出分析
+[top](#catalog)
+- 代码内容
+    ```js
+    new Promise((resolve,reject)=>{
+        console.log('1');
+        resolve();
+    }).then(()=>{
+        console.log('2');
+        new Promise((resolve, reject)=>{
+            console.log('3');
+            resolve();
+        }).then(()=>{
+            console.log('4');
+        }).then(()=>{
+            console.log('5');
+        })
+    }).then(()=>{
+        console.log('6')
+    })
+
+    new Promise((resolve, reject)=>{
+        console.log('7');
+        resolve()
+    }).then(()=>{
+        console.log('8');
+    })
+    ```
+- 执行过程fx
+    1. 输出内容: `1`
+        - 执行内容
+            ```js
+            new Promise((resolve,reject)=>{ // 1. 创建 【Promise--01】
+                console.log('1');           // 2. 同步输出 1
+                resolve();                  // 3. 同步执行，并且还没有回调函数
+            }).then(()=>{                   // 4. 创建【Promise--02】，fulfilled状态，进入微任务队列等待
+                console.log('2');
+                new Promise((resolve, reject)=>{
+                    console.log('3');
+                    resolve();
+                }).then(()=>{
+                    console.log('4');
+                }).then(()=>{
+                    console.log('5');
+                })
+            }).then(()=>{                   // 5. 创建【Promise--03】pending状态
+                console.log('6')
+            })
+            ```
+        - 微任务队列: `[Promise--02]`
+
+    2. 输出内容: `1 7`
+        - 执行内容
+            ```js
+            new Promise((resolve, reject)=>{// 1. 创建【Promise--04】
+                console.log('7');           // 2. 同步输出 7
+                resolve();                  // 2. 同步执行，并且还没有回调函数
+            }).then(()=>{                   // 3. 创建【Promise--05】，状态fulfilled，进入微任务对类
+                console.log('8');
+            })
+            ```
+        - 微任务队列: `[Promise--02, Promise--05]`
+
+    3. 从微任务队列取出: `[Promise--02]`, 输出内容: `1 7 2 3`
+        - 执行内容
+            ```js
+            }).then(()=>{                           // 1. 取出执行 Promise--02
+                console.log('2');                   // 2. 同步输出 2
+                new Promise((resolve, reject)=>{    // 3. 创建【Promise--06】
+                    console.log('3');               // 4. 同步输出 3
+                    resolve();                      // 5. 同步执行，并且还没有回调函数
+                }).then(()=>{                       // 6. 创建【Promise--07】fulfilled状态，进入微任务队列
+                    console.log('4');
+                }).then(()=>{                       // 7. 创建【Promise--08】pending状态
+                    console.log('5');
+                })
+                                                    // 8. 此时这个then的回调已经执行完成
+                                                    //    Promise--07、08 都在等待执行
+
+                                                    // 9. 返回 undefined，状态为 fulfilled
+            }).then(()=>{                           // 10 创建 【Promise--09】，状态为fulfilled，进入微任务队列
+                console.log('6')
+            })
+            ```
+        - 微任务队列: `[Promise--05, Promise--07, Promise--09]`
+    4. 从微任务队列取出: `[Promise--05]`, 输出内容: `1 7 2 3 8`
+        - 执行内容
+            ```js
+            }).then(()=>{
+                console.log('8');   // 1. 同步输出 8
+            })
+            ```
+        - 微任务队列: `[Promise--07, Promise--09]`
+    5. 从微任务队列取出: `[Promise--07]`, 输出内容: `1 7 2 3 8 4`
+        - 执行内容
+            ```js
+            .then(()=>{
+                console.log('2');
+                new Promise((resolve, reject)=>{
+                    console.log('3');
+                    resolve();
+                }).then(()=>{
+                    console.log('4');   // 1. 同步输出 4，状态 fulfilled
+                }).then(()=>{           // 2. 内部准备调用这个回调，【Promise--08】进入微任务队列
+                    console.log('5');
+                })
+            })
+            ```
+        - 微任务队列: `[Promise--09, Promise--08]`
+    6. 从微任务队列取出: `[Promise--09]`, 输出内容: `1 7 2 3 8 4 6`
+        - 执行内容
+            ```js
+            }).then(()=>{           // 1. 同步输出 6
+                console.log('6')
+            })
+            ```
+        - 微任务队列: `[Promise--08]`
+    7. 从微任务队列取出: `[Promise--08]`, 输出内容: `1 7 2 3 8 4 6 5`
+        - 执行内容
+            ```js
+            }).then(()=>{
+                console.log('2');
+                new Promise((resolve, reject)=>{
+                    console.log('3');
+                    resolve();
+                }).then(()=>{
+                    console.log('4');
+                }).then(()=>{           // 1. 同步输出 5
+                    console.log('5');
+                })
+            })
+            ```
+        - 微任务队列: `[Promise--08]`
 
 # 手写Promise
 ## 定义Promise的整体结构
@@ -932,7 +1072,7 @@
     }
     ```
 
-## then、catch的实现
+## promise.then、promise.catch的实现
 [top](#catalog)
 - `then` 的实现要点
     1. `then`中要返回一个 Promise 对象，这样才能链式调用
@@ -1020,12 +1160,11 @@
 
     // 接收失败的响应函数，并返回一个新的Promise对象
     MyPromise.prototype.catch = function (onRejected) {
-        // this.callbacks.push({ onResolved: undefined, onRejected });
-        this.then(undefined, onRejected);
+        return this.then(undefined, onRejected);
     }
     ```
 
-## resolve、reject的实现
+## Promise.resolve、Promise.reject的实现
 [top](#catalog)
 - `resolve` 的实现要点
     - 原生 Promise 对象的处理分析
@@ -1048,10 +1187,12 @@
         2. 如果参数不是 Promise 对象
             - 返回 `fulfilled` 状态的 Promise 对象
             - 将参数作为 Promise 对象向外传递的数据
+    - 需要返回一个新的 Promise 对象
 
 - `reject` 的实现要点
     - 需要创建一个 `rejected` 状态的 Promise 对象
     - `reason` 作为 Promise 对象向外传递的数据
+    - 需要返回一个新的 Promise 对象
 
 - 参考代码
     - [src/promise/mypromise/04resolve.js](src/promise/mypromise/04resolve.js)
@@ -1061,20 +1202,221 @@
     ```js
     // 返回一个成功的Promise对象
     MyPromise.resolve = function (value) {
-        return new Promise((resolve, reject)=>{
+        return new MyPromise((resolve, reject)=>{
             value instanceof MyPromise? value.then(resolve, reject):resolve(value);
         })
     }
 
     // 返回一个失败的Promise对象
     MyPromise.reject = function (reason) {
-        return new Promise((_, reject)=>{reject(reason)});
+        return new MyPromise((_, reject)=>{reject(reason)});
     }
     ```
 
-Promise.all/race() 的实现
-promise.thenDelay()/catchDelay() 的实现，延迟处理
+## Promise.all的实现
+[top](#catalog)
+- 实现要点
+    1. 需要接受一个数组类型的参数: `promises`
+    2. 需要返回一个新的 Promise 对象
+    3. 对于 `promises` 中，不同参数类型的处理
+        1. 如果 `promises` 是空对象，返回一个 `fulfilled` 状态的新 Promise对象
+        2. 如果不是 Promise 对象，返回一个 `fulfilled` 状态的新 Promise对象
+        3. 如果是 Promise 对象，则返回结果是这个对象的结果
+    4. 需要创建一个与 `promises` 长度相同数组:`results`，来保存每个异步操作返回的数据
+        - 保存的 index 需要与 `promises` 中的位置对应
+    5. 如果发生异常，则立刻返回 `rejected` 状态
+    6. 需要使用一个变量: `successCount`，来记录已经正常结束操作的数量
+        - 当`successCount == 数组参数.length` 时，将保存结果的数组: `results` 返回
 
-function版本
-class版本
+- 处理非Promise对象的两种方式
+    1. 通过 `xxx instanceof MyPromise` 的方式，检查对象类型
+        - 如果是普通函数，就直接执行 `resolve(xxx)`，返回正常的数据
+    2. 通过 `MyPromise.resolve(xxx)`，将对象包装成 Promise 对象，统一处理
+
+- 参考代码
+    - [src/promise/mypromise/05all.js](src/promise/mypromise/05all.js)
+    - [src/promise/mypromise/05all02.js](src/promise/mypromise/05all02.js)
+- 测试代码
+    - [src/promise/mypromise/05test.js](src/promise/mypromise/05test.js)
+- 实现内容
+    - 方式1: 分开处理 Promise 对象 和 非 Promise 对象
+        ```js
+        MyPromise.all = function (promises) {
+            return new MyPromise((resolve, reject) => {
+                // 1. promises是空对象，返回一个 `resolved` 状态的 Promise对象
+                if (!promises || promises instanceof Array && promises.length === 0) {
+                    resolve();
+                } else {
+                    // 创建一个数组，保存每个 Promise 的返回结果
+                    let results = new Array(promises.length);
+                    // 通过变量记录已经成功的 Promise 数量
+                    let successCount = 0;
+                    promises.forEach((p, idx) => {
+                        if (p instanceof MyPromise) {
+                            // 3. 如果是 Promise 对象，则返回结果是这个对象的结果
+                            p.then(
+                                value => {
+                                    successCount++;
+                                    results[idx] = value;
+
+                                    // 当成功的结果数量与 Promise对象的数量相等时，返回所有结果
+                                    if (successCount === promises.length) resolve(results);
+                                },
+                                // 如果出现异常请求，立刻失败
+                                reject  // reason => reject(reason)
+                            )
+                        } else {
+                            // 2. 如果不是 Promise 对象，则直接返回 fulfilled 状态的新 Promise 对象
+                            successCount++;
+                            results[idx] = p;
+
+                            // 当成功的结果数量与 Promise对象的数量相等时，返回所有结果
+                            if (successCount === promises.length) resolve(results);
+                        }
+                    })
+                }
+            })
+        }
+        ```
+    - 方式2: 将所有类型的对象都包装成 Promise 对象，统一处理
+        ```js
+        MyPromise.all = function (promises) {
+            return new MyPromise((resolve, reject) => {
+                // promises是空对象，返回一个 `resolved` 状态的 Promise对象
+                if (!promises || promises instanceof Array && promises.length === 0) {
+                    resolve();
+                } else {
+                    // 创建一个数组，保存每个 Promise 的返回结果
+                    let results = new Array(promises.length);
+                    // 通过变量记录已经成功的 Promise 数量
+                    let successCount = 0;
+                    promises.forEach((p, idx) => {
+                        // 【 将所有类型的对象都包装成 Promise 对象，统一处理 】
+                        MyPromise.resolve(p).then(
+                            value => {
+                                successCount++;
+                                results[idx] = value;
+
+                                // 当成功的结果数量与 Promise对象的数量相等时，返回所有结果
+                                if (successCount === promises.length) resolve(results);
+                            },
+                            // 如果出现异常请求，立刻失败
+                            reject  // reason => reject(reason)
+                        )
+                    })
+                }
+            })
+        }
+        ```
+
+## Promise.race的实现
+[top](#catalog)
+- 实现要点
+    1. 需要接受一个数组类型的参数: `promises`
+    2. 需要返回一个新的 Promise 对象
+    3. 对于 `promises` 中，不同参数类型的处理
+        1. 如果 `promises` 是空对象，返回一个 `fulfilled` 状态的新 Promise对象
+        2. 如果不是 Promise 对象，返回一个 `fulfilled` 状态的新 Promise对象
+        3. 如果是 Promise 对象，则返回结果是这个对象的结果
+    4. 只要有一个操作结束，就立刻返回
+
+- 处理非Promise对象的两种方式
+    1. 通过 `xxx instanceof MyPromise` 的方式，检查对象类型
+        - 如果是普通函数，就直接执行 `resolve(xxx)`，返回正常的数据
+    2. 通过 `MyPromise.resolve(xxx)`，将对象包装成 Promise 对象，统一处理
+
+- 参考代码
+    - [src/promise/mypromise/06race.js](src/promise/mypromise/06race.js)
+    - [src/promise/mypromise/06race02.js](src/promise/mypromise/06race.js)
+- 测试代码
+    - [src/promise/mypromise/06test.js](src/promise/mypromise/06test.js)
+- 实现内容
+    - 方式1: 分开处理 Promise 对象 和 非 Promise 对象
+        ```js
+        MyPromise.race = function (promises) {
+            return new MyPromise((resolve, reject) => {
+                // 1. promises是空对象，返回一个 `resolved` 状态的 Promise对象
+                if (!promises || promises instanceof Array && promises.length === 0) {
+                    resolve();
+                } else {
+                    // 2. 如果不是 Promise 对象，则直接返回 fulfilled 状态的新 Promise 对象
+                    // 3. 如果是 Promise 对象，则返回结果是这个对象的结果
+                    promises.forEach(
+                        p => p instanceof MyPromise ? p.then(resolve, reject) : resolve(p)
+                    );
+                }
+            })
+        }
+        ```
+    - 方式2: 将所有类型的对象都包装成 Promise 对象，统一处理
+        ```js
+        MyPromise.race = function (promises) {
+            return new MyPromise((resolve, reject) => {
+                // promises是空对象，返回一个 `resolved` 状态的 Promise对象
+                if (!promises || promises instanceof Array && promises.length === 0) {
+                    resolve();
+                } else {
+                    // 【 将所有类型的对象都包装成 Promise 对象，统一处理 】
+                    promises.forEach(p => MyPromise.resolve(p).then(resolve, reject));
+                }
+            })
+        }
+        ```
+
+## 自定义实现---resolveDelay、rejectDelay
+[top](#catalog)
+- 功能
+    - 延迟指定的时间后，返回结果
+    - 相当于
+        ```js
+        new Promise((resolve, reject)=>{
+            setTimeout(()=>{
+                resolve(...);
+            }, 1000)
+        })
+        ```
+
+- 参考代码
+    - [src/promise/mypromise/07delay.js](src/promise/mypromise/07delay.js)
+- 测试代码
+    - [src/promise/mypromise/07test.js](src/promise/mypromise/07test.js)
+- 实现内容
+    ```js
+    MyPromise.resolveDelay = function (value, timeout) {
+        return new MyPromise((resolve, reject) => {
+            // 延迟执行操作
+            setTimeout(
+                () => value instanceof MyPromise ? value.then(resolve, reject) : resolve(value),
+                timeout
+            );
+        })
+    }
+
+    MyPromise.rejectDelay = function (reason, timeout) {
+        // 延迟执行操作
+        return new MyPromise((_,reject)=>{
+            setTimeout(() => reject(reason), timeout);
+        })
+    }
+    ```
+
+## class版本
+[top](#catalog)
+- 参考代码
+    - [src/promise/mypromise/08class/08class.js](src/promise/mypromise/08class/08class.js)
+
+# async、await
+[top](#catalog)
+- async 函数
+    - 函数返回值是 Promise 对象
+    - 如果返回的不是 Promise 对象，会自动包装成 Promise 对象
+    - 如果抛出异常，会包装一个 `rejected` 状态的 Promise 对象
+- await 表达式
+    - await 右侧一般是 Promise 对象，也可以是其他类型的数据
+        - 如果是 Promise 对象，await返回的是 Promise 对象成功的值
+        - 如果是其他类型，await的返回值就是该数据
+    - <span style='color:red'>await必须写在async函数中</span>
+    - 如果 await 右侧的 Promise 对象失败了，会抛出异常，可以通过 `try...catch` 捕获
+
+
 [top](#catalog)

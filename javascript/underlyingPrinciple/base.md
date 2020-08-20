@@ -1335,20 +1335,18 @@
     |I/O|I/O|
     |requestAnimationFrame|-|
     |UI rendering|-|
-    |页面事件|-|
+    |页面事件（DOM事件）|-|
+    |ajax请求|-|
     |-|setImmediate|
 
 - 可进入`微任务队列`的异步函数
     - 可进入的异步函数
         |浏览器|nodejs|
         |-|-|
-        |Promise|Promise|
+        |`resolve` 或 `reject` 状态的Promise的回掉函数|`resolve` 或 `reject` 状态的Promise的回掉函数|
         |Object.observe|Object.observe|
         |MutationObserver|MutationObserver|
         |-|process.nextTick|
-
-    - Promise对象的特殊性
-        - 对于Promise对象的 `then()`、`error()` 方法，虽然会进入微任务队列，但是执行需要等待 `resolve` 或 `reject` 的信号，否则无法执行
 
 - 事件轮询，event loop
     - 从回调队列中循环取出函数放到**执行栈**中执行

@@ -1,4 +1,4 @@
-const MyPromise = require('./02constructor');
+const MyPromise = require('./08class');
 // const MyPromise = require('./copy');
 
 // 02 只能测试：先设置回调函数，再修改状态

@@ -1,4 +1,4 @@
-const MyPromise = require('./03then');
+const MyPromise = require('./08class');
 
 // 03 测试then
 
