@@ -1,8 +1,11 @@
 - js原理
-    - [js语法](base.md)
-    - [JS的面向对象特性](oop.md)
-    - [JS的结构化特性](structured.md)
-    - [JS的函数式语言特性](functional.md)
-    - [Promise](promise.md)
-    - [迭代、可迭代对象、生成器](iterator.md)
-    - [Symobl符号属性](Symbol.md)
+    - 主线
+        - [JS语法](base.md)
+        - [JS的面向对象特性](oop.md)
+        - [JS的结构化特性](structured.md)
+        - [JS的函数式语言特性](functional.md)
+        - [JS的动态语言特性](dynamicLanguage.md)
+    - 支线
+        - [Promise](promise.md)
+        - [迭代、可迭代对象、生成器](iterator.md)
+        - [Symobl符号属性](Symbol.md)

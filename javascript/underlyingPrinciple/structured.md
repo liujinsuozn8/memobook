@@ -478,15 +478,16 @@
 - expression 是执行在**外部的代码块**中的
 - switch只有 1 个代码分块
     - 所有 value 和 statements 都执行在同一个块中
-    - case **不会产生**一个子级的代码分块，它只是**标识一行代码的起始位置**
+    - case **不会主动生成**一个子级的代码分块，它只是**标识一行代码的起始位置**
     - 每个 case 中的内容之间，共享变量名，也会受到块之间执行效果的影响
-        1. 如果用 let 声明了同名的变量，会产生编译异常
+        1. 各个分支中的声明在初始化时就已经进入**顶层声明**中了，**即使某个分支不会被执行**
             ```js
             switch (x){
                 case 100:
-                    let y = x;
+                    let y = x;  // 先声明了一个 let y
                 case 200:
-                    let y = x*2; // SyntaxError: Identifier 'y' has already been declared
+                                // 因为共享一个代码分块，所以无法再次声明 let y
+                    let y = x*2;// SyntaxError: Identifier 'y' has already been declared
             }
             ```
         2. 需要注意变量在整个块中的**声明与使用顺序**
@@ -514,7 +515,7 @@
                     console.log(y); // ReferenceError: Cannot access 'y' before initialization
             }
             ```
-- 可以在各个 case 中**用块语句创建独立的代码分块**
+- 可以在各个 case 中**用块语句创建独立的代码分块**来创建**子级作用域**
     ```js
     var x = 100;
     var y = 3;
@@ -567,8 +568,31 @@
     for (let x ... of ...) statement
     ```
 
-- 在for循环条件中，使用let/const声明变量时，会出现代码分块
-    - 无论statement是不是块，for都会有一个自己的代码分块
+- for表达式与循环体的代码分块
+    - `循环体`在每次迭代时都会拥有一个新的代码分块(作用域)
+    - for 表达式部分的代码分块
+        - `for(var/let xx=yy; 循环条件; 递增表达式)`
+            - for表达式的代码分块在整个循环过程中，只会初始化一次，只会有一个
+            - 这个代码分块会作为**每个**`循环体`的parent
+        - `for(let/const...in)`、`for(let/const...of)`
+            - **每次迭代**都会为for表达式**创建一个新的代码分块**
+            - 每个for代码分块会作为**这一次循环时的**`循环体`的parent
+    - 分块方式产生的结果
+        1. 循环体内
+            - 每次都会初始化一个新的`let`、`const`变量
+            - `const` 变量不会产生: **被多次赋值** 的异常
+            - 示例
+                ```js
+                for(var i=0; i<3; i++){
+                    const x = i+ 100;
+                    console.log(x);
+                }
+                // 输出:
+                // 100
+                // 101
+                // 102
+                ```
+        2. `for(const/let key of/in xxx)` 中，`key` 可以被声明为常量，不会抛出异常
 - 不同形式间的区别
     - `for (let x...; condition; final-expression)`
         - 只会用 let 声明一次变量，**只会产生一个LoopEnv代码分块**

@@ -50,8 +50,12 @@
     - [利用闭包的示例-循环变量添加事件监听](#利用闭包的示例-循环变量添加事件监听)
     - [函数实例](#函数实例)
     - [闭包的基本知识](#闭包的基本知识)
-    - [闭包的产生过程](#闭包的产生过程)
+    - [函数闭包的产生过程](#函数闭包的产生过程)
     - [函数表达式闭包创建的双重作用域](#函数表达式闭包创建的双重作用域)
+    - [对象闭包](#对象闭包)
+    - [对象闭包与函数闭包混用](#对象闭包与函数闭包混用)
+    - [for语句中的闭包](#for语句中的闭包)
+    - [Function创建的闭包及其效果](#Function创建的闭包及其效果)
     - [常见的闭包](#常见的闭包)
     - [闭包的作用](#闭包的作用)
     - [闭包的应用-创建独立的作用域](#闭包的应用-创建独立的作用域)
@@ -2028,18 +2032,41 @@
 [top](#catalog)
 - 闭包是什么
     - 闭包是一种数据结构
-        - 一种用于记录`函数实例`在运行期的`可访问标识符`的**结构**
+        - 一种用于记录`函数实例`在运行期的`可访问标识符`的**结构**，如
+            ```js
+            identifiers = {
+                '变量名':{该变量的结构},
+                'arguments':{...}
+            }
+            ```
     - <span style='color:red'>闭包本质就是一个链式的标识符系统</span>
+    - 对于执行代码，闭包就是<span style='color:red'>执行期的作用域链</span>，如:
+        ```js
+        scope={
+            identifiers = {...},
+            parent:{指向父级作用域}
+        }
+        ```
+
+- 闭包的产生
+    - 一个函数实例的一次执行，就会创建一个<span style='color:red'>新的执行期作用域</span>，即创建一个闭包
+        - 即: 只要**函数被调用**，就会产生一个新的闭包
+
+- 闭包的销毁
+    - **闭包中的数据**被有没引用时，函数实例与闭包将被同时回收
+
 - 闭包的功能
-    - 为每个函数维护其执行期的信息，指代<span style='color:red'>一个函数实例在运行期的作用域</span>
+    - 为每个函数维护其执行期的信息
+    - 指代一个函数实例在运行期的作用域
     - 通过闭包可以获取执行期的信息
         - 可以在: 函数再次被执行时获取
         - 可以在: 通过某种方法进行函数体时获取
-- 闭包的产生
-    - 一个函数实例的一次执行，就会创建一个新的执行期作用域，即创建一个闭包
-        - 即: 只要**函数被调用**，就会产生一个新的闭包
-- 闭包的销毁
-    - **闭包中的数据**被有没引用时，函数实例与闭包将被同时回收
+
+- 闭包的分类
+    - 函数闭包
+        - 函数闭包是静态的，依赖于函数声明时的、静态的、语法作用域限制
+    - `with(obj)` 创建的对象闭包
+        - 对象闭包会被**动态**添加到执行环境中的**闭包链顶端**
 
 - 如何理解闭包的持续存在
     - 理解方式一：嵌套函数的内部函数
@@ -2099,14 +2126,13 @@
         ```
     - `f = null`，执行后，闭包 fn2的引用次数为0，成为垃圾对象，将会被 gc 回收
 
-## 闭包的产生过程
+## 函数闭包的产生过程
 [top](#catalog)
 - 产生过程
     1. 运行期闭包
         1. 函数开始执行
         2. 创建一个执行环境
-        3. 绑定 `this`
-    2. 创建闭包中的可访问标识符
+    2. 创建闭包中的可访问标识符 --- 相当于 [函数调用](#函数调用) 中的预处理
         1. 扫描顶层声明，创建`可访问标识符列表`
         2. 处理两个列表
             1. 顶层的子函数列表
@@ -2126,8 +2152,8 @@
                     2. 在新作用域内，执行非简单参数的初始化
                         - 如: 默认值的读取与设置
                     3. 通过作用域链访问参数数据，并进行形参绑定
-
-    3. 执行函数体中的用户代码
+    3. 绑定 `this`
+    4. 执行函数体中的用户代码
 
 - 闭包的初始内容
     - 初始状态下，闭包是运行环境中对作用域的一个引用
@@ -2175,6 +2201,189 @@
         - 如访问到 `outerScope` 中的 `foo`，并将 `foo` 改成 `x + 1`
     2. 可以访问外部作用域，但是不会影响其他作用域
         - 如修改 `foo` 时，只会修改该外层作用域的 `foo`，但是不会影响全部作用域
+
+## 对象闭包
+[top](#catalog)
+- 什么是对象闭包?
+    - `with(obj)` 为 `obj` 动态创建的闭包
+- 对象闭包会被**动态**添加到执行环境中的**闭包链顶端**
+- 对象闭包的特性
+    1. 没有声明实例化的过程。在使用`obj`之前，就已经实例化完了
+    2. 对象闭包内，没有用`var/let/const` 声明的标识符，会自动绑定到对象的成员
+- 对象闭包与函数闭包的差异
+
+    |标识符系统|函数闭包|对象闭包|
+    |-|-|-|
+    |this|有|没有|
+    |局部变量|有|没有|
+    |函数形式参数名|有|没有|
+    |arguments|有|没有|
+    |函数名/对象名|有|没有|
+    |对象成员名|没有|有|
+
+- 对象闭包中，变量作用域的副作用
+    - 示例
+        ```js
+        var obj = {name:'bob', age:22}
+        function foo(){
+            with(obj){
+                // var 变量将会自动提升到 外部的函数作用域中
+                var varName = 'varName';
+                // 词法作用域
+                // 不会对 对象成员产生影响
+                let age = 33;
+                // 变量作用域
+                // 变量名 与 对象成员名相同，会重新为对象成员赋值
+                var name = 'tom';
+                console.log(obj);               // { name: 'tom', age: 22 }  bob --> tom
+                console.log(`age = ${age}`);    // age = 33
+            }
+
+            console.log(`varName = ${varName}`);// varName = varName
+            console.log(`name = ${name}`);      // name = undefined
+        }
+
+        console.log(obj);   // { name: 'bob', age: 22 }
+        foo();
+        console.log(obj);   // { name: 'tom', age: 22 }
+        ```
+    - `var` 变量 产生的副作用
+        1. **因为对象闭包没有局部变量**，对象闭包内的 `var` 变量，会被提升到外部的作用域
+        2. 在对象闭包内， `var` 变量名如果**与对象的成员变量名相同**
+            - 会重新为对象成员赋值
+            - 在外部作用域，`var`变量是`undefined`
+    - 这种副作用的本质是: 变量作用域与词法作用域发生了冲突
+
+## 对象闭包与函数闭包混用
+[top](#catalog)
+- 混用示例
+    ```js
+    var obj = {value: 20}
+    var value = 30;
+    with(obj){              // 1. 创建对象闭包
+        function foo(){
+            value *= 2;     // 3. 通过作用域链访问到了obj.value
+        }
+
+        foo();              // 2. 创建函数闭包
+    }
+
+    console.log(obj.value); // 40
+    console.log(value);     // 30
+    ```
+- 对象闭包的结构，对象闭包是动态添加到global中的
+    ```js
+    objScope = {
+        'value':20,
+        parent: global
+    }
+- `foo` 函数闭包的结构，因为函数闭包是静态的，所以 `parent` 是对象闭包
+    fooScope = {
+        arguments: [],
+        parent: objScope
+    }
+    ```
+- 在 `foo` 的闭包结构中，parent指向对象闭包，所以会顺着作用域链读写: `obj.value`
+
+## for语句中的闭包
+[top](#catalog)
+- 使用 `var` 在迭代时，产生的闭包问题: 不会使用每次迭代的结果，而是**最后一次迭代**的结果
+    ```js
+    var obj = {};
+    var event = {m1: 'clicked', m2:'changed'}
+    for (var e in event){
+        obj[e] = function(){
+            console.log(event[e])
+        }
+    }
+
+    obj.m1();   // changed
+    obj.m2();   // changed
+    ```
+
+- 通过闭包解决 var 带来的问题
+    - 即添加一个外层函数，将数据保存在外层函数。内层函数引用外层函数的数据，延迟外部函数闭包的销毁
+        ```js
+        var obj = {};
+        var event = {m1: 'clicked', m2:'changed'}
+        for (var e in event){
+            (function(eid){ // 创建外层函数，并保存数据
+                obj[e] = function(){    // 创建内层函数
+                    console.log(event[eid]);    // 引用外部函数的数据
+                }
+            })(e)
+        }
+
+        obj.m1();   // clicked
+        obj.m2();   // changed
+        ```
+- 通过闭包虽然可以解决问题，但是带来了用于创建函数对象的额外系统消耗
+- 用 `let/const` 替代闭包，但是仍然无法降低系统消耗
+    - 用 `let/const` 替代闭包
+        ```js
+        var obj = {};
+        var event = { m1: 'clicked', m2: 'changed' }
+        for (let e in event) {
+            obj[e] = function () {
+                console.log(event[e])
+            }
+        }
+
+        obj.m1();   // clicked
+        obj.m2();   // changed
+        ```
+    - 因为 `for (let e in event) ` 部分在每一次迭代时，都会创建一个新的执行环境(作用域)，所以无法降低系统消耗
+
+- 不依赖: 闭包 和 `let/const`，将数据直接保存在函数实例内部，降低消耗
+    - 对于匿名函数
+        ```js
+        var obj = {};
+        var event = { m1: 'clicked', m2: 'changed' }
+        for (var e in event) {
+            // 1. (obj[e] = function) 将会返回函数对象自身
+            (obj[e] = function () {
+                console.log(event[arguments.callee.eid])    // 通过callee访问函数对象自身的变量
+            }).eid = e; // 2. 将数据绑定在函数实例上
+        }
+
+        obj.m1();   // clicked
+        obj.m2();   // changed
+        ```
+    - 对于具名函数
+        ```js
+        var obj = {};
+        var event = { m1: 'clicked', m2: 'changed' }
+        for (var e in event) {
+            // 1. (obj[e] = function) 将会返回函数对象自身
+            (obj[e] = function f() {
+                console.log(event[f.eid])    // 通过函数自身访问数据
+                // 这里在赋值语句的作用域内，可以访问 f
+            }).eid = e; // 2. 将数据绑定在函数实例上
+        }
+
+        obj.m1();   // clicked
+        obj.m2();   // changed
+        ```
+
+## Function创建的闭包及其效果
+[top](#catalog)
+- 通过 `new Function('...')` 创建的函数对象都处于`全局作用域`的闭包中
+    - 访问变量时，也会访问全局作用域的变量
+- 使用场景
+    - 在多层嵌套的函数内部，使用 `new Function('...')` 创建函数，避免系统维护过多的函数实例与闭包
+
+- 示例
+    - 以下示例在nodejs中会出现异常: ReferenceError: value is not defined
+        ```js
+        var value = 'this is global';
+        function foo(){
+            var value = 'this is local';
+            var bar = new Function('console.log(value)');   // 将会访问全局作用域中的变量
+            bar();
+        }
+
+        foo();  // 输出: this is global
+        ```
 
 ## 常见的闭包
 [top](#catalog)
