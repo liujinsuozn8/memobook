@@ -4,23 +4,47 @@
     - https://zhuanlan.zhihu.com/p/120383551
 
 ### 目录--JS的面向对象特性
+- [对象的符号属性](#对象的符号属性)
 - [可以被符号属性影响的行为](#可以被符号属性影响的行为)
-    - [已公布的符号属性](#已公布的符号属性)
-    - [隐式创建对象--有影响的符号属性](#隐式创建对象--有影响的符号属性)
-    - [通用行为--有影响的符号属性](#通用行为--有影响的符号属性)
-    - [集合对象--有影响的符号属性](#集合对象--有影响的符号属性)
-    - [字符串--有影响的符号属性](#字符串--有影响的符号属性)
-- [对象中的符号属性](#对象中的符号属性)
-    - [符号属性](#符号属性)
-    - [全局符号表](#全局符号表)
+    - [可用的符号属性](#可用的符号属性)
+    - [对隐式创建对象有影响的符号属性](#对隐式创建对象有影响的符号属性)
+    - [对通用行为有影响的符号属性](#对通用行为有影响的符号属性)
+    - [对集合对象有影响的符号属性](#对集合对象有影响的符号属性)
+    - [对字符串有影响的符号属性](#对字符串有影响的符号属性)
+- [全局符号表](#全局符号表)
+- [](#)
+
+
+## 对象的符号属性
+[top](#catalog)
+- 符号类型数据的创建
+    ```js
+    var a = Symbol();
+    ```
+- 符号数据也被称为**符号**
+- 符号可以作为对象的属性
+    - 符号属性无法被 `for ... in ` 枚举
+    - 符号属性具有一般成员的全部性质
+    - 符号属性可以被继承
+    - 符号类型成员需要特殊的方式才能列举、存取、使用
+- `Object.getOwnpropertySymbols(obj)`
+    - 可以获取对象中，非继承的所有符号属性
+    - 是唯一能有效列举符号属性的方法
+
+- 一般对象自身没有符号属性
+- 改变对象内部行为的符号属性
+    - 所有对象的行为都受到一些**与内部行为相关的**符号属性的影响
+    - 添加符号属性时，为了避免原型性质的影响，可以使用 `Object.defineProperty` 来添加
+    - 参考
+        - [已公布的符号属性](#已公布的符号属性)
 
 # 可以被符号属性影响的行为
-## 已公布的符号属性
+## 可用的符号属性
 [top](#catalog)
-- JS公布了一组面向内部机制的符号属性，来访问内部槽
+- 通过符号属性可以访问`内部槽`
 - 符号属性被声明在对象的 `自有属性表`
 - 通过符号属性来影响内部机制**有很大的局限性**
-- 已公布的11个符号属性
+- 11个符号属性
     - 影响通用行为的符号属性
 
         |Symbol.xxx属性|影响行为|属性值|
@@ -42,7 +66,7 @@
         |search|str.search(target)|function(str){}|
         |split|str.split(target, limit)|function(str,limit){}|
 
-## 隐式创建对象--有影响的符号属性
+## 对隐式创建对象有影响的符号属性
 [top](#catalog)
 - Symbol.species
     - 功能
@@ -131,7 +155,7 @@
                 console.log(newArr instanceof Array);   // true
                 ```js
 
-## 通用行为--有影响的符号属性
+## 对通用行为有影响的符号属性
 [top](#catalog)
 - Symbol.toStringTag
     - 只对原生的 `String.prototype.toString()` 有效
@@ -399,7 +423,7 @@
             }
             ```
 
-## 集合对象--有影响的符号属性
+## 对集合对象有影响的符号属性
 [top](#catalog)
 - Symbol.isConcatSpreadable
     - isConcatSpreadable 需要是一个 true/false 的值
@@ -429,7 +453,7 @@
             console.log(arr2.length);   // 2
             ```
 
-## 字符串--有影响的符号属性
+## 对字符串有影响的符号属性
 [top](#catalog)
 - Symbol.split
     - 用于修改字符串 `split` 方法的行为
@@ -518,63 +542,7 @@
         ```
     - RegExp.prototype 上的符号属性能够**改变字符串方法的行为**，所以正则表达式可以作为字符串方法的参数
 
-# 对象中的符号属性
-## 符号属性
-[top](#catalog)
-- 符号类型数据的创建
-    ```js
-    var a = Symbol();
-    ```
-- 符号数据也被称为**符号**
-- 符号可以作为对象的属性
-    - 符号属性无法被 `for ... in ` 枚举
-    - 符号属性具有一般成员的全部性质
-    - 符号属性可以被继承
-    - 符号类型成员需要特殊的方式才能列举、存取、使用
-- `Object.getOwnpropertySymbols(obj)`
-    - 可以获取对象中，非继承的所有符号属性
-    - 是唯一能有效列举符号属性的方法
-
-- 一般对象自身没有符号属性
-- 改变对象内部行为的符号属性
-    - 所有对象的行为都受到一些**与内部行为相关的**符号属性的影响
-    - 包括
-        |符号|影响的行为|类型|
-        |-|-|-|
-        |Symobl.hasInstance|instanceof 的类型检查|function|
-        |Symobl.iterator|for...of|function|
-        |Symobl.unscopables|with(object){...}|object|
-        |Symobl.toPrimitive|Object.prototype.valueOf()|function|
-        |Symobl.toStringTag|Object.prototype.toString()|string|
-    - 添加符号属性时，为了避免原型性质的影响，可以使用 `Object.defineProperty` 来添加
-    - 示例
-        - 参考代码
-            - []()
-        - 代码内容
-            ```js
-            var str = new String('hi');
-            // 1. 修改符号属性，返回一个数字 1
-            str[Symbol.toPrimitive] = ()=>1;
-            console.log(100 + str); // 输出: 101
-
-            // 2. 修改 instanceOf 的符号属性
-            class Foo{}
-            class FooEx{
-                static [Symbol.hasInstance](){
-                    return false;   // 无论什么类型，都会返回 false
-                }
-            }
-
-            var fooex = new FooEx();
-            console.log(fooex instanceof FooEx);    // 输出: false
-
-            class Bar{}
-            Object.defineProperty(Bar, Symbol.hasInstance, {value: ()=>false});
-            var bar = new Bar();
-            console.log(bar instanceof Bar);    // 输出: false
-            ```
-
-## 全局符号表
+# 全局符号表
 [top](#catalog)
 - 引入问题: **模块中，对象内的符号属性在模块外无法直接访问**
     - 问题描述
