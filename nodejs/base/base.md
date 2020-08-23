@@ -2,6 +2,7 @@
 
 ### 目录
 - [Nodejs安装](#Nodejs安装)
+- [nvm---Nodejs版本管理工具](#nvm---Nodejs版本管理工具)
 - [Nodejs简介](#Nodejs简介)
 - [CommonJS规范](#CommonJS规范)
 - [包package](#包package)
@@ -69,6 +70,28 @@
 - docker
     - ?????
 
+# nvm---Nodejs版本管理工具
+[top](#catalog)
+- 安装nvm
+    - linux
+        - ?????
+    - docker
+        - ?????
+    - mac（使用 brewhome 安装）
+        - 安装: `brew install nvm`
+        - 修改环境配置: `vim $HOME/.bash_profile`
+            ```shell
+            export NVM_DIR=~/.nvm
+            source $(brew --prefix nvm)/nvm.sh
+            ```
+        - 刷新配置: `source .bash_profile`
+    - windows
+        - ?????
+- nvm 指令
+    - `nvm ls-remote`，获取可下载的版本列表
+    - `nvm install <version>`，下载指定版本
+    - `nvm use <version>`，使用指定版本的nodejs
+    - `nvm alias default <version>`，设置默认的nodejs版本
 # Nodejs简介
 [top](#catalog)
 - 什么是Nodejs
