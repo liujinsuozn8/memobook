@@ -7,6 +7,7 @@
     - [进程与线程的概念](#进程与线程的概念)
     - [进程与线程的对比](#进程与线程的对比)
     - [并行与并发](#并行与并发)
+    - [同步与异步的划分](#同步与异步的划分)
 - [Java线程](#Java线程)
     - [创建和运行线程的几种方法](#创建和运行线程的几种方法)
     - [Thread和Runnable的关系](#Thread和Runnable的关系)
@@ -17,8 +18,16 @@
     - [Java线程的6种状态](#Java线程的6种状态)
     - [Java线程操作的常见方法](#Java线程操作的常见方法)
     - [start与run方法](#start与run方法)
-    - [sleep与yield](#sleep与yield)
+    - [sleep和yield](#sleep和yield)
+        - [sleep---线程休眠](#sleep---线程休眠)
+        - [yield---让出CPU使用权](#yield---让出CPU使用权)
+        - [sleep和yield的区别](#sleep和yield的区别)
+    - [线程优先级](#线程优先级)
+    - [join](#join)
+        - [为什么需要join](#为什么需要join)
+        - [通过join执行等待线程结束](#通过join执行等待线程结束)
 - [](#)
+
 
 # 进程与线程
 ## 进程与线程的概念
@@ -67,6 +76,11 @@
     - 并发，concurrent，是同一时间应对多件事的能力
     - 并行，parallel，是同一时间动手做多件事情的能力
 - 场景的场景是: **又有并发、又有并行**
+
+## 同步与异步的划分
+[top](#catalog)
+- 同步: 需要等待上一行代码的结果返回，才能继续运行
+- 异步: 不需要等待上一行代码的结果，就能继续运行
 
 # Java线程
 ## 创建和运行线程
@@ -298,7 +312,7 @@
     |-|-|-|
     |start()|启动一个新线程，在新的线程运行`run()`方法中的代码|start方法只是让线程进入**就绪状态**，代码不一定立刻运行（CPU还没有分配时间片）<br><span style='color:red'>start方法只能调用一次</span>，如果调用了多次会出现`IllegalThreadStateException`|
     |run()|新线程启动后会调用的方法|如果在构造 `Thread` 对象时，传递了 `Runnable` 参数，则线程启动后会调用 `Runnable` 中的 `run` 方法，否则默认不执行任何操作。<br>可以创建 `Thread` 的子类对象，来覆盖默认行为|
-    |join()|等待线程运行结束||
+    |join()|等待调用`join()`的线程运行结束||
     |join(long n)|等待线程运行结束。最多等待 n **毫秒**||
     |getId()|获取线程的长整型id|id是唯一的|
     |getName()|获取线程名||
@@ -347,16 +361,18 @@
         }
         ```
 
-## sleep与yield
+## sleep和yield
+### sleep---线程休眠
 [top](#catalog)
 - `Thread.sleep()`
     - `Thread.sleep()` 会使调用该方法的线程进入 `WAITING` 状态
     - 调用sleep后的线程状态变化: `Running ---> Timed Running`
     - 其他线程可以使用 `interrupt()` 打断正在睡眠的线程，`sleep` 将方法会抛出 `InterruptedException`
     - 睡眠结束后的线程不一定立刻执行
+        - 需要等待CPU分配时间片来运行
     - 示例
         - 参考代码
-            - [/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/state/SleepAndInterrupt.java](/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/state/SleepAndInterrupt.java)
+            - [/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/threadmethod/sleep/SleepAndInterrupt.java](/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/threadmethod/sleep/SleepAndInterrupt.java)
         - 代码内容
             ```java
             public static void main(String[] args) throws InterruptedException {
@@ -391,5 +407,229 @@
             }
             ```        
 
+- 建议用 `TimeUnit.单位.sleep` 代替 `Thread.sleep` 来获得更好的**可读性**
+    - 通过 `TimeUnit` 中的静态属性来避免编码时的数值换算，提升代码可读性
+    - 可以单位
+
+        |静态属性|单位|
+        |-|-|
+        |TimeUnit.NANOSECONDS|纳秒|
+        |TimeUnit.MICROSECONDS|微秒|
+        |TimeUnit.MILLISECONDS|毫秒|
+        |TimeUnit.SECONDS|秒|
+        |TimeUnit.MINUTES|分钟|
+        |TimeUnit.HOURS|小时|
+        |TimeUnit.DAYS|天|
+    
+    - 示例
+        - 参考代码
+            - [/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/threadmethod/sleep/TimeUnitUsage.java](/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/threadmethod/sleep/TimeUnitUsage.java)
+        - 代码内容
+            ```java
+            public static void main(String[] args) throws InterruptedException {
+                Thread t = new Thread() {
+                    @Override
+                    public void run() {
+                        log.debug("sleeping");
+                        try {
+                            TimeUnit.SECONDS.sleep(2);
+                        } catch (InterruptedException e) {
+                            log.debug("interrupt");
+                            e.printStackTrace();
+                        }
+                    }
+                };
+
+                t.start();
+
+                TimeUnit.SECONDS.sleep(1);
+                log.debug("main running");
+                t.interrupt();
+            }
+            ```
+
+### yield---让出CPU使用权
+[top](#catalog)
+- 调用 `Thread.yield` 的效果
+    1. 让当前线程从 `Running` 进入 `Runnable` 就绪状态
+    2. 让出CPU使用权，让任务调度器执行其他的线程
+- yield 的具体实现依赖于操作系统的任务调度器
+    - 如当前只有一个线程在运行，执行了 yield 后仍然会执行当前线程
+- <span style='color:red'>yield 无法真正的控制线程的调度</span>
+- 示例
+    - 参考代码
+        - [/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/threadmethod/yield/YieldUsage.java](/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/threadmethod/yield/YieldUsage.java)
+    - 代码内容
+        ```java
+        public static void main(String[] args) {
+            Runnable task1 = ()->{
+            for(int i=0;;) {
+                System.out.println("---->task1: " + i++);
+            }
+            };
+
+            Runnable task2 = ()->{
+            for(int i=0;;) {
+                Thread.yield();
+                System.out.println("    ---->task2: " + i++);
+            }
+            };
+
+            Thread t1 = new Thread(task1, "t1");
+            Thread t2 = new Thread(task2, "t2");
+
+            t1.start();
+            t2.start();
+        }
+        ```
+### sleep和yield的区别
+[top](#catalog)
+- 能否获取时间片?
+    - `sleep`，`Timed Waiting` 阻塞状态，无法获得CPU时间片
+    - `yield`，`Runnable`就绪状态还是有机会运行的，即有获得CPU时间片的能力
+- 等待时间
+    - `sleep`，会有休眠时间
+    - `yield`，会立刻让出CPU时间片的使用权
+        - 如果当前只有一个线程，会再次将CPU时间片的使用权交给当前线程
+
+## 线程优先级
+[top](#catalog)
+- `线程优先级` 的功能
+    - 会提示(hint)调度器优先调度该线程
+    - 但它仅仅是一个提示，调度器可以忽略它
+- 如果CPU比较忙，那么优先级高的线程会获得更多的时间片
+- 如果CPU不忙，优先级几乎没有作用
+- <span style='color:red'>线程优先级 无法真正的控制线程的调度</span>
+- 示例
+    - 参考代码
+        - [/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/threadmethod/priority/PriorityUsage.java](/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/threadmethod/priority/PriorityUsage.java)
+    - 代码内容
+        ```java
+        public static void main(String[] args) {
+            Runnable task1 = ()->{
+            for(int i=0;;) {
+                System.out.println("---->task1: " + i++);
+            }
+            };
+
+            Runnable task2 = ()->{
+            for(int i=0;;) {
+                Thread.yield();
+                System.out.println("    ---->task2: " + i++);
+            }
+            };
+
+            Thread t1 = new Thread(task1, "t1");
+            Thread t2 = new Thread(task2, "t2");
+
+            t1.start();
+            t2.start();
+        }
+        ```
+
+## join
+### 为什么需要join
+[top](#catalog)
+- 示例
+    - 参考代码
+        - [/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/threadmethod/join/NoJoin.java](/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/threadmethod/join/NoJoin.java)
+    - 代码内容
+        ```java
+        static int count = 0;
+        public static void main(String[] args) {
+            log.debug("start");
+    
+            // 任务1: 暂停1s，然后修改 count
+            Thread t1 = new Thread(()->{
+                log.debug("start");
+                try {
+                    Thread.sleep(1000);
+                    count = 10;
+                    log.debug("count = " + count);
+                    log.debug("end");
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            });
+    
+            // 任务2: 线程启动后，直接修改 count
+            Thread t2 = new Thread(()->{
+                log.debug("start");
+                count = 20;
+                log.debug("count = " + count);
+                log.debug("end");
+            });
+    
+            // 3. 启动线程，检查 count 是否被修改
+            t1.start();
+            t2.start();
+      
+            // 4. 一直输出 count=0
+            log.debug("count = " + count);
+            log.debug("end");
+        }
+        ```
+- 每次执行，都会一直输出: `count = 0`
+- 线程 t1、t2启动后，不会立刻执行，所以每次都会先执行 主线程，输出 `count = 0`
+    - 无论是延迟执行，还是立刻执行，都不会早于主线程执行
+- 所以需要通过 `join` 等待其他线程结束，然后再执行当前线程
+
+### 通过join执行等待线程结束
+[top](#catalog)
+- 如执行 `x.join` 后，会等待线程 `x` 执行结束，然后再执行后续的操作
+- 示例
+    - 参考代码
+        - [/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/threadmethod/join/UseJoin.java](/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/threadmethod/join/UseJoin.java)
+    - 代码内容
+        ```java
+        static int count = 0;
+        public static void main(String[] args) throws InterruptedException {
+            log.debug("start");
+
+            // 任务1: 暂停1s，然后修改 count
+            Thread t1 = new Thread(()->{
+                log.debug("start");
+                try {
+                    Thread.sleep(1000);
+                    count = 10;
+                    log.debug("count = " + count);
+                    log.debug("end");
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            });
+
+            // 任务2: 线程启动后，直接修改 count
+            Thread t2 = new Thread(()->{
+                log.debug("start");
+                try {
+                    Thread.sleep(2000);
+                    count = 20;
+                    log.debug("count = " + count);
+                    log.debug("end");
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            });
+
+            // 3. 启动线程
+            t1.start();
+            t2.start();
+            /*
+                4. 先等待 t2 结束，在等待 t1 结束
+                因为 t1 比 t2 快，所以会得到:
+                
+                count = 10  <<<<< t1 的修改
+                count = 20  <<<<< t2 的修改
+            */
+            t2.join();
+            t1.join();// 此时 t1 已经执行完了 
+
+
+            // 7. 最终输出 t2 中的赋值结果: count = 20
+            log.debug("count = " + count);
+            log.debug("end");
+        }
+        ```
 
 [top](#catalog)

@@ -53,7 +53,7 @@
             - [idea创建web工程](java/javaweb/createProject.md)
             - [javaweb基础](java/javaweb/webbase.md)
         - socket编程
-        - [并发编程](java/base/thread.md)
+        - [并发编程](java/thread/base.md)
         - rpc框架
             - [基本原理](java/rpc/base.md)
         - tomcat

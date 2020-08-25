@@ -1,4 +1,4 @@
-package com.ljs.learn.mythread.state;
+package com.ljs.learn.mythread.threadmethod.sleep;
 
 import lombok.extern.slf4j.Slf4j;
 
