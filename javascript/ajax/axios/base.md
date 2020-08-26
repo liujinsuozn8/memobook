@@ -71,13 +71,6 @@
     |`new axios.CancelToken()`|用于创建取消请求的 `token` 函数对象|
     |`axios.isCancel()`|判断是否是一个取消请求的错误|
 
-- 批量发送请求的方法
-
-    |方法|功能|
-    |-|-|
-    |`axios.all(promises)`|批量执行多个异步请求，类似于`Promise.all()`|
-    |`axios.spread()`|指定接收所有成功数据的回调函数|
-
 - 其他方法
 
     |方法|功能|

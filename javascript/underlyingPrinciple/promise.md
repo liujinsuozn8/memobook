@@ -1243,8 +1243,8 @@
         ```js
         MyPromise.all = function (promises) {
             return new MyPromise((resolve, reject) => {
-                // 1. promises是空对象，返回一个 `resolved` 状态的 Promise对象
-                if (!promises || promises instanceof Array && promises.length === 0) {
+                // 1. promises是空对象，或空数组，返回一个 `resolved` 状态的 Promise对象
+                if (!promises) {
                     resolve();
                 } else {
                     // 创建一个数组，保存每个 Promise 的返回结果
@@ -1282,8 +1282,8 @@
         ```js
         MyPromise.all = function (promises) {
             return new MyPromise((resolve, reject) => {
-                // promises是空对象，返回一个 `resolved` 状态的 Promise对象
-                if (!promises || promises instanceof Array && promises.length === 0) {
+                // promises是空对象，或空数组，返回一个 `resolved` 状态的 Promise对象
+                if (!promises) {
                     resolve();
                 } else {
                     // 创建一个数组，保存每个 Promise 的返回结果
@@ -1335,8 +1335,8 @@
         ```js
         MyPromise.race = function (promises) {
             return new MyPromise((resolve, reject) => {
-                // 1. promises是空对象，返回一个 `resolved` 状态的 Promise对象
-                if (!promises || promises instanceof Array && promises.length === 0) {
+                // 1. promises是空对象，或空数组，返回一个 `resolved` 状态的 Promise对象
+                if (!promises) {
                     resolve();
                 } else {
                     // 2. 如果不是 Promise 对象，则直接返回 fulfilled 状态的新 Promise 对象
@@ -1352,8 +1352,8 @@
         ```js
         MyPromise.race = function (promises) {
             return new MyPromise((resolve, reject) => {
-                // promises是空对象，返回一个 `resolved` 状态的 Promise对象
-                if (!promises || promises instanceof Array && promises.length === 0) {
+                // promises是空对象，或空数组，返回一个 `resolved` 状态的 Promise对象
+                if (!promises) {
                     resolve();
                 } else {
                     // 【 将所有类型的对象都包装成 Promise 对象，统一处理 】

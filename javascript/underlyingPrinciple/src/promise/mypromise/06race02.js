@@ -127,8 +127,8 @@ MyPromise.reject = function (reason) {
 // 只有所有Promise都成功时，才成功；只要有一个失败，则立刻返回一个失败的Promise
 MyPromise.all = function (promises) {
     return new MyPromise((resolve, reject) => {
-        // promises是空对象，返回一个 `resolved` 状态的 Promise对象
-        if (!promises || promises instanceof Array && promises.length === 0) {
+        // promises是空对象，或空数组，返回一个 `resolved` 状态的 Promise对象
+        if (!promises) {
             resolve();
         } else {
             // 创建一个数组，保存每个 Promise 的返回结果
@@ -156,8 +156,8 @@ MyPromise.all = function (promises) {
 // 返回一个Promise。返回第一个完成的 Promise
 MyPromise.race = function (promises) {
     return new MyPromise((resolve, reject) => {
-        // promises是空对象，返回一个 `resolved` 状态的 Promise对象
-        if (!promises || promises instanceof Array && promises.length === 0) {
+        // promises是空对象，或空数组，返回一个 `resolved` 状态的 Promise对象
+        if (!promises) {
             resolve();
         } else {
             // 【 将所有类型的对象都包装成 Promise 对象，统一处理 】

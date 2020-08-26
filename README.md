@@ -105,7 +105,7 @@
             - [ajax实战](javascript/ajax/inaction/index.md)
         - js开发框架
             - Vue
-                - [Vue的基本使用](javascript/vue/base/base.md)
+                - [Vue的基础](javascript/vue/base/index.md)
                 - [Vue开发实战](javascript/vue/inaction/index.md)
             - [Angular基本使用](javascript/angular/base.md)
             - [axios--http请求框架](javascript/ajax/axios/base.md)

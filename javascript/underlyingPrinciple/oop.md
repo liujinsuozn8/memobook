@@ -2864,7 +2864,22 @@
     3. DataView() 对象
     4. JSON
 - 关系图
-    - ![关系图](?????)
+    ```js
+           ArrayBuffer
+         ^            ^
+         │ buffer     │ buffer
+         │            │
+    TypedArray<T>     DataView
+         ^
+         │
+         │
+      Uint8Array, Int8Array
+      Uint8ClampedArray
+      Uint16Array, Int16Array
+      Uint32Array, Int32Array
+      Float32Array
+      Float64Array
+    ```
 - TypedArray 对象
     - 所有的 TypedArray 对象都是结构化数据
     - 所有的 TypedArray 都是基于 `ArrayBuffer()` 对象实现的
@@ -2876,7 +2891,7 @@
             - `ArrayBuffer()` 不是 类数组对象
             - `ArrayBuffer()` 不是 Array() 的子类
         - 不能直接操作 `ArrayBuffer()` 中的数据，需要借用视图来操作
-            - TypeArray 视图
+            - TypedArray 视图
                 - 多数情况下 `ArrayBuffer()` 对象会作为 TypedArray 来使用
             - DataView 视图
     - 使用方法
@@ -2889,7 +2904,7 @@
             // 1. 创建 n byte的数据块
             var buff = ArrayBuffer(n);
             // 2. 创建操作视图
-            var obj1 = new TypeArray(buff);
+            var obj1 = new TypedArray(buff);
             var obj2 = new DataView(buff);
             ```
         3. 操作数据
@@ -2961,7 +2976,7 @@
     |Function|创建的函数对象**可以执行**|
     |RegExp|可执行，可参与字符串运算 ?????|
     |Proxy|代理目标对象，以及回收代理|
-    |TypeArray, DataView|创建与绑定 ArrayBuffer|
+    |TypedArray, DataView|创建与绑定 ArrayBuffer|
     |ArrayBuffer, SharedArrayBuffer|初始化buffer，并维护byreLength|
     |WeakMap, WeakSet|不修改引用，自动回收对象|
     |Map, Set|无效果|

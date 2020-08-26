@@ -604,9 +604,11 @@
         - 模板赋值
         - 展开
         - 解构
+    - `arguments` 本身只是一个普通对象，只是附加了 `length` 属性 和 `Symbol.iterator`
+        - 附加的 `Symbol.iterator` 就是 `Array.prototype[Symbol.iterator]`
 - `arguments` <span style='color:red'>严格等于</span>调用函数时，传入的参数
     - `arguments` 不会受 非简单参数的影响
-    - `arguments` 只是用来反映: 调用函数时，传递了什么数据
+    - `arguments` 只是用来反映 : 调用函数时，传递了什么数据
 - <span style='color:red'>除了箭头函数</span>，每个函数<span style='color:red'>被调用时</span>，都会创建 `arguments`
 - `arguments.length`，可以获取实参数量
 - 不存在 `Arguments` 类/构造函数
@@ -634,6 +636,16 @@
         // 7. 以数组的方式操作 args
         console.log(args.length);
         console.log(args[1]);
+        ```
+
+- 直接获取 `arguments` 对象的方法
+    - 获取方法
+        ```js
+        var args = new Function('return arguments')();
+        ```
+    - 返回结果
+        ```js
+        [Arguments] {}
         ```
 
 - <span style='color:red'>（简单参数）</span> 形参 与 `arguments[x]` 是绑定的
