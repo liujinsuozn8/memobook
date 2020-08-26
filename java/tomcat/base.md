@@ -19,6 +19,7 @@
     - [连接器--Coyote](#连接器--Coyote)
         - [Coyote介绍](#Coyote介绍)
         - [Coyote支持的IO模型与协议](#Coyote支持的IO模型与协议)
+        - [连接器组件](#连接器组件)
 - [](#)
 
 
@@ -260,6 +261,7 @@
 
 ### Tomcat架构图
 [top](#catalog)
+- Tomcat 是由一些可配置的组件构成的 Web 容器
 - Tomcat 的两个核心功能与对应的处理组件
 
     |处理组件|核心功能|备注|
@@ -273,7 +275,7 @@
 ## 连接器--Coyote
 ### Coyote介绍
 [top](#catalog)
-- Coyote 是 tomcat 的`连接器框架`
+- Coyote 是 tomcat 的`连接器框架`，<spaan style='color:red'>负责具体协议的解析</span>
 - coyote 与 caatalina 的交互
     - ![coyote_catalina](imgs/coyote/coyote_catalina.png)
 
@@ -319,10 +321,67 @@
     传输层 NIO  NIO2  AJR
     ```
 
-- 一个Servlet可以对接多个连接器
+- 一个Servlet可以**对接多个连接器**
 - `Service` 组件
-    - 连接器和Servlet容器需要组合成 `Service` 组件才能工作
+    - 连接器、Servlet容器需要组合成 `Service` 组件才能工作
     - `Service` 组件没有做特殊处理，只是在连接器和容器外部包了一层
     - tomcat中可以有多个 `Service`
     - 配置多个 Service，能实现用**不同的端口**访问**同一台机器**上部署的**不同应用**
+
+### 连接器组件
+[top](#catalog)
+- 连接器组件示意图
+    - ![coyote_components](imgs/coyote/coyote_components.png)
+
+- 各个组件的作用
+    1. EndPoint
+        - coyote 的**通信端点**
+        - 功能
+            - 使传输层的抽象
+            - 接收 socket 请求并发送给处理器 Process
+            - 用于处理 TCP/IP 协议
+        - 抽象类 `AbstractEndPoint` 中的两个主要内部类
+            1. `Acceptor` ，监听 Socket 连接请求
+            2. `SocketProcessor`，处理接收到的 socket
+                - 实现了 `Runnable` 接口
+                - 在 `run()` 方法中，调用协议处理组件 `Processor` 进行处理
+                -  为了提高处理能力，`SocketProcessor` 被提交到线程池中执行，这个线程池被交哦做**执行器 Excutor**
+    2. Processor
+        - coyote 的**协议处理接口**
+        - 功能
+            - 使应用层的抽象
+            - 用来处理 http 协议
+        - 工作流程
+            1. 接收来自 `AbstractEndPoint` 的socket
+            2. 读取字节流解析成 `Request`、`Response`对象
+            3. 通过`Adapter`将请求提交到容器处理
+    3. ProtocolHandler
+        - coyote 的**协议接口**
+        - 功能
+            - 组合 `Endpoint`、`Processor`，提供对具体协议的处理
+            - 监听、解析请求，并生成 `Request` 对象
+        - 按照协议和I/O提供了6个实现类
+            - AjpNioProtocol
+            - AjpAprProtocol
+            - AjpNio2Protocol
+            - Http11NioProtocol
+            - Http11Nio2Protocol
+            - Http11AprProtocol
+        - 需要在 `conf/server.xml` 中配置
+            - 可以指定具体的 `ProtocolHandler`
+            - 可以指定协议名称，如 `HTTP/1.1`
+                - 如果安装了 APR，使用 Http11AprProtocol
+                - 未安装 APR，使用 Http11NioProtocol。
+    4. Adapter
+        - 功能
+            - 将 `Request` 转换成 `ServletRequest`
+            - 调用容器的 `service` 方法
+
+## 容器--Catalina
+[top](#catalog)
+- Catalina 是 Servlet 容器实现
+- Catalina 的功能
+    - 以松耦合的方式集成 Coyote，按照请求协议进行数据读写
+    - 包括启动入口、shell等程序
+
 [top](#catalog)
