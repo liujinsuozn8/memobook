@@ -657,16 +657,16 @@
 
 ## Servlet容器响应客户请求的过程
 [top](#catalog)
-1. Servlet引擎检查是否已经装载并创建了Servlet的实例对象
+1. Servlet引擎检查是否已经装载并创建了 Servlet 的实例对象
     - 如果已创建，则执行4
     - 如果未创建，则执行2
-2. 装载并创建了Servlet的示例对象：调用构造器
-3. 调用Servlet实例对象的init()方法
+2. 装载并创建了 Servlet 的示例对象：调用构造器
+3. 调用Servlet实例对象的 `init()` 方法
 4. 处理请求/响应
-    - 创建一个用于**封装请求的ServletRequest对象**和一个**代表响应消息的ServletResponse对象**
-    - 然后调用Servlet的service()方法并将请求和响应对象作为参数传递进去
-5. Web应用程序被停止或重新启动之前，servlet引擎将卸载Servlet，并在卸载之前调用Servlet的destory()方法
-  
+    - 创建一个用于**封装请求的 `ServletRequest` 对象**和一个**代表响应消息的 `ServletResponse` 对象**
+    - 然后调用 Servlet 的 `service()` 方法并将请求和响应对象作为参数传递进去
+5. Web应用程序被停止或重新启动之前，servlet 引擎将卸载 Servlet，并在卸载之前调用 Servlet 的 `destory()` 方法
+
 ## ServletConfig接口与Servlet配置
 [top](#catalog)
 - 封装了Servlet的配置信息，并且可以获取ServletConfig对象

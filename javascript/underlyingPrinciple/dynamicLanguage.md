@@ -31,9 +31,16 @@
         - [显示转换为undefined](#显示转换为undefined)
         - [显示转换为boolean](#显示转换为boolean)
 - [对象与数组的动态特性](#对象与数组的动态特性)
-    - [普通数组](#普通数组)
-    - [TypedArray--类型化数组](#TypedArray--类型化数组)
-    - [类数组对象](#类数组对象)
+    - [普通数组的动态特性](#普通数组的动态特性)
+    - [TypedArray--类型化数组的动态特性](#TypedArray--类型化数组的动态特性)
+    - [类数组对象的动态特性](#类数组对象的动态特性)
+- [重写](#重写)
+    - [标识符的重写](#标识符的重写)
+    - [原型重写](#原型重写)
+    - [构造器重写](#构造器重写)
+    - [对象成员的重写](#对象成员的重写)
+    - [重写的限制](#重写的限制)
+- [eval--动态执行](#eval--动态执行)
 - [](#)
 
 # 类型转换的两个阶段
@@ -749,7 +756,7 @@
 - 显示转换时，最好使用 `Boolean(数据)` 的方式
 
 # 对象与数组的动态特性
-## 普通数组
+## 普通数组的动态特性
 [top](#catalog)
 - 索引数组与关联数组
     - 索引数组: 以`序数类型`作为下标变量，存取元素
@@ -757,7 +764,7 @@
 - 普通数组的下标必须是 `值类型`
     - 引用类型，包括object、function，会被转换为 string
     - undefined 会被转换为 string
-- 普通数组表现为: `索引数组,` 实际是通过 `关联数组` 实现的
+- 普通数组**动态特性**表现为: `索引数组,` 实际是通过 `关联数组` 实现的
     - 为什么通过 `关联数组` 实现的?
         - 只有值类型: boolean **序数的**
         - 其他值类型: string、number、symbol，都是**非序数的**
@@ -814,7 +821,7 @@
         // }
         ```
 
-## TypedArray--类型化数组
+## TypedArray--类型化数组的动态特性
 [top](#catalog)
 - TypedArray的索引是独立的、是由可扩展的外部数据存取接口来实现的
 - `length` 属性
@@ -822,15 +829,16 @@
     - 是不可写的，所以 TypedArray 是长度固定的
     - 当类型化数组关联的 ArrayBuffer 解绑时，`length` 属性会变为0
 
-## 类数组对象
+## 类数组对象的动态特性
 [top](#catalog)
 - 一般对象与数组的区别: 缺少`length`属性
-- 有`length`属性的对象被称为 `类数组对象`
-- 添加 `length` 属性后
-    1. 可以通过 `Array.prototype.xxx.call(类数组对象)` 的方式使用数组方法
+- 有 `length` 属性的对象被称为 `类数组对象`
+- 类数组对象**的动态特性**表现为
+    1. 包含 `length` 属性，并且可以进行修改
+    2. 可以通过 `Array.prototype.xxx.call(类数组对象)` 的方式使用数组方法
         - 调用是，数组方法会自动维护类数组对象中的 `length` 属性
-    2. 无法被迭代，除非手动添加 `Symbol.iterator`
-- 类数组对象添加了 `Symbol.iterator` 后，可以作为 Map、Set、TypedArray、ArrayBuffer 等集合的数据源
+    3. 无法被迭代，除非手动添加 `Symbol.iterator`
+        - 类数组对象添加了 `Symbol.iterator` 后，可以作为 Map、Set、TypedArray、ArrayBuffer 等集合的数据源
 - 示例
     ```js
     // 为对象添加 length 和 Symbol.iterator，转换为类数组对象
@@ -866,4 +874,221 @@
     // 3
     // length
     ```
+
+# 重写
+## 标识符的重写
+[top](#catalog)
+- 重写的要点
+    - JS的重写是一个**代码执行期**的行为
+    - 数据绑定的规则: 执行时绑定
+        - 这导致了语法分析期几乎**不会分析被操作数的类型**
+    - let/const 声明的标识符，无法重写
+
+- 标识符从声明到赋值的过程
+    1. var、let、const 在语法分析期值得到标识符名
+    2. 得到可访问的标识符
+        - let、const 通过 `创建绑定 Create Binding` 将标识符名变成可访问的标识符
+        - var 会被提升，并赋值为 `undefined`
+    3. 创建绑定
+        - 两种绑定方式
+            - 持久绑定--const，不可重写
+                - 因为 const 标识符不可重写，所以<span style='color:red'>在声明时必须赋值</span>
+            - 可变绑定--let/var，可重写
+    - var 本质上是赋值操作，只是为了兼容 ES6，所以也被称为绑定
+
+- 代码执行前的重写
+    1. var声明、函数声明、类声明、形参中的默认值
+        - var声明绑定 undefined
+        - 函数声明会被提升
+        - 形参会使用默认值
+    2. 模块的导入导出
+
+- 赋值操作导致的重写
+    - 两个概念
+        1. 左手端表达式，lsh，left-hand side expression
+        2. 右手端表达式，rsh，right-hand side expression
+    - 如 `a = b`
+        - 左侧的 `a` 是 lsh
+        - 右侧的 `b` 是 rsh
+    - 在赋值操作中
+        - lsh 负责 **取引用** 操作
+        - rsh 负责 **取值** 操作
+    - 在赋值时，lsh需要是某个数据的引用，**不能是字面量**
+        - 如果直接对某个字面量进行操作会产生异常
+            ```js
+            i++
+            ```
+- 对象内部方法对重写的影响
+    - 当lhs是对象的属性时，赋值操作将调用对象的 `[[Set]]`
+
+- 非赋值操作导致的重写
+    - try...catch 中，展开异常对象时，不能重写被展开的内容
+        - 因为这些展开内容相当于是用 `let` 创建的
+        - 如
+            ```js
+            try{
+                throw {msg:'msg01', code:123};
+            }catch({msg, code}){
+                console.log(e);
+                var msg = 1234; // SyntaxError: Identifier 'msg' has already been declared
+                console.log(e);
+            }
+            ```
+    - `for(var a in obj)` 的for表达式中，不会每次循环都创建新的作用域，所以会产生重写
+
+- 在if处理中，可以重写 var 变量和函数, 但是无法修改 `let\const\class`
+
+- undefined 可以重写但是不会生效
+    - undefined 是 global 的一个属性，null、false、true 等不是
+    - undefined的属性描述符
+        ```js
+        console.log(Object.getOwnPropertyDescriptor(global, 'undefined'));
+
+        {
+            value: undefined,
+            writable: false,
+            enumerable: false,
+            configurable: false
+        }
+        ```
+    - 在非严格模式下，undefined 可以重写但是无效
+        - 因为 `writable` 是 `false`
+
+## 原型重写
+[top](#catalog)
+- 原型重写会导致
+    1. 旧的实例使用旧的原型， 但是实例的 `constructor` 仍然指向创建它的类/构造器
+    2. 新的实例使用新的原型
+
+- 示例
+    ```js
+    function Foo(){}
+    var x = new Foo();
+
+    Foo.prototype = new Object();
+    Foo.prototype.constructor = Foo;
+
+    var y = new Foo();
+
+    console.log(x instanceof Foo);  // false，Foo使用了新的原型
+    console.log(y instanceof Foo);  // true
+
+    console.log(x.constructor === Foo); // true，仍然使用旧的原型，并且 constructor 的指向不变
+    console.log(y.constructor === Foo); // true
+    ```
+
+## 构造器重写
+[top](#catalog)
+- `Object` 可以被重写
+    - 重写后不会影响 `new XXX()` 的对象创建方式
+    - 因为 `Object.prototype` 是由引擎内置的原生的对象，不会受重写的影响
+- **重写构造器不会影响到引擎的内置特性**
+- 可以为新构造器、原生构造器建立原型链
+    ```js
+    var x = 'abc';
+    console.log(x.name) // undefined
+
+    // 创建新的原型
+    var NewStringPrototype = {name:'new test'};
+    // 获取原生原型对象
+    var NativeStringPrototype = Object.getPrototypeOf(String.prototype);
+    // 创建新的原型链
+    // String.prototype.__proto__ ---> NewStringPrototype.__proto__ ---> NativeStringPrototype
+    Object.setPrototypeOf(NewStringPrototype, NativeStringPrototype);
+    Object.setPrototypeOf(String.prototype, NewStringPrototype);
+
+    var y = '1234'
+    console.log(x.name);    // new test
+    console.log(y.name);    // new test
+    ```
+
+## 对象成员的重写
+[top](#catalog)
+- 成员重写本质上是更新自有属性描述符
+- `Object.defineProperty()` 本质就是在重写属性
+
+- 成员重写的检查方法
+    - 检查成员是否是重写的
+        - 检查方法
+            1. 当前对象上**有**属性 `prop`
+            2. 对象的原型链上**也有**属性 `prop`
+        - 示例
+            ```js
+            function isRewrote(obj, prop) {
+                // 1. 当前对象上有属性 `prop` && 2. 对象的原型链上也有属性 `prop`
+                return obj.hasOwnProperty(prop) && (prop in Object.getPrototypeOf(obj));
+            }
+            ```
+    - 检查成员是否是从原型继承来的
+        - 检查方法
+            1. 当前对象上**没有**属性 `prop`
+            2. 对象的原型链上**有**属性 `prop`
+        - 示例
+            ```js
+            function isInherited(obj, prop) {
+                // 1. 当前对象上**没有**属性 `prop` && 2. 对象的原型链上**有**属性 `prop`
+                return !obj.hasOwnProperty(prop) && (prop in Object.getPrototypeOf(obj));
+            }
+            ```
+
+## 重写的限制
+[top](#catalog)
+- this不能被重写
+- this、super、new 等关键字可以作为对象属性名
+- 语句中的重写
+    - `for...in` 会**暂存对象的引用**，将导致
+        - 循环体中，对对象的重写不会影响`for...in`中对象的引用
+            ```js
+            for( var k in obj ){
+                obj = '...' // 不会影响 for( var k in obj ) 中的obj引用
+            }
+            ```
+        - 循环时，可以向对象中添加属性，但是无法保证能否遍历到
+            - 因为无法确定引擎是以何种顺序来遍历的
+    - `switch(obj)` 会**暂存对象的引用**，来与每个 case 进行匹配
+        - 在 switch 作用域内对 obj 的修改不会影响被保存的引用
+- 异常中的重写
+    - 主要问题1: 在 `try` 中，如果有 `return x`，是否执行 `finally`?
+        - 会执行 `finally`
+        - 执行流程
+            1. 执行 `try`
+            2. 执行到 `return x` 时，**执行该表达式**，得到 `x`
+            3. 返回 `x` 的动作被 `finally` 挂起
+            4. `finally` 执行后继续执行返回处理，将 `x` 返回
+    - 主要问题2: 在 try 中，如果执行 `return x`，在 finally 中能否修改 x
+        - 不能修改，**值类型的值**，**引用类型的引用**都不能修改
+        - 但是可以修改引用类型的成员
+        - 原因
+            - `finally` 会挂起返回处理，但挂起之前，`return x` 表达式已经运算完成了，`finally` 无法修改
+
+# eval--动态执行
+[top](#catalog)
+- eval表示的是一个动态的语句执行系统
+- 动态执行的两个阶段
+    1. 动态装载
+    2. 动态执行，即 eval
+- `eval('字符串')`，只接受一个 `string`，不接受其他类型，包括`new String()`
+    - 如果参数是 `string`，会执行代码片段，返回值是代码片段的返回值
+    - 如果参数不是 `string`，会直接将参数返回
+    - 示例
+        ```js
+        var evalResult01 = eval('var a=100');
+        console.log(evalResult01);  // undefined
+        console.log(a);             // 100
+
+        // 使用字符串对象创建代码文本
+        var evalResult02 = eval( new String('var b=200') );
+        // eval 直接将返回了原始对象
+        console.log(evalResult02);  // [String: 'var b=200']
+        console.log(b);             // ReferenceError: b is not defined
+        ``` 
+- 当eval 作为一般函数调用时，this是当前作用域中可引用的this
+    - 包括在箭头函数和 `with(obj)` 中的this
+- eval总是使用当前函数的闭包
+- eval的运行模式与所在的环相同，但是如果eval内使用了严格模式，则 eval 在严格模式下执行
+- eval 中无法直接处理对象字面量，需要套在`()` 内部，否则`{a:b}`中的 `:` 会被当作标签声明
+    ```js
+    eval("( {a:111, b:222} )")
+    ```
+
 [top](#catalog)

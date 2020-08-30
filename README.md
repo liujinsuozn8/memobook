@@ -109,7 +109,7 @@
                 - [Vue开发实战](javascript/vue/inaction/index.md)
             - [Angular基本使用](javascript/angular/base.md)
             - [axios--http请求框架](javascript/ajax/axios/base.md)
-
+        - [组件化开发方法](javascript/componentDev/base.md)
     - nodejs
         - [基本知识](nodejs/base/base.md)
         - [nodejs应用](nodejs/inaction/base.md)
