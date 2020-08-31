@@ -1395,7 +1395,7 @@
     - 对象态的表现
         - JS将所有函数的原型链顶端都设为`Function.prototype`
         - 不是所有函数都是由`Function()`创建的
-        - 由于`Function.prototype`，所有函数看起来都是 `Function` 的示例
+        - 由于`Function.prototype`，所有函数看起来都是 `Function` 的实例
     - 创建函数的构造函数
         - `Function`，普通函数
         - 继承自`Function`的构造函数，**但是无法直接使用**
@@ -1425,6 +1425,7 @@
         |方法: `obj.xxx()`|-|Function|N|
 
 - 函数的代理态
+    - ?????
 
 # 函数与逻辑结构
 ## 函数与递归

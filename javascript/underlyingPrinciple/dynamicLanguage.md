@@ -41,12 +41,16 @@
     - [对象成员的重写](#对象成员的重写)
     - [重写的限制](#重写的限制)
 - [eval--动态执行](#eval--动态执行)
-- [](#)
+- [序列化、反序列化](#序列化、反序列化)
+    - [对象的限制](#对象的限制)
+    - [函数的限制](#函数的限制)
+    - [序列化时的对象拷贝深度和循环引用](#序列化时的对象拷贝深度和循环引用)
+- [动态执行逻辑](#动态执行逻辑)
 
 # 类型转换的两个阶段
 [top](#catalog)
 1. `引用 --> 值`，将对象转换为原始值
-    - 由隐式调用控制，包括方法
+    - 根据运算符的**预期**，由隐式调用控制以下两个方法的调用顺序
         - `valueOf`、`toString`
         - `Symbol.toPrimitive` （用于替换上面两个方法）
     - 在第一阶段，必须保证参与运算的是值类型
@@ -97,7 +101,7 @@
     ```
 
 - `new Boolean()`、`new Number()`、`new String()` 可以创建对应类型的包装类
-    - 无法直接使用 `new Symbol()`，只能通过 `Symbol()` 创建符号数据
+- 无法直接使用 `new Symbol()`，只能通过 `Symbol()` 创建符号数据
 - 显示包装
     - `new Object(...)`，可以将: boolean、number、string、symbol 包装成对应的包装类型
         ```js
@@ -299,6 +303,7 @@
 - 特例: `new Boolean(false)`
     - `!! new Boolean(false)` 会返回 `true`
         - 因为所有对象都作为对象处理，忽略的本身的boolean值，所以返回 `true`
+        - **但是转换为其他类型时，会根据 `false` 的规则来转换**
     - 与字符串、数值进行运算时，返回 `false`
     - 示例
         ```js
@@ -325,7 +330,7 @@
 - 值类型在运算时
     1. 不会主动调用包装类的 `valueOf`、`toString` 方法
         - 即: 不会发生隐式调用
-        - 即: 隐式调用只对**包装类对象**有效
+        - 即: <span style='color:red'>隐式调用只对**包装类对象**有效</span>
     2. 会转换为运算、操作的预期类型
 
 - 示例
@@ -382,7 +387,7 @@
 
 ## 显示转换
 [top](#catalog)
-- 通过包装类型构造函数的**函数调用**来执行显示转换，包括
+- 通过包装类型构造函数的<span style='color:red'>函数调用</span>来执行显示转换，包括
     - `Object(x)`
     - `Number(x)`
     - `String(x)`
@@ -421,15 +426,16 @@
 # 值类型的转换
 ## 什么时候会发生值类型的转换
 [top](#catalog)
-- JS中数据的类型不是由变量声明决定，数据的类型将会延迟到绑定一个数据时才能确定
+- JS中数据的类型不是由变量声明决定，数据的类型将会<span style='color:red'>延迟</span>到<span style='color:red'>绑定</span>一个数据时才能确定
 
 - `运算符`导致类型转换
     - 最终参与运算的一定是值类型
         - 所以在运算之前会发生 `引用--->值` 的转换
-    - 根据具体操作确定转换的预期类型，然后调用 `valueOf`、`toString`，或 `Symbol.toPrimitive`
+        - 根据具体操作确定转换的预期类型，然后调用 `valueOf`、`toString`，或 `Symbol.toPrimitive`
+    - 如果本身就是值类型，不会调用上述的方法，会按照 [值类型之间的转换规则](#值类型之间的转换规则) 进行转换
 
 - 语句或语义导致类型转换
-    - `if语句`、`while()` 一定会将表达式的结果转换为boolean
+    - `if语句`、`while()` 一定会将表达式的结果转换为 `boolean`
     - 对象声明时的: `标识符--->字符串` 的转换
     - `obj.property` 使用对象属性时，也存在 `标识符--->字符串` 的转换
         - JS在语法解析阶段，会将 `.property` 部分转换为**字符串**，并保存在解析结果中
@@ -1085,10 +1091,147 @@
 - 当eval 作为一般函数调用时，this是当前作用域中可引用的this
     - 包括在箭头函数和 `with(obj)` 中的this
 - eval总是使用当前函数的闭包
+- 间接的 eval: `obj.eval` 的作用域**默认指向全局作用域**
 - eval的运行模式与所在的环相同，但是如果eval内使用了严格模式，则 eval 在严格模式下执行
 - eval 中无法直接处理对象字面量，需要套在`()` 内部，否则`{a:b}`中的 `:` 会被当作标签声明
     ```js
     eval("( {a:111, b:222} )")
     ```
+
+# 序列化、反序列化
+## 对象的限制
+[top](#catalog)
+- `obj.tpString()` 不能将对象序列化
+- `JSON.stringify()` 无法处理循环结构的引用
+
+## 函数的限制
+[top](#catalog)
+- 三种情况
+    1. `toString()` 无法显示 JS 内置方法的代码文本
+    2. 普通函数
+        - `toString()` 的结果是<span style='color:red'>函数声明</span>的代码文本
+        - 因为结果字符串是**函数声明**，所以不能直接用 eval 解析
+            - 函数声明不会产生返回值
+            - 需要将代码文本套在 `()` 内部，作为返回值返回
+        - `new Function` 也无法直接处理
+            - 需要添加 `return ` 来返回函数声明
+    3. 函数是: 对象或类中的方法声明
+        - `toString()` 的结果是方法声明，代码文本中没有 `function` 前缀, 无法作为函数来解析
+            - 可以手动添加 `function`
+- 示例
+    - 参考代码
+        - [src/dynamic/serialize/func_limit.js](src/dynamic/serialize/func_limit.js)
+    - 代码内容
+        ```js
+        // 1. JS的内置代码
+        console.log(Object.toString.toString());
+        // function toString() { [native code] }
+
+        // 2. 普通函数
+        function foo() {
+            console.log(100);
+        }
+
+        var fooStr = foo.toString();
+
+        // 2.1. 直接用 eval 解析函数代码文本
+        var f1 = eval(fooStr);
+        console.log(f1);    // undefined
+
+        // 2.2. 将代码文本套在 `()` 内，再用 eval 解析
+        var f2 = eval(`(${fooStr})`);
+        f2();   // 100
+
+        // 2.3. 使用 Function 解析，需要附加 `return ` 将函数作为返回值返回给调用者
+        var f3 = new Function('return ' + fooStr);
+        f3()(); // 100
+
+        // 3. 对象或类中的方法声明
+        var obj = {
+            bar(){ console.log(1234) }
+        };
+
+        // 3.1 结果中不会包含 function 前缀
+        var barStr = obj.bar.toString();
+        console.log(barStr);    // bar(){ console.log(1234) }
+
+        // 3.2 手动添加 function 前缀来处理
+        var f4 = eval ( `(function ${barStr})` );
+        f4();   // 1234
+        ```
+
+## 序列化时的对象拷贝深度和循环引用
+[top](#catalog)
+- `JSON.stringify()` 对对象的处理
+    - 将检查对象所有的属性，包括引用属性
+    - 没有对象拷贝深度的限制，可以处理任意深度的属性引用
+    - <span style='color:red'>无法处理循环引用，会抛出异常</span>
+        ```js
+        var obj = {};
+        //  添加属性，循环引用自身
+        obj.prop = obj;
+        var result = JSON.stringify(obj);
+        // 抛出异常
+        // TypeError: Converting circular structure to JSON
+        ```
+
+- `JSON.stringify()` 无法处理函数类型
+    - 包括 普通函数 和 对象中的方法
+    - 原因
+        1. JSON 数据格式中不包含 `'function'` 类型
+        2. `JSON.stringify()` 无法理解: **函数同时具有对象、函数，这两种属性**
+
+- 处理循环引用的总体方式
+    1. 提前扫描对象，并标识所有成员在对象树上的路径
+    2. 检查路径中是否存在循环引用
+    3. 如果存在循环引用
+        1. 将循环引用的成员序列化为 `指定格式的文本`
+        2. 反序列化时，将 `指定格式的文本` 转换为循环引用的成员
+
+# 动态执行逻辑
+[top](#catalog)
+- JS中的执行行为
+    - 语句执行
+    - 表达式执行
+    - 隐式执行行为，如:
+        - 函数参数默认值的绑定，在参数绑定时隐式执行
+        - 展开运算，在数组初始化、参数绑定时隐式执行
+
+- 动态执行逻辑
+    - eval
+    - 通过 `new Function`、`new AsyncFunction`、`new AsyncGeneratorFunction`、`new GeneratorFunction` 动态创建的函数
+    - 模板字符串
+        - 可以理解为: 将字符串作为表达式动态执行
+
+- 动态创建的函数的特性
+    - 总是位于`非严格模式`下的`全局作用域`中
+        - 如果代码首行是 `use strict`，则位于 `严格模式` 下
+    - 示例。**只在 chrome 中生效，Nodejs会抛出异常**
+        ```js
+        var v = 'global';
+
+        function foo() {
+            var v = 'foo';
+            (function () { console.log(v) })();
+            (new Function("console.log(v)"))();
+        }
+
+        foo();
+        // 输出:
+        // foo
+        // global
+        ```
+
+# 动态方法调用---call、apply、bind
+[top](#catalog)
+- apply 与 call 比较
+    - 参数的传递方式
+        1. `fn.call(thisTarget, p1, p2, p3....)`
+            - 需要依次传入函数参数
+        2. `fn.apply(thisTarget, [p1, p2, p3....])`
+            - 需要将函数参数封装到 **数组中**， 或**对象中**
+    - 性能
+        - <span style='color:red'>`apply` 的性能更好</span>
+        - 调用 `call` 时，引擎需要将参数转换成列表结构，降低了性能
 
 [top](#catalog)
