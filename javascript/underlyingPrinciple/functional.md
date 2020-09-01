@@ -1605,6 +1605,12 @@
             - 如 `for...of` 调用迭代器
         - 某些运算符的隐式调用
             - 如 `yield *` 调用迭代器
+- 函数调用时，会隐式传递的两个参数
+    - `this`
+        - 隐式传入后，会在第二阶段进行绑定
+    - `newTarget`，通过 new.target 访问
+        - 函数调用时，是 `undefined`
+        - 构造器调用时，是 `new XXX()` 中 `new` 后面的构造器
 - `arguments.callee`: 表明是哪个函数
     - arguments.callee 的指向
         - 创建 `arguments` 的函数

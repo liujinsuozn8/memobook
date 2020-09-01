@@ -46,6 +46,12 @@
     - [函数的限制](#函数的限制)
     - [序列化时的对象拷贝深度和循环引用](#序列化时的对象拷贝深度和循环引用)
 - [动态执行逻辑](#动态执行逻辑)
+- [动态方法调用---call、apply、bind](#动态方法调用---call、apply、bind)
+    - [apply与call比较](#apply与call比较)
+    - [this绑定丢失](#this绑定丢失)
+    - [bind](#bind)
+    - [非严格模式与严格模式下的this绑定](#非严格模式与严格模式下的this绑定)
+- [](#)
 
 # 类型转换的两个阶段
 [top](#catalog)
@@ -1188,6 +1194,8 @@
         1. 将循环引用的成员序列化为 `指定格式的文本`
         2. 反序列化时，将 `指定格式的文本` 转换为循环引用的成员
 
+
+
 # 动态执行逻辑
 [top](#catalog)
 - JS中的执行行为
@@ -1223,15 +1231,138 @@
         ```
 
 # 动态方法调用---call、apply、bind
+## apply与call比较
 [top](#catalog)
-- apply 与 call 比较
-    - 参数的传递方式
-        1. `fn.call(thisTarget, p1, p2, p3....)`
-            - 需要依次传入函数参数
-        2. `fn.apply(thisTarget, [p1, p2, p3....])`
-            - 需要将函数参数封装到 **数组中**， 或**对象中**
-    - 性能
-        - <span style='color:red'>`apply` 的性能更好</span>
-        - 调用 `call` 时，引擎需要将参数转换成列表结构，降低了性能
+- 参数的传递方式
+    1. `fn.call(thisTarget, p1, p2, p3....)`
+        - 需要依次传入函数参数
+    2. `fn.apply(thisTarget, [p1, p2, p3....])`
+        - 需要将函数参数封装到 **数组中**， 或**对象中**
+- 性能
+    - <span style='color:red'>`apply` 的性能更好</span>
+    - 调用 `call` 时，引擎需要将参数转换成列表结构，降低了性能
+
+- apply 与 call 的第一个参数可以设置为 `null` 、`undefined`，表示不指定 `this`
+
+- 对象方法与函数
+    - 对象方法的访问，仍然是属性的访问
+    - 调用方法和调用函数的方式没有区别，只是传递的this对象不同
+    - 如果调用函数时，能传递一个有效的、指向某个对象的 `this`，**就可以作为方法使用**
+
+## this绑定丢失
+[top](#catalog)
+- this绑定丢失的场景
+    - 调用 apply、call 时，箭头函数无法绑定 this
+    - 对象方法被赋值给变量
+- 处理 this 绑定丢失
+    - 使用 箭头函数处理 `this` 丢失
+        - 因为箭头函数使用的是所在上下文中的 `this`, 所以可以解决 **绑定丢失**
+        - <span style='color:red'>如果箭头函数的上下文也丢失了 `this`，则箭头函数也无法处理</span>
+        - 示例
+            - 参考代码
+                - [src/dynamic/bind_this/arrow.js](src/dynamic/bind_this/arrow.js)
+            - 代码内容
+                ```js
+                var id = 'global';
+                var obj = {
+                    id:1234,
+                    foo(){
+                        console.log('foo:' + this.id);
+                        return ()=>{
+                            console.log("arrow:" + this.id);
+
+                        }
+                    }
+                }
+
+                // 1. 箭头函数所在的上下文丢失了 this，使箭头函数也无法维持 this
+                var a = obj.foo;
+                var inner = a();    // foo:undefined
+                inner();            // arrow:undefined
+
+                // 2. 箭头函数所在的上下文还保持着 this，箭头函数可以使用this
+                var b = obj.foo();  // foo:1234
+                b();                // arrow:1234
+                ```
+    - 通过 `bind()` 函数绑定 `this`
+## bind
+[top](#catalog)
+- bind绑定后的函数<span style='color:red'>没有</span>`prototype`
+    - 执行 `obj instanceof class` 时，绑定函数会返回 **原始函数.prototype**，再执行运算
+    - 这会使得绑定函数创建的对象同时是 原始函数 和 绑定函数的 实例
+- bind绑定后的函数作为构造器
+    - 这种构造方式的 3 大特点
+        1. 函数内部的 `this` 不会指向被绑定的对象，会指向构造函数创建的新对象
+        2. 参数的使用
+            - 参数会使用 bind 时传入的参数
+            - 在 `new XXX(..args)` 时传入的参数
+                - 如果所有参数都已经被 bind了，则 `args` 被忽略
+                - 如果有未被 bind 的参数，则按顺序从 `args` 中获取
+            - 但是所有的参数最终都会都绑定到 `arguments`
+        3. 创建的对象同时是 原始函数 和 绑定函数的 实例
+    - 示例
+        - 参考代码
+            - [src/dynamic/bind/as_constructor.js](src/dynamic/bind/as_constructor.js)
+        - 代码内容
+            ```js
+            var obj = {};
+
+            function Foo(x, y, z) {
+                // 3. 绑定函数作为构造函数时，this会变成新创建的实例对象
+                console.log(this === obj);      // false
+
+                // 4. 参数将使用 绑定时传入的参数，如果有剩余则使用 调用构造函数时传入的参数
+                console.log(`x=${x}, y=${y}, z=${z}`);  // x=aaa, y=bbb, z=ccc
+            }
+
+            // 1. 将 foo 的 this 绑定为 obj
+            var NewFoo = Foo.bind(obj, 'aaa', 'bbb');
+
+            // 2. 绑定后的函数作为构造器创建实例对象
+            var result = new NewFoo('ccc', 'ddd', 'eee');
+
+            // 5. 实例对象将同时是: 原始函数 和 绑定函数的 实例
+            console.log(result instanceof NewFoo);  // true
+            console.log(result instanceof Foo);     // true
+            ```
+- bind 的多次绑定
+    - 多次绑定时的特性
+        1. 绑定的参数会叠加
+        2. 初始绑定的 `this` 不会被后续的绑定覆盖
+    - 示例
+        - 参考代码
+            - [src/dynamic/bind/multibind.js](src/dynamic/bind/multibind.js)
+        - 代码内容
+            ```js
+            function Foo() {
+                console.log(this.id);
+
+                console.log(arguments.length);
+                console.log(...arguments);
+            }
+
+            var obj01 = { id: 'obj01' };
+            var obj02 = { id: 'obj02' };
+            var obj03 = { id: 'obj03' };
+
+            var Fn1 = Foo.bind(obj01, 'aa', 'bb');
+            var Fn2 = Fn1.bind(obj01, 'cc', 'dd');
+            var Fn3 = Fn2.bind(obj01, 'ee', 'ff');
+
+            Fn3('gg', 'hh');
+            // 输出
+            // obj01        <<<<< 第一次绑定的 this 不会被覆盖
+            // 8            <<<<< 多次绑定的参数会叠加
+            // aa bb cc dd ee ff gg hh  <<<<< 多次绑定的参数会叠加
+            ```
+
+## 非严格模式与严格模式下的this绑定
+[top](#catalog)
+- 如果第一个参数是: `undefined`、`null`
+    - 非严格模式: this 指向全局对象 global / window
+    - 严格模式: this 被设置为 null、undefined
+- 如果第一个参数是: 值类型数据
+    - 非严格模式: this 指向 被包装后的数据
+    - 严格模式: this 指向原始的值数据
 
 [top](#catalog)

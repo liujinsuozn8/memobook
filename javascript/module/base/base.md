@@ -690,6 +690,8 @@
             import {A, B, C, D} from '其他模块'
             export {A, B, C, D}
             ```
+        - 这种语法<span style='color:red'>不适合只导出了 `default` 的模块</span>
+            - 这种情况只能分步执行 `import` 和 `export`
     8. `export * from "moduleA"`，在当前模块内聚合并导出moduleA的**全部内容**
         - 使用这种导出方法时，被聚合的相关内容**不会重复的出现**在当前模块的导出表中
         - 在其他模块执行 `import name from "moduleA"` 时的搜索流程
