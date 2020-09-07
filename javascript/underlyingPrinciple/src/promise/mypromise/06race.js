@@ -113,9 +113,13 @@ MyPromise.prototype.catch = function (onRejected) {
 
 // 返回一个成功的Promise对象
 MyPromise.resolve = function (value) {
-    return new MyPromise((resolve, reject) => {
-        value instanceof MyPromise ? value.then(resolve, reject) : resolve(value);
-    })
+    // 1. 如果 value 是一个 Promise及其子类的实例，则直接返回
+    if (value instanceof MyPromise) {
+        return value;
+    } else {
+        // 2. 如果 value 不是 Promise及其子类的实例，则创建一个新的 Promise 对象
+        return new MyPromise((resolve) => resolve(value));
+    }
 }
 
 // 返回一个失败的Promise对象
@@ -127,8 +131,8 @@ MyPromise.reject = function (reason) {
 // 只有所有Promise都成功时，才成功；只要有一个失败，则立刻返回一个失败的Promise
 MyPromise.all = function (promises) {
     return new MyPromise((resolve, reject) => {
-        // 1. iterator是空对象，或空数组，返回一个 `resolved` 状态的 Promise对象
-        if (!promises) {
+        // 1. iterator是空对象，返回一个 `resolved` 状态的 Promise对象
+        if (!promises || promises instanceof Array && promises.length === 0) {
             resolve();
         } else {
             // 创建一个数组，保存每个 Promise 的返回结果
@@ -169,8 +173,8 @@ MyPromise.all = function (promises) {
 // 返回一个Promise。返回第一个完成的 Promise
 MyPromise.race = function (promises) {
     return new MyPromise((resolve, reject) => {
-        // 1. promises是空对象，或空数组，返回一个 `resolved` 状态的 Promise对象
-        if (!promises) {
+        // 1. promises是空对象，返回一个 `resolved` 状态的 Promise对象
+        if (!promises || promises instanceof Array && promises.length === 0) {
             resolve();
         } else {
             // 2. 如果不是 Promise 对象，则直接返回 fulfilled 状态的新 Promise 对象

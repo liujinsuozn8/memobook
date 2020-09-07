@@ -1,4 +1,4 @@
-// 05 Promise.all的实现
+// 07 Promise.resolveDelay、Promise.rejectDelay 实现
 
 const status = {
     PENDING: 'pending',
@@ -111,6 +111,17 @@ MyPromise.prototype.catch = function (onRejected) {
     return this.then(undefined, onRejected);
 }
 
+// 返回的仍然是一个 Promise 对象
+MyPromise.prototype.finally = function (onFinally) {
+    // 1. 先调用 onFinally 隐式生成一个 promise 对象
+    // 如果内部出现了特例: 抛出异常、返回 rejected 状态的 promise 对象，
+    // 则自动寻找有效的 onRejected 来处理
+    var p1 = this.then(onFinally, undefined)
+    // 2. 将当前对象中保存的数据传给 隐式 promise 对象
+    var p2 = p1.then(() => this.data, reason => { throw reason });
+    return p2;
+}
+
 // 返回一个成功的Promise对象
 MyPromise.resolve = function (value) {
     // 1. 如果 value 是一个 Promise及其子类的实例，则直接返回
@@ -131,7 +142,7 @@ MyPromise.reject = function (reason) {
 // 只有所有Promise都成功时，才成功；只要有一个失败，则立刻返回一个失败的Promise
 MyPromise.all = function (promises) {
     return new MyPromise((resolve, reject) => {
-        // 1. promises是空对象，返回一个 `resolved` 状态的 Promise对象
+        // promises是空对象，返回一个 `resolved` 状态的 Promise对象
         if (!promises || promises instanceof Array && promises.length === 0) {
             resolve();
         } else {
@@ -140,33 +151,53 @@ MyPromise.all = function (promises) {
             // 通过变量记录已经成功的 Promise 数量
             let successCount = 0;
             promises.forEach((p, idx) => {
-                if (p instanceof MyPromise) {
-                    // 3. 如果是 Promise 对象，则返回结果是这个对象的结果
-                    p.then(
-                        value => {
-                            successCount++;
-                            results[idx] = value;
+                // 【 将所有类型的对象都包装成 Promise 对象，统一处理 】
+                MyPromise.resolve(p).then(
+                    value => {
+                        successCount++;
+                        results[idx] = value;
 
-                            // 当成功的结果数量与 Promise对象的数量相等时，返回所有结果
-                            if (successCount === promises.length) resolve(results);
-                        },
-                        // 如果出现异常请求，立刻失败
-                        reject  // reason => reject(reason)
-                    )
-                } else {
-                    // 2. 如果不是 Promise 对象，则直接返回 fulfilled 状态的新 Promise 对象
-                    successCount++;
-                    results[idx] = p;
-
-                    // 当成功的结果数量与 Promise对象的数量相等时，返回所有结果
-                    if (successCount === promises.length) resolve(results);
-                }
+                        // 当成功的结果数量与 Promise对象的数量相等时，返回所有结果
+                        if (successCount === promises.length) resolve(results);
+                    },
+                    // 如果出现异常请求，立刻失败
+                    reject  // reason => reject(reason)
+                )
             })
         }
     })
 }
 
 // 返回一个Promise。返回第一个完成的 Promise
-MyPromise.race = function (promises) {}
+MyPromise.race = function (promises) {
+    return new MyPromise((resolve, reject) => {
+        // promises是空对象，返回一个 `resolved` 状态的 Promise对象
+        if (!promises || promises instanceof Array && promises.length === 0) {
+            resolve();
+        } else {
+            // 【 将所有类型的对象都包装成 Promise 对象，统一处理 】
+            promises.forEach(p => MyPromise.resolve(p).then(resolve, reject));
+        }
+    })
+}
+
+
+MyPromise.resolveDelay = function (value, timeout) {
+    return new MyPromise((resolve, reject) => {
+        // 延迟执行操作
+        setTimeout(
+            () => value instanceof MyPromise ? value.then(resolve, reject) : resolve(value),
+            timeout
+        );
+    })
+}
+
+MyPromise.rejectDelay = function (reason, timeout) {
+    // 延迟执行操作
+    return new MyPromise((_,reject)=>{
+        setTimeout(() => reject(reason), timeout);
+    })
+}
+
 
 module.exports = MyPromise

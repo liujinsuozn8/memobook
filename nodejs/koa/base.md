@@ -740,7 +740,7 @@
 [top](#catalog)
 - 通过koa脚手架生成工具，创建一个基于koa2的应用骨架
 - 安装: `npm i koa-generator -g`
-- 创建项目: `koa koa_demo`
+- 创建项目: `koa2 koa_demo`
     - 项目结构
         ```
         koa_demo
@@ -764,6 +764,7 @@
         ```
 - 安装依赖: `npm i`
 - 启动项目: `npm run start`
+- 默认通过: `http://localhost:3000` 访问
 
 ## 生成内容的分析
 [top](#catalog)

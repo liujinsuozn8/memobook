@@ -1,0 +1,100 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <meta charset='UTF-8'>
+    <title>绘制地图测距图</title>
+    <style>
+        #box {
+            width: 100%;
+            height: 700px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id='box'>
+    </div>
+
+    <script>
+        // 创建svg节点
+        function createSVGNode(type, props) {
+            var node = document.createElementNS('http://www.w3.org/2000/svg', type);
+            for (var k in props) {
+                node.setAttribute(k, props[k]);
+            }
+
+            return node;
+        }
+
+        // 获取svg的父节点
+        var box = document.getElementById('box');
+        // 创建 svg
+        var svg = createSVGNode('svg', {
+            xmlns: "http://www.w3.org/2000/svg",
+            width: '100%',
+            height: '100%',
+        });
+
+        // 将svg添加到父节点中
+        box.appendChild(svg);
+
+        // 保存折线节，鼠标点击、移动时，实时修改 points 属性
+        var polyline=null;
+
+        // 保存 polyline 的point数据
+        var prev_pointsStr = ''
+
+        // 为 svg 节点添加点击事件，每次点击都修改折线的 points 属性
+        svg.addEventListener('mousedown', function (event) {
+            // 计算鼠标点击时在 svg 元素中的具体位置
+            var x = event.clientX - box.offsetLeft;
+            var y = event.clientY - box.offsetTop;
+            // 如果是第一次点击，则创建 折线
+            if (!polyline){
+                polyline = createSVGNode('polyline', {
+                    stroke: 'black',
+                    'stroke-width': '5',
+                    fill: 'none'
+                })
+                svg.appendChild(polyline);
+                prev_pointsStr += `${x}, ${y}`;
+
+                // 为svg添加移动事件，移动时，计算线段位置，实现线段移动的效果
+                svg.addEventListener('mousemove', lineMoveHandle);
+                // 为svg添加右键点击事件，右键点击时，删除移动事件
+                svg.addEventListener('contextmenu', deleteLineMoveHandle);
+            } else {
+                prev_pointsStr += `, ${x}, ${y}`;
+            }
+            polyline.setAttribute('points', prev_pointsStr);
+
+            // 每次点击的时候，在点击位置创建一个圆
+            svg.appendChild(createSVGNode('circle', {
+                cx:x,
+                cy:y,
+                r:5,
+                fill:'white',
+                stroke:'red',
+                'stroke-width':'2'
+            }));
+        });
+
+        // 移动时，计算线段位置，实现线段移动的效果
+        function lineMoveHandle(event) {
+            var x = event.clientX - box.offsetLeft;
+            var y = event.clientY - box.offsetTop;
+            polyline.setAttribute('points', `${prev_pointsStr}, ${x}, ${y}`);
+        }
+
+        // 为svg添加右键点击事件，右键点击时，删除移动事件
+        function deleteLineMoveHandle(event){
+            svg.removeEventListener('mousemove', lineMoveHandle);
+            event.cancelBubble = true;
+        }
+
+
+    </script>
+</body>
+
+</html>

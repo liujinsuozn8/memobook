@@ -10,10 +10,15 @@
 - [Promise的API](#Promise的API)
 - [Promise的使用方法](#Promise的使用方法)
     - [Promise的基本使用](#Promise的基本使用)
+    - [rejected状态的处理](#rejected状态的处理)
+    - [finally结束处理](#finally结束处理)
+    - [Promise.resolve()的两种特殊参数](#Promise.resolve()的两种特殊参数)
     - [解构嵌套的异步调用](#解构嵌套的异步调用)
     - [简化只有数据的Promise对象](#简化只有数据的Promise对象)
     - [Promise.all--等待所有异步调用完成](#Promise.all--等待所有异步调用完成)
+- [Promise使用的第一原则](#Promise使用的第一原则)
 - [Promise的几个关键问题](#Promise的几个关键问题)
+    - [promise对象是一个接一个创建的](#promise对象是一个接一个创建的)
     - [如何改变Promise的状态](#如何改变Promise的状态)
     - [多个回调函数的执行顺序](#多个回调函数的执行顺序)
     - [改变Promise的状态和指定回调函数的顺序是什么](#改变Promise的状态和指定回调函数的顺序是什么)
@@ -22,11 +27,13 @@
     - [Promise异常穿透](#Promise异常穿透)
     - [如何中断Promise链](#如何中断Promise链)
     - [resolve、reject内是异步执行回调函数的](#resolve、reject内是异步执行回调函数的)
-- [Promise输出分析](#Promise输出分析)
+    - [回调函数不是函数时的默认处理](#回调函数不是函数时的默认处理)
+- [Promise实例分析](#Promise实例分析)
 - [手写Promise](#手写Promise)
     - [定义Promise的整体结构](#定义Promise的整体结构)
     - [Promise构造函数的实现](#Promise构造函数的实现)
     - [promise.then、promise.catch的实现](#promise.then、promise.catch的实现)
+    - [promise.finally的实现](#promise.finally的实现)
     - [Promise.resolve、Promise.reject的实现](#Promise.resolve、Promise.reject的实现)
     - [Promise.all的实现](#Promise.all的实现)
     - [Promise.race的实现](#Promise.race的实现)
@@ -276,6 +283,201 @@
         // promise end
         // promise inner timer
         // success timer data
+        ```
+
+## rejected状态的处理
+[top](#catalog)
+- 在变为 `rejected` 状态时，通过 `catch(onRejected)`，或者 `then(_, onRejected)` 中的 `onRejected` 来处理
+- 什么时候变成 `rejected`?
+    - 在 Promise 对象中，主动调用 `reject()` 方法
+    - 抛出异常 `throw ...`
+
+- 如果 promise 的状态变为 `rejected`，并且没有 `onRejected` ，将会会抛出<span style='color:red'>未捕获</span>的异常
+    ```js
+    var p = Promise.reject(1234);
+    // 将会抛出异常
+
+    // 1. 在 nodejs 中
+    // (node:6920) UnhandledPromiseRejectionWarning: 1234
+    // 2. 在 chrome 中
+    // Uncaught (in promise) 1234
+    ```
+
+## finally结束处理
+[top](#catalog)
+- `finally(onFinally)`
+    - 一定会在前面的链式处理结束后执行，无论前面的 promise 是什么状态
+    - 方法调用会创建一个新的 Promise 对象
+    - 可以用于: 在正常/异常处理结束后，清理资源
+
+- `onFinally` 的基本使用
+    - 函数签名
+        ```js
+        function onFinally(){...}
+        ```
+    - 因为无法预知前面的 promise 对象的最终状态，所以没有任何参数
+    - 示例
+        ```js
+        new Promise((resolve, reject)=>{
+            var num = Math.floor(Math.random()* 21);
+            if (num <=10){
+                resolve(num);
+            } else{
+                reject(num);
+            }
+        }).then(value=>console.log(`value=${value}`))
+        .catch(reason=>console.log(`reason=${reason}`))
+        .finally(()=>console.log('end'));
+
+        // 最终一定会输出 end
+        ```
+- `onFinally` 中的返回值处理
+    - <span style='color:red'>一般情况下返回值会被忽略</span>，promise 内部代理的仍然是前面 promise 对象产生的数据
+    - 示例
+        ```js
+        Promise.resolve(1234)
+            .then(value=>{
+                console.log(`then A: ${value}`);
+                return Promise.resolve('abcd');
+            })
+            .finally(()=>{
+                console.log('end');
+                // 尝试返回数据
+                return 'wxyz';
+                })
+                .then(value=>{
+                    console.log(`then B: ${value}`);
+                })
+
+        // 输出:
+        // then A: 1234
+        // end              <<<<< 尝试返回数据 wxyz
+        // then B: abcd     <<<<< 但是仍然使用了前面 promise 中的数据 abcd
+        ```
+
+- `onFinally` 返回值的两种特殊情况
+    - 两种特殊情况
+        1. `onFinally` 内部抛出异常
+        2. `onFinally` 内部返回了一个 `rejected` 状态的 Promise 对象
+    - 处理方式
+        - 使用`异常数据` **替换**前面 promise 中的数据
+    - 示例
+        1. 抛出异常
+            ```js
+            Promise.resolve(1234)
+                .then(value => {
+                    console.log(`then A: ${value}`);
+                    return Promise.resolve('abcd');
+                })
+                .finally(() => {
+                    console.log('end');
+                    // 尝试返回数据
+                    // throw 'wxyz';
+                })
+                .then(
+                    value => console.log(`then B: ${value}`),
+                    reason => {
+                        console.log(`reason B: ${typeof reason}`)
+                        console.log(`reason B: ${reason}`)
+                    }
+                )
+
+            // 输出:
+            // then A: 1234
+            // end              <<<<< 抛出异常 wxyz
+            // reason B: string
+            // reason B: wxyz   <<<<< 异常数据【替换了】前面 promise 中的数据 abcd
+            ```
+        2. 返回了一个 `rejected` 状态的 Promise 对象
+            ```js
+            Promise.resolve(1234)
+                .then(value => {
+                    console.log(`then A: ${value}`);
+                    return Promise.resolve('abcd');
+                })
+                .finally(() => {
+                    console.log('end');
+                    // 尝试返回数据
+                    return Promise.reject('wxyz');
+                })
+                .then(
+                    value => console.log(`then B: ${value}`),
+                    reason => {
+                        console.log(`reason B: ${typeof reason}`)
+                        console.log(`reason B: ${reason}`)
+                    }
+                )
+
+            // 输出:
+            // then A: 1234
+            // end              <<<<< 抛出异常 wxyz
+            // reason B: string
+            // reason B: wxyz   <<<<< 异常数据【替换了】前面 promise 中的数据 abcd
+            ```
+
+- 调用 `finally` 时的隐式操作
+    - 如 `var p2 = x.finally(onFinally)`
+    - `onFinally` 中没有出现特殊情况
+        - 实际返回的是`p2`
+        - 在执行 `p.finally(...)` 时
+            1. 会隐式创建 `p1`
+            2. 调用 `p1.then(onResolved)`
+            3. 执行 `onResolved` 时，传入了 `x` 中的数据
+
+
+## Promise.resolve()的两种特殊参数
+[top](#catalog)
+1. 参数是 Promise 及其子类的实例对象
+    - 将直接返回该对象，不会做任何特殊处理
+    - 并且多次调用的返回结果是相同的
+    - 示例
+        ```js
+        var a = new Promise((resolve, reject) => {
+            setTimeout(() => resolve(1234), 1000);
+        })
+
+        // 1. 对同一个 Promise 对象调用多次 Promise.resolve()
+        var p1 = Promise.resolve(a);
+        var p2 = Promise.resolve(a);
+
+        // 2. 输出: true，即 Promise.resolve() 每次都会返回 Promise 对象本身
+        console.log(p1 === p2);
+        ```
+
+2. 参数 `thenable` 对象，即任何包含 `then(onResolved, onRejected)` 方法的对象
+    - 对一个`thenable`对象多次调用 `Promise.resolve(thenable)`
+        - 每次都会返回一个**新的Promise对象**
+        - 每次都会重新调用 `then()` 方法
+    - JS会将 `thenable.then()` 作为类似 Promise 的执行器 `executor`
+        - `thenable.then()` 将被调用并且传入 `onResolved`、`onRejected` 函数
+    - `thenable` 对象如何与方法生成的 Promise 对象建立联系？
+        - 需要在 `thenable.then()` 内部主动调用 `onResolved`、`onRejected`
+        - 如果不调用这两种方法，Promise 对象将一直处于 `pending` 状态
+    - `thenable.then()` 会进入 `微任务` 队列，在同步代码执行完成之后再执行
+    - 示例
+        ```js
+        var a ={
+            then(resolve){
+                console.log('this is thenable');
+                resolve(1234);
+            }
+        }
+
+        // 1. 对一个 promise 对象
+        //    多次调用 Promise.resolve 都会返回一个新的 Promise对象
+        var p1 = Promise.resolve(a);
+        var p2 = Promise.resolve(a);
+        console.log(p1 === p2); // false
+
+        // 2. then() 将会进入微任务队列，所以在同步代码中，其状态仍然是 pending
+        console.log(p1);    // Promise { <pending> }
+
+        // 3. 开始执行微任务队列，输出:
+        // this is thenable
+        // this is thenable
+
+        // 4. 开始执行消息队列
+        setTimeout(()=>console.log(p1));    // Promise { 1234 }
         ```
 
 ## 解构嵌套的异步调用
@@ -594,7 +796,44 @@
             })
             ```
 
+# Promise使用的第一原则
+[top](#catalog)
+- Promise使用的第一原则
+    - <span style='color:red'>`Promise` 对象开始，`catch()`结束</span>
+        - 如果某个 `then()` 中包含 `onRejected` 方法可以不使用 `catch()`
+- 为什么要在 `catch` 结束
+    - 如果 promise 的状态变为 `rejected`，并且没有 `onRejected` 会抛出<span style='color:red'>未捕获</span>的异常
+    - 参考: [rejected状态的处理](#rejected状态的处理)
+    - 示例
+        ```js
+        var p = Promise.reject(1234);
+        // 将会抛出异常
+
+        // 1. 在 nodejs 中
+        // (node:6920) UnhandledPromiseRejectionWarning: 1234
+        // 2. 在 chrome 中
+        // Uncaught (in promise) 1234
+        ```
+
 # Promise的几个关键问题
+## promise对象是一个接一个创建的
+[top](#catalog)
+- 示例
+    ```js
+    var p = new Promise(...).then(...).catch();
+    ```
+- 示例中的链式调用不是一次性完成的，而是通过 生成多个 promise对象完成的
+- 示例可以转化成:
+    ```js
+    var p1 = new Promise(...)
+    var p2 = p1.then(...)
+
+    var p = p2.catch();
+    ```
+
+- 即使链式调用的过程中出现了异常，也需要依次生成多个 `promise`对象，最终到达 `catch()`
+
+
 ## 如何改变Promise的状态
 [top](#catalog)
 - 两种改变方法
@@ -614,7 +853,22 @@
 
 ## 多个回调函数的执行顺序
 [top](#catalog)
-- 如果为一个 Promise 对象设置了多个回调`then`、`catch`，会按照设置顺序依次调用
+- 如果为同一个 Promise 对象设置了多个回调`then`、`catch`，会按照设置顺序依次调用
+    - 可以理解为，多个回调函数被保存在一个数组中
+    - promise 对象的状态改变时，遍历这个数组，并执行每一个回调函数
+- 示例
+    ```js
+    var p = new Promise((resolve) => {
+        resolve(1234);
+    });
+
+    p.then(data => console.log(`then A : data = ${data}`));
+    p.then(data => console.log(`then B : data = ${data}`));
+
+    // 输出
+    // then A : data = 1234
+    // then B : data = 1234
+    ```
 
 ## 改变Promise的状态和指定回调函数的顺序是什么
 [top](#catalog)
@@ -830,7 +1084,23 @@
     // fulfilled      <<<< 然后执行了 resolve
     ```
 
-# Promise输出分析
+## 回调函数不是函数时的默认处理
+[top](#catalog)
+- 如果回调函数不是函数，将被视作 `undefined`
+    - `onResolved` 将会直接返回前一个 Promise 对象的数据
+    - `onRejected` 会利用异常穿透的机制
+    - `onFinally` 的处理和 `onResolved` 相同
+
+- 类似于
+    ```js
+    // 如果不是函数，则直接将数据传递下去
+    onResolved = typeof onResolved === 'function' ? onResolved : value => value;
+    // 如果不是函数，则连续抛出异常，形成异常穿透
+    onRejected = typeof onRejected === 'function' ? onRejected : error => { throw error };
+    ```
+
+
+# Promise实例分析
 [top](#catalog)
 - 代码内容
     ```js
@@ -1164,9 +1434,43 @@
     }
     ```
 
+## promise.finally的实现
+[top](#catalog)
+- 参考: [finally结束处理](#finally结束处理)
+- `finally`的实现要点
+    - 主要是对 `onFinally` 的返回值的处理
+        - 需要覆盖前面 Promise 对象的返回值的情况，需要靠后面的 `onRejected` 处理
+            1. `onFinally` 内部抛出异常
+            2. `onFinally` 内部返回了一个 `rejected` 状态的 Promise 对象
+        - 忽略 `onFinally` 的返回值，promise 对象内部仍然要维护前面 Promise 对象的数据
+            - 普通数据、`fulfilled` 状态的 Promise 对象
+    - 如何返回 Promise 对象
+        1. 先创建一个隐式的 Promise 对象，用于处理 `onFinally`
+        2. 再创建第二个 Promise 对象，用于处理 `onFinally` 的返回值
+
+- 参考代码
+    - [src/promise/mypromise/08finally.js](src/promise/mypromise/08finally.js)
+- 测试代码
+    - [src/promise/mypromise/08test_01.js](src/promise/mypromise/08test_01.js)
+    - [src/promise/mypromise/08test_02.js](src/promise/mypromise/08test_02.js)
+    - [src/promise/mypromise/08test_03.js](src/promise/mypromise/08test_03.js)
+- 实现内容
+    ```js
+    MyPromise.prototype.finally = function (onFinally) {
+        // 1. 先调用 onFinally 隐式生成一个 promise 对象
+        // 如果内部出现了特例: 抛出异常、返回 rejected 状态的 promise 对象，
+        // 则自动寻找有效的 onRejected 来处理
+        var p1 = this.then(onFinally, undefined)
+        // 2. 将当前对象中保存的数据传给 隐式 promise 对象
+        var p2 = p1.then(() => this.data, reason => { throw reason });
+        return p2;
+    }
+    ```
+
 ## Promise.resolve、Promise.reject的实现
 [top](#catalog)
 - `resolve` 的实现要点
+    - 参考: [Promise.resolve()的两种特殊参数](#Promise.resolve()的两种特殊参数)
     - 原生 Promise 对象的处理分析
         ```js
         const p1 = Promise.resolve(1234);   // 数据是一个非 Promise 数据，
@@ -1181,9 +1485,8 @@
             // catch: err，失败的Promise，需要由onRejected处理
         ```
     - 原生 `resolve` 的特点，与 `then` 的 `fulfilled` 处理类似
-        1. 如果参数是 Promise 对象
-            - 当前返回的结果与状态，由参数自身决定
-            - `result.then(新Promise--resolve, 新Promise--reject)`
+        1. 如果参数是 Promise 及其子类的实例
+            - 直接返回该 Promise 对象
         2. 如果参数不是 Promise 对象
             - 返回 `fulfilled` 状态的 Promise 对象
             - 将参数作为 Promise 对象向外传递的数据
@@ -1202,9 +1505,13 @@
     ```js
     // 返回一个成功的Promise对象
     MyPromise.resolve = function (value) {
-        return new MyPromise((resolve, reject)=>{
-            value instanceof MyPromise? value.then(resolve, reject):resolve(value);
-        })
+        // 1. 如果 value 是一个 Promise及其子类的实例，则直接返回
+        if (value instanceof MyPromise) {
+            return value;
+        } else {
+            // 2. 如果 value 不是 Promise及其子类的实例，则创建一个新的 Promise 对象
+            return new MyPromise((resolve) => resolve(value));
+        }
     }
 
     // 返回一个失败的Promise对象

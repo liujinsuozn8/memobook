@@ -107,6 +107,16 @@ class MyPromise {
         return this.then(undefined, onRejected);
     }
 
+    finally(onFinally) {
+        // 1. 先调用 onFinally 隐式生成一个 promise 对象
+        // 如果内部出现了特例: 抛出异常、返回 rejected 状态的 promise 对象，
+        // 则自动寻找有效的 onRejected 来处理
+        var p1 = this.then(onFinally, undefined)
+        // 2. 将当前对象中保存的数据传给 隐式 promise 对象
+        var p2 = p1.then(() => this.data, reason => { throw reason });
+        return p2;
+    }
+
     // 返回一个成功的Promise对象
     static resolve (value) {
         return new MyPromise((resolve, reject) => {

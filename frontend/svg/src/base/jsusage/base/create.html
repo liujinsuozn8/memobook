@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        #box {
+            width: 700px;
+            height: 700px;
+            margin:auto;
+        }
+    </style>
+</head>
+
+<body>
+    <div id='box'>
+    </div>
+
+    <script>
+        // 创建 SVG 节点
+        function createSVGNode(type, props) {
+            /*
+                按照指定的 name space 创建元素
+                两个参数:
+                    命名空间
+                    标签名
+            */
+            var node = document.createElementNS("http://www.w3.org/2000/svg", type);
+            for (var k in props) {
+                node.setAttribute(k, props[k]);
+            }
+            return node;
+        }
+
+        // 设置 svg 标签的属性
+        var svg = createSVGNode('svg', {
+            'height': '100%',
+            'width': '100%',
+            'xmlns': "http://www.w3.org/2000/svg",
+        });
+
+        // 手动创建
+        // g1
+        var g1 = createSVGNode('g', { cursor: 'pointer' });
+        var line1 = createSVGNode('line', {
+            x1: '100',
+            y1: '100',
+            x2: '390',
+            y2: '390',
+            stroke: '#aaaaaa',
+            'stroke-width': '5'
+        });
+        var line2 = createSVGNode('line', {
+            x1: '100',
+            y1: '100',
+            x2: '390',
+            y2: '390',
+            stroke: 'transparent',
+            'stroke-width': '20'
+        })
+        var rect = createSVGNode('rect', {
+            width: '50',
+            height: '50',
+            fill: '#aaaaaa',
+            x: '225',
+            y: '225',
+            rx: '10',
+        })
+        var g1_text = createSVGNode('text', {
+            x: '250',
+            y: '265',
+            'font-size': '50',
+            fill: 'white',
+            'text-anchor': 'middle',
+        })
+        g1_text.innerHTML = '?'
+
+        g1.appendChild(line1)
+        g1.appendChild(line2)
+        g1.appendChild(rect)
+        g1.appendChild(g1_text)
+        svg.appendChild(g1);
+
+        // g2
+        var g2 = createSVGNode('g', { cursor: 'pointer' });
+        var circle = createSVGNode('circle', {
+            cx:'100',
+            cy:'100',
+            r:50,
+            stroke:'#aaaaaa',
+            'stroke-width':'5',
+            fill:'white',
+        })
+        var g2_text = createSVGNode('text', {
+            x:'100',
+            y:'108',
+            'text-anchor':'middle',
+            'font-size':'30',
+        })
+        g2_text.innerHTML = 'aaaa'
+
+        g2.appendChild(circle);
+        g2.appendChild(g2_text);
+        svg.appendChild(g2)
+
+        // g3
+        var g3 = createSVGNode('g', { cursor: 'pointer' });
+        var circle = createSVGNode('circle', {
+            cx:'390',
+            cy:'390',
+            r:'100',
+            stroke:'#aaaaaa',
+            'stroke-width':'5',
+            fill:'white',
+        })
+        var g3_text = createSVGNode('text', {
+            x:'390',
+            y:'398',
+            'text-anchor':'middle',
+            'font-size':'30',
+        })
+        g3_text.innerHTML = 'bbbb'
+        g3.appendChild(circle);
+        g3.appendChild(g3_text);
+
+        svg.appendChild(g3)
+
+        // 获取根标签
+        var box = document.getElementById('box');
+
+        // 将 svg 添加到 父DOM节点 中
+        box.appendChild(svg);
+    </script>
+</body>
+
+</html>

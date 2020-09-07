@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        #box {
+            width: 700px;
+            height: 700px;
+            margin: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <div id='box'>
+    </div>
+
+    <script>
+        var data = {
+            centerNode: { text: 'center' },
+            otherNode: [
+                { text: 'aaa' },
+                { text: 'bbb' },
+                { text: 'ccc' },
+            ]
+        }
+
+        // 设置 svg 标签的属性
+        var svg = createSVGNode('svg', {
+            'height': '100%',
+            'width': '100%',
+            'xmlns': "http://www.w3.org/2000/svg",
+        });
+
+        // 获取根标签
+        var box = document.getElementById('box');
+        var centerX = box.offsetWidth / 2;
+        var centerY = box.offsetHeight / 2;
+
+        // 向 svg 根节点中添加其他节点
+        box.appendChild(svg);
+        createOtherNodes(data.otherNode).forEach(n => svg.appendChild(n));
+        svg.appendChild(createCenterNode(data.centerNode));
+
+        // 创建 SVG 节点
+        function createSVGNode(type, props) {
+            /*
+                按照指定的 name space 创建元素
+                两个参数:
+                    命名空间
+                    标签名
+            */
+            var node = document.createElementNS("http://www.w3.org/2000/svg", type);
+            for (var k in props) {
+                node.setAttribute(k, props[k]);
+            }
+            return node;
+        }
+        // 创建中心节点
+        function createCenterNode(info) {
+            var g = createSVGNode('g', { cursor: 'pointer'});
+            var circle = createSVGNode('circle', {
+                cx: centerX,
+                cy: centerY,
+                r: '50',
+                stroke: '#aaaaaa',
+                'stroke-width': '5',
+                fill: 'white',
+            })
+            g.appendChild(circle);
+
+            var text = createSVGNode('text', {
+                x: centerX,
+                y: centerY + 15, // 文字居中
+                'text-anchor': 'middle',
+                'font-size': '30',
+            })
+            text.innerHTML = info.text
+            g.appendChild(text);
+
+            return g;
+        }
+
+        // 创建所有的其他节点
+        function createOtherNodes(infos) {
+            var result = [];
+
+            // 获取节点数量
+            var infoCount = infos.length;
+            // 计算每个节点所需的角度
+            var angler = 360 / infoCount;
+            // 设置分布半径
+            var centerR = 300;
+
+            for (var i = 0; i < infoCount; i++) {
+                var info = infos[i];
+                // 将数值还原成角度: angler * Math.PI / 180
+                var cx = Math.sin(i * angler * Math.PI / 180) * centerR + centerX;
+                var cy = Math.cos(i * angler * Math.PI / 180) * centerR + centerY;
+
+                console.log(cx, cy)
+                var g = createSVGNode('g', { cursor: 'pointer', class:'other' });
+                // 绑定鼠标移入移出事件
+                g.onmouseenter = function(){
+                    var otherCircle = this.querySelector('.other-circle');
+                    otherCircle.setAttribute('stroke', 'red');
+                    otherCircle.style.transition = 'r 0.5s';
+                    otherCircle.setAttribute("r", 60);
+
+                    this.querySelector('.other-line').setAttribute('stroke', 'blue');
+                    this.querySelector('.other-rect').setAttribute('fill', 'orange');
+                }
+                g.onmouseleave = function(){
+                    var otherCircle = this.querySelector('.other-circle');
+                    otherCircle.setAttribute('stroke', '#aaaaaa');
+                    otherCircle.style.transition = '';
+                    otherCircle.setAttribute("r", 50);
+                    this.querySelector('.other-line').setAttribute('stroke', '#aaaaaa');
+                    this.querySelector('.other-rect').setAttribute('fill', '#aaaaaa');
+                }
+
+                // 线绘制直线，防止直线显示在图形上面
+                var line = createSVGNode('line', {
+                    x1: cx,
+                    y1: cy,
+                    x2: centerX,
+                    y2: centerY,
+                    stroke: '#aaaaaa',
+                    'stroke-width': '5',
+                    class:'other-line'
+                })
+                var line_shadow = createSVGNode('line', {
+                    x1: cx,
+                    y1: cy,
+                    x2: centerX,
+                    y2: centerY,
+                    stroke: 'transparent',
+                    'stroke-width': '15',
+                })
+                g.appendChild(line);
+                g.appendChild(line_shadow);
+
+                var rect = createSVGNode('rect', {
+                    width: 50,
+                    height: 50,
+                    x: (cx + centerX) / 2 - 25,    // 居中
+                    y: (cy + centerY) / 2 - 25,    // 居中
+                    fill: '#aaaaaa',
+                    rx: '10',
+                    class:'other-rect'
+                })
+                g.appendChild(rect);
+
+                var rect_text = createSVGNode('text', {
+                    x: (cx + centerX) / 2,
+                    y: (cy + centerY) / 2 + 15,
+                    fill: 'white',
+                    'font-size': 50,
+                    'text-anchor': 'middle'
+                });
+                rect_text.innerHTML = '?'
+                g.appendChild(rect_text);
+
+                // 绘制圆形
+                var circle = createSVGNode('circle', {
+                    cx,
+                    cy,
+                    r: '50',
+                    stroke: '#aaaaaa',
+                    'stroke-width': '5',
+                    fill: 'white',
+                    class:'other-circle'
+                })
+                g.appendChild(circle);
+
+                var text = createSVGNode('text', {
+                    x: cx,
+                    y: cy + 15, // 文字居中
+                    'text-anchor': 'middle',
+                    'font-size': '30',
+                })
+                text.innerHTML = info.text
+                g.appendChild(text);
+
+                result.push(g);
+            }
+            return result;
+        }
+
+
+        // 手动创建
+        // g1
+        // var g1 = createSVGNode('g', { cursor: 'pointer' });
+        // var line1 = createSVGNode('line', {
+        //     x1: '100',
+        //     y1: '100',
+        //     x2: '390',
+        //     y2: '390',
+        //     stroke: '#aaaaaa',
+        //     'stroke-width': '5'
+        // });
+        // var line2 = createSVGNode('line', {
+        //     x1: '100',
+        //     y1: '100',
+        //     x2: '390',
+        //     y2: '390',
+        //     stroke: 'transparent',
+        //     'stroke-width': '20'
+        // })
+        // var rect = createSVGNode('rect', {
+        //     width: '50',
+        //     height: '50',
+        //     fill: '#aaaaaa',
+        //     x: '225',
+        //     y: '225',
+        //     rx: '10',
+        // })
+        // var g1_text = createSVGNode('text', {
+        //     x: '250',
+        //     y: '265',
+        //     'font-size': '50',
+        //     fill: 'white',
+        //     'text-anchor': 'middle',
+        // })
+        // g1_text.innerHTML = '?'
+
+        // g1.appendChild(line1)
+        // g1.appendChild(line2)
+        // g1.appendChild(rect)
+        // g1.appendChild(g1_text)
+        // svg.appendChild(g1);
+
+        // // g2
+        // var g2 = createSVGNode('g', { cursor: 'pointer' });
+        // var circle = createSVGNode('circle', {
+        //     cx:'100',
+        //     cy:'100',
+        //     r:50,
+        //     stroke:'#aaaaaa',
+        //     'stroke-width':'5',
+        //     fill:'white',
+        // })
+        // var g2_text = createSVGNode('text', {
+        //     x:'100',
+        //     y:'108',
+        //     'text-anchor':'middle',
+        //     'font-size':'30',
+        // })
+        // g2_text.innerHTML = 'aaaa'
+
+        // g2.appendChild(circle);
+        // g2.appendChild(g2_text);
+        // svg.appendChild(g2)
+
+        // // g3
+        // var g3 = createSVGNode('g', { cursor: 'pointer' });
+        // var circle = createSVGNode('circle', {
+        //     cx:'390',
+        //     cy:'390',
+        //     r:'100',
+        //     stroke:'#aaaaaa',
+        //     'stroke-width':'5',
+        //     fill:'white',
+        // })
+        // var g3_text = createSVGNode('text', {
+        //     x:'390',
+        //     y:'398',
+        //     'text-anchor':'middle',
+        //     'font-size':'30',
+        // })
+        // g3_text.innerHTML = 'bbbb'
+
+        // g3.appendChild(circle);
+        // g3.appendChild(g3_text);
+        // svg.appendChild(g3)
+
+
+    </script>
+</body>
+
+</html>

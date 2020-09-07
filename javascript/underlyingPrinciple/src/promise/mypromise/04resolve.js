@@ -113,14 +113,18 @@ MyPromise.prototype.catch = function (onRejected) {
 
 // 返回一个成功的Promise对象
 MyPromise.resolve = function (value) {
-    return new MyPromise((resolve, reject)=>{
-        value instanceof MyPromise? value.then(resolve, reject):resolve(value);
-    })
+    // 1. 如果 value 是一个 Promise及其子类的实例，则直接返回
+    if (value instanceof MyPromise) {
+        return value;
+    } else {
+        // 2. 如果 value 不是 Promise及其子类的实例，则创建一个新的 Promise 对象
+        return new MyPromise((resolve) => resolve(value));
+    }
 }
 
 // 返回一个失败的Promise对象
 MyPromise.reject = function (reason) {
-    return new MyPromise((_, reject)=>{reject(reason)});
+    return new MyPromise((_, reject) => { reject(reason) });
 }
 
 // 返回一个Promise

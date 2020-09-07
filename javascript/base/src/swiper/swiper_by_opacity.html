@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>轮播图</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        ul {
+            list-style: none;
+        }
+
+        /* -------------------- */
+        .wrap {
+            width: 800px;
+            height: 400px;
+            position: relative;
+        }
+
+        .list {
+            position: relative;
+            width: 800px;
+            height: 400px;
+        }
+
+        .item {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            opacity: 0;
+            transition: opacity 1s;
+        }
+
+        .item-active {
+            opacity: 1;
+            z-index: 10;
+        }
+
+        .item img {
+            width: 100%;
+            height: 100%;
+        }
+
+        .item span {
+            position: absolute;
+            left: 50%;
+            right: 50%;
+            bottom: 50%;
+            top: 50%;
+        }
+
+        .btn {
+            width: 50px;
+            height: 100px;
+            position: absolute;
+            z-index: 999;
+            /* 垂直居中 */
+            top: 0;
+            bottom: 0;
+            margin: auto;
+        }
+
+        .btn-left {
+            left: 0;
+        }
+
+        .btn-left::before {
+            content: "<<";
+
+        }
+
+        .btn-right {
+            right: 0;
+        }
+
+        .btn-right::after {
+            content: ">>";
+        }
+
+        .pointlist{
+            position: absolute;
+            bottom:7%;
+            right:8%;
+            z-index: 999;
+        }
+
+        .point{
+            float: left;
+            width: 10px;
+            height: 10px;
+            background-color: #aaaaaa;
+            border-radius: 50%;
+            border: white 2px solid;
+            margin: 5px;
+            transition: background-color 1s;
+            /* vertical-align: baseline; */
+            cursor: pointer;
+        }
+
+        .point:hover{
+            border: white 4px solid;
+            margin: 3px;
+        }
+
+        .point-active{
+            background-color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrap">
+        <ul class="list">
+            <li class='item item-active'>
+                <span>1</span>
+                <img src="img/1.png" alt="">
+            </li>
+            <li class='item'>
+                <span>2</span>
+                <img src="img/2.png" alt="">
+            </li>
+            <li class='item'>
+                <span>3</span>
+                <img src="img/3.png" alt="">
+            </li>
+            <li class='item'>
+                <span>4</span>
+                <img src="img/4.png" alt="">
+            </li>
+            <li class='item'>
+                <span>5</span>
+                <img src="img/5.png" alt="">
+            </li>
+        </ul>
+        <ul class="pointlist">
+            <li class='point point-active'></li>
+            <li class='point'></li>
+            <li class='point'></li>
+            <li class='point'></li>
+            <li class='point'></li>
+        </ul>
+        <button type='button' class='btn btn-left'></button>
+        <button type='button' class='btn btn-right'></button>
+    </div>
+    <script>
+        var items = document.querySelectorAll('.item');
+        var points = document.querySelectorAll('.point')
+        var itemCount = items.length;
+        var prevBtn = document.querySelector('.btn-left')
+        var nextBtn = document.querySelector('.btn-right')
+
+        // 记录当前正在展示哪一张图片
+        var index = 0;
+
+        // 切换活动图片
+        function clearActive() {
+            for (var n of items) {
+                n.className = n.className.replace('item-active', '');
+            }
+            for (var n of points) {
+                n.className = n.className.replace('point-active', '');
+            }
+        }
+        var goIndex = function () {
+            clearActive();
+            points[index].className += " " + 'point-active'; 
+            items[index].className += " " + 'item-active';
+        }
+
+        function goNext() {
+            index = (index + itemCount + 1) % itemCount;
+
+            goIndex();
+        }
+        function goPrev() {
+            index = (index + itemCount - 1) % itemCount;
+            goIndex();
+        }
+        // 设置按钮监听事件
+        prevBtn.addEventListener('click', function () {
+            goPrev();
+        })
+        nextBtn.addEventListener('click', function () {
+            goNext();
+        })
+ 
+        for(let i=0; i<itemCount; i++){
+            points[i].addEventListener('click', function(){
+                index = i;
+                goIndex();
+            })
+        }
+    </script>
+</body>
+
+</html>

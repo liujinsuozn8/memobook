@@ -85,12 +85,10 @@
             - 小米官网
                 - [开发过程、内容](frontend/css/inaction/xiaomi/xiaomi.md)
                 - [参考代码:frontend/css/inaction/xiaomi/src](frontend/css/inaction/xiaomi/src)
+    - svg
+        - [基本使用](frontend/svg/base.md)
     - javascript
-        - js基础
-            - [基本知识](javascript/base/base.md)
-            - [dom操作](javascript/base/dom.md)
-            - [bom操作](javascript/base/bom.md)
-            - [console控制台输出](javascript/base/console.md)
+        - [js基础](javascript/base/index.md)
         - [js原理](javascript/underlyingPrinciple/index.md)
         - es标准
             - [es5、es6、es7](javascript/es/567.md)
