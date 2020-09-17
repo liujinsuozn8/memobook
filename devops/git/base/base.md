@@ -1073,7 +1073,7 @@
     - 需要执行两条指令
         ```
         git add 文件名
-        git commit -amend
+        git commit --amend
         ```
     - 通过add指令将文件更新到暂存区
     - 通过`git commit --amend`，重新覆盖提交对象
@@ -1669,7 +1669,7 @@
 [top](#catalog)
 - 要点
     - `git write-tree`、`git commit-tree` 都不会清空暂存区
-    - `git add`的实际区域流动：工作区-->版本去--暂存区
+    - `git add`的实际区域流动：工作区-->版本区--暂存区
     - `git commit`的实际区域流动：
         ```
         暂存区-->创建树对象-->版本区-->取出树对象-->创建提交对象-->版本区
@@ -1681,19 +1681,6 @@
             - 类似与指向指针的指针
         - 分支提交的本质：每次有新的提交时，`HEAD`与分支一起向前移动
 
-- 配置
-    - 3种配置
-        |级别|文件路径|适用范围|指令选项|
-        |-|-|-|-|
-        |1|`/etc/gitconfig`|对当前系统中所有用户都适用的配置|`git config --system`|
-        |2|`~/.gitconfig`|只适用于当前用户的|`git config --global`|
-        |3|`.git/config`|当前项目的git目录中的配置文件，只针对当前项目有效|`git config [--local]`，默认就是`--local`|
-
-    - `git config [--system/global] --list`，查看所有配置内容
-    - `git config [--system/global] -l`，查看所有配置内容
-    - `git config [--system/global] 配置名 "配置值"`，添加/更改配置
-    - `git config --global --unset "配置名"`，删除配置
-    - `git config [--system/global] alias.指令别名 "指令内容，去掉开头的git"`，为复杂的指令添加别名
 - 底层命令
     - git对象/键值对的读写指令
         - `echo 'test01' | git hash-object -w --stdin`
@@ -1712,41 +1699,96 @@
     - 提交对象
         - `git commit-tree 树对象的SHA-1值 [-p 父提交对象的SHA-1值] [-m 提交信息]`
 
-- 版本crud命令
+- `git version`, 查看 git 版本
+- 配置
+    - 3种配置
+        |级别|文件路径|适用范围|指令选项|
+        |-|-|-|-|
+        |1|`/etc/gitconfig`|对当前系统中所有用户都适用的配置|`git config --system`|
+        |2|`~/.gitconfig`|只适用于当前用户的|`git config --global`|
+        |3|`.git/config`|当前项目的git目录中的配置文件，只针对当前项目有效|`git config [--local]`，默认就是`--local`|
+
+    - 配置个人用户的用户名和邮箱
+        ```sh
+        git config --global user.name "ljs"
+        git config --global user.email "@qq.com"
+        ```
+    - `git config [--system/global] --list`，查看所有配置内容
+    - `git config [--system/global] -l`，查看所有配置内容
+    - `git config [--system/global] 配置名 "配置值"`，添加/更改配置
+    - `git config --global --unset "配置名"`，删除配置
+    - `git config [--system/global] alias.指令别名 "指令内容，去掉开头的git"`，为复杂的指令添加别名
+        - `git config  --list |grep alias`，查看所有已经设置的别名
+
+- crud命令
     - `git status`，检查状态
     - `git init`，初始化git项目
-    - `git add 文件路径`
-    - `git commit -m 提交信息`
-    - `git commit -a -m 提交信息`，跳过暂存区提交
+    - `git add 文件路径`，添加到暂存区
+    - `git commit -m "提交信息"`
+    - `git commit -a -m "提交信息"`，跳过暂存区直接提交，只能提交已跟踪的文件
     - `git diff [路径]`，工作区与暂存区差异比较
     - `git diff --staged [路径]`，暂存区与版本区差异比较
     - `git diff --cached [路径]`，暂存区与版本区差异比较
     - `git mv 旧文件名 新文件名`，暂存区文件重命名
     - `git mv 文件路径`，删除文件
     - `git log`，输出提交历史
-        - `git log --pretty=oneline`
-        - `git log --oneline`，输出时提交对象的 SHA-1 值之后显示前几位
+        - `git log --pretty=oneline`，在一行显示条历史: `SHA-1值, 提交信息`
+        - `git log --oneline`，在一行显示条历史: `SHA-1值的前几位, 提交信息`
         - `git log --oneline --decorate --graph --all`，查看详细的分支历史
     - `git reflog`，查看所有分支历史，包括删除的分支
+    - `git ls-files`，查看暂存区中的文件
+    - `git rm 文件路径`，删除指定路径下的文件
+        - 撤销 `rm`
+            1. `git restore --staged 文件路径`
+            2. `git restore 文件路径`
+    - `git rm --cached 文件路径`，删除对指定文件的追踪（从暂存区删除），但是不会删除文件
+        - 撤销 `rm --cached`
+            - `git restore --staged 文件路径`
 
-- 分支命令
+- 常用别名
+    - `git config alias.st "status"`，检查当前暂存区状态的别名
+    - `git config alias.hpic "log --oneline --graph --all"`，查看分支图
+    - `git config alias.ollog "log --oneline"`，在一行显示历史记录
+    - `git config alias.endv "log -1 --pretty"`，查看当前分支的最后一次提交对象信息
+- 本地分支命令
     - `git branch`，显示分支列表
     - `git branch 分支名`，创建分支
-    - `git branch 分支名 提交对象的SHA-1值`，创建一个分支，并指向指定的版本
+    - `git branch 分支名 提交对象的SHA-1值`，创建一个分支，并指向某个提交对象
+    - `git switch 分支名`，切换分支
     - `git checkout 分支名`，切换分支
     - `git branch -d 分支名`，删除分支
     - `git branch -D 分支名`，强制删除分支
     - `git branch -v`，查看所有分支的最后一次提交
     - `git log --oneline --decorate --graph --all`，查看详细的分支历史
-    - `git merge 被合并的分支名`，合并分支
+    - `git merge 被合并的分支名`，将目标分支合并到**当前活动分支**
 
-- git存储
+- git临时存储栈
+    - `git stash`，将已跟踪且未提交的修改保存到一个栈中，栈顶为0
     - `git stash list`，列出当前所有的存储列表
-    - `git stash`，将未提交的修改保存到一个栈中
-    - `git stash apply [stash@{index}]`，对当前分支应用git存储，默认应用最近的存储
-    - `git stash drop stash@{index}`，通过存储的名字来删除某个存储
-    - `git stash pop`，应用最新的存储，然后将该存储删除
+    - `git stash apply `，相当于 `git stash pop`
+    - `git stash apply stash@{index}`，对当前分支应用第`index`个存储，
+    - `git stash drop stash@{index}`，通过存储的`index`删除某个存储
+    - `git stash pop`，弹出栈顶元素，并应用到当前分支，然后将该存储删除
 
 - 重置commit
-    - `git commit -amend`，修改最近一次提交
-    - `git rebase -i 重置分支的父提交对象的SHA-1`，重置旧版本的提交信息
+    - `git commit --amend -m 新的提交信息`，修改最近一次提交
+    - `git rebase -i 重置分支的父提交对象的SHA-1值`，重置旧版本的提交信息，在需要重置的版本前标注 `reword`
+
+- 版本调整
+    - `git restore 文件名`，工作区 -----> 当前的暂存区
+    - `git reset HEAD 文件名`，暂存区 -----> 版本区
+        - 撤销 `git add`
+    - `git rebase -i 变基的父对象的SHA-1值`，合并多个提交，合并的标注`squash`，不合并的标注`pick`
+
+- 非git辅助命令
+    - `cat .git/HEAD`，查看当前HEAD的指向
+
+- 远程分支命令
+    - `git branch -a`，查看所有分支，包括远程分支和本地分支
+    - `git branch -vv`，查看所有跟踪分支与对应的本地分支
+    - `git branch -u <remote>/<branch>`，修改远程分支的跟踪分支为当前分支
+    - `git push <remote> 分支名`，上传本地的某个分支到远程仓库的同名仓库中
+    - `git push <remote> 本地分支名:远程仓库分支名`，上传本地的某个分支到远程仓库的指定分支中
+    - `git push <remote> [--all]`，上传所有分支
+    - `git pull origin 分支名`，拉取远程分支，并合并到当前分支
+    - `git remote add origin http://xxxxx.git` 关联远程仓库
