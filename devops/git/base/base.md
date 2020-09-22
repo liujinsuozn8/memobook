@@ -1779,6 +1779,7 @@
     - `git reset HEAD 文件名`，暂存区 -----> 版本区
         - 撤销 `git add`
     - `git rebase -i 变基的父对象的SHA-1值`，合并多个提交，合并的标注`squash`，不合并的标注`pick`
+    - `git reset --hard 版本的SHA-1值`，将 HEAD 移动到指定版本
 
 - 非git辅助命令
     - `cat .git/HEAD`，查看当前HEAD的指向

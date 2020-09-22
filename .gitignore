@@ -4,3 +4,4 @@ memo.numbers
 others/
 .vscode/
 node_modules/
+.idea/

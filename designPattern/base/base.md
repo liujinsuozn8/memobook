@@ -7844,7 +7844,7 @@ P64
     - uml代码
         - [/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/responsibility/principle_uml.puml](/designPattern/dplearn/dplearn-base/src/test/java/com/ljs/learn/pattern/responsibility/principle_uml.puml)
     - 图
-        - ![/designPattern/base/imgs/pattern/responsibility/principle_uml.png](/designPattern/base/imgs/pattern/responsibility/principle_uml.png)
+        - ![imgs/pattern/responsibility/principle_uml.png](imgs/pattern/responsibility/principle_uml.png)
 - 角色划分
     - Handler：抽象处理者
         - 定义了一个处理请求的接口

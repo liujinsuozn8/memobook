@@ -1,0 +1,11 @@
+- 包含 shuffle 的算子默认是有缓存的，为了提高效率
+- 一个方法的性能主要看shuffle的性能
+- 如果reduceByKey之后再做一个reduceByKey是没有意义的
+    - 因为数据已经分组，不需要在分组
+    - spark会判断为无意义操作，不会导致新的阶段
+- 处理乱码
+    - 先转换为: `s.getBytes("ISO8859-1")`
+    - 再重新编码: `new String(bs, "UTF-8)`
+
+- 血缘关系包括间接依赖
+- checkpoint 应该 和Cache缓存一起使用，checkpoint的job只需从Cache缓存中读取数据，**不需要重新计算RDD**

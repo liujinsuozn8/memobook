@@ -122,6 +122,12 @@
     - redis
         - [基本知识](database/redis/base/base.md)
 
+- 数据处理
+    - [hadoop](data/hadoop/base/index.md)
+    - [zookeeper](data/zookeeper/base/base.md)
+    - hive
+    - [spark](data/spark/base/index.md)
+
 - 开发工具
     - jetbrains
         - [intellijIDEA](intellijIDEA/base/base.md)
