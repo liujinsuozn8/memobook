@@ -1,6 +1,6 @@
 <span id="catalog"></span>
 
-<span style='font-size:18px'>目录---spark核心编程<span>
+<span style='font-size:18px'>目录---spark核心编程</span>
 
 - [基本示例--WordCount](#基本示例--WordCount)
 - [创建spark上下文对象](#创建spark上下文对象)

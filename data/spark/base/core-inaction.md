@@ -1,6 +1,6 @@
 <span id="catalog"></span>
 
-<span style='font-size:18px'>目录---spark核心应用<span>
+<span style='font-size:18px'>目录---spark核心应用</span>
 
 - [wordcount的实现](#wordcount的实现)
 - [构建开发框架](#构建开发框架)

@@ -1,0 +1,14 @@
+- 系统中的数据块的位置并不是由 NN 维护的，而是以 `块列表` 的形式存储在 DN 中
+- 正常操作期间，NN在内存中保留所有块位置的映射信息
+- 对于一个刚刚格式化的系统，因为系统内没有任何块，所以不会进入安全模式
+- HDFS默认的超时时长为：**10分钟 + 30秒**
+    - 计算公式：
+        - `timeout =2 * dfs.namenode.heartbeat.recheck-interval + 10 * dfs.heartbeat.interval`
+        - 默认：dfs.namenode.heartbeat.recheck-interval=5分钟
+        - 默认：dfs.heartbeat.interval=3秒
+- DN 多目录配置的特点
+    - 每个目录存储的数据**不相同**
+    - 目录中存储的不是数据副本，与 NN 不同
+- 黑名单和白名单不能同时出现同一个主机名称，否则会出现异常
+- 文件所需磁盘容量与数据块无关
+    - 如小文件大小为1M，虽然该文件占用1个块 128M，但实际上使用的容量还是1M

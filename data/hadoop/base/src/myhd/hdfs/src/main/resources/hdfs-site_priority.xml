@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+
+<!--
+    测试： `ConfigPriority.xmlPriority()` 时，
+    需要将文件名改回 hdfs-site.xml。
+    测试完成后，再改回 `hdfs-site_priority.xml`,否则会影响其他测试
+-->
+<configuration>
+
+    <!-- 指定HDFS副本数量为1 -->
+    <property>
+        <name>dfs.replication</name>
+        <value>1</value>
+    </property>
+
+</configuration>
