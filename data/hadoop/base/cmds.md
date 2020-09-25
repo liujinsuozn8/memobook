@@ -117,6 +117,6 @@
 [top](#catalog)
 - 小文件转换HAR文件：`hadoop archive -archiveName xxx.har -p 打包目录 未存在的存储目录`
 - 解压HAR文件到HDFS第二名某个目录：`hadoop fs -cp har:///路径/xx.har/* 解压路径`
-- 查看HAR文件中的内容：`* hadoop fs -ls -R har:///路径/xx.har`
+- 查看HAR文件中的内容：`hadoop fs -ls -R har:///路径/xx.har`
 
 

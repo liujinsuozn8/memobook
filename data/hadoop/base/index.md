@@ -6,4 +6,9 @@
     - [MapReduce](MapReduce.md)
 - 其他
     - [hadoop操作指令](cmds.md)
+    - [FsImage、Edits解析示例](fsimage_analyze.md)
     - [比较重要的内容](important.md)
+- 源码分析
+    - [job提交](code_analyze/job_submit/base.md)
+    - [FileInputFormat切片流程分析](code_analyze/how_to_split/base.md)
+
