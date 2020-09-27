@@ -52,6 +52,7 @@
         - [拉取远程仓库](#拉取远程仓库)
         - [分支推送到远程仓库](#分支推送到远程仓库)
         - [跟踪分支](#跟踪分支)
+    - [第一次将项目上传到远端](#第一次将项目上传到远端)
 - [](#)
 - [总结](#总结)
 
@@ -1626,9 +1627,13 @@
 
 ### 分支推送到远程仓库
 [top](#catalog)
-- `git push <remote> 分支名`，上传本地的某个分支到远程仓库的同名仓库中
-- `git push <remote> 本地分支名:远程仓库分支名`，上传本地的某个分支到远程仓库的指定分支中
-- `git push <remote> [--all]`，上传所有分支
+- 上传远程不存在的分支，并建立连接
+    1. `git push origin "远程分支:本地分支"`，上传分支，让远程目录下存在该分支的目录
+    2. `git push origin --all`，也可以上传所有分支
+    3. `git branch --set-upstream-to=origin/远端分支名 本地分支名`，建立远程与本地目录的联系
+- `git push origin 分支名`，上传本地的某个分支到远程仓库的同名仓库中
+- `git push origin 本地分支名:远程仓库分支名`，上传本地的某个分支到远程仓库的指定分支中
+
 
 ### 跟踪分支
 [top](#catalog)
@@ -1664,6 +1669,16 @@
 - 与github交互
     - 创建连接: `git remote  add 自定义连接名 github的路径`
     - 初始创建时，如果github中有文件，需要使用`git merge --allow-unrelated-histories 远端的分支名` 来合并两个没有关联的分支
+
+
+## 第一次将项目上传到远端
+[top](#catalog)
+- `git remote add origin http://xxxxx.git` 关联远程仓库
+- `git branch --set-upstream-to=origin/master master` 第一次没有branch的跟踪信息，先建立连接
+- `git pull origin master`，先拉取数据
+- `git branch --set-upstream-to=origin/master master`
+    - 如果出现历史冲突，则强制合并
+    - `git pull origin master --allow-unrelated-histories`
 
 # 总结
 [top](#catalog)
@@ -1793,3 +1808,13 @@
     - `git push <remote> [--all]`，上传所有分支
     - `git pull origin 分支名`，拉取远程分支，并合并到当前分支
     - `git remote add origin http://xxxxx.git` 关联远程仓库
+    - `git branch --set-upstream-to=origin master`
+    - `git clone <remote>`
+- 第一次将项目上传到远端
+    - `git remote add origin http://xxxxx.git` 关联远程仓库
+    - `git branch --set-upstream-to=origin/master master` 第一次没有branch的跟踪信息，先建立连接
+    - `git pull origin master`，先拉取数据
+    - `git branch --set-upstream-to=origin/master master`
+        - 如果出现历史冲突，则强制合并
+        - `git pull origin master --allow-unrelated-histories`
+
