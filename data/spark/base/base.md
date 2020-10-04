@@ -105,7 +105,7 @@
 ## spark基本架构
 [top](#catalog)
 - spark采用标准的 `master-slave` 结构
-    - [运行架构图](?????)
+    - ![运行架构图](imgs/base/spark_structure.png)
 - driver
     - 表示 master，负责管理整个集群中的作业任务调度
 - executor
@@ -196,7 +196,7 @@
 ## 提交流程---Yarn环境
 [top](#catalog)
 - 在 Yarn 环境中的基本提交流程
-    - [任务提交流程图](?????)
+    - ![任务提交流程图](imgs/base/submit_in_yarn.png)
 - 提交流程中的两个任务
     - 两个任务
         1. 申请资源
@@ -205,6 +205,32 @@
     - 最后，两个任务会汇总到各个 executor 中
     - 当 executor 获取到 **资源** 与 **任务** 后，就可以开始计算了
 
+- Yarn Client 模式
+    - Client 模式
+        - 监控和调度的 Driver 任务提交时的本地机器上运行
+        - 一般用于测试
+    - 执行流程
+        1. 启动 Driver
+        2. Driver 和 RM 通讯，申请启动 ApplicationMaster
+        3. RM 分配计算资源，在闲置的 NN 上启动 ApplicationMaster
+        4. ApplicationMaster 向 RM 申请 Executor 的内存
+        5. RM 分配计算资源，将 Executor 发送给闲置的 NN，并启动 Executor 进程
+        6. Executor 进程启动后会向Driver反向注册，Executor全部注册完成后Driver开始执行main函数
+        7. 遇到行动算子时，触发一个Job，并根据宽依赖开始划分 stage，每个 stage 生成对应的 TaskSet
+        8. Driver 将 task 分发到各个 Executor，并执行
 
+- Yarn Cluster 模式
+    - Cluster模式
+        - 监控和调度的 Driver 在Yarn集群资源中执行
+        - 一般应用于实际生产环境
+    - 执行流程
+        1. 提交任务到 Yarn 
+        2. RM 搜素空闲 NN，并启动 ApplicationMaster，并**作为 Driver**
+        3. Driver 向 RM 申请Executor内存
+        4. RM 搜索空闲 NN，并在空闲的 NN 上启动 Executor 进程
+        5. Executor 启动后，向 Driver 反向注册
+        6. Executor 全部注册完成后，Driver 开始执行 main 函数
+        7. 遇到行动算子时，触发一个Job，并根据宽依赖开始划分 stage，每个 stage 生成对应的 TaskSet
+        8. Driver 将 task 分发到各个 Executor，并执行
 
 [top](#catalog)

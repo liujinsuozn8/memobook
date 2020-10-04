@@ -22,6 +22,7 @@
     - [分区的注意事项](#分区的注意事项)
     - [RDD与分区](#RDD与分区)
 - [shuffle操作](#shuffle操作)
+- [开发RDD的注意事项](#开发RDD的注意事项)
 - [RDD--转换算子](#RDD--转换算子)
     - [转换算子--value型](#转换算子--value型)
         - [map](#map)
@@ -33,7 +34,7 @@
         - [groupBy--分组](#groupBy--分组)
         - [filter--过滤](#filter--过滤)
         - [sample--抽样](#sample--抽样)
-        - [distance--去重](#distance--去重)
+        - [distinct--去重](#distinct--去重)
         - [coalesce--收缩合并分区](#coalesce--收缩合并分区)
         - [repartition--重新分区、扩大分区](#repartition--重新分区、扩大分区)
         - [coalesce和repartition的区别](#coalesce和repartition的区别)
@@ -182,21 +183,19 @@
 [top](#catalog)
 - spark 三大基本数据结构
 
-    |数据结构   |说明|
+    |数据结构   |说明|适用场景|
     |----------|-|
     |RDD       |弹性分布式数据集|
-    |累加器     |分布式共享<span style='color:red'>只写</span>变量  |
-    |广播变量   |分布式共享<span style='color:red'>只读</span>变量|
+    |累加器     |分布式共享<span style='color:red'>只写</span>变量  |在多个 executor 上累积数据|
+    |广播变量   |分布式共享<span style='color:red'>只读</span>变量|在多个 executor 上共享一份数据|
 
 - spark 为了进行高并发和高吞吐的数据处理，封装了这 3 种数据结构
-- 三种数据结构有各自的适用场景
-    - ?????
 
 # RDD---Resilient_Distributed_Dataset---弹性分布式数据集
 ## RDD的基本概念
 [top](#catalog)
 - RDD 是 spark 中**最基本**的数据处理模型
-- RDD 是什么?
+- RDD 是什么？
     - 一种用于数据处理的 `数据模型 + 数据结构`，可以存储计算逻辑
     - `数据模型`，表示数据的高度抽象
 - RDD 的本质
@@ -254,28 +253,33 @@
         ```scala
         @transient val partitioner: Option[Partitioner] = None
         ```
-- （执行计算的）首选位置（可选）
+- （执行计算的）首选位置，即: **输入数据 与 计算节点的位置关系**
     - 计算数据时，可以根据 executor 节点的状态选择不同的节点进行计算
         ```scala
         protected def getPreferredLocations(split: Partition): Seq[String] = Nil
         ```
     - 本地化级别
-        - ?????
+        
+        |级别|含义|
+        |-|-|
+        |`PROCESS_LOCAL`|数据在同一个 JVM 中，即同一个 executor 上<br>**最佳的数据级别**|
+        |`NODE_LOCAL`|<ul><li>数据在同一个节点上<ol><li>数据在同一个节点的另一个 executor 上</li><li>在 HDFS 上，有 block 在同一个节点上</li></ol></li> <li>速度比 `PROCESS_LOCAL` 慢，因为数据需要在不同进程之间传递，或从文件中读取</li></ul>|
+        |`RACK_LOCAL`|数据在**相同机架**的**不同节点**上。会产生网络传输数据、磁盘IO，比 `NODE_LOCAL` 慢|
+        |`ANY`|数据在**不同机架**上，速度最慢|
+        |`NO_PREF`|数据从任何位置访问都一样快，不需要位置优先|
 
 ## RDD在Yarn下的工作原理
 [top](#catalog)
 - 工作流程
     1. 启动yarn
-        - [图](?????)
+        - ![01](imgs/core/rdd_in_yarn/01.png)
     2. spark向yarn申请资源、创建调度节点和计算节点
-        - [图](?????)
-    3. 计算分区
-        - [图](?????)
-    4. 根据分区划分成不同的任务
-        - [图](?????)
-    5. 调度节点将任务根据计算节点状态，发送到对应的计算节点进行计算
-        - [图](?????)
-- RDD 在整个流程中用于: 封装逻辑，并生成 task 发送给 executor 节点执行计算
+        - ![02](imgs/core/rdd_in_yarn/02.png)
+    3. 在 driver 上计算分区，并根据分区划分成不同的任务
+        - ![03](imgs/core/rdd_in_yarn/03.png)
+    4. 根据 executor 节点的状态，driver 将 task 发送到对应的节点进行计算
+        - ![04](imgs/core/rdd_in_yarn/04.png)
+- RDD 在整个流程中用于: **封装逻辑，并生成 task 发送给 executor 节点执行计算**
 
 ## 为什么RDD中只有逻辑没有数据
 [top](#catalog)
@@ -354,7 +358,9 @@
 # 分区
 ## 默认并行度的计算
 [top](#catalog)
-- 能够**并行计算的任务数量**称为`并行度`
+- 什么是并行度？
+    - spark 将一个 job 切分成多个任务后，发送给 Executor 节点并行计算
+    - 能够**并行计算的任务数量**称为`并行度`
 - 并行度的计算方式
     - 如果配置的参数: `spark.default.parallelism`，则使用该参数作为并行度
     - 如果没有配置参数
@@ -655,16 +661,13 @@
     - 数据量大，则速度慢
     - 数据量小，则速度快
 
-- 如何提高 shuffle 的性能?
+- 如何提高 shuffle 的性能？
     - 基本思路: **减少 shuffle 过程中的落盘数据，减少IO操作**
     - 实现方式
-        - 在进入 shuffle 之前，在分区内部，对数据进行聚合，降低数据量
+        - 在进入 shuffle 之前，在**分区内部，提前对数据进行聚合，降低数据量**
     - 如: 在分组聚合操作中，可以将 `groupByKey` 改为 `reduceByKey`
 
-# RDD算子
-
-
-## 开发RDD的注意事项
+# 开发RDD的注意事项
 [top](#catalog)
 - 逻辑的封装
     - 逻辑之间可能会存在关系，但是不应该在一个RDD中封装大量逻辑
@@ -675,7 +678,9 @@
 ### map
 [top](#catalog)
 - 函数签名
-    - [](?????)
+    ```scala
+    def map[U: ClassTag](f: T => U): RDD[U]
+    ```
 - 功能
     - 与scala的map类似
 - 示例： 从日志文件中获取用户请求的 url
@@ -693,12 +698,16 @@
 ### mapPartitions--分区数据导入计算节点
 [top](#catalog)
 - 函数签名
-    - [](?????)
+    ```scala
+    def mapPartitions[U: ClassTag](
+      f: Iterator[T] => Iterator[U],
+      preservesPartitioning: Boolean = false): RDD[U]
+    ```
 - 功能
     - 将**待处理的数据**以分区为单位发送到**计算节点**进行处理
-        - 可以进行任意的处理????
+        - 可以对迭代器参数进行任意的处理
     - 即: 将数据封装到 task 中
-- 回调函数的参数是迭代器，返回值也是迭代器
+- 回调函数的**参数是迭代器，返回值也是迭代器**
     - 如果返回值不是迭代器，可以手动封装: `List(...).iterator`
 - 示例: 获取每个分区的最大值
     - 参考代码
@@ -710,18 +719,24 @@
         val rdd3: RDD[Int] = sc.makeRDD(List(1, 4, 3, 2, 5), 3)
           .mapPartitions(
             iter => {
-              List(iter.max).iterator   // 手动分装一个迭代器
+              List(iter.max).iterator   // 手动封装一个迭代器
             }
           )
         println(rdd3.collect().mkString(","))
+        // 输出:
+        // 1,4,5
         ```
 
 ### mapPartitionsWithIndex--分区数据导入计算节点
 [top](#catalog)
 - 函数签名
-    - [](?????)
+    ```scala
+    def mapPartitionsWithIndex[U: ClassTag](
+      f: (Int, Iterator[T]) => Iterator[U], // 分区索引, 分区数据迭代器
+      preservesPartitioning: Boolean = false): RDD[U]
+    ```
 - 功能
-    - 将 **待处理的数据**、**分区索引** 以分区为单位发送到**计算节点**
+    - 将 **分区索引**、**待处理的数据** 以分区为单位发送到**计算节点**
 
 - **分区索引从0开始**
 
@@ -730,6 +745,16 @@
         - [src/spark-learn/spark-core/src/main/scala/com/ljs/learn/sparkcore/rdd/operator/value/RDDMapPartitionsWithIndex.scala](src/spark-learn/spark-core/src/main/scala/com/ljs/learn/sparkcore/rdd/operator/value/RDDMapPartitionsWithIndex.scala)
     - 代码内容
         ```scala
+        // 2. 获取分区数据 与 分区索引
+        val rdd2: RDD[(Int, Int)] = rdd.mapPartitionsWithIndex(
+        (idx, iter) => {
+            List((idx, iter.max)).iterator
+        }
+        )
+        println(rdd2.collect().mkString(","))
+        // 输出:
+        // (0,3),(1,6)
+
         val rdd: RDD[Int] = sc.makeRDD(List(1, 2, 3, 4, 5, 6), 2)
         // 3. 获取第二个分区的数据
         val rdd3 = rdd.mapPartitionsWithIndex(
@@ -742,6 +767,8 @@
           }
         )
         println(rdd3.collect().mkString(","))
+        // 输出:
+        // 4,5,6
         ```
 
 - 如果要舍弃某个分区，**需要返回空集合的迭代器**: `Nil.iterator`，使程序可以正常编译
@@ -768,11 +795,14 @@
 ### flatMap--集合扁平化
 [top](#catalog)
 - 函数签名
-    - [](?????)
+    ```scala
+    def flatMap[U: ClassTag](f: T => TraversableOnce[U]): RDD[U]
+    ```
 - 功能
     - 集合扁平化处理
     - 如 `((1,2), (3,4))` --> `(1, 2, 3, 4)`
-- 回调函数中应该返回一个**可迭代对象** ?????
+- 回调函数中应该返回一个**可迭代对象**
+- 可以用**模式匹配**来处理不同类型的数据
 - 示例
     - 参考代码
         - [src/spark-learn/spark-core/src/main/scala/com/ljs/learn/sparkcore/rdd/operator/value/RDDFlatMap.scala](src/spark-learn/spark-core/src/main/scala/com/ljs/learn/sparkcore/rdd/operator/value/RDDFlatMap.scala)
@@ -787,8 +817,10 @@
             )
 
             println(rdd.flatMap(list => list).collect().mkString(","))
+            // 输出:
+            // 2,4,6,1,3,5
             ```
-        2. 将多维数组和值类型混合的数组转换为一维数组
+        2. 用**模式匹配**将多维数组和值类型混合的数组转换为一维数组
             ```scala
             // 将 Any 类型的集合进行扁平化操作
             val rddX: RDD[Any] = sc.makeRDD(
@@ -800,15 +832,20 @@
               case x => List(x)             // 匹配值数据，封装成数组
             }
             println(rddX.collect().mkString(","))
+            // 输出:
+            // 1,2,X,5,6
             ```
 
 ### glom--分区数据导入内存
 [top](#catalog)
 - 函数签名
-    - [](?????)
+    ```scala
+    def glom(): RDD[Array[T]]
+    ```
 - 功能
     - 将每个分区内的**数据转换为**相同类型的**内存数组**，分区不变
-- 如果数据量大可能会有性能问题，或内存溢出
+- 注意事项
+    - 如果数据量大可能会有性能问题，或内存溢出
 - 示例: 计算所有分区最大值，并求和
     - 参考代码
         - [src/spark-learn/spark-core/src/main/scala/com/ljs/learn/sparkcore/rdd/operator/value/RDDGlom.scala](src/spark-learn/spark-core/src/main/scala/com/ljs/learn/sparkcore/rdd/operator/value/RDDGlom.scala)
@@ -820,11 +857,17 @@
         val rdd2: RDD[Array[Int]] = rdd.glom()
         // 输出每个分区的所有数据
         rdd2.foreach(arr=>println(arr.mkString(",")))
+        // 输出:
+        // 4,6
+        // 5,2
+        // 1,3
 
         // 计算所有分区最大值，并求和
         // 方式1，使用 glom 实现
         val d: Double = rdd.glom().map(_.max).sum()
         println(d)
+        // 输出:
+        // 14.0
 
         // 方式2，使用 mapPartitions
         println(rdd.mapPartitions(
@@ -832,12 +875,21 @@
             List(iter.max).iterator // 返回当前分区的最大值
           }
         ).sum())
+        // 输出:
+        // 14.0
         ```
 
 ### groupBy--分组
 [top](#catalog)
 - 函数签名
-    - [](?????)
+    ```scala
+    def groupBy[K](f: T => K)(implicit kt: ClassTag[K]): RDD[(K, Iterable[T])] 
+
+    // 可以手动指定分区数
+    def groupBy[K](
+        f: T => K,
+        numPartitions: Int)(implicit kt: ClassTag[K]): RDD[(K, Iterable[T])]
+    ```
 - 功能
     - 将数据根据指定的规则进行分组
         - 回调函数的返回值就是分组的key
@@ -848,6 +900,14 @@
     - 返回值为 `List[tuple]`
         - tuple 的第 1 个元素，表示分组的key
         - tuple 的第 2 个元素，表示相同key组成的可迭代集合
+
+- groupBy 导致的数据不均匀
+    ```
+               rdd01  map(_ % 2)  rdd02
+    partition0: 1 2   --------->  1 3 5
+    partition1: 3 4   --------->  2 4 6
+    partition2: 5 6   --------->  分区数据为空
+    ```
 
 - 示例: 奇数偶数分组
     - 参考代码
@@ -876,7 +936,9 @@
 ### filter--过滤
 [top](#catalog)
 - 函数签名
-    - [](?????)
+    ```scala
+    def filter(f: T => Boolean): RDD[T]
+    ```
 - 功能
     - 过滤数据
     - 过滤后，分区数不变，但是分区内的数据可能不均衡，可能会出现数据倾斜
@@ -896,7 +958,12 @@
 ### sample--抽样
 [top](#catalog)
 - 函数签名
-    - [](?????)
+    ```scala
+    def sample(
+      withReplacement: Boolean,
+      fraction: Double,
+      seed: Long = Utils.random.nextLong): RDD[T]
+    ```
 - 功能
     - 根据指定的规则从数据集中抽取数据
 - 参数说明
@@ -906,27 +973,47 @@
         - 在不放回的情况下的抽取几率
         - 在放回的情况下，重复抽取的次数
 
-### distance--去重
+### distinct--去重
 [top](#catalog)
 - 函数签名
-    - [](?????)
+    ```scala
+    def distinct(): RDD[T]
+    ```
 - 功能
     - 去重
     - 可以通过第二参数修改分区数量
+- distinct的底层实现
+    - 源码分析
+        ```scala
+        def distinct(numPartitions: Int)(implicit ord: Ordering[T] = null): RDD[T] = withScope {
+            // (x, null) 执行聚合之后，仍然是 (x, null)，可以去重
+            map(x => (x, null)).reduceByKey((x, y) => x, numPartitions).map(_._1)
+        }
+        ```
+    - 底层使用了 `reduceByKey` 会产生 shuffle
 - 示例
     - 参考代码
-        - [src/spark-learn/spark-core/src/main/scala/com/ljs/learn/sparkcore/rdd/operator/value/RDDDistance.scala](src/spark-learn/spark-core/src/main/scala/com/ljs/learn/sparkcore/rdd/operator/value/RDDDistance.scala)
+        - [src/spark-learn/spark-core/src/main/scala/com/ljs/learn/sparkcore/rdd/operator/value/RDDDistinct.scala](src/spark-learn/spark-core/src/main/scala/com/ljs/learn/sparkcore/rdd/operator/value/RDDDistinct.scala)
     - 代码内容
         ```scala
         val rdd: RDD[Int] = sc.makeRDD(List(1,2,3,1,2,4))
         println(rdd.distinct().collect().mkString(","))
+
+        // 输出
+        // 1,2,3,4
         ```
 
 ### coalesce--收缩合并分区
 [top](#catalog)
 - 函数签名
-    - [](?????)
-- coalesce(分区数量, shuffle=false)
+    ```scala
+    def coalesce(
+        numPartitions: Int, // 分区数量
+        shuffle: Boolean = false,
+        partitionCoalescer: Option[PartitionCoalescer] = Option.empty)
+              (implicit ord: Ordering[T] = null)
+      : RDD[T]
+    ```
 - 功能
     - 将分区<span style='color:red'>收缩合并</span>到指定数量
     - 处理过程中没有 shuffle
@@ -936,6 +1023,8 @@
         - 当**存在过多的小任务时**，可以通过coalesce方法，收缩合并分区，**减少分区的个数，减小任务调度成本**
 
 - 缩减分区时，数据不会打乱重新组合，即 <span style='color:red'>没有 shuffle</span>
+    - 缩减分区时，仍然是窄依赖，因为每个分区只有一个子RDD的分区使用
+        - ![coalesce_dependency](imgs/core/coalesce_dependency.png)
 
 - coalesce 方法默认**无法增加**分区数
     - 因为默认没有 shuffle，所以扩大分区是没有意义的
@@ -959,16 +1048,20 @@
           })
         rdd.collect().foreach(println)
         rdd.saveAsTextFile("./output/RDDCoalesce")
+        // 输出 2 个结果文件
 
         // 2. 缩减分区为 1
         rdd.coalesce(1)
             .saveAsTextFile("./output/RDDCoalesce02")
+        // 输出 1 个结果文件
         ```
 
 ### repartition--重新分区、扩大分区
 [top](#catalog)
 - 函数签名
-    - [](?????)
+    ```scala
+    def repartition(numPartitions: Int)(implicit ord: Ordering[T] = null): RDD[T] 
+    ```
 - 功能
     - 扩大分区数
     - 让数据更加均衡，但是不能完美的解决数据倾斜
@@ -995,17 +1088,33 @@
 ### sortBy--排序
 [top](#catalog)
 - 函数签名
-    - [](?????)
+    ```scala
+    def sortBy[K](
+      f: (T) => K,
+      ascending: Boolean = true,
+      numPartitions: Int = this.partitions.length)
+      (implicit ord: Ordering[K], ctag: ClassTag[K]): RDD[T]
+    ```
 - 功能
     - 按照回调函数的执行结果对数据排序
     - 默认为升序排列
 - 默认情况下，排序后的 分区数 与排序前**相同**
 - 排序后可能会有数据倾斜
-- 底层在 sortByKey 中调用了 RangePartitioner 来设置分区
-    - ?????
+- 底层在 sortByKey 中调用了 `RangePartitioner` 来设置分区
+    ```scala
+    def sortByKey(ascending: Boolean = true, numPartitions: Int = self.partitions.length)
+        : RDD[(K, V)] = self.withScope
+    {
+      // 创建分区
+      val part = new RangePartitioner(numPartitions, self, ascending)
+      // 用新的分区做 shuffled
+      new ShuffledRDD[K, V, V](self, part)
+        .setKeyOrdering(if (ascending) ordering else ordering.reverse)
+    }
+    ```
 - <span style='color:red'>sortBy 多字段排序</span>
   - 可以将待排序的字段整理成 tuple: `(p1, p2, p3)`
-  - sortBy 会依次比较 tuple 中的每个字段
+  - sortBy 会**依次比较** tuple 中的每个字段
 - 示例
     - 参考代码
         - [src/spark-learn/spark-core/src/main/scala/com/ljs/learn/sparkcore/rdd/operator/value/RDDSortBy.scala](src/spark-learn/spark-core/src/main/scala/com/ljs/learn/sparkcore/rdd/operator/value/RDDSortBy.scala)
@@ -1014,9 +1123,13 @@
         val rdd: RDD[Int] = sc.makeRDD(List(1,2,3,1,2,4))
         // 升序排列
         println(rdd.sortBy(x => x).collect().mkString(","))
+        // 输出:
+        // 1,1,2,2,3,4
 
         // 降序排列
         println(rdd.sortBy(x => x, false).collect().mkString(","))
+        // 输出:
+        // 4,3,2,2,1,1
         ```
 
 ## 转换算子--双Value类型
@@ -1069,14 +1182,20 @@
 ### mapValues--遍历value
 [top](#catalog)
 - 函数签名
-    - [](?????)
+    ```scala
+    def mapValues[U](f: V => U): RDD[(K, U)] 
+    ```
 - 功能
-    - key 不变，只遍历遍历并更新value
+    - key 不变，只遍历并更新value
+- 参考
+    - [src/spark-learn/spark-core/src/main/scala/com/ljs/learn/sparkcore/rdd/operator/demo/TestDemoAgentLog.scala](src/spark-learn/spark-core/src/main/scala/com/ljs/learn/sparkcore/rdd/operator/demo/TestDemoAgentLog.scala)
 
 ### partitionBy--指定分组方式
 [top](#catalog)
 - 函数签名
-    - [](?????)
+    ```scala
+    def partitionBy(partitioner: Partitioner): RDD[(K, V)]
+    ```
 - 功能
     - 根据指定的`分区器对象`对数据重新分区
 - spark提供的`分区器对象`
@@ -1174,6 +1293,18 @@
     - 代码内容
         - 定义分区对象
             ```scala
+            class MyPartitioner(num:Int) extends Partitioner{
+                // 获取分区数量
+                override def numPartitions: Int = num
+
+                // 根据key分区
+                override def getPartition(key: Any): Int = {
+                    key match {
+                        case "aaa" => 0
+                        case _ => 1
+                    }
+                }
+            }
             ```
         - 使用自定义分区
             ```scala
@@ -1189,20 +1320,35 @@
             val rdd2 = rdd.partitionBy(new MyPartitioner(4))
             .mapPartitionsWithIndex(
                 (index, datas) => {
-                datas.map(d => (index, d))
+                datas.map(d => (index, d))  // 为每个数据添加分区 id
                 }
             )
             rdd2.collect().foreach(println)
+            // 输出:
+            // (0,(aaa,msga1))
+            // (0,(aaa,msga2))
+            // (0,(aaa,msga3))
+            // (0,(aaa,msga4))
+            // (1,(bbb,msgb1))
+            // (1,(bbb,msgb2))
+            // (1,(ccc,msgc1))
+            // (1,(ccc,msgc2))
+            // (1,(ccc,msgc3))
             ```
 
 ### reduceByKey
 [top](#catalog)
 - 函数签名
-    - [](?????)
+    ```scala
+    def reduceByKey(func: (V, V) => V): RDD[(K, V)]
+    ```
 - 功能
     - 按照key对value做聚合
     - 在分组内会提前进行一次聚合，然后再执行 shuffle
-- 包含 shuffle
+- 内部包含 shuffle
+- shuffle 的流程
+    - ![reduceByKey_shuffle](imgs/core/reduceByKey_shuffle.png)
+
 - 可以在聚合后改变分区数
     - 因为聚合后，可能会产生数据倾斜
     - 有些分区的数据可能会减少或情况
@@ -1224,15 +1370,25 @@
         // 按照 key 分组聚合
         val rdd1: RDD[(String, Int)] = rdd.reduceByKey(_+_)
         rdd1.collect().foreach(println)
+
+        // 输出:
+        // (a,4)
+        // (b,6)
+        // (c,2)
         ```
 
 ### groupByKey
 [top](#catalog)
 - 函数签名
-    - [](?????)
+    ```scala
+    def groupByKey(): RDD[(K, Iterable[V])]
+    ```
 - 功能
     - 对key进行分组,
     - 返回一个 tuple: `(用于分组的key, 分组后相同key的value集合)`
+- shuffle 的流程
+    - ![groubByKey_shuffle](imgs/core/groubByKey_shuffle.png)
+
 - 示例
     - 参考代码
         - [src/spark-learn/spark-core/src/main/scala/com/ljs/learn/sparkcore/rdd/operator/kv/RDDGroupByKey.scala](src/spark-learn/spark-core/src/main/scala/com/ljs/learn/sparkcore/rdd/operator/kv/RDDGroupByKey.scala)
@@ -1251,6 +1407,11 @@
         rdd2.map {
           case (key, iter) => (key, iter.sum)
         }.collect().foreach(println)
+
+        // 输出:
+        // (a,4)
+        // (b,6)
+        // (c,2)
         ```
 
 ### groupByKey与reduceByKey的异同
@@ -1279,15 +1440,19 @@
         def aggregateByKey[U: ClassTag](zeroValue: U)(seqOp: (U, V) => U,
             combOp: (U, U) => U): RDD[(K, U)]
         ```
-    - `zeroValue` 表示计算的初始值
+    - `zeroValue` 表示分区内每个分组的计算初始值
         - 类似于 scala 的 `floatLeft(x)(func)` 中的起始数据 `x`
-    - `seqOp(U, V) => U` 表示**分区内**的计算规则，U 是前一个结果，V是这次迭代的数据
+    - `seqOp(U, V) => U` 表示**分区内每个分组**的计算规则，U 是前一个结果，V是这次迭代的数据
     - `combOp(U, U) => U` 表示**分区间**的计算规则，第一个 U 是前一个结果，第二个 U 是这次迭代的数据
 
 - 使用场景: 分区内、分区间的计算规则不同
     - 实现方式: 函数的柯里化
 
 - **如果分区内、分区间的计算规则相同，相当于 reduceByKey**
+
+- 计算流程分析
+    - ![aggregateByKey计算流程分析](imgs/core/aggregateByKey_flow.png)
+
 - 简化写法
     ```scala
     // 1. 用 aggregateByKey 的基本写法
@@ -1336,7 +1501,9 @@
 ### foldByKey
 [top](#catalog)
 - 函数签名
-    - [](?????)
+    ```scala
+    def foldByKey(zeroValue: V)(func: (V, V) => V): RDD[(K, V)]
+    ```
 - 功能
     - 当**分区内、分区间**的**计算规则相同**时，可以使用 `foldByKey` 替代 `aggregateByKey`
 - 示例: 分组求和
@@ -1374,29 +1541,30 @@
         // foldByKey 实现
         // 3. 分区内、分区间计算规则相同，使用 foldByKey 简化
         rdd.foldByKey(0)(_+_).collect().foreach(println)
+
+        // 输出:
+        // (b,4) 
         ```
 
 ### combineByKey
 [top](#catalog)
+- 函数签名
+    ```scala
+    def combineByKey[C](
+        createCombiner: V => C,  // 表示将计算的第一个数据如何转换结构
+        mergeValue: (C, V) => C, // 表示分区内的计算规则
+        mergeCombiners: (C, C) => C): RDD[(K, C)] // 分区间的计算规则
+    ```
 - 功能
     - 与 aggregateByKey 类似，可以指定分区内、分区间的计算方式
     - 需要指定初始数据的结构
-- 函数说明
-    - 函数签名
-        ```scala
-        def combineByKey[C](
-          createCombiner: V => C,
-          mergeValue: (C, V) => C,
-          mergeCombiners: (C, C) => C): RDD[(K, C)]
-        ```
-    - 参数
-        - `createCombiner: V => C`，表示将计算的第一个数据如何转换结构
-        - `mergeValue: (C, V) => C`，表示分区内的计算规则
-        - `mergeCombiners: (C, C) => C): RDD[(K, C)]`，分区间的计算规则
 - 适用场景
-    - 输入的数据结构不符合计算规则
+    - **输入的数据结构不符合计算规则**
 
-- 示例: 分组求平均值
+- 计算流程分析
+    - ![combineByKey计算流程分析](imgs/core/combineByKey_flow.png)
+
+- 示例: 求每个key的平均值
     - 参考代码
         - [src/spark-learn/spark-core/src/main/scala/com/ljs/learn/sparkcore/rdd/operator/kv/RDDCombineByKey.scala](src/spark-learn/spark-core/src/main/scala/com/ljs/learn/sparkcore/rdd/operator/kv/RDDCombineByKey.scala)
     - 代码内容
@@ -1432,6 +1600,10 @@
             (key, total/count)
           }
         }.collect().foreach(println)
+
+        // 输出:
+        // (b,95)
+        // (a,91)
         ```
 
 ## reduceByKey、aggregateByKey、combineByKey、foldByKey的异同
@@ -1494,19 +1666,20 @@
 
 ### sortByKey
 [top](#catalog)
+- 函数签名
+    ```scala
+    def sortByKey(
+        ascending: Boolean = true,  // true = 升序，false = 降序
+        numPartitions: Int = self.partitions.length // 排序后的分区数
+        ): RDD[(K, V)]
+    ```
 - 功能
     - 用 key 排序
-    - 可以对自定义类排序，但是**必须实现** `Ordered`、`Serializable`
-- 函数说明
-    - 函数签名
-        - [](?????)
-    - 参数
-        - true = 升序，false = 降序
-        - 排序后的分区数
+    - 可以对自定义类排序，但是**必须实现**: `Ordered`、`Serializable`
 - 排序后可能会有数据倾斜
 - 示例: 对自定义类排序
     - 参考代码
-        - [src\spark-learn\spark-core\src\main\scala\com\ljs\learn\sparkcore\rdd\operator\kv\RDDSortByKey.scala](src\spark-learn\spark-core\src\main\scala\com\ljs\learn\sparkcore\rdd\operator\kv\RDDSortByKey.scala)
+        - [src/spark-learn/spark-core/src/main/scala/com/ljs/learn/sparkcore/rdd/operator/kv/RDDSortByKey.scala](src/spark-learn/spark-core/src/main/scala/com/ljs/learn/sparkcore/rdd/operator/kv/RDDSortByKey.scala)
     - 代码内容
         1. 默认对 key 排序
             ```scala
@@ -1526,7 +1699,7 @@
                 // 需要实现 Ordered、Serializable
                 class Person(pid:Int) extends Ordered[Person] with Serializable {
                   var id:Int = pid
-                  // 设置排序方式
+                  // 设置排序方式: 升序
                   override def compare(that: Person): Int = {
                     if (id > that.id){
                       1
@@ -1550,12 +1723,18 @@
                   )
                 )
                 rdd2.sortByKey(true).collect().foreach(println)
+                // 输出:
+                // (person_id:123,2)
+                // (person_id:234,3)
+                // (person_id:345,1)
                 ```
 
 ### join
 [top](#catalog)
 - 函数签名
-    - [](?????)
+    ```scala
+    def join[W](other: RDD[(K, W)]): RDD[(K, (V, W))]
+    ```
 - 功能
     - 在类型为 `(K,V)`和 `(K,W)` 的RDD上调用，连接数据，并返回 `(K,(V,W))` 格式的数据
     - 如果某个 key 无法连接，会被忽略
@@ -1564,26 +1743,50 @@
     - join 中包含 shuffle 和 笛卡尔积，性能不好，**尽量不要用**
     - 因为需要关联不同分区中的数据，所以需要有 shuffle
 - 示例
-    - ?????
+    - 参考
+        - [src/spark-learn/spark-core/src/main/scala/com/ljs/learn/sparkcore/rdd/operator/kv/RDDJoin.scala](src/spark-learn/spark-core/src/main/scala/com/ljs/learn/sparkcore/rdd/operator/kv/RDDJoin.scala)
+    - 代码内容
+        ```scala
+        val rdd1: RDD[(String, Int)] = sc.makeRDD(
+          List(("a", 1), ("b", 2), ("a", 100), ("c", 3), ("d", 4))
+        )
+
+        val rdd2: RDD[(String, Int)] = sc.makeRDD(
+          List(("a", 4), ("b", 5), ("a", 200), ("c", 6))
+        )
+
+        // 按照相同的key，连接两个 value
+        val rdd3: RDD[(String, (Int, Int))] = rdd1.join(rdd2)
+
+        rdd3.collect().foreach(println)
+
+        // key 重复会连接多次
+        // 输出:
+        // (a,(1,4))
+        // (a,(1,200))
+        // (a,(100,4))
+        // (a,(100,200))
+        // (b,(2,5))
+        // (c,(3,6))    
+        ```
 
 ### leftOutJoin--左联
 [top](#catalog)
 - 类似与sql的左联
-- ?????
 
 ### rightOuterJoin--右联
 [top](#catalog)
 - 类似与sql的右联
-- ?????
 
 ### cogroup
 [top](#catalog)
 - 函数签名
-    - [](?????)
+    ```scala
+    def cogroup[W](other: RDD[(K, W)]): RDD[(K, (Iterable[V], Iterable[W]))]
+    ```
 - 功能
     - 在类型为 `(K,V)`和 `(K,W)` 的RDD上调用，连接数据，并返回 `(K,(Iterable<V>, Iterable<W>))` 格式的数据
     - 会现将当前分区内数据分组，然后在进行左联 + 右联
-        - ?????
 
 - 示例
     - 参考代码
@@ -1601,6 +1804,13 @@
         val rdd3: RDD[(String, (Iterable[Int], Iterable[Int]))] = rdd1.cogroup(rdd2)
 
         rdd3.collect().foreach(println)
+
+        // 输出:
+        // (a,(CompactBuffer(1, 3),CompactBuffer(4, 6)))
+        // (b,(CompactBuffer(2),CompactBuffer(5)))
+        // (c,(CompactBuffer(4),CompactBuffer(7)))
+        // (d,(CompactBuffer(5),CompactBuffer()))
+        // (e,(CompactBuffer(),CompactBuffer(8)))
         ```
 
 ## 如何选择改变分区的转换算子
@@ -1625,7 +1835,7 @@
     - 中间字段使用空格分隔
 - 实现
     - 参考代码
-        - [src\spark-learn\spark-core\src\main\scala\com\ljs\learn\sparkcore\rdd\operator\demo\TestDemoAgentLog.scala](src\spark-learn\spark-core\src\main\scala\com\ljs\learn\sparkcore\rdd\operator\demo\TestDemoAgentLog.scala)
+        - [src/spark-learn/spark-core/src/main/scala/com/ljs/learn/sparkcore/rdd/operator/demo/TestDemoAgentLog.scala](src/spark-learn/spark-core/src/main/scala/com/ljs/learn/sparkcore/rdd/operator/demo/TestDemoAgentLog.scala)
     - 代码内容
         ```scala    val fileRDD = sc.textFile("./input/demo/agent.log")
 
@@ -1634,7 +1844,7 @@
         // 每个省份 + 广告
         // (省份,广告) COUNT
         fileRDD.map(x => {
-          val fields = x.split("\\s+")
+          val fields = x.split("//s+")
           // ((省份, 广告), 数量)
           val a = ((fields(1), fields(4)), 1)
           a
@@ -1833,7 +2043,8 @@
 - <span style='color:red'>包含 shuffle 的算子默认是有缓存的，为了提高效率</span>
 - 转换算子--value型
     - groupBy
-    - distance ?????
+    - distinct
+        - 由底层的 reduceByKey 产生
     - repartition
 
 - 转换算子--kv型
@@ -1851,7 +2062,7 @@
 - 转换算子--value型
     - groupBy
     - filter
-    - distance ?????
+    - distinct ?????
 
 - 转换算子--kv型
     - groupByKey
@@ -1895,18 +2106,21 @@
 - 依赖关系本质就是:**RDD之间的关系**
 
 - RDD 窄依赖: `org.apache.spark.OneToOneDependency`
-    - 表示父RDD 的 **每一个** Partition 最多被一个子RDD的一个Partition使用
+    - 表示父RDD 的<span style='color:red'>每一个 Partition 最多被一个子RDD的一个Partition使用</span>
     - 即: RDD 之间是一对一关系，分区数据也一一对应，<span style='color:red'>不会 shuffle</span>
         ```scala
         class OneToOneDependency[T](rdd: RDD[T]) extends NarrowDependency
         ```
+    - 依赖示意图
+        - ![窄依赖](imgs/core/OneToOneDependency.png)
+
 - RDD 宽依赖: `org.apache.spark.ShuffleDependency`
     - 表示 父RDD 的Partition 可能会被多个子RDD的Partition依赖，<span style='color:red'>会导致shuffle</span>
         ```scala
         class ShuffleDependency[K: ClassTag, V: ClassTag, C: ClassTag](...) extends Dependency[Product2[K, V]]
         ```
     - 依赖关系图
-        - [依赖关系图](?????)
+        - ![宽依赖](imgs/core/ShuffleDependency.png)
         - 数据被打乱并重新组合
         - 子RDD的分区1 可能会依赖于 父RDD的分区1和分区2
         - 子RDD的分区2 也可能会依赖于 父RDD的分区1和分区2
@@ -1922,7 +2136,39 @@
         - 参考代码
             - [src/spark-learn/spark-core/src/main/scala/com/ljs/learn/sparkcore/rdd/dependencies/RDDDebug.scala](src/spark-learn/spark-core/src/main/scala/com/ljs/learn/sparkcore/rdd/dependencies/RDDDebug.scala)
         - 代码内容
-            - ?????
+            ```scala
+            // 1. 创建RDD: ParallelCollectionRDD
+            val rdd1: RDD[String] = sc.makeRDD(
+              List("aaa bbb ccc", "bbb ccc ddd"),
+              2
+            )
+            println(rdd1.toDebugString)
+            println("-----------------------------------")
+
+            // 2. 创建RDD: MapPartitionsRDD
+            // 形成依赖关系: MapPartitionsRDD --> ParallelCollectionRDD
+            val rdd2: RDD[String] = rdd1.flatMap(_.split(" "))
+            println(rdd2.toDebugString)
+            println("-----------------------------------")
+
+            // 3. 创建RDD: MapPartitionsRDD
+            // 形成依赖关系: MapPartitionsRDD --> MapPartitionsRDD --> ParallelCollectionRDD
+            val rdd3: RDD[(String, Int)] = rdd2.map((_, 1))
+            println(rdd3.toDebugString)
+            println("-----------------------------------")
+
+            // 4. 创建RDD: ShuffledRDD
+            // 形成依赖关系: ShuffledRDD --> MapPartitionsRDD --> MapPartitionsRDD -->         ParallelCollectionRDD
+            val rdd4: RDD[(String, Int)] = rdd3.reduceByKey(_+_)
+            println(rdd4.toDebugString)
+            println("-----------------------------------")
+
+            // ShuffledRDD的依赖关系会被拆分，因为 shuffle 会将一个task拆分成两个
+            // (2) ShuffledRDD[3] at reduceByKey at RDDDebug.scala:34 []
+            // +-(2) MapPartitionsRDD[2] at map at RDDDebug.scala:28 []
+            // |  MapPartitionsRDD[1] at flatMap at RDDDebug.scala:22 []
+            // |  ParallelCollectionRDD[0] at makeRDD at RDDDebug.scala:13 []
+            ```
     2. 检查依赖对象
         - 参考代码
             - [src/spark-learn/spark-core/src/main/scala/com/ljs/learn/sparkcore/rdd/dependencies/RDDDependencies.scala](src/spark-learn/spark-core/src/main/scala/com/ljs/learn/sparkcore/rdd/dependencies/RDDDependencies.scala)
@@ -2295,6 +2541,9 @@
     - 默认的缓存是存储在Executor端的内存中，如果**内存不够用如何处理**？
         - executor 可以将内存的数据进行整理，然后**可以丢弃数据**
         - 即使发生了数据丢失，也只会重新计算当前 executor 上的数据，**不会全部重新计算**
+
+- 使用缓存与不使用缓存
+    - ![rdd_cache](imgs/core/rdd_cache.png)
 
 - 源码分析
     ```scala
@@ -2778,6 +3027,9 @@
 
 ## 累加器的执行原理
 [top](#catalog)
+- 原理示意图
+    - ![accumulator_principle](imgs/core/accumulator_principle.png)
+
 - 累加器中: `isZero`、`copy`、`reset` 的调用
     - 这三个方法在哪里被调用？
         - 在 `AccumulatorV2.writeReplace` 方法内，会调用 isZero、copy、reset
@@ -3031,7 +3283,8 @@
             - 如果没有，只能从 driver 拉取
         - 直接从driver获取，可能会消耗更多的时间
 - task 获取变量的流程图
-    - [流程图](?????)
+    - ![broadcast_principle](imgs/core/broadcast_principle.png)
+
 - 示例
     1. join的性能问题
         - 参考
