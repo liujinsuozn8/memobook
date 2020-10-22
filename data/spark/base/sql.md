@@ -31,7 +31,12 @@
         - [加载数据](#加载数据)
         - [直接读取数据并执行sql](#直接读取数据并执行sql)
         - [保存数据](#保存数据)
-- [](#)
+    - [连接mysql](#连接mysql)
+    - [连接hive](#连接hive)
+- [练习--各区域热门商品Top3](#练习--各区域热门商品Top3)
+    - [需求分析](#需求分析)
+    - [UDF实现](#UDF实现)
+    - [UDAF实现](#UDAF实现)
 - [](#)
 
 val df = spark.read.json()
@@ -269,7 +274,6 @@ spark.sql().show
     |DataSet --> DataFrame  |`ds.toDF`|
 
 - [图](?????)
-
 
 # SparkSQL语法
 ## sql基础
@@ -749,5 +753,342 @@ spark.sql().show
         df.write.mode("overwrite").format("json").save("./output/sql/user02")
         ```
 
+## 连接mysql
+[top](#catalog)
+docker run -d -p=3305:3306 --name sparkmysql -e MYSQL_ROOT_PASSWORD=1234 --network=hdcluster_hdxnet --ip=172.23.101.201 mysql
+
+create database sparkdb;
+create table myuser(id int,  name varchar(20), address varchar(30));
+
+insert into myuser values
+(1, 'aaa', 'aaaaaaaaa'),
+(2, 'bbb', 'bbbbbbbbb'),
+(3, 'ccc', 'ccccccccc'),
+(4, 'ddd', 'ddddddddd'),
+(5, 'eee', 'eeeeeeeee')
+- 三种连接mysql的方式
+- 写入数据
+
+## 连接hive
+[top](#catalog)
+- 如果spark 部署了 hive，可以使用 Hive 表访问、UDF (用户自定义函数)以及 Hive 查询语言
+- 如果没有部署好，默认会在当前目录下创建 spark 自己的元数据仓库
+- spark-shell 默认支持hive，代码中默认不支持，需要手动指定
+- 部署外置 hive 的流程
+    1. 将 `hive-site.xml` 复制到 `$SPARK_HOME/conf` 下
+    2. 将 `mysql-connector` 的 jar 包放在 `$SPARK_HOME/jar` 下
+
+- 在代码中操作 hive
+    - 必须在 jdk8 下操作，更高的版本可能无法启动
+    - 需要添加 hive 的 maven 配置
+        ```xml
+        <!--  hive连接  -->
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-hive_2.12</artifactId>
+            <version>2.4.5</version>
+            <!--<scope>provided</scope>-->
+        </dependency>
+        <dependency>
+            <groupId>org.apache.hive</groupId>
+            <artifactId>hive-exec</artifactId>
+            <version>3.1.2</version>
+        </dependency>
+        ```
+    - 将 `hive-site.xml` 添加到 resources 目录下
+        - 参考: [src/spark-learn/spark-sql/src/main/resources/hive-site.xml](src/spark-learn/spark-sql/src/main/resources/hive-site.xml)
+    - 代码操作
+        - 参考: [src/spark-learn/spark-sql/src/main/scala/com/ljs/learn/sparksql/loadsave/hive/OutlayHive.scala](src/spark-learn/spark-sql/src/main/scala/com/ljs/learn/sparksql/loadsave/hive/OutlayHive.scala)
+        - 代码内容
+            ```scala
+            def main(args: Array[String]): Unit = {
+              val conf = new SparkConf().setMaster("local[*]").setAppName("sqltest")
+              val spark = SparkSession.builder()
+                .enableHiveSupport()    // 必须开启 Hive 的支持
+                .config(conf)
+                .getOrCreate()
+              import spark.implicits._
+
+              spark.sql("show tables").show()
+
+              spark.sql("select * from testtb limit 2").show()
+
+              spark.stop()
+            }
+            ```
+
+# 练习--各区域热门商品Top3
+## 需求分析
+[top](#catalog)
+- 需求：
+    1. 按照: 地区、商品名称 的顺序分组，并统计点击次数
+    2. 只保留每个**地区**点击量前 3 的数据
+    3. 需要在**城市备注**中显示该地区、该商品在该地区内的**不同城市**中点击量的百分比
+        - 只显示百分比最高的前两名，如果城市多于2个，表示为: **其他**
+    4. 结果示例
+
+        |地区|商品名称|点击次数|城市备注|
+        |-|-|-|-|
+        |华北|商品A|100000|北京21.2%，天津13.2%，其他65.6%|
+        |华北|商品P|80200|北京63.0%，太原10%，其他27.0%|
+        |华北|商品M|40000|北京63.0%，太原10%，其他27.0%|
+        |东北|商品J|92000|大连28%，辽宁17.0%，其他 55.0%|
+
+- 创建表
+    - ????
+
+## UDF实现
+[top](#catalog)
+- 实现方式
+    1. `user_visit_action` 与 `city_info` 表连接，得到每个城市所在的**地区**
+    2. `user_visit_action` 与 `Product_info` 表连接得到产品名称
+    3. 按照地区名: area、商品名: product_name 分组，统计出每个商品在: **每个地区**的**总点击量**
+        - 分组时，通过 `collect_list(c.city_name)` 收集分组内的所有城市名
+    4. 通过开窗函数，在**每个地区内**，**按照点击量降序排列**
+    5. 只取每个地区内的**前三名**
+    6. 自定义 UDF 函数计算城市备注
+
+- 实现内容
+    - 参考
+        - [src/spark-learn/spark-sql/src/main/scala/com/ljs/learn/sparksql/inaction/GetDataByUDFAndTempView02.scala](src/spark-learn/spark-sql/src/main/scala/com/ljs/learn/sparksql/inaction/GetDataByUDFAndTempView02.scala)
+    - 代码内容
+        1. 过滤并统计数据。直接将城市名、商品名取出
+            ```scala
+            spark.sql(
+              """
+                |select
+                |    c.area,
+                |    p.product_name,
+                |    count(c.city_name) as click_count,
+                |    collect_list(c.city_name) as cities
+                |from user_visit_action as a
+                |    join city_info as c
+                |    on c.city_id = a.city_id
+                |    join product_info as p
+                |    on p.product_id = a.click_product_id
+                |where a.click_product_id <> -1
+                |group by c.area, p.product_name
+                |""".stripMargin).createOrReplaceTempView("t1")
+            ```
+        2. 在每个地区分组内，按照点击量降序排序，并添加序号
+            ```scala
+            spark.sql(
+              """
+                |select
+                |    t1.area,
+                |    t1.product_name,
+                |    t1.click_count,
+                |    t1.cities,
+                |    row_number() over(partition by t1.area order by t1.        click_count desc) as rk
+                |from t1
+                |""".stripMargin).createOrReplaceTempView("t2")
+            ```
+        3. 保留前每个地区的前 3 名
+            ```scala
+            spark.sql(
+              """
+                |select
+                |    t2.area,
+                |    t2.product_name,
+                |    t2.click_count,
+                |    t2.cities
+                |from t2
+                |where t2.rk <= 3
+                |""".stripMargin).createOrReplaceTempView("t3")
+            ```
+        4. 注册 UDF 函数，来处理 `cities` 中的城市数据
+            ```scala
+            // 1. 注册 UDF 函数 cities_details，接受一个序列的数据，返回一个字符串
+            spark.udf.register("cities_details", (arr: Seq[String]) => {
+              // 2. 遍历整个序列的数据，并统计各个城市的出现次数，结果保存到 Map 中
+              val map = mutable.Map[String, Int]()
+              arr.foreach(e => {
+                map(e) = map.getOrElse(e, 0) + 1
+              })
+              // 3. 用 Map 中的 value 做降序排序
+              val groupByResult: List[(String, Int)] = map.toList.sortWith((left,right)=>left._2 > right._2)
+              // 4. 取排序结果的【前两名】
+              val List(top1,  top2) = groupByResult.take(2)
+              // 5. 计算这两个城市的百分比
+              val top1Percent = top1._2.toDouble / arr.size
+              val top2Percent = top2._2.toDouble / arr.size
+
+              // 6. 拼接结果字符串
+              val result = new mutable.StringBuilder()
+              result.append(f"${top1._1}:${(top1Percent * 100).formatted("%.2f")}%%, ${top2._1}:${(top2Percent * 100).formatted("%.2f")}%%")
+
+              // 7. 如果大于两个城市，则计算【其他】
+              if (groupByResult.size > 2) {
+                result.append( f"$result, 其他:${((1 - top1Percent - top2Percent) * 100).formatted("%.2f")}%%")
+              }
+
+              // 8. 返回结果字符串
+              result.toString()
+            })
+            ```
+        5. 计算城市备注
+            ```scala
+            spark.sql(
+              """
+                |select
+                |    t3.area, -- 地区
+                |    t3.product_name,-- 商品名称
+                |    t3.click_count,-- 点击次数
+                |    cities_details(t3.cities)
+                |from t3
+                |""".stripMargin).show
+            ```
+
+## UDAF实现
+[top](#catalog)
+- 实现方式
+    1. `user_visit_action` 与 `city_info` 表连接，得到每个城市所在的**地区**
+    2. `user_visit_action` 与 `Product_info` 表连接得到产品名称
+    3. 按照地区名: area、商品名: product_name 分组，统计出每个商品在: **每个地区**的**总点击量**
+    4. 在 3 中分组的同时，用 UDAF 函数计算 **城市备注**
+    5. 通过开窗函数，在**每个地区内**，**按照点击量降序排列**
+    6. 只取每个地区内的**前三名**
+- 实现内容
+    - 参考
+        - [src/spark-learn/spark-sql/src/main/scala/com/ljs/learn/sparksql/inaction/GetDataByUDAFAndTempView.scala](src/spark-learn/spark-sql/src/main/scala/com/ljs/learn/sparksql/inaction/GetDataByUDAFAndTempView.scala)
+    - UDAF 的实现分析
+        - 输入数据
+            - 数据内容: 城市名称
+            - 数据类型: String
+        - 在**每个分组内**，用于计算的数据结构
+            - `( 区域、商品点击的总和, Map(城市名称, count(出现的次数)) )`
+            - 对出现次数求和就是求城市的点击量
+        - 如何计算结果
+            - `各城市点击量 / 区域、商品点击的总和`
+        - 代码内容
+            ```scala
+            // 在UDAF中聚合，并计算结果
+            class CityUDAF extends UserDefinedAggregateFunction {
+              // 1. 输入数据的结构
+              override def inputSchema: StructType = StructType(Array(StructField("city", StringType)))
+
+              // 2. 中间结果的结构 (行数, Map(city, count))
+              override def bufferSchema: StructType = StructType(Array(
+                StructField("total", LongType),
+                StructField("cityMap", MapType(StringType, LongType))
+              ))
+
+              // 3. 结果数据类型
+              override def dataType: DataType = StringType
+
+              // 4. 稳定型计算
+              override def deterministic: Boolean = true
+
+              // 5. 初始化 中间结果
+              override def initialize(buffer: MutableAggregationBuffer): Unit = {
+                buffer(0) = 0L
+                buffer(1) = Map[String, Long]() // 创建不可变 Map，每次更新时，生成新的 Map 对象
+              }
+
+              // 5.1 每个分区的分组内聚合
+              override def update(buffer: MutableAggregationBuffer, input: Row): Unit = {
+                // 每个分组内，数量自动加1
+                buffer(0) = buffer.getLong(0) + 1L
+                // 获取 city
+                val city: String = input.getString(0)
+                // 合并数据
+                val cityMap: Map[String, Long] = buffer.getAs[Map[String, Long]](1)
+                buffer(1) = cityMap.updated(city, cityMap.getOrElse(city, 0L) + 1L)
+              }
+
+              // 6. 分区间的分组内聚合
+              override def merge(buffer1: MutableAggregationBuffer, buffer2: Row): Unit = {
+                buffer1(0) = buffer1.getLong(0) + buffer2.getLong(0)
+                val cityMap1: Map[String, Long] = buffer1.getAs[Map[String, Long]](1)
+                val cityMap2: Map[String, Long] = buffer2.getAs[Map[String, Long]](1)
+                println(cityMap1)
+                println(cityMap2)
+
+                buffer1(1) = cityMap1.foldLeft(cityMap2) {
+                  case (map, (k, v)) => map.updated(k, map.getOrElse(k, 0L) + v)
+                }
+              }
+
+              // 7. 求最终结果
+              override def evaluate(buffer: Row): Any = {
+                val total = buffer.getLong(0)
+                val cityMap = buffer.getAs[Map[String, Long]](1)
+                val result = new mutable.StringBuilder()
+                var others: Double = 100F
+
+                // 求前 2 名
+                cityMap.toList
+                  .sortWith((left, right) => left._2 > right._2)
+                  .take(2)
+                  .foreach {
+                    case (cname, ccount) => {
+                      val percent = ccount.toDouble * 100 / total
+                      // 计算时，同时统计 【其他】 的百分比
+                      others -= percent
+                      result.append(f"$cname:${percent.formatted("%.2f")}%%,")
+                    }
+                  }
+
+                // 如果城市数量 > 2，则增加【其他】
+                if (cityMap.size > 2) {
+                  result.append(f"其他:${others.formatted("%.2f")}%%")
+                }
+
+                // 8. 返回结果字符串
+                result.toString()
+              }
+            }
+            ```
+    - sql代码
+        1. 注册 UDAF
+            ```scala
+            spark.udf.register("cityRemark", new CityUDAF())
+            ```
+        2. 过滤并统计数据。同时用 UDAF 计算城市备注
+            ```scala
+            spark.sql(
+              """
+                |select
+                |    c.area,
+                |    p.product_name,
+                |    count(c.city_name) as click_count,
+                |    cityRemark(c.city_name) as cities
+                |from user_visit_action as a
+                |    join city_info as c
+                |    on c.city_id = a.city_id
+                |    join product_info as p
+                |    on p.product_id = a.click_product_id
+                |where a.click_product_id <> -1
+                |group by c.area, p.product_name
+                |""".stripMargin).createOrReplaceTempView("t1")
+            ```
+
+        3. 添加序号
+            ```scala
+            spark.sql(
+              """
+                |select
+                |    t1.area,
+                |    t1.product_name,
+                |    t1.click_count,
+                |    t1.cities,
+                |    row_number() over(partition by t1.area order by t1.click_count desc) as rk
+                |from t1
+                |""".stripMargin).createOrReplaceTempView("t2")
+            ```
+
+        4. 只保留前 3 名
+            ```scala
+            spark.sql(
+              """
+                |select
+                |    t2.area,
+                |    t2.product_name,
+                |    t2.click_count,
+                |    t2.cities
+                |from t2
+                |where t2.rk <= 3
+                |""".stripMargin).show
+            ```
 
 [top](#catalog)

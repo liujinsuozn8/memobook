@@ -126,13 +126,15 @@
     - 跟踪 executor 的执行情况
     - 通过 ui 展示、查询 job 的运行情况
 - 在实际开发中，一般不会涉及到 driver
+- driver 本质上是一个线程，实际的处理都由 SparkContext 来执行
+    - 一般会将 SparkContext 成为 Driver
 
 ## executor
 [top](#catalog)
 
 - 主要作用
     - **负责运行计算任务**
-
+- 也可以称为 <span style='color:red'>计算对象</span>
 - executor 是集群中的某台机器上运行的一个JVM进程，**一台机器可以启动多个 executor**
     - 即: <span style='color:red'>executor 不与机器绑定</span>
 - 一个 executor 内可以有**多个任务，任务间相互独立**

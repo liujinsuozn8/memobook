@@ -2,6 +2,8 @@
     - [spark的基本概念](base.md)
     - [spark核心编程](core.md)
     - [spark核心应用](core-inaction.md)
+    - [spark核心代码分析](core-source-analyze.md)
     - [sparkSQL](sql.md)
+    - [sparkStreaming](streaming.md)
 - 其他
     - [比较重要的内容](important.md)

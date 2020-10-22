@@ -43,7 +43,7 @@
     - [转换算子--kv类型](#转换算子--kv类型)
         - [kv类型的使用前提](#kv类型的使用前提)
         - [mapValues--遍历value](#mapValues--遍历value)
-        - [partitionBy--指定分组方式](#partitionBy--指定分组方式)
+        - [partitionBy--指定分区方式](#partitionBy--指定分区方式)
         - [自定义分区器](#自定义分区器)
         - [reduceByKey](#reduceByKey)
         - [groupByKey](#groupByKey)
@@ -258,8 +258,15 @@
         ```scala
         protected def getPreferredLocations(split: Partition): Seq[String] = Nil
         ```
-    - 本地化级别
-        
+- 数据本地化级别
+    - 数据和计算所在的位置称为`本地化`
+        1. 进程本地化: 计算、数据在同一个 Executor
+        2. 结点本地化: 计算、数据在同一个 结点
+        3. 机架本地化: 计算、数据在同一个 机架
+        4. 任意
+
+    - 具体分类
+
         |级别|含义|
         |-|-|
         |`PROCESS_LOCAL`|数据在同一个 JVM 中，即同一个 executor 上<br>**最佳的数据级别**|
@@ -1190,7 +1197,7 @@
 - 参考
     - [src/spark-learn/spark-core/src/main/scala/com/ljs/learn/sparkcore/rdd/operator/demo/TestDemoAgentLog.scala](src/spark-learn/spark-core/src/main/scala/com/ljs/learn/sparkcore/rdd/operator/demo/TestDemoAgentLog.scala)
 
-### partitionBy--指定分组方式
+### partitionBy--指定分区方式
 [top](#catalog)
 - 函数签名
     ```scala
