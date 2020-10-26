@@ -40,7 +40,9 @@
 - [自定义](#自定义)
     - [自定义Interceptor---多路复用](#自定义Interceptor---多路复用)
     - [自定义Source](#自定义Source)
+    - [自定义Sink](#自定义Sink)
 - [Sink组应用](#Sink组应用)
+- [flume可能会丢失数据的情况](#flume可能会丢失数据的情况)
 - [](#)
 
 # 概述
@@ -1512,6 +1514,8 @@
                 suffix = context.getString("suffix", "testsuf");
             }
 
+            // 处理正常需要返回 Status.READY
+            // 处理异常需要返回 Status.BACKOFF
             @Override
             public Status process() throws EventDeliveryException {
                 Status status = null;
@@ -1603,11 +1607,139 @@
         -f job/source/flume1.conf
         ```
 
+## 自定义Sink
+[top](#catalog)
+- 参考
+    - http://flume.apache.org/releases/content/1.9.0/FlumeDeveloperGuide.html#sink
+- sink 如何运行
+    - sink 不断轮询 channel 中的 event，并**批量**的删除 event
+    - event 会被 sink 批量的写入存储或索引系统，或者发送到另一个 flume
+- sink 批量删除 event 的事务流程
+    1. 批量删除 channel 内的 event 之前，sink 用 channel 启动一个事务
+    2. 批量 event 一旦成功写出，sink 通过 channel 提交事务
+    3. 事务被提交后，channel 从内部缓冲区中删除 event
+
+- 自定义 sink
+    - 参考
+        - [src/flume-learn/flume-base/src/main/java/com/ljs/learn/flumebase/sink/MySink.java](src/flume-learn/flume-base/src/main/java/com/ljs/learn/flumebase/sink/MySink.java)
+    - 代码内容
+        ```java
+        public class MySink extends AbstractSink implements Configurable {
+            // 定义前缀、后缀
+            private String prefix;
+            private String suffix;
+
+            // 获取 logger 对象
+            private Logger logger = LoggerFactory.getLogger(MySink.class);
+
+            @Override
+            public void configure(Context context) {
+                prefix = context.getString("prefix");
+                suffix = context.getString("suffix", "xxxx");
+            }
+
+            @Override
+            public Status process() throws EventDeliveryException {
+                Status status = null;
+
+                // 1. 获取 channel
+                Channel channel = getChannel();
+
+                // 2. 从 channel 获取事务及数据
+                Transaction transaction = channel.getTransaction();
+
+                // 3. 开启事务
+                transaction.begin();
+                
+                try {
+                    // 4. 从 channel 获取数据
+                    Event event = channel.take();
+
+                    // 5. 处理 event
+                    // 获取数据
+                    if (event != null){
+                        String body = new String(event.getBody());
+                        logger.info(prefix + body + suffix);
+                    }
+
+                    // 6. 提交事务
+                    transaction.commit();
+
+                    // 7. 成功提交
+                    status = Status.READY;
+                } catch (ChannelException e) {
+                    e.printStackTrace();
+
+                    // 8. 提交失败，回滚事务
+                    transaction.rollback();
+
+                    // 9. 返回失败状态
+                    status = Status.BACKOFF;
+                } finally {
+                    // 10. 关闭事务
+                    transaction.close();
+                }
+                return status;
+            }
+        }
+        ```
+
+- 配置
+    - 参考
+        - [src/conf/customise/sink/flume1.conf](src/conf/customise/sink/flume1.conf)
+    - 配置内容
+        ```
+        a1.sources = r1
+        a1.sinks = k1
+        a1.channels = c1
+
+        a1.sources.r1.type = netcat
+        a1.sources.r1.bind = localhost
+        a1.sources.r1.port = 44444
+
+        # sink，设置自定义 sink，并设置前缀、后缀
+        a1.sinks.k1.type = com.ljs.learn.flumebase.sink.MySink
+        a1.sinks.k1.prefix = start---
+        a1.sinks.k1.suffix = ---end
+
+        a1.channels.c1.type = memory
+        a1.channels.c1.capacity = 1000
+        a1.channels.c1.transactionCapacity = 100
+
+        a1.sources.r1.channels = c1
+        a1.sinks.k1.channel = c1
+        ```
+
+- 实现过程
+    - 创建配置文件
+        ```
+        mkdir job/sink
+        touch job/sink/flume1.conf
+        ```
+    - 开发自定义 sink，打包并上传到lib目录
+    - 启动flume1
+        ```
+        bin/flume-ng agent \
+        -n a1 \
+        -c conf \
+        -f job/sink/flume1.conf \
+        -Dflume.root.logger=INFO,console
+        ```
 # Sink组应用
 [top](#catalog)
 - [sink组应用---故障转移](#sink组应用---故障转移)
 - [sink组应用---负载均衡](#sink组应用---负载均衡)
 - default 情况，只接收 1 个 sink
+
+# flume可能会丢失数据的情况
+[top](#catalog)
+- flume 是不可能丢失数据的，其内部有完善的事务机制
+- source 到 channel 是事务性的，channel 到 sink 是事务性的，因此这两个环节不会出现数据的丢失
+- 唯一可能丢失数据的情况是 channel 采用 memoryChannel
+    - agent 宕机导致数据丢失
+    - 或者 channel 存储数据已满，导致 source 不再写入，未写入的数据丢失。
+- flume 不会丢失数据，但是有可能造成数据的重复
+    - 当数据已经成功由 sink 发出，如果没有接收到响应，sink 会再次发送数据，这可能会导致数据的重复
 
 # 其他
 [top](#catalog)
