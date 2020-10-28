@@ -124,8 +124,9 @@
 
 - 数据处理
     - [hadoop](data/hadoop/base/index.md)
-    - [zookeeper](data/zookeeper/base/base.md)
-    - hive
+    - [zookeeper](data/zookeeper/base/index.md)
+    - [hive](data/hive/base/index.md)
+    - [flume](data/flume/base.md)
     - [spark](data/spark/base/index.md)
 
 - 开发工具

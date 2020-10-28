@@ -61,44 +61,45 @@
 - 每一个结点称为 `ZNode`
 - 每一个 `ZNode` 默认能够存储 1MB 的数据
 - 每个 `ZNode` 都可以通过**路径**唯一标识
-- 数据结构示例
-    - ![图](?????)
+- 整体上的数据结构
+    - ![znodes_structure](imgs/znodes_structure.png)
 
 ## 应用场景
 [top](#catalog)
 - 统一命名服务
-    分布式环境下，经常需要读应用/服务进行统一命名，便于识别
-    - ????? ppt
+    - 分布式环境下，经常需要读应用/服务进行统一命名，便于识别
+    - ![name_server](imgs/name_server.png)
+
 - 统一配置管理
     - 配置同步
         - 一般要求一个集群中所有节点的配置信息相同
         - 修改配置文件之后，需要快速同步到各个节点
-    - 配置信息可有Zookeeper进行管理
+    - 配置信息可由Zookeeper进行管理
         - 将配置信息写入Zookeeper上的一个 Znode
         - 每个客户端服务器监听这个Znode
         - 当 Znode 的数据被修改时，Zookeeper 将通知各个 client
-    - ????? ppt
+    - ![config_server](imgs/config_server.png)
+
 - 统一集群状态管理
     - 分布式环境中，需要实时掌握每个节点的状态，并根据状态做出调整
     - zookeeper 监控节点状态
         - 将节点信息写入 Zookeeper 上的一个 Znode
         - 监听这个 Znode 可以获取目标节点的实时状态
-    - ????? ppt
 - 服务器节点动态上下线
     - 工作流程
-        - ![图](?????)
+        - ![server_online_offline](imgs/server_online_offline.png)
 
     - 流程说明
         1. server 启动时，去注册信息
             - 一般都是临时节点
         2. client 获取到当前在线的服务器列表，并注册监听
-        3. 如果服务器节点下线
+        3. 如果某个服务器节点下线
         4. 将: `服务器节点上下线事件` 发送给各个客户端（观察者）
         5. 通过 `Zookeeper` 对象的 `process()` 方法获取通知，并重新获取服务器列表，并监听
 
-- 软负载均衡等
-    - 在 zookeeper 中记录每台服务器的访问数，让访问量最少的服务器处理最新的请求
-    - ????? ppt
+- 软负载均衡
+    - 在 zookeeper 中记录每台服务器的访问数，让**访问量最少的服务器处理最新的请求**
+    - ![name_server](imgs/name_server.png)
 
 # 安装
 ## 本地模式
@@ -111,11 +112,11 @@
             ```sh
             cp conf/zoo_sample.cfg zoo.cfg
             ```
-        2. 修改 `dataDir` 路径
+        2. 修改配置文件中的 `dataDir` 路径
             ```
             dataDir=/zkdata
             ```
-        3. 创建 `dataDir` 指定的目录
+        3. 在结点上手动创建 `dataDir` 指定的目录
     4. 添加 `zookeeper` 的环境变量
         ```sh
         export ZOOKEEPER_HOME='....'
@@ -278,7 +279,8 @@
 ## client向server写数据的流程
 [top](#catalog)
 - 写数据的流程图
-    - ![图](?????)
+    - ![write_data](imgs/write_data.png)
+
 - 流程说明
     1. `client ---> server1`
         - client 向 server1 写数据，发送一个写请求
@@ -303,7 +305,7 @@
 ## 监听器原理
 [top](#catalog)
 - 监听的流程图
-    - ![图](?????)
+    - ![server_online_offline](imgs/server_online_offline.png)
 
 - 流程说明
     1. 先有一个 main() 线程
@@ -325,7 +327,7 @@
 ## maven配置
 [top](#catalog)
 - 参考
-    - [src/zk-api/pom.xml](src/zk-api/pom.xml)
+    - [src/zk-learn/zk-api/pom.xml](src/zk-learn/zk-api/pom.xml)
 - 配置内容
     ```xml
     <dependency>
@@ -344,7 +346,7 @@
 ## 创建zookeeper的client对象
 [top](#catalog)
 - 参考
-    - [src/zk-api/src/main/java/com/ljs/learn/zkapi/client/TestZookeeper.java](src/zk-api/src/main/java/com/ljs/learn/zkapi/client/TestZookeeper.java)
+    - [src/zk-learn/zk-api/src/main/java/com/ljs/learn/zkapi/client/TestZookeeper.java](src/zk-learn/zk-api/src/main/java/com/ljs/learn/zkapi/client/TestZookeeper.java)
 - 代码内容
     ```java
     // 多个地址之间通过 `,` 分割，中间不能有【空格】
@@ -375,7 +377,7 @@
 ## client对象的操作
 [top](#catalog)
 - 参考
-    - [src/zk-api/src/main/java/com/ljs/learn/zkapi/client/TestZookeeper.java](src/zk-api/src/main/java/com/ljs/learn/zkapi/client/TestZookeeper.java)
+    - [src/zk-learn/zk-api/src/main/java/com/ljs/learn/zkapi/client/TestZookeeper.java](src/zk-learn/zk-api/src/main/java/com/ljs/learn/zkapi/client/TestZookeeper.java)
 - 创建节点
     ```java
     String path = zkCli.create("/user1", "user1data".getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
@@ -456,7 +458,7 @@
         - 每次关闭一个服务器节点后，zookeeper上的临时节点会被删除
 - 服务器节点
     - 参考
-        - [src/zk-api/src/main/java/com/ljs/learn/zkapi/nodes/DistributeServer.java](src/zk-api/src/main/java/com/ljs/learn/zkapi/nodes/DistributeServer.java)
+        - [src/zk-learn/zk-api/src/main/java/com/ljs/learn/zkapi/nodes/DistributeServer.java](src/zk-learn/zk-api/src/main/java/com/ljs/learn/zkapi/nodes/DistributeServer.java)
     - 代码内容
         ```java
         public class DistributeServer {
@@ -511,7 +513,7 @@
 
 - 客户端
     - 参考
-        - [src/zk-api/src/main/java/com/ljs/learn/zkapi/nodes/DistributeClient.java](src/zk-api/src/main/java/com/ljs/learn/zkapi/nodes/DistributeClient.java)
+        - [src/zk-learn/zk-api/src/main/java/com/ljs/learn/zkapi/nodes/DistributeClient.java](src/zk-learn/zk-api/src/main/java/com/ljs/learn/zkapi/nodes/DistributeClient.java)
     - 代码内容
         ```java
         public class DistributeClient {
