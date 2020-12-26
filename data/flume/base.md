@@ -119,6 +119,7 @@
 ## Channel
 [top](#catalog)
 - 功能
+  
     - Source 和 Sink 之间的缓冲区
 - 特点
     - Channel 允许 Source 和 Sink 的处理性能不同
@@ -136,7 +137,7 @@
 # 基本使用
 ## 监控端口数据
 [top](#catalog)
-- 参考； http://flume.apache.org/FlumeUserGuide.html
+- 参考: http://flume.apache.org/FlumeUserGuide.html
 - 需求
     - 使用 flume 监听端口，收集该端口数据，并打印到控制台
 - 实现方式
@@ -182,7 +183,11 @@
         ```
     2. 启动flume（相当于开启了一个服务端）
         - 启动指令
-            ```
+            ```shell
+            # --conf 应该指定 /opt/module/flume/conf
+            # 在 /opt/module/flume 下执行，--conf 只指定 conf 即可
+            # 执行时，需要 --conf 下的启动配置
+            # -conf-file 是 agent 的配置
             bin/flume-ng agent \
             --conf conf \
             --conf-file job/flume-netcat-logger.conf \
@@ -190,7 +195,7 @@
             -Dflume.root.logger=INFO,console
             ```
         - **简写指令**
-            ```
+            ```shell
             bin/flume-ng agent \
             -n a1 \
             -c conf \
@@ -198,7 +203,7 @@
             -Dflume.root.logger=INFO,console
             ```
     3. 在本地启动 nc
-        ```
+        ```shell
         nc localhost 44444
         ```
     4. 在nc端发送数据
@@ -237,8 +242,9 @@
     ```
 
 - 参考配置
-    - [src/conf/base/file-flume-logger.conf](src/conf/base/file-flume-logger.conf)
-
+  
+- [src/conf/base/file-flume-logger.conf](src/conf/base/file-flume-logger.conf)
+  
 - 实现
     1. 添加配置
         - touch job/file-flume-logger.conf
@@ -421,8 +427,9 @@
     ```
 
 - 参考配置
-    - [src/conf/base/dir-flume-hdfs-logger.conf](src/conf/base/dir-flume-hdfs-logger.conf)
-
+  
+- [src/conf/base/dir-flume-hdfs-logger.conf](src/conf/base/dir-flume-hdfs-logger.conf)
+  
 - 实现
     1. 添加配置
         - touch job/dir-flume-hdfs-logger.conf
@@ -511,8 +518,9 @@
     ```
 
 - 参考配置
-    - [src/conf/base/tail-flume-hdfs-logger.conf](src/conf/base/tail-flume-hdfs-logger.conf)
-
+  
+- [src/conf/base/tail-flume-hdfs-logger.conf](src/conf/base/tail-flume-hdfs-logger.conf)
+  
 - 实现
     1. 添加配置
         - touch job/tail-flume-hdfs-logger.conf
@@ -618,6 +626,7 @@
 [top](#catalog)
 - 作用
     - 选出写入 Event 的 Channel 列表
+
 - 两种类型
     - Replicating，副本完全拷贝，**默认选择器**
     - Multiplexing，多路复用
@@ -678,13 +687,13 @@
 
 ### 拓扑结构---负载均衡和故障转移
 [top](#catalog)
-- 将多个 sink 逻辑上分到一个 sink 组
+- 将多个 sink ，在逻辑上分到一个 sink 组
 - sink 组配合不同的 SinkProcessor 可以实现负载均衡和错误恢复
 - ![balance_failover](imgs/base/topology/balance_failover.png)
 
 ### 拓扑结构---聚合
 [top](#catalog)
-- 最常见、最实用的结构
+- **最常见、最实用的结构**
 - web 应用通常分布在成百上千个服务器，日志处理和复杂。可以通过**聚合结构**来处理
 - 处理方式
     1. 每台服务器部署一个 flume 采集日志
@@ -702,6 +711,7 @@
     - flume3 将数据输出到本地
 - 流程图
     - ![reaplace_multiplex_flow](imgs/base/inaction/reaplace_multiplex_flow.png)
+
 - 配置文件
     - 参考
         - [src/conf/inaction/reaplace_multiplex/flume1.conf](src/conf/inaction/reaplace_multiplex/flume1.conf)
@@ -711,36 +721,37 @@
         ```
         # 1. define source, channel, sink
         a1.sources = r1
+        # 一个 source  + 多个 channel、sink
         # 同时定义多个 sink
         a1.sinks = k1 k2
         # 同时定义多个 channel
         a1.channels = c1 c2
-
+        
         # 2. source，监控本地hive.log
         a1.sources.r1.type = TAILDIR
         a1.sources.r1.filegroups = f1
         a1.sources.r1.filegroups.f1 = /tmp/root/hive.log
         a1.sources.r1.positionFile = /opt/module/apache-flume-1.7.0-bin/tail_dir.json
-
+        
         # 3. avro sink，将数据传递到其他 flume
         # 设置两个sink分别将数据传输到不同的 flume 中
         a1.sinks.k1.type = avro
         a1.sinks.k1.hostname = nn01
         a1.sinks.k1.port = 5001
-
+        
         a1.sinks.k2.type = avro
         a1.sinks.k2.hostname = nn01
         a1.sinks.k2.port = 5002
-
+        
         # 4. channels
         a1.channels.c1.type = memory
         a1.channels.c1.capacity = 1000
         a1.channels.c1.transactionCapacity = 100
-
+        
         a1.channels.c2.type = memory
         a1.channels.c2.capacity = 1000
         a1.channels.c2.transactionCapacity = 100
-
+        
         # 5. connect source、channel、sink
         a1.sources.r1.channels = c1 c2
         a1.sinks.k1.channel = c1
@@ -754,12 +765,12 @@
         a2.sources = r1
         a2.sinks = k1
         a2.channels = c1
-
+    
         # 2. source，从 flume1 的第一个 sink 中接收数据
         a2.sources.r1.type = avro
         a2.sources.r1.bind = nn01
         a2.sources.r1.port = 5001
-
+    
         # 3. hdfs sink，将数据写入hdfs
         a2.sinks.k1.type = hdfs
         a2.sinks.k1.hdfs.path = hdfs://nn01:9000/flume-group1/%Y%m%d/%H
@@ -773,12 +784,12 @@
         a2.sinks.k1.hdfs.useLocalTimeStamp = true
         a2.sinks.k1.hdfs.batchSize = 1000
         a2.sinks.k1.hdfs.fileType = DataStream
-
+    
         # 4. channels
         a2.channels.c1.type = memory
         a2.channels.c1.capacity = 1000
         a2.channels.c1.transactionCapacity = 100
-
+    
         # 5. connect source、channel、sink
         a2.sources.r1.channels = c1
         a2.sinks.k1.channel = c1
@@ -789,26 +800,26 @@
         a3.sources = r1
         a3.sinks = k1
         a3.channels = c1
-
+    
         # 2. source，从 flume1 的第二个 sink 中接收数据
         a3.sources.r1.type = avro
         a3.sources.r1.bind = nn01
         a3.sources.r1.port = 5002
-
+    
         # 3. file_roll sink
         a3.sinks.k1.type = file_roll
         a3.sinks.k1.sink.directory = /opt/datas/group1
-
+    
         # 4. channels
         a3.channels.c1.type = memory
         a3.channels.c1.capacity = 1000
         a3.channels.c1.transactionCapacity = 100
-
+    
         # 5. connect source、channel、sink
         a3.sources.r1.channels = c1
         a3.sinks.k1.channel = c1
         ```
-
+    
 - 实现
     1. 创建配置目录
         ```
@@ -850,6 +861,7 @@
 ## sink组应用---故障转移
 [top](#catalog)
 - 参考
+  
     - http://flume.apache.org/FlumeUserGuide.html#failover-sink-processor
 - 需求
     - 使用 flume 监控一个端口
@@ -857,8 +869,9 @@
     - flume2、flume3 分别设置优先级，发送数据时，往优先级高的sink发送数据
     - 采用 FailoverSinkProcess 策略实现故障转移
 - 流程图
+  
     - ![failover](imgs/base/inaction/failover.png)
-
+  
 - 故障转移的方式
     - 假设有 3 台 sink，`processor.maxpenalty` 默认为30s
         ```
@@ -905,9 +918,10 @@
 
         # bind
         a1.sources.r1.channels = c1
+        # 多个 sink 接到一个 channel
         a1.sinks.k1.channel = c1
         a1.sinks.k2.channel = c1
-
+        
         # sink group，配置sink组与failover的策略
         a1.sinkgroups = g1
         a1.sinkgroups.g1.sinks = k1 k2
@@ -923,20 +937,20 @@
         a2.sources = r1
         a2.sinks = k1
         a2.channels = c1
-
+    
         # 2. source，关联sink组中的第一个sink
         a2.sources.r1.type = avro
         a2.sources.r1.bind = nn01
         a2.sources.r1.port = 5001
-
+    
         # 3. logger sink
         a2.sinks.k1.type = logger
-
+    
         # 4. channels
         a2.channels.c1.type = memory
         a2.channels.c1.capacity = 1000
         a2.channels.c1.transactionCapacity = 100
-
+    
         # 5. connect source、channel、sink
         a2.sources.r1.channels = c1
         a2.sinks.k1.channel = c1
@@ -947,25 +961,25 @@
         a3.sources = r1
         a3.sinks = k1
         a3.channels = c1
-
+    
         # 2. source，关联sink组中的第一个sink
         a3.sources.r1.type = avro
         a3.sources.r1.bind = nn01
         a3.sources.r1.port = 5002
-
+    
         # 3. logger sink
         a3.sinks.k1.type = logger
-
+    
         # 4. channels
         a3.channels.c1.type = memory
         a3.channels.c1.capacity = 1000
         a3.channels.c1.transactionCapacity = 100
-
+    
         # 5. connect source、channel、sink
         a3.sources.r1.channels = c1
         a3.sinks.k1.channel = c1
         ```
-
+    
 - 实现
     1. 创建配置目录
         ```
@@ -1007,16 +1021,20 @@
 ## sink组应用---负载均衡
 [top](#catalog)
 - 参考
+  
     - http://flume.apache.org/FlumeUserGuide.html#load-balancing-sink-processor
+
 - 需求
     - 使用 flume 监控一个端口
     - sink 组中分别连接 flume2、flume3
     - 采用 Load balancing SinkProcess 策略实现负载均衡
 - 流程图
+  
     - ![load_balance](imgs/base/inaction/load_balance.png)
-
+  
 - 配置内容
-    - <span style='color:red'>与负载均衡配置的区别</spam>
+    - <span style='color:red'>与负载均衡配置的区别</span>
+      
         - 将sink组的策略改为 `load_balance`
     - 参考
         - [src/conf/inaction/balance/flume1.conf](src/conf/inaction/balance/flume1.conf)
@@ -1027,32 +1045,33 @@
         a1.sources = r1
         a1.sinks = k1 k2
         a1.channels = c1
-
+    
         # Describe/configure the source
         a1.sources.r1.type = netcat
         a1.sources.r1.bind = localhost
         a1.sources.r1.port = 44444
-
+    
         # channel
         a1.channels.c1.type = memory
         a1.channels.c1.capacity = 1000
         a1.channels.c1.transactionCapacity = 100
-
+    
         # sink
         a1.sinks.k1.type = avro
         a1.sinks.k1.hostname = nn01
         a1.sinks.k1.port = 5001
-
+    
         a1.sinks.k2.type = avro
         a1.sinks.k2.hostname = nn01
         a1.sinks.k2.port = 5002
-
+    
         # bind
         a1.sources.r1.channels = c1
+        # 多个 sink 接到一个 channel
         a1.sinks.k1.channel = c1
         a1.sinks.k2.channel = c1
-
-        # sink group，在sink组内使用负载均衡策略
+        
+        # sink group，在sink组内使用负载均衡策略: load_balance
         a1.sinkgroups = g1
         a1.sinkgroups.g1.sinks = k1 k2
         a1.sinkgroups.g1.processor.type = load_balance
@@ -1105,12 +1124,13 @@
     - flume1、flume2 将数据发送给 dn03 上的flume3
     - flume3 将收集到的数据输出到控制台
 - 流程图
+  
     - ![reduce](imgs/base/inaction/reduce.png)
 - 配置内容
     - 参考
-        - ![src/conf/inaction/reduce_onesource/flume1.conf](src/conf/inaction/reduce_onesource/flume1.conf)
-        - ![src/conf/inaction/reduce_onesource/flume2.conf](src/conf/inaction/reduce_onesource/flume2.conf)
-        - ![src/conf/inaction/reduce_onesource/flume3.conf](src/conf/inaction/reduce_onesource/flume3.conf)
+        - [src/conf/inaction/reduce_onesource/flume1.conf](src/conf/inaction/reduce_onesource/flume1.conf)
+        - [src/conf/inaction/reduce_onesource/flume2.conf](src/conf/inaction/reduce_onesource/flume2.conf)
+        - [src/conf/inaction/reduce_onesource/flume3.conf](src/conf/inaction/reduce_onesource/flume3.conf)
     - flume1
         ```
         a1.sources = r1
@@ -1294,6 +1314,7 @@
         a3.sinks.k1.channel = c1
         ```
 - 实现方式
+  
     - 参考：[聚合---单个端口单个source](#聚合---单个端口单个source)
 
 # 自定义
@@ -1313,8 +1334,9 @@
         - 其他为 num 日志
     - 自定义 Interceptor区分数字和字母，将 event 发送到不同的 channel，再送到不同的分析系统
 - 流程图
+  
     - ![interceptor_flow](imgs/base/customise/interceptor_flow.png)
-
+  
 - 需要添加 maven 依赖
     ```xml
     <dependency>
@@ -1326,6 +1348,7 @@
 
 - 自定义 interceptor
     - 参考
+      
         - [src/flume-learn/flume-base/src/main/java/com/ljs/learn/flumebase/interceptor/TypeInterceptor.java](src/flume-learn/flume-base/src/main/java/com/ljs/learn/flumebase/interceptor/TypeInterceptor.java)
     - 需要实现 `Interceptor` 接口
     - 代码内容
@@ -1393,7 +1416,7 @@
             }
         }
         ```
-
+    
 - 配置内容
     - 参考
         - [src/conf/customise/interceptor/flume1.conf](src/conf/customise/interceptor/flume1.conf)
@@ -1493,9 +1516,12 @@
 ## 自定义Source
 [top](#catalog)
 - 参考
+    
     - http://flume.apache.org/releases/content/1.9.0/FlumeDeveloperGuide.html#source
+
 - 自定义 Source
     - 参考
+        
         - [src/flume-learn/flume-base/src/main/java/com/ljs/learn/flumebase/source/MySource.java](src/flume-learn/flume-base/src/main/java/com/ljs/learn/flumebase/source/MySource.java)
     - 代码内容
         ```java
@@ -1514,8 +1540,6 @@
                 suffix = context.getString("suffix", "testsuf");
             }
 
-            // 处理正常需要返回 Status.READY
-            // 处理异常需要返回 Status.BACKOFF
             @Override
             public Status process() throws EventDeliveryException {
                 Status status = null;
@@ -1536,7 +1560,6 @@
                     status = Status.BACKOFF;
                     e.printStackTrace();
                 }
-
 
                 // 每2s 输出5条数据
                 try {
@@ -1559,30 +1582,32 @@
 
         }
         ```
-
+    
 - 配置
     - 参考
+      
         - [src/conf/customise/source/flume1.conf](src/conf/customise/source/flume1.conf)
+
     - 配置内容
         ```
         # 1. define source, channel, sink
         a1.sources = r1
         a1.sinks = k1
         a1.channels = c1
-
+    
         # 2. source，使用自定义source
         a1.sources.r1.type = com.ljs.learn.flumebase.source.MySource
         a1.sources.r1.prefix = aaaa
         a1.sources.r1.suffix = bbbb
-
+    
         # 3. logger sink
         a1.sinks.k1.type = logger
-
+    
         # 4. channels
         a1.channels.c1.type = memory
         a1.channels.c1.capacity = 1000
         a1.channels.c1.transactionCapacity = 100
-
+    
         # 5. connect source、channel、sink
         a1.sources.r1.channels = c1
         a1.sinks.k1.channel = c1
@@ -1621,7 +1646,9 @@
 
 - 自定义 sink
     - 参考
+      
         - [src/flume-learn/flume-base/src/main/java/com/ljs/learn/flumebase/sink/MySink.java](src/flume-learn/flume-base/src/main/java/com/ljs/learn/flumebase/sink/MySink.java)
+
     - 代码内容
         ```java
         public class MySink extends AbstractSink implements Configurable {
@@ -1650,7 +1677,7 @@
 
                 // 3. 开启事务
                 transaction.begin();
-                
+
                 try {
                     // 4. 从 channel 获取数据
                     Event event = channel.take();
@@ -1683,33 +1710,35 @@
             }
         }
         ```
-
+    
 - 配置
     - 参考
+      
         - [src/conf/customise/sink/flume1.conf](src/conf/customise/sink/flume1.conf)
+
     - 配置内容
         ```
         a1.sources = r1
         a1.sinks = k1
         a1.channels = c1
-
+    
         a1.sources.r1.type = netcat
         a1.sources.r1.bind = localhost
         a1.sources.r1.port = 44444
-
+    
         # sink，设置自定义 sink，并设置前缀、后缀
         a1.sinks.k1.type = com.ljs.learn.flumebase.sink.MySink
         a1.sinks.k1.prefix = start---
         a1.sinks.k1.suffix = ---end
-
+    
         a1.channels.c1.type = memory
         a1.channels.c1.capacity = 1000
         a1.channels.c1.transactionCapacity = 100
-
+    
         a1.sources.r1.channels = c1
         a1.sinks.k1.channel = c1
         ```
-
+    
 - 实现过程
     - 创建配置文件
         ```
@@ -1750,7 +1779,7 @@
         - nc 主机名 44444
 - 启动时，应该先启动下游，再启动上游
 - tail 是按行读取数据的，效率比较低
-a1.sources.r1.command = tail -F /tmp/root/hive.log
+    - a1.sources.r1.command = tail -F /tmp/root/hive.log
 - replacing的缺点
     - 每增加一个 下游，上游都需要增加一个 channel + sink
     - 不能动态增加
