@@ -1,0 +1,2 @@
+type=command
+command=hdfs dfs -mkdir -p /azkaban/aztest

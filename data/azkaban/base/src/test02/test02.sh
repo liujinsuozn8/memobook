@@ -1,0 +1,1 @@
+date >> /opt/module/date.txt

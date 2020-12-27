@@ -1,0 +1,2 @@
+type=command
+command=sh test02.sh

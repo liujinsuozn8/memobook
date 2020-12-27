@@ -1,0 +1,2 @@
+type=command
+command=hadoop jar /opt/module/hadoop/share/hadoop/mapreduce/hadoop-mapreduce-examples-2.10.1.jar wordcount hdfs://nn01:9000/azkaban/wordcount/input hdfs://nn01:9000/azkaban/wordcount/output
