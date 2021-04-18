@@ -10,7 +10,7 @@
 - [使用注解开发SpringMVC](#使用注解开发SpringMVC)
     - [使用注解的基本开发步骤](#使用注解的基本开发步骤)
     - [Controller分析](#Controller分析)
-        - [Controller的基本概念](#Controller的基本概念)
+        - [xController的基本概念](#Controller的基本概念)
         - [使用Controller接口开发](#使用Controller接口开发)
         - [使用@Controller注解开发](#使用@Controller注解开发)
     - [@RequestMapping注解分析](#@RequestMapping注解分析)
@@ -52,6 +52,7 @@
 [top](#catalog)
 1. 创建入口页面
     - 参考代码
+        
         - [/java/mylearn/myspringMVC/web/tohello01.jsp](/java/mylearn/myspringMVC/web/tohello01.jsp)
     - 页面内容
         ```html
@@ -62,6 +63,7 @@
         ```
 2. 创建一个Servlet作为Controller来控制转发、重定向
     - 参考代码
+        
         - [/java/mylearn/myspringMVC/src/main/java/com/ljs/learn/myspringMVC/sample/helloServlet/HelloServlet.java](/java/mylearn/myspringMVC/src/main/java/com/ljs/learn/myspringMVC/sample/helloServlet/HelloServlet.java) 
     - 代码内容
         ```java
@@ -87,6 +89,7 @@
         ```
 3. 在web.xml中添加Servlet的配置
     - 参考配置
+        
         - [/java/mylearn/myspringMVC/web/WEB-INF/web_bk01.xml](/java/mylearn/myspringMVC/web/WEB-INF/web_bk01.xml)
     - 配置内容
         ```xml
@@ -99,10 +102,11 @@
             <servlet-name>helloServlet</servlet-name>
             <url-pattern>/hello01</url-pattern>
         </servlet-mapping>
-        ```
-
+    ```
+    
 4. 页面入口
-    - http://localhost:8080/myspringMVC_war_exploded/tohello01.jsp
+    
+   - http://localhost:8080/myspringMVC_war_exploded/tohello01.jsp
    
 5. 转发到页面
     - [/java/mylearn/myspringMVC/web/WEB-INF/jsp/sample/hello01.jsp](/java/mylearn/myspringMVC/web/WEB-INF/jsp/sample/hello01.jsp)
@@ -118,6 +122,7 @@
 1. 创建一个Controller，继承自：`org.springframework.web.servlet.mvc.Controller`
     - 在内部将数据封装为Model，将地址封装为View
     - 参考代码
+        
         - [/java/mylearn/myspringMVC/src/main/java/com/ljs/learn/myspringMVC/sample/controller/HelloController.java](/java/mylearn/myspringMVC/src/main/java/com/ljs/learn/myspringMVC/sample/controller/HelloController.java)
     - 代码内容
         ```java
@@ -134,10 +139,11 @@
                 return mv;
             }
         }
-        ```
-
+    ```
+    
 2. 在web.xml中配置SpringMVC默认的Servlet
     - 参考配置
+        
         - [/java/mylearn/myspringMVC/web/WEB-INF/web_bk01.xml](/java/mylearn/myspringMVC/web/WEB-INF/web_bk01.xml)
     - 配置内容
         ```xml
@@ -156,10 +162,11 @@
             <!--匹配路径型 url-->
             <url-pattern>/</url-pattern>
         </servlet-mapping>
-        ```
-
+    ```
+    
 3. 在Spring配置中配置SpringMVC：
     - 参考配置
+        
         - [/java/mylearn/myspringMVC/src/main/resources/springmvc-servlet01.xml](/java/mylearn/myspringMVC/src/main/resources/springmvc-servlet01.xml)
     - 配置内容
         - 除了将SpringMVC需要的类配置为Bean，还需要配置Controller要处理哪个请求路径
@@ -183,12 +190,14 @@
             <!--配置控制器-->
             <bean id="/hello" class="com.ljs.learn.myspringMVC.sample.controller.HelloController"/>
         </beans>
-        ```
+       ```
    
 4. 页面入口
-    - http://localhost:8080/myspringMVC_war_exploded/hello
-
+    
+- http://localhost:8080/myspringMVC_war_exploded/hello
+    
 5. 最终转发到页面
+    
     - [/java/mylearn/myspringMVC/web/WEB-INF/jsp/sample/hello02.jsp](/java/mylearn/myspringMVC/web/WEB-INF/jsp/sample/hello02.jsp) 
 
 # SpringMVC的执行原理
@@ -255,10 +264,11 @@
             ```
         - 配置视图解析器 ViewResolver
      4. 创建Controller
-     
+    
 - 示例
     1. 配置web.xml
         - 参考配置
+            
             - [/java/mylearn/myspringMVC/web/WEB-INF/web_bk02.xml](/java/mylearn/myspringMVC/web/WEB-INF/web_bk02.xml)
         - 配置内容
             ```xml
@@ -278,6 +288,7 @@
             ```
     2. SpringMVC配置
         - 参考配置
+            
             - [/java/mylearn/myspringMVC/src/main/resources/annotation/springmvc-servlet.xml](/java/mylearn/myspringMVC/src/main/resources/annotation/springmvc-servlet.xml)
         - 配置内容
             ```xml
@@ -301,6 +312,7 @@
             ```
     3. 创建一个可以被视图解析器捕获的Controller
         - 参考代码 
+            
             - [/java/mylearn/myspringMVC/src/main/java/com/ljs/learn/myspringMVC/annotation/controller/HelloController.java](/java/mylearn/myspringMVC/src/main/java/com/ljs/learn/myspringMVC/annotation/controller/HelloController.java)
         - 代码内容
             ```java
@@ -316,6 +328,7 @@
             }
             ```
     4. 页面入口  
+        
         - http://localhost:8080/myspringMVC_war_exploded/helloController/hello  
     
 ## Controller分析
@@ -354,7 +367,7 @@
         <context:component-scan base-package="全类名"/>
         ```
 - 方式1：可以被视图解析器捕获的Controller
-    - 需要配合 ``@RequestMapping`注解来实现
+    - 需要配合 `@RequestMapping`注解来实现
     - 方法说明
         - 返回 `String` 结果的方法
             1. 方法签名：`String method(type 请求参数1, type 请求参数2, ... [,Model model])`
@@ -388,7 +401,7 @@
             }
         }
         ```
-      
+    
 ## @RequestMapping注解分析
 [top](#catalog)
 - `@RequestMapping(value="路径", method=RequestMethod.XXX)` 注解用于映射url到 Controller 或某个方法
@@ -449,6 +462,7 @@
 # RestFul风格的实现方法
 [top](#catalog)
 - 在 `@RequestMapping` 注解中通过 `method` 参数捕获不同的请求方式，来执行不同的操作
+    
     - 默认捕获 GET 请求
 - 参数的设置方式
     - `@RequestMapping("xxx/{占位符}")`，通过`{占位符}`的方式在注解中声明占位符
@@ -472,36 +486,37 @@
 - 示例
     - controller
         - 参考代码
+            
             - [/java/mylearn/myspringMVC/src/main/java/com/ljs/learn/myspringMVC/restful/controller/RestFulController.java](/java/mylearn/myspringMVC/src/main/java/com/ljs/learn/myspringMVC/restful/controller/RestFulController.java)
         - 代码内容
             ```java
             @Controller
-            public class RestFulController {
-
+    public class RestFulController {
+        
                 // 请求url： /add?a=1&b=2
                 // @RequestMapping("/add")
                 //  public String test(int a, int b, Model model){
                 //     int result = a + b;
                 //     model.addAttribute("msg", "result="+result);
                 //     return "/restful/result";
-                //  }
-
+        //  }
+        
                 // 请求url： /add/1/2
                 @RequestMapping("/add/{a}/{b}")
                 public String test(@PathVariable int a, @PathVariable int b, Model model){
                     int result = a + b;
                     model.addAttribute("msg", "result="+result);
                     return "/restful/result";
-                }
-
+        }
+        
                 // 请求url： /add/1/2/3 + POST
                 @RequestMapping(value = "/add/{a}/{b}/{c}", method = RequestMethod.POST)
                 public String test02(@PathVariable String a, @PathVariable String b, @PathVariable String c, Model model){
                     String result = a + b + c;
                     model.addAttribute("msg", "result="+result);
                     return "/restful/result";
-                }
-
+        }
+        
                 // 请求url： /add/1/2 + POST
                 @PostMapping("/add/{a}/{b}")
                 public String test03(@PathVariable String a, @PathVariable String b, Model model){
@@ -513,6 +528,7 @@
             ```
     - spring配置
         - 参考配置
+            
             - [/java/mylearn/myspringMVC/src/main/resources/restful/springmvc-servlet.xml](/java/mylearn/myspringMVC/src/main/resources/restful/springmvc-servlet.xml)
         - 配置内容
             ```xml
@@ -520,9 +536,9 @@
             <context:component-scan base-package="com.ljs.learn.myspringMVC.restful.controller"/>
             <!--过滤静态资源，使SpirngMVC不处理静态资源-->
             <mvc:default-servlet-handler/>
-            <!--配置mvc注解驱动，自动注入HandlerMapping和HandlerAdapter-->
-            <mvc:annotation-driven/>
-
+        <!--配置mvc注解驱动，自动注入HandlerMapping和HandlerAdapter-->
+        <mvc:annotation-driven/>
+        
             <!--配置视图解析器-->
             <!--将所有视图都放在/WEB-INF 目录下，保证视图的安全-->
             <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver" id="InternalResourceViewResolver">
@@ -550,6 +566,7 @@
             ```
     - 入口
         - test方法
+            
             - http://localhost:8080/myspringMVC_war_exploded/add/1/2
         - test02方法
             - http://localhost:8080/myspringMVC_war_exploded/restful/input02.jsp
@@ -582,12 +599,13 @@
             return "/restful/result";
         }
         ```
-      
+    
 - 对于复杂的参数，可以使用类来替代多个参数
     - 需要类中包含每个字段的get/set方法
     - 需要url中的参数名与类中的属性名必须匹配，否则会被赋予 0值
     - 示例
         - 参考代码
+            
             - [/java/mylearn/myspringMVC/src/main/java/com/ljs/learn/myspringMVC/restful/controller/ParamController.java](/java/mylearn/myspringMVC/src/main/java/com/ljs/learn/myspringMVC/restful/controller/ParamController.java)
         - 类
             ```java
@@ -645,7 +663,7 @@
         - 与 Model 的使用方法类似
         - 与 Model 的关系
             - Model --继承--> ModelMap --继承--> LinkedHashMap
-            
+    
 - 三种类的区别
     - Model 是一个简化版，只有很少的方法，简化的对模型的操作与理解
     - ModelMap 继承了 LinkdeHashMap，除了自身的特性，还具有LinkedHashMap的方法和特性
@@ -716,6 +734,7 @@
 - 示例
     1. 通过 `@ResponseBody` 阻止视图解析器，使用 Jackson 包来转换对象返回JSON字符串
         - 参考代码
+            
             - [/java/mylearn/myspringMVC/src/main/java/com/ljs/learn/myspringMVC/restful/controller/JSONController.java](/java/mylearn/myspringMVC/src/main/java/com/ljs/learn/myspringMVC/restful/controller/JSONController.java)
         - 代码内容
             ```java
@@ -728,18 +747,18 @@
                     user.setName("中文测试");
                     user.setAge(18);
                     return user.toString(); // 以字符串的形式返回
-                }
-
+        }
+        
                 // 在注解中手动指定编码格式
                 @RequestMapping(value = "/json/test02", produces = "application/json;charset=utf-8")
                 @ResponseBody
                 public String test02() throws JsonProcessingException {
-                    ObjectMapper objMapper = new ObjectMapper();
-
+            ObjectMapper objMapper = new ObjectMapper();
+        
                     User user = new User();
                     user.setName("中文测试");
-                    user.setAge(18);
-
+            user.setAge(18);
+        
                     // 返回json
                     return objMapper.writeValueAsString(user);
                 }
@@ -748,12 +767,12 @@
                 @RequestMapping(value = "/json/test03")
                 @ResponseBody
                 public String test03() throws JsonProcessingException {
-                    ObjectMapper objMapper = new ObjectMapper();
-
+            ObjectMapper objMapper = new ObjectMapper();
+        
                     User user = new User();
                     user.setName("中文测试");
-                    user.setAge(18);
-
+            user.setAge(18);
+        
                     // 返回json
                     return objMapper.writeValueAsString(user);
                 }
@@ -761,6 +780,7 @@
             ```
     2. 通过 `@RestController` 阻止视图解析器，使用 Jackson 包来转换对象返回JSON字符串
         - 参考代码
+            
             - [/java/mylearn/myspringMVC/src/main/java/com/ljs/learn/myspringMVC/restful/controller/JSON2Controller.java](/java/mylearn/myspringMVC/src/main/java/com/ljs/learn/myspringMVC/restful/controller/JSON2Controller.java)
         - 代码内容
             ```java
@@ -769,23 +789,24 @@
                 @RequestMapping("/json02/test01")
                 public String test01() throws JsonProcessingException {
                     User u1 = new User("aaa", 11);
-                    User u2 = new User("中文测试", 13);
-                    User u3 = new User("bbb", 15);
-
+                User u2 = new User("中文测试", 13);
+                User u3 = new User("bbb", 15);
+        
                     List<User> list = new ArrayList<>(3);
                     list.add(u1);
-                    list.add(u2);
-                    list.add(u3);
-
-                    ObjectMapper objectMapper = new ObjectMapper();
-
+                list.add(u2);
+                list.add(u3);
+    
+                ObjectMapper objectMapper = new ObjectMapper();
+        
                     return objectMapper.writeValueAsString(list);
                 }
-            }
-            ```
-
+        }
+        ```
+        
     3. 使用 FastJson 包来转换对象返回JSON字符串
         - 参考代码
+            
             - [/java/mylearn/myspringMVC/src/main/java/com/ljs/learn/myspringMVC/restful/controller/FastjsonController.java](/java/mylearn/myspringMVC/src/main/java/com/ljs/learn/myspringMVC/restful/controller/FastjsonController.java)
         - 代码内容
             ```java
@@ -793,17 +814,17 @@
             public class JSON2Controller {
                 @RequestMapping("/json02/test01")
                 public String test01() throws JsonProcessingException {
-                    User u1 = new User("aaa", 11);
+                User u1 = new User("aaa", 11);
                     User u2 = new User("中文测试", 13);
-                    User u3 = new User("bbb", 15);
-
+                User u3 = new User("bbb", 15);
+        
                     List<User> list = new ArrayList<>(3);
-                    list.add(u1);
+                list.add(u1);
                     list.add(u2);
-                    list.add(u3);
-
-                    ObjectMapper objectMapper = new ObjectMapper();
-
+            list.add(u3);
+        
+                ObjectMapper objectMapper = new ObjectMapper();
+        
                     return objectMapper.writeValueAsString(list);
                 }
             }
@@ -850,7 +871,7 @@
             default void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, @Nullable Exception ex) throws Exception {
             }
         }
-        ```  
+        ```
 - 自定义拦截器需要在spring配置文件中进行配置
     - 配置方法
         ```xml
@@ -864,11 +885,13 @@
     - 拦截路径的配置方法与maven的过滤方式相同，`**`代表指定目录下的所有目录，`*`代表指定目录下的一级目录
     - 一般使用 `/**` 来拦截所有路径
 - 拦截器的顺序
+    
     - ?????
     
 - 示例
     - 拦截器
         - 参考代码
+            
             - [/java/mylearn/myspringMVC/src/main/java/com/ljs/learn/myspringMVC/interceptor/MyInterceptor.java](/java/mylearn/myspringMVC/src/main/java/com/ljs/learn/myspringMVC/interceptor/MyInterceptor.java)
         - 代码内容
             ```java
@@ -889,6 +912,7 @@
             ```
     - 配置内容
         - 参考配置
+            
             - [/java/mylearn/myspringMVC/src/main/resources/restful/springmvc-servlet.xml](/java/mylearn/myspringMVC/src/main/resources/restful/springmvc-servlet.xml)
         - 配置内容
             ```xml

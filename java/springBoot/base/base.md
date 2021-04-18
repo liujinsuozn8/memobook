@@ -56,10 +56,10 @@
 - SpringBoot是javaWeb的开发框架，和SpringMVC类似
 - SpringBoot与Spring
     - SpringBoot基于Spring开发
-    - SpringBoot本身<label style="color:red">并不提供</label>Spring框架的核心特性以及扩展功能
+    - SpringBoot本身<span style="color:red">并不提供</span>Spring框架的核心特性以及扩展功能
     - SpringBoot只用于快速开发基于Spring框架的应用，能够进一步简化开发步骤
-    - SpringBoot<label style="color:red">不是用来替代Spring的</label>，而是和Spring结合来提升开发体验的工具
-- SpringBoot的核心思想：<label style="color:red">更加强调约定大于配置</label>
+    - SpringBoot<span style="color:red">不是用来替代Spring的</span>，而是和Spring结合来提升开发体验的工具
+- SpringBoot的核心思想：<span style="color:red">更加强调约定大于配置</span>
 - SpringBoot的优势
     - 快速开发
     - 提供了许多默认设置，使得很多基于SpringBoot的应用只需要很少的**Spring配置**
@@ -70,7 +70,7 @@
     - 不要求xml配置
 - SpringBoot的本质
     - 一个整合了很多开发常用组件及配置的Spring开发框架
-        
+      
 ## SpringBoot与微服务架构
 [top](#catalog)
 - 微服务架构的本质
@@ -103,8 +103,8 @@
             - 创建时选择依赖：Web
     - 自定义的包目录下创建开发结构：controller、service、dao、bean(pojo)
         - 创建后，通过 `MyspringbootApplication.java` 中的main程序即可直接运行
-            - 该程序<label style="color:red">不能删除</label>
-        - 自定义目录需要在 `XXXApplication.java` 的<label style="color:red">同级目录</label>下创建
+            - 该程序<span style="color:red">不能删除</span>
+        - 自定义目录需要在 `XXXApplication.java` 的<span style="color:red">同级目录</span>下创建
 - 使用 `mvn package` 指令打包后，可以直接通过 `java -jar xxx.jar` 来直接启动项目
 - 创建后的程序结构
     ```
@@ -298,6 +298,7 @@
     ```
 
 - 为什么自定义的包要放在 SpringBootApplication 的同级目录下？
+    
     - SpringBootApplication 内部使用 `EnableAutoConfiguration` 标识，所以启动时会导入启动同级目录下所有的资源
 - SpringBoot自动配置的过程
     1. 工程启动后，加载文件 `spring-boot-autoconfigure.jar!/META-INF/spring.factories`
@@ -597,6 +598,7 @@ public final class SpringFactoriesLoader {
             ```
     - yaml配置
         - 参考配置
+            
             - [/java/mylearn/myspringboot/src/main/resources/application.yaml](/java/mylearn/myspringboot/src/main/resources/application.yaml) 
         - 配置内容
             ```yaml
@@ -618,7 +620,7 @@ public final class SpringFactoriesLoader {
                 name: testDog
                 age: 5
             ```
-          
+        
 ## 使用properties配置文件
 [top](#catalog)
 - 使用方法：
@@ -627,6 +629,7 @@ public final class SpringFactoriesLoader {
 - 示例
     - properties配置
         - 参考配置
+            
             - [/java/mylearn/myspringboot/src/main/resources/person02.properties](/java/mylearn/myspringboot/src/main/resources/person02.properties)
         - 配置内容
             ```properties
@@ -636,6 +639,7 @@ public final class SpringFactoriesLoader {
             ```
      - bean
         - 参考代码
+            
             - [/java/mylearn/myspringboot/src/main/java/com/ljs/learn/myspringboot/bean/Person02.java](/java/mylearn/myspringboot/src/main/java/com/ljs/learn/myspringboot/bean/Person02.java)
         - 代码内容
             ```java
@@ -651,7 +655,7 @@ public final class SpringFactoriesLoader {
             
                 @Value("${gender}")
                 private boolean gender;
-          
+            
                 //getter setter
             }
             ```
@@ -702,7 +706,7 @@ public final class SpringFactoriesLoader {
               port: 8083
             spring:
               profiles: test
-            ```    
+            ```
 
 # JSP303校验
 [top](#catalog)
@@ -712,7 +716,7 @@ public final class SpringFactoriesLoader {
 
 - 常用的属性校验注解
     - 空检查
-        
+      
         |注解|功能|
         |-|-|
         |@Null|验证对象是否为null|
@@ -745,10 +749,11 @@ public final class SpringFactoriesLoader {
 - 示例
     - bean
         - 参考代码
+            
             - [/java/mylearn/myspringboot/src/main/java/com/ljs/learn/myspringboot/bean/Person.java](/java/mylearn/myspringboot/src/main/java/com/ljs/learn/myspringboot/bean/Person.java)
         - 代码内容
             ```java
-          
+            
             @Component
             @ConfigurationProperties(prefix = "person")
             @Validated
@@ -790,7 +795,7 @@ public final class SpringFactoriesLoader {
             <scope>runtime</scope>
         </dependency>
         ```
-    2. 在 `applicatio.yaml` 配置文件中添加数据库配置
+    2. 在 `application.yaml` 配置文件中添加数据库配置
         ```yaml
         spring:    
         datasource:
@@ -806,6 +811,7 @@ public final class SpringFactoriesLoader {
 - 示例
     - spring配置
         - 参考配置  
+            
             - [/java/mylearn/myspringboot/src/main/resources/config/application.yaml](/java/mylearn/myspringboot/src/main/resources/config/application.yaml)
         - 配置内容
             ```yaml
@@ -818,36 +824,37 @@ public final class SpringFactoriesLoader {
             ```
     - 使用 `JdbcTemplate` 操作数据库
         - 参考代码
+            
             - [/java/mylearn/myspringboot/src/main/java/com/ljs/learn/myspringboot/controller/jdbc/JDBCController.java](/java/mylearn/myspringboot/src/main/java/com/ljs/learn/myspringboot/controller/jdbc/JDBCController.java)
         - 代码内容
             ```java
             @RestController
             public class JDBCController {
-                @Autowired
-                JdbcTemplate jdbcTemplate;
-
+            @Autowired
+            JdbcTemplate jdbcTemplate;
+        
                 // 查询
                 @RequestMapping("/jdbc/userlist")
                 public List<Map<String, Object>> userList(){
                     String sql = "select * from test01.user";
                     List<Map<String, Object>> maps = jdbcTemplate.queryForList(sql);
-                    return maps;
-                }
-
+                return maps;
+            }
+        
                 // 添加
                 @RequestMapping("/jdbc/adduser")
                 public String addUser(){
                     String sql = "insert into test01.user(id, name, pwd) values(100, 'xxxx', 'xxxpwd')";
                     // 自动提交事务
                     jdbcTemplate.update(sql);
-                    return "add end";
-                }
-
+                return "add end";
+            }
+        
                 // 修改
                 @RequestMapping("/jdbc/upuser/{id}")
-                public String updateUser(@PathVariable("id") int id){
-                    String sql = "update test01.user set name=?, pwd=? where id="+id;
-
+            public String updateUser(@PathVariable("id") int id){
+                String sql = "update test01.user set name=?, pwd=? where id="+id;
+        
                     // 封装对象
                     Object[] objects = new Object[2];
                     objects[0] = "yyy";
@@ -875,6 +882,7 @@ public final class SpringFactoriesLoader {
 - 示例
     - spring配置
         - 参考配置
+            
             - [/java/mylearn/myspringboot/src/main/resources/config/application.yaml](/java/mylearn/myspringboot/src/main/resources/config/application.yaml)
         - 配置内容
             ```yaml
@@ -910,19 +918,20 @@ public final class SpringFactoriesLoader {
             ```
     - 配置类
         - 参考代码
+            
             - [/java/mylearn/myspringboot/src/main/java/com/ljs/learn/myspringboot/config/druid/DruidConfig.java](/java/mylearn/myspringboot/src/main/java/com/ljs/learn/myspringboot/config/druid/DruidConfig.java)
         - 代码内容
             ```java
-            @Configuration
-            public class DruidConfig {
-
+        @Configuration
+        public class DruidConfig {
+        
                 // 接管配置文件，使当前类与配置文件绑定
                 @ConfigurationProperties(prefix = "spring.datasource")
                 @Bean
                 public DataSource druidDataSource(){
-                    return new DruidDataSource();
-                }
-
+                return new DruidDataSource();
+            }
+        
                 // 后台监控功能
                 // 以web.xml的方式配置Servlet
                 // 由于SpringBoot 内置了servlet，所以没有web，
@@ -940,9 +949,9 @@ public final class SpringFactoriesLoader {
                     // localhost：只有本机可以访问
                     initParamters.put("allow", "localhost");
                     bean.setInitParameters(initParamters);
-                    return bean;
-                }
-
+                return bean;
+            }
+        
                 @Bean
                 public FilterRegistrationBean filterBean(){
                     FilterRegistrationBean bean = new FilterRegistrationBean();
@@ -1030,6 +1039,7 @@ public final class SpringFactoriesLoader {
             ```
     2. 在spring配置文件中添加 mybatis 的配置
         - 参考配置
+            
             - [/java/mylearn/myspringboot/src/main/resources/config/application.yaml](/java/mylearn/myspringboot/src/main/resources/config/application.yaml)
         - 配置内容
             ```yaml
@@ -1038,9 +1048,10 @@ public final class SpringFactoriesLoader {
               type-aliases-package:  com.ljs.learn.myspringboot.bean
               #指定mapper.xml的保存路径
               mapper-locations: 'classpath:mybatis/mapper/*.xml'
-            ```      
+            ```
     - 在 Controller 中调用 Mapper
         - 参考代码
+            
             - [/java/mylearn/myspringboot/src/main/java/com/ljs/learn/myspringboot/controller/mybatis/MybatisController.java](/java/mylearn/myspringboot/src/main/java/com/ljs/learn/myspringboot/controller/mybatis/MybatisController.java)
         - 代码内容
             ```java
@@ -1096,6 +1107,7 @@ public final class SpringFactoriesLoader {
 - 示例
     - 标识Service中的一个异步方法
         - 参考代码
+            
             - [/java/mylearn/myspringboot/src/main/java/com/ljs/learn/myspringboot/service/mission/AsyncService.java](/java/mylearn/myspringboot/src/main/java/com/ljs/learn/myspringboot/service/mission/AsyncService.java)
         - 代码内容
             ```java
@@ -1115,6 +1127,7 @@ public final class SpringFactoriesLoader {
             ```
     - 在Controler中异步调用Service中的方法    
         - 参考代码
+            
             - [/java/mylearn/myspringboot/src/main/java/com/ljs/learn/myspringboot/controller/mission/AsyncController.java](/java/mylearn/myspringboot/src/main/java/com/ljs/learn/myspringboot/controller/mission/AsyncController.java)    
         - 代码内容
             ```java
@@ -1143,6 +1156,7 @@ public final class SpringFactoriesLoader {
         - 使用cron表达式定义定时任务
 - 示例
     - 参考代码
+        
         - [/java/mylearn/myspringboot/src/main/java/com/ljs/learn/myspringboot/service/mission/SchedulerService.java](/java/mylearn/myspringboot/src/main/java/com/ljs/learn/myspringboot/service/mission/SchedulerService.java)
     - 代码内容
         ```java
@@ -1300,12 +1314,13 @@ public final class SpringFactoriesLoader {
         }
     }
     ```
-  
+
 ### 静态资源导入示例
 [top](#catalog)
 - 导入 `webjars`
     - maven依赖
         - 参考配置
+            
             - [/java/mylearn/myspringboot/pom.xml](/java/mylearn/myspringboot/pom.xml) 
         - 配置内容
             ```xml
@@ -1316,8 +1331,9 @@ public final class SpringFactoriesLoader {
             </dependency>
             ```
     - 启动后，通过浏览器访问静态资源
-        - http://localhost:8083/webjars/jquery/3.5.0/jquery.js
         
+        - http://localhost:8083/webjars/jquery/3.5.0/jquery.js
+    
 - 导入自定义静态资源
     - 添加配置
         ```yaml
@@ -1418,6 +1434,7 @@ public final class SpringFactoriesLoader {
 - 示例
     - html页面
         - 参考代码
+            
             - [/java/mylearn/myspringboot/src/main/resources/templates/test.html](/java/mylearn/myspringboot/src/main/resources/templates/test.html)
         - 代码内容
             ```html
@@ -1436,6 +1453,7 @@ public final class SpringFactoriesLoader {
             ```
     - Controller
         - 参考代码
+            
             - [/java/mylearn/myspringboot/src/main/java/com/ljs/learn/myspringboot/controller/thymeleaf/TestController.java](/java/mylearn/myspringboot/src/main/java/com/ljs/learn/myspringboot/controller/thymeleaf/TestController.java) 
         - 代码内容
             ```java
@@ -1449,6 +1467,7 @@ public final class SpringFactoriesLoader {
             }
             ```
     - 访问路径
+        
         - http://localhost:8083/thymeleaf/test01
 
 ### SpringBoot中Thymeleaf的配置原理
@@ -1503,6 +1522,7 @@ public final class SpringFactoriesLoader {
 
 - 示例
     - 参考代码
+        
         - [/java/mylearn/myspringboot/src/main/java/com/ljs/learn/myspringboot/config/MyMVCConfig.java](/java/mylearn/myspringboot/src/main/java/com/ljs/learn/myspringboot/config/MyMVCConfig.java)
     - 代码内容
         ```java
@@ -1613,7 +1633,7 @@ public final class SpringFactoriesLoader {
             }
         }
         ```
-      
+    
 ### 自定义国际化处理
 [top](#catalog)
 - 自定义 `LocaleResolver` 接口实现类，并注册到自定义的mvc配置类中
@@ -1624,6 +1644,7 @@ public final class SpringFactoriesLoader {
     
 - 示例
     - 参考代码
+        
         - [/java/mylearn/myspringboot-sample/src/main/java/com/ljs/learn/myspringbootsample/config/MyLocaleResolver.java](/java/mylearn/myspringboot-sample/src/main/java/com/ljs/learn/myspringbootsample/config/MyLocaleResolver.java)
     - 代码内容
         ```java
@@ -1759,3 +1780,7 @@ public final class SpringFactoriesLoader {
 - 修改banner
     - 添加banner文本文件：`resources/banner.txt`
     - 启动工程后，会自动使用自定义的 banner.txt 文件
+- springboot 默认会优先加载系统环境变量
+    - 如果使用了和环境变量同名的配置时，则只能获取到环境变量的值，无法从配置中获取数据
+    - 解决方法
+        - 没有解决方法，只能让配置内容尽量和环境变量不同
