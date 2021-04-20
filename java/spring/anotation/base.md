@@ -138,9 +138,9 @@
 ## @Configuration--创建配置类
 [top](#catalog)
 - `@Configuration` 的功能
-    
+  
 - 用于将一个普通类标识为Spring配置类
-    
+  
 - 源码分析
     - @Configuration 使用 `@Component`装饰，所以自身也是一个 Compnent
         - 在Spring启动后，**容器中也会包含** @Configuration 标识的配置类
@@ -183,7 +183,7 @@
 - 示例
     - 配置类
         - 参考代码
-            
+          
             - [/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/regist/bean/BeanConfig.java](/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/regist/bean/BeanConfig.java)
         - 代码内容
             ```java
@@ -209,7 +209,7 @@
             ```
     - 测试类
         - 参考代码
-            
+          
             - [/java/mylearn/myspring-annotation/src/test/java/com/ljs/learn/myspringannotation/regist/bean/BeanConfigTest.java](/java/mylearn/myspring-annotation/src/test/java/com/ljs/learn/myspringannotation/regist/bean/BeanConfigTest.java)
         - 测试内容
             ```java
@@ -269,7 +269,7 @@
     - exclude示例
         - 实现内容
             - 参考代码
-                
+              
                 - [/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/regist/componentScan/ComponentScanConfig.java](/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/regist/componentScan/ComponentScanConfig.java)
             - 代码内容
                 ```java
@@ -284,7 +284,7 @@
                 ```
         - 测试内容
             - 参考代码
-                
+              
                 - [/java/mylearn/myspring-annotation/src/test/java/com/ljs/learn/myspringannotation/regist/componentScan/ComponentScanConfigTest.java](/java/mylearn/myspring-annotation/src/test/java/com/ljs/learn/myspringannotation/regist/componentScan/ComponentScanConfigTest.java)
             - 测试内容
                 ```java
@@ -310,7 +310,7 @@
     - include示例
         - 实现内容
             - 参考代码
-                
+              
                 - [/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/regist/componentScan/ComponentScanConfig02.java](/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/regist/componentScan/ComponentScanConfig02.java)
             - 代码内容
                 ```java
@@ -323,7 +323,7 @@
                 ```
         - 测试内容
             - 参考代码
-                
+              
                 - [/java/mylearn/myspring-annotation/src/test/java/com/ljs/learn/myspringannotation/regist/componentScan/ComponentScanConfigTest.java](/java/mylearn/myspring-annotation/src/test/java/com/ljs/learn/myspringannotation/regist/componentScan/ComponentScanConfigTest.java)
             - 测试代码
                 ```java
@@ -382,7 +382,7 @@
 - FilterType.ASPECTJ，根据aspectj表达式来过滤，**不常用**
 - FilterType.REGEX 根据正则表达式过滤，**不常用**
 - FilterType.CUSTOM，自定义规则
-    
+  
     - 参考：[TypeFilter自定义包扫描过滤规则](#TypeFilter自定义包扫描过滤规则)
 
 ### TypeFilter--自定义包扫描过滤规则
@@ -393,7 +393,7 @@
 
 - 自定义 TypeFilter 接口的实现类
     - 参考代码
-        
+      
         - [/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/regist/componentScan/filter/MyTypeFilter.java](/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/regist/componentScan/filter/MyTypeFilter.java)
     - TypeFilter 接口的实现类
         ```java
@@ -428,7 +428,7 @@
         ```
 - 使用自定义规则
     - 参考代码
-        
+      
         - [/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/regist/componentScan/filter/TypeFilterConfig.java](/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/regist/componentScan/filter/TypeFilterConfig.java)
     - 代码内容        
         ```java
@@ -441,11 +441,14 @@
             useDefaultFilters = false
         )
         public class TypeFilterConfig {}
+        ```
+    ```
+    
     ```
     
 - 测试内容
     - 参考代码
-        
+      
         - [/java/mylearn/myspring-annotation/src/test/java/com/ljs/learn/myspringannotation/regist/componentScan/filter/TypeFilterConfigTest.java](/java/mylearn/myspring-annotation/src/test/java/com/ljs/learn/myspringannotation/regist/componentScan/filter/TypeFilterConfigTest.java)
     - 测试代码
         ```java
@@ -500,7 +503,7 @@
 - 示例
     - scope设置
         - 参考代码
-            
+          
             - [/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/regist/scope/ScopeConfig.java](/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/regist/scope/ScopeConfig.java)
         - 代码内容
             ```java
@@ -531,7 +534,7 @@
             ```
     - 测试内容
         - 参考代码
-            
+          
             - [/java/mylearn/myspring-annotation/src/test/java/com/ljs/learn/myspringannotation/regist/scope/ScopConfigTest.java](/java/mylearn/myspring-annotation/src/test/java/com/ljs/learn/myspringannotation/regist/scope/ScopConfigTest.java)
         - 测试内容
             ```java
@@ -578,7 +581,7 @@
 - 示例
     - 使用`@Lazy`
         - 参考代码
-            
+          
             - [/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/regist/scope/ScopeConfig.java](/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/regist/scope/ScopeConfig.java)
         - 代码内容
             ```java
@@ -598,7 +601,7 @@
             ```
     - 测试内容
         - 参考代码
-            
+          
             - [/java/mylearn/myspring-annotation/src/test/java/com/ljs/learn/myspringannotation/regist/scope/ScopConfigTest.java](/java/mylearn/myspring-annotation/src/test/java/com/ljs/learn/myspringannotation/regist/scope/ScopConfigTest.java)
         - 测试代码
             ```java
@@ -624,11 +627,11 @@
 ## @Conditional--按条件注册bean
 [top](#catalog)
 - `@Conditional` 的功能
-    
+  
     - 按照一定的条件进行判断，满足条件时才注册bean
     
 - `@Conditional` 可以修饰方法，也可以修饰类
-    
+  
     - 修饰类时，只有条件满足，类中配置的bean才能有效
     
 - 注解设置方法
@@ -668,7 +671,7 @@
 - 示例
     - 配置类
         - 参考代码
-            
+          
             - [/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/regist/conditional/ConditionalConfig.java](/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/regist/conditional/ConditionalConfig.java)
         - 配置类代码内容
             ```java
@@ -695,7 +698,7 @@
             ```
     - Condition实现类
         - 参考代码
-            
+          
             - [/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/regist/conditional/LinuxCondition.java](/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/regist/conditional/LinuxCondition.java)
         - 代码内容
             ```java
@@ -716,7 +719,7 @@
             ```
     - 测试内容
         - 参考代码
-            
+          
             - [/java/mylearn/myspring-annotation/src/test/java/com/ljs/learn/myspringannotation/regist/conditional/ConditionalConfigTest.java](/java/mylearn/myspring-annotation/src/test/java/com/ljs/learn/myspringannotation/regist/conditional/ConditionalConfigTest.java)
         - 测试代码
             ```java
@@ -749,11 +752,11 @@
 ### ImportSelector接口--返回组件数组
 [top](#catalog)
 - `ImportSelector` 接口，返回需要导入的组件的**全类名数组**
-    
+  
     - 方法可以返回一个空数组，但是不能返回null，会产生空数组异常
 - 示例
     - 参考代码
-        
+      
         - [/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/regist/importconfig/MyImportSelector.java](/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/regist/importconfig/MyImportSelector.java)
     - 实现代码
         ```java
@@ -776,7 +779,7 @@
 - 对所有需要添加到容器中的bean，调用BeanDefinitionRegistry.registerBeanDefinition 手动注册
 - 示例
     - 参考代码
-        
+      
         - [/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/regist/importconfig/MyImportBeanDefinitionRegistrar.java](/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/regist/importconfig/MyImportBeanDefinitionRegistrar.java)
     - 实现代码
         ```java
@@ -810,7 +813,7 @@
 [top](#catalog)
 - 示例内容
     - 参考代码
-        
+      
         - [/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/regist/importconfig/ImportConfig.java](/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/regist/importconfig/ImportConfig.java)
     - 示例内容
         ```java
@@ -829,7 +832,7 @@
         ```
 - 测试内容
     - 参考代码
-        
+      
         - [/java/mylearn/myspring-annotation/src/test/java/com/ljs/learn/myspringannotation/regist/importconfig/ImportConfigTest.java](/java/mylearn/myspring-annotation/src/test/java/com/ljs/learn/myspringannotation/regist/importconfig/ImportConfigTest.java)
     - 测试代码
         ```java
@@ -939,7 +942,7 @@
             ```
     - 测试内容
         - 参考代码
-            
+          
             - [/java/mylearn/myspring-annotation/src/test/java/com/ljs/learn/myspringannotation/regist/factorybean/FactoryBeanConfigTest.java](/java/mylearn/myspring-annotation/src/test/java/com/ljs/learn/myspringannotation/regist/factorybean/FactoryBeanConfigTest.java)
         - 测试代码
             ```java
@@ -1018,13 +1021,13 @@
         - 初始化方法和销毁方法都需要在bean类中声明
 
 - 适用场景
-    
+  
 - 数据源的开启和销毁
-    
+  
 - 示例
     - 实现内容
         - 参考代码
-            
+          
             - [/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/lifecycle/initdestroy/bean/InitDestroyLifecycleConfig.java](/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/lifecycle/initdestroy/bean/InitDestroyLifecycleConfig.java)
         - 实现内容
             ```java
@@ -1048,7 +1051,7 @@
             ```
     - 测试内容
         - 参考代码
-            
+          
             - [/java/mylearn/myspring-annotation/src/test/java/com/ljs/learn/myspringannotation/lifecycle/initdestroy/bean/InitDestroyLifecycleConfigTest.java](/java/mylearn/myspring-annotation/src/test/java/com/ljs/learn/myspringannotation/lifecycle/initdestroy/bean/InitDestroyLifecycleConfigTest.java)
         - 测试内容
             ```java
@@ -1203,7 +1206,7 @@
             ```
     - 测试内容
         - 参考代码
-            
+          
             - [/java/mylearn/myspring-annotation/src/test/java/com/ljs/learn/myspringannotation/lifecycle/initdestroy/interfaces/InterfacesConfigTest.java](/java/mylearn/myspring-annotation/src/test/java/com/ljs/learn/myspringannotation/lifecycle/initdestroy/interfaces/InterfacesConfigTest.java)
         - 测试代码
             ```java
@@ -1291,7 +1294,7 @@
             ```
     - 测试内容
         - 参考代码
-            
+          
             - [/java/mylearn/myspring-annotation/src/test/java/com/ljs/learn/myspringannotation/lifecycle/initdestroy/jsr250/JSR250ConfigTest.java](/java/mylearn/myspring-annotation/src/test/java/com/ljs/learn/myspringannotation/lifecycle/initdestroy/jsr250/JSR250ConfigTest.java)
         - 测试代码
             ```java
@@ -1327,7 +1330,7 @@
     - 在**每个**bean**实例化之后、初始化前**执行一些操作，**初始化后**执行一些操作
     - 用于设置一些通用的初始化操作
 - 接口实现类最好使用 `@Component` 来加入容器
-    
+  
     - `@Bean` 会产生异常 ?????
 - 接口源码
     ```java
@@ -1752,7 +1755,7 @@
 
 - 测试内容
     - 参考代码
-        
+      
         - [/java/mylearn/myspring-annotation/src/test/java/com/ljs/learn/myspringannotation/lifecycle/initdestroy/ordertest/InitDestroyOrderConfigTest.java](/java/mylearn/myspring-annotation/src/test/java/com/ljs/learn/myspringannotation/lifecycle/initdestroy/ordertest/InitDestroyOrderConfigTest.java)
     - 测试代码
         ```java
@@ -2002,7 +2005,7 @@
             ```
     - 测试内容
         - 参考代码
-            
+          
             - [/java/mylearn/myspring-annotation/src/test/java/com/ljs/learn/myspringannotation/propertyassign/ValueConfigTest.java](/java/mylearn/myspring-annotation/src/test/java/com/ljs/learn/myspringannotation/propertyassign/ValueConfigTest.java)
         - 测试代码
             ```java
@@ -2121,9 +2124,10 @@
 ### @Autowired及其相关注解
 [top](#catalog)
 - `@Autowired` 
-    
-    - 默认会将装饰的变量名作为beanId，到容器中搜索
+  
+    - <span style='color:red'>默认会将装饰的变量名作为beanId，到容器中搜索</span>
 - `@Autowired(required=true/false)`
+    
     - required 参数默认为true
     - required = true
         - 表示在启动容器后，必须要有对应的beanID
@@ -2142,7 +2146,7 @@
 - 示例
     - 配置类
         - 参考代码
-            
+          
             - [/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/autowired/AutoWiredConfig.java](/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/autowired/AutoWiredConfig.java)
         - 代码内容
             ```java
@@ -2160,7 +2164,7 @@
             ```
     - 在类中使用 `@Qualifier`，指定装配目标
         - 参考代码
-            
+          
             - [/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/autowired/demo/BookService.java](/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/autowired/demo/BookService.java)
         - 代码内容
             ```java
@@ -2177,7 +2181,7 @@
             ```
     - 测试类
         - 参考代码
-            
+          
             - [/java/mylearn/myspring-annotation/src/test/java/com/ljs/learn/myspringannotation/autowired/AutoWiredConfigTest.java](/java/mylearn/myspring-annotation/src/test/java/com/ljs/learn/myspringannotation/autowired/AutoWiredConfigTest.java)    
         - 测试内容
             ```java
@@ -2292,7 +2296,7 @@
             ```
     3. 测试内容
         - 参考代码
-            
+          
             - [/java/mylearn/myspring-annotation/src/test/java/com/ljs/learn/myspringannotation/autowired/AutoWiredConfigTest.java](/java/mylearn/myspring-annotation/src/test/java/com/ljs/learn/myspringannotation/autowired/AutoWiredConfigTest.java)
         - 测试代码
             ```java
@@ -2315,7 +2319,7 @@
                 assertEquals(boss.getCar(), car);
                 assertEquals(boss.getWork(), null);
         
-                // 3. 只有一个有参构造器，并且不适用 @Autowired，有Spring自动注入
+                // 3. 只有一个有参构造器，并且不使用 @Autowired，由Spring自动注入
                 Teacher teacher = context.getBean(Teacher.class);
                 assertEquals(teacher.getCar(), car);
                 assertEquals(teacher.getWork(), work);
@@ -2331,7 +2335,7 @@
 [top](#catalog)
 - 装配方法
     - `@Resource`, 按照**组件名**进行装配的
-    - `@Resource(name="beanID")`，转配指定beanID的对象
+    - `@Resource(name="beanID")`，装配指定beanID的对象
 - 功能与 `@Autowired` 类似，但是无法设置 `required` 属性
 - 不支持 `@Primary`
 
@@ -2370,7 +2374,7 @@
 ## Aware接口注入Spring底层组件
 [top](#catalog)
 - 自定义实现`Aware`接口的类
-    
+  
     - 在创建对象的时候，会调用接口规定的方法注入Spring相关组件
 - 所有 `Aware` 接口，都有对应的`BeanPostProcessor`来做处理
 - 示例
@@ -2420,7 +2424,7 @@
             ```
     - 测试内容
         - 参考代码
-            
+          
             - [/java/mylearn/myspring-annotation/src/test/java/com/ljs/learn/myspringannotation/autowired/AwareConfigTest.java](/java/mylearn/myspring-annotation/src/test/java/com/ljs/learn/myspringannotation/autowired/AwareConfigTest.java)
         - 测试代码
             ```java
@@ -2441,7 +2445,7 @@
 ## @Profile--设置激活环境
 [top](#catalog)
 - 什么是Profile？
-    
+  
     - 由Spring提供的，可以根据当前环境，动态的激活和切换一系列bean组件的功能
 - `@Profile("环境名")` 的功能
     - 使组件在指定的环境下，才能被注册到容器中
@@ -2464,7 +2468,7 @@
     - 装饰bean
         - 实现内容
             - 参考代码
-                
+              
                 - [/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/autowired/ProfileConfig.java](/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/autowired/ProfileConfig.java)
             - 代码内容
                 ```java
@@ -2502,7 +2506,7 @@
                 ```
         - 测试内容
             - 参考代码
-                
+              
                 - [/java/mylearn/myspring-annotation/src/test/java/com/ljs/learn/myspringannotation/autowired/ProfileConfigTest.java](/java/mylearn/myspring-annotation/src/test/java/com/ljs/learn/myspringannotation/autowired/ProfileConfigTest.java)
             - 测试代码
                 ```java
@@ -2564,7 +2568,7 @@
     - 装饰配置类
         - 实现内容
             - 参考代码
-                
+              
                 - [/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/autowired/ProfileForClassConfig.java](/java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/autowired/ProfileForClassConfig.java)
             - 代码内容
                 ```java
@@ -2573,7 +2577,7 @@
                 ```
         - 测试内容
             - 参考代码
-                
+              
                 - [/java/mylearn/myspring-annotation/src/test/java/com/ljs/learn/myspringannotation/autowired/ProfileForClassConfigTest.java](/java/mylearn/myspring-annotation/src/test/java/com/ljs/learn/myspringannotation/autowired/ProfileForClassConfigTest.java)
             - 测试代码
                 ```java
@@ -2748,6 +2752,10 @@
 # AOP原理
 ## AOP是如何生效的
 [top](#catalog)
+- 生效的主要方式，`@EnableAspectJAutoProxy` 注册了 `AnnotationAwareAspectJAutoProxyCreator`，这个bean实现了aop的主要功能
+
+- `AnnotationAwareAspectJAutoProxyCreator` 本身是一个后置处理器。这样在创建bean的时候可以进行拦截，并创建代理对象
+
 - AOP生效的流程
     1. `@EnableAspectJAutoProxy` 开启AOP功能
         - 内部通过 `@Import` 导入 `AspectJAutoProxyRegistrar`
@@ -2866,7 +2874,7 @@
 ### AnnotationAwareAspectJAutoProxyCreator的注册
 [top](#catalog)
 - AnnotationAwareAspectJAutoProxyCreator的继承关系
-    
+  
     - ![AnnotationAwareAspectJAutoProxyCreator_impl](imgs/aop/principle/AnnotationAwareAspectJAutoProxyCreator_impl.png)
 - 主要的实现
     1. SmartInstantiationAwareBeanPostProcessor，后置处理器
@@ -2877,8 +2885,9 @@
         - AspectJAwareAdvisorAutoProxyCreator
             - AbstractAdvisorAutoProxyCreator
                 - AbstractAutoProxyCreator
-                    - SmartInstantiationAwareBeanPostProcessor
-                    - BeanFactoryAware
+                    - SmartInstantiationAwareBeanPostProcessor，后置处理器
+                    - BeanFactoryAware，注入bean工厂
+- **需要着重分析 SmartInstantiationAwareBeanPostProcessor、BeanFactoryAware，来了解aop的流程**
 - 继承关系中的重要实现方法，与被重写的方法
     - AbstractAutoProxyCreator
         - 实现了后置处理器的方法
@@ -2887,7 +2896,7 @@
             - postProcessBeforeInitialization()
             - postProcessAfterInitialization()
         - setBeanFactory()
-            - 用于设置 ?????
+            - BeanFactoryAware 的实现，用于注入 beanFactory
     - AbstractAdvisorAutoProxyCreator
         - 重写的方法
             - setBeanFactory
@@ -2901,14 +2910,14 @@
 
 - 注册流程
     1. 传入配置类、创建ioc容器
-    2. 注册配置类，初始化容器，`AbstractApplicationContext.refresh()`
-        - 通过 `AbstractApplicationContext.registerBeanPostProcessors()` 启动注册后置处理器
+    2. 注册配置类，刷新容器，`AbstractApplicationContext.refresh()`
+        - 通过 `AbstractApplicationContext.registerBeanPostProcessors()` 注册后置处理器，来拦截 bean 的创建
     3. 注册后置处理器: `PostProcessorRegistrationDelegate.registerBeanPostProcessors()` 
         1. 获取IOC容器中已经定义的、需要创建对象的所有 `BeanPostProcessor`
             - org.springframework.context.annotation.internalAutowiredAnnotationProcessor
             - org.springframework.context.annotation.internalCommonAnnotationProcessor
             - **org.springframework.aop.config.internalAutoProxyCreator**
-                - <span style='color:red'>AnnotationAwareAspectJAutoProxyCreator 负责注册的内容</span>
+                - <span style='color:red'>AnnotationAwareAspectJAutoProxyCreator aop需要关注的内容</span>
         2. 向容器中添加按照级别顺序添加 `BeanPostProcess`
             1. 优先注册实现了 `PriorityOrdered` 接口的 `BeanPostProcessor`
             2. 再向容器中注册实现了 `Ordered` 接口的 `BeanPostProcessor`
@@ -2998,7 +3007,7 @@
             
             // ...
         }
-        ```
+       ```
     4. AnnotationAwareAspectJAutoProxyCreator 继承了 `Ordered` 接口，按照 `Ordered` 的规则来注册到容器中
         1. 通过 `AbstractBeanFactory.getBean` 获取bean
         2. 通过 `AbstractBeanFactory.doGetBean` 执行获取bean的操作
@@ -3123,7 +3132,7 @@
                 }
                 ```
     5. 将实例化后的 `BeanPostProcessor` 添加到 beanFactory 中
-        
+       
         - 在 `PostProcessorRegistrationDelegate.registerBeanPostProcessors()` 的剩余逻辑中执行添加操作
     
        
@@ -3194,7 +3203,7 @@
             - `AbstractBeanFactory.getBean`
             - `AbstractBeanFactory.doGetBean`
         2. 先尝试从缓存中获取bean，如果能获取到，说明bean之前已经被创建过了，则直接使用；否则再创建
-            
+           
             - `DefaultSingletonBeanRegistry.getSingleton`
         3. 创建 bean
             - `AbstractAutowireCapableBeanFactory.createBean`
@@ -3203,6 +3212,7 @@
                 protected Object createBean(String beanName, RootBeanDefinition mbd, @Nullable Object[] args)
                     // ...
                     try {
+                        // 希望能先返回一个代理对象。如果无法创建，则执行 doCreateBean
                         // 先尝试用后置处理器返回一个代理对象
                         Object bean = resolveBeforeInstantiation(beanName, mbdToUse);
                         if (bean != null) {
@@ -3253,19 +3263,22 @@
                     for (BeanPostProcessor bp : getBeanPostProcessors()) {
                         if (bp instanceof InstantiationAwareBeanPostProcessor) {
                             InstantiationAwareBeanPostProcessor ibp = (InstantiationAwareBeanPostProcessor) bp;
+                            // InstantiationAwareBeanPostProcessor 是在创建beaan实例之前，先尝试用后置处理器进行创建。相当于拦截并创建代理对象
                             // 如果是 InstantiationAwareBeanPostProcessor 的实例，
                             // 执行处理器的 postProcessBeforeInstantiation 方法
+                            // AnnotationAwareAspectJAutoProxyCreator 就是这个接口的实例
                             Object result = ibp.postProcessBeforeInstantiation(beanClass, beanName);
                             if (result != null) {
                                 return result;
                             }
                         }
+                        //...
                     }
                     return null;
                 }
                 ```
         5. 如果无法创建代理，则创建真正的bean
-            
+           
             - `AbstractAutowireCapableBeanFactory.doCreateBean`          
 
 ### AnnotationAwareAspectJAutoProxyCreator的功能
@@ -3601,6 +3614,8 @@
 
 ### 创建拦截器链
 [top](#catalog)
+- CglibAopProxy.intercept()，拦截目标方法的执行。
+    - 由内部静态类: `DynamicAdvisedInterceptor` 来实现并执行
 - 拦截目标方法的执行: `DynamicAdvisedInterceptor.intercept()`
     - 主要过程
         1. 获取被代理的原始对象
@@ -3631,7 +3646,7 @@
                 // 2. 获取拦截器链
                 List<Object> chain = this.advised.getInterceptorsAndDynamicInterceptionAdvice(method, targetClass);
                 Object retVal;
-    
+
                 // 3. 如果被调用的方法没有拦截器链，直接执行目标方法
                 if (chain.isEmpty() && Modifier.isPublic(method.getModifiers())) {
                     Object[] argsToUse = AopProxyUtils.adaptArgumentsIfNecessary(method, args);
@@ -3658,12 +3673,12 @@
 
 - 如何获取拦截器链
     - 主要过程
-        1. 创建拦截器list，长度等于增强器的数量
+        1. 创建拦截器list，长度等于增强器的数量 + 1个默认的增强器
         2. 遍历所有增强器，将其转换为 `MethodInterceptor`
             - 如果是 `MethodInterceptor`，则直接加入集合
             - 如果不是，使用 `AdvisorAdapter` 将增强器转换为 `MethodInterceptor`
             - 最后返回一个 `MethodInterceptor` 数组
-    - 
+    - 每一个通知方法会被包装成方法拦截器，利用 `MethodInterceptor` 方法拦截器机制执行
     - 代码分析
         1. 通过 advisorChainFactory 工厂获取拦截器链: `AdvisedSupport.getInterceptorsAndDynamicInterceptionAdvice` 
             ```java
@@ -3778,14 +3793,14 @@
             5. MethodBeforeAdviceInterceptor，前置处理
     - 排序后的拦截器如何执行？
         - 执行时需要的类
-            
+          
             - [intercepter_chain_run](imgs/aop/interceptor/intercepter_chain_run.png)
         - 执行方式
             1. 在 `DynamicAdvisedInterceptor.intercept()` 创建 `CglibMethodInvocation` 对象
-                
+               
                 - 将拦截器链保存在 `CglibMethodInvocation` 中
             2. `CglibMethodInvocation.proceed()` 开始调用拦截器链
-                
+               
                 - 在内部通过父类的方法调用拦截器链: `ReflectiveMethodInvocation.proceed`
             3. 在 `ReflectiveMethodInvocation.proceed` 中通过 `currentInterceptorIndex` 来记录执行了多少个拦截器
             4. 在 `ReflectiveMethodInvocation.proceed` 中按顺序调用 5 种已经排好序的拦截器
@@ -3804,6 +3819,7 @@
                     - 整个递归的过程中，`this`一直使用的是初始创建的`CglibMethodInvocation`对象
                     - `CglibMethodInvocation` 是 `ReflectiveMethodInvocation` 的子类，所以可以一直递归内部的拦截器链
             5. 当 `currentInterceptorIndex == 拦截器的数量` 时，调用原对象的方法
+                
                 - 此时，拦截器都已经进入递归状态，但还没有执行完
             - 在调用原对象的方法之前，前置处理已经执行完了，只是还处于递归状态，
             6. 开始回溯整个递归调用的过程，完成后置处理、异常捕获等处理
@@ -3879,7 +3895,7 @@
         @Nullable
         public Object proceed() throws Throwable {
             /*
-               每次递归时，检查 currentInterceptorIndex 是否等于拦截器的数量
+               每次递归时，检查 currentInterceptorIndex 是否等于拦截器的数量 - 1
                如果等于，则执行原对象的方法
                第一次执行时，currentInterceptorIndex = -1
                如果需要执行的方法没有拦截器，则 this.interceptorsAndDynamicMethodMatchers.size() - 1 = -1，会直接执行原对象的方法
@@ -3888,7 +3904,8 @@
                 return invokeJoinpoint();
             }
 
-            // 获取拦截器，并增加 currentInterceptorIndex
+            // 自增 currentInterceptorIndex 后，获取拦截器
+            // 如果是第一次执行，则从 -1 变为 0，获取第一个拦截器
             Object interceptorOrInterceptionAdvice =
                     this.interceptorsAndDynamicMethodMatchers.get(++this.currentInterceptorIndex);
             if (interceptorOrInterceptionAdvice instanceof InterceptorAndDynamicMethodMatcher) {
@@ -3904,6 +3921,7 @@
             }
             else {
                 // 递归调用拦截器
+                // 这里的 this 就是：CglibMethodInvocation
                 return ((MethodInterceptor) interceptorOrInterceptionAdvice).invoke(this);
             }
         }
@@ -3919,6 +3937,7 @@
                 invocation.set(mi);
                 try {
                     // 调用下一个拦截器，即又回到 ReflectiveMethodInvocation 中
+                    // 下一次，如果currentInterceptorIndex == 拦截器数量 - 1，则执行原始方法
                     return mi.proceed();
                 }
                 finally {
@@ -3934,6 +3953,7 @@
             public Object invoke(MethodInvocation mi) throws Throwable {
                 try {
                     // 调用下一个拦截器，即又回到 ReflectiveMethodInvocation 中
+                    // 下一次，如果currentInterceptorIndex == 拦截器数量 - 1，则执行原始方法
                     return mi.proceed();
                 }
                 catch (Throwable ex) {
@@ -3951,7 +3971,10 @@
             // 即: invoke(this) 中的 this
             @Override
             public Object invoke(MethodInvocation mi) throws Throwable {
+                // 调用下一个拦截器，即又回到 ReflectiveMethodInvocation 中
+                // 下一次，如果currentInterceptorIndex == 拦截器数量 - 1，则执行原始方法
                 Object retVal = mi.proceed();
+                // 执行后置处理
                 this.advice.afterReturning(retVal, mi.getMethod(), mi.getArguments(), mi.getThis());
                 return retVal;
             }
@@ -3964,6 +3987,8 @@
         	public Object invoke(MethodInvocation mi) throws Throwable {
         		try {
         			// 调用下一个拦截器，即又回到 ReflectiveMethodInvocation 中
+                    // 下一次，如果currentInterceptorIndex == 拦截器数量 - 1，则执行原始方法
+                    // 如果执行有问题会直接抛出，到AfterThrowing
                     return mi.proceed();
         		}
         		finally {
@@ -3980,9 +4005,40 @@
                 // 前置处理器在继续递归之前，会将前置处理执行完成
                 this.advice.before(mi.getMethod(), mi.getArguments(), mi.getThis());
                 // 调用下一个拦截器，即又回到 ReflectiveMethodInvocation 中
+                // 下一次，如果currentInterceptorIndex == 拦截器数量 - 1，则执行原始方法
                 return mi.proceed();
             }
             ```
 
+# AOP总结
+- `@EnableAspectAutoProxy`，开启AOP功能
+- `@EnableAspectJAutoProxy` 向容器中注册了一个 `AnnotationAwareAspectJAutoProxyCreator`，这个bean实现了aop的主要功能
+    - 这本对象本身是一个 spring 的后置处理器
+    - 在 refresh 内的 registerBeanPostProcessors 中进行注册
+- bean的创建流程
+    - 在 refresh 的 finishBeanFactoryInitialization 初始化业务逻辑组件 + 切面组件
+    - `AnnotationAwareAspectJAutoProxyCreator` 会拦截业务组件的创建过程
+        - 组件创建后，会执行这个后置处理器，在 postProcessAfterInitalization 中执行 `wrapIfNecessary`，判断组件是否需要增强
+        - 判断的方式是匹配 aspectJ 中的 execution 内的匹配条件
+        - 如果需要增强
+            - 将切面类中的通知方法，全部包装成增强器 Advisor
+            - 给业务逻辑组件创建一个代理对象，默认是cglib
+- 执行目标方法
+    - 由代理对象执行目标方法
+    - CglibAopProxy.intercept()
+        - 得到目标方法的拦截器链，即增强器包装成的拦截器 MethodInterceptor
+            - 需要给拦截器排序
+        - 利用链式机制，依次执行每个拦截器
+        - 整体顺序是倒序的
+            - 5种拦截器类型及其顺序
+                1. ExposeInvocationInterceptor
+                2. AspectJAfterThrowingAdvice，异常处理
+                3. AfterReturningAdviceInterceptor，返回处理
+                4. AspectJAfterAdvice，后置处理
+                5. 原始方法
+                6. MethodBeforeAdviceInterceptor，前置处理
+            - 正常执行: 前置处理-->原始方法-->后置处理-->返回处理
+            - 发生异常: 前置处理-->原始方法-->后置处理-->异常处理
+                - 但是后置处理会直接抛出异常 ?????
 
 [top](#catalog)
