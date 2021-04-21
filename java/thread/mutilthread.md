@@ -273,6 +273,11 @@
 - 相较于 join 的优势
     - join 执行后，必须等待线程执行结果
     - 保护性暂停可以在线程执行过程中唤醒其他线程，无需等到线程结束
+
+- **保护性暂停的缺点**
+    - <span style='color:red'>需要生产线程和消费线程一一对应</span>
+    - 会消耗过多的资源
+
 - 示意图
     - <img src="imgs/guarded_object/01.png" alt="imgs/guarded_object/01.png" style="zoom:50%;" />
 ## 保护性暂停的实现
@@ -402,9 +407,13 @@
 - join 底层也是利用保护性暂停来实现等待另一个线程结束
 
 - join与普通的保护性暂停的区别
-    - join 是**一个线程等待另一个线程结束**
-    - 保护性暂停是**一个线程等待另一个线程的结果**
-    
+    - 概念上的区别
+        - join 是**一个线程等待另一个线程结束**
+        - 保护性暂停是**一个线程等待另一个线程的结果**
+    - 代码上的区别
+        - join **没有返回值**
+        - 保护性暂行**有返回值**
+
 - 源码分析
     ```java
     public final void join() throws InterruptedException {
@@ -439,9 +448,9 @@
         } else {
             throw new IllegalArgumentException("timeout value is negative");
         }
-    }   
+    }
     ```
-    
+
 ## 保护性暂停扩展--解耦
 
 ### 保护性暂停的解耦方式
@@ -451,7 +460,7 @@
     - 在多个类之间使用 GuardedObject 对象时，作为参数传递不方便
 - 解耦方式
     - 设计一个中间类，解耦：**结果等待者** 和 **结果生产者**，来支持多个任务的管理
-    - 为每个 Garded 对象添加 ID，用于唯一标识
+    - 为每个 Guarded 对象添加 ID，用于唯一标识
 - 解耦示意图
     - <img src="imgs/guarded_object/02.png" alt="imgs/guarded_object/02.png" style="zoom:50%;" />
 
@@ -460,6 +469,9 @@
 [top](#catalog)
 
 - <span style='color:red'>解耦类的主要内容是管理 GuardedObject</span>
+
+- 以等待者 (消费者) 作为驱动，来生成等量的生产者，并从中获取结果
+    - **必须先有 等待者 (消费者)，再生成生产者，才有意义**
 
 - 参考代码
 
@@ -487,7 +499,7 @@
     
             // 放入容器中进行管理
             boxes.put(go.getId(), go);
-    			  
+
             // 将结果返回给等待者，有等待着调用 get 方法来等待结果
             return go;
         }
@@ -584,12 +596,9 @@
             // 22:02:25.439 [Thread-0] c.Waiter - waiter get response, id=1, response=content_1
             // 22:02:25.439 [Thread-1] c.Waiter - waiter get response, id=2, response=content_2
             // 22:02:25.439 [Thread-2] c.Waiter - waiter get response, id=3, response=content_3
-    
         }
     }
     ```
-
-    
 
 # 异步模式--生产者、消费者模式
 
@@ -598,15 +607,18 @@
 [top](#catalog)
 
 - 与保护性暂停中的 GuardObject 不同，不需要生产结果和等待结果的线程一一对应
-- 消费者队列可以用来平衡生产和消费的线程资源
+- **消费者队列**可以用来平衡生产和消费的线程资源
     - 在保护性暂停中，生产者、消费者是等量的，会消耗过多的资源
-- 生产者只负责生产结果，消费者只关系如何处理结果
+- 生产者只负责生产结果，消费者只关心如何处理结果
 - 通过 <span style='color:red'>消息队列</span> 进行解耦
     - 一般是先入先出的
-- 消息队列是有容量限制的，满了生产者不会再加数据，空了消费者不会再消耗数据
-- JDK 中各种阻塞队列，都是生产者、消费者模式
+- 消息队列有容量限制
+    - 满了，生产者不会再生产数据
+    - 空了，消费者不会再消耗数据
+
+- JDK 中各种**阻塞队列**，都是生产者、消费者模式
 - 特点
-    - 异步性：因为数据会先进入消息队列，所以在数据的处理上，会产生延迟
+    - 异步性：因为数据会先进入消息队列，所以在数据的处理上，**会产生延迟**
 - 示意图
   
   - <img src="imgs/producer_consumer/01.png" alt="imgs/producer_consumer/01.png" style="zoom:50%;" />
@@ -679,12 +691,11 @@
     
                 Message message = list.removeFirst();
                 log.debug("take message={}",message);
-                // 如果当前队列已满，获取一个消息后则，可以添加新的消息
+                // 如果当前队列已满，获取一个消息后，可以添加新的消息
                 // 通过 notifyAll 唤醒其他等待中的 put 操作线程
                 list.notifyAll();
                 return message;
             }
-    
         }
     
         // 存储消息（从末尾插入）
@@ -699,7 +710,7 @@
                         e.printStackTrace();
                     }
                 }
-    
+
                 // 插入数据
                 list.addLast(message);
                 log.debug("put message={}",message);
@@ -1181,9 +1192,9 @@
                         }
                         log.debug("got cook, cook=" + cook);
                     });
-            
+
                     Thread.sleep(1000);
-            
+
                     waiter.shutdown();
                     cooker.shutdown();
                 }
@@ -1197,7 +1208,7 @@
 - CPU密集型运算
     - 经验公式
         - `线程数 = CPU核数 + 1`
-    - +1 保证当线程由于页缺失故障或其他原因暂停时，这个额外的线程可以替补，**保证始终周期不被浪费**
+    - +1 保证当线程由于页缺失故障或其他原因暂停时，这个额外的线程可以替补，**保证时钟周期不被浪费**
 - I/O密集型
     - I/O 操作，RPC调用，数据库操作，web操作等等
     - cpu不总是处于繁忙状态，可以利用多线程提供CPU利用率
@@ -1205,11 +1216,11 @@
         - `线程数 = CPU核数 * 期望CPU利用率 * 总时间(CPU计算时间+等待时间) / CPU计算时间`
         - 如 4 核CPU，计算时间=50%，其他等待时间=50%，期望CPU被100%使用
             ```
-            线程数 = 4 * 100% * 100% / 50% = 8  
+            线程数 = 4 * 100% * 100% / 50% = 8
             ```
         - 如 4 核CPU，计算时间=10%，其他等待时间=90%，期望CPU被100%使用
             ```
-            线程数 = 4 * 100% * 100% / 10% = 40  
+            线程数 = 4 * 100% * 100% / 10% = 40
             ```
 
 [top](#catalog)

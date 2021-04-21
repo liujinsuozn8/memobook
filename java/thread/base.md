@@ -574,12 +574,12 @@
     1. 让当前线程从 `Running` 进入 `Runnable` 就绪状态
     2. 让出CPU使用权，让任务调度器执行其他的线程
 - yield 的具体实现依赖于操作系统的任务调度器
-  
+
     - 如当前只有一个线程在运行，执行了 yield 后仍然会执行当前线程
 - <span style='color:red'>yield 无法真正的控制线程的调度</span>
 - 示例
     - 参考代码
-      
+
         - [/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/threadmethod/yield/YieldUsage.java](/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/threadmethod/yield/YieldUsage.java)
     - 代码内容
         ```java
@@ -589,17 +589,17 @@
                 System.out.println("---->task1: " + i++);
             }
         };
-    
+
             Runnable task2 = ()->{
             for(int i=0;;) {
                 Thread.yield();
                 System.out.println("    ---->task2: " + i++);
             }
         };
-    
+
             Thread t1 = new Thread(task1, "t1");
         Thread t2 = new Thread(task2, "t2");
-    
+
             t1.start();
             t2.start();
         }
@@ -624,7 +624,7 @@
 - <span style='color:red'>线程优先级 无法真正的控制线程的调度</span>
 - 示例
     - 参考代码
-      
+
         - [/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/threadmethod/priority/PriorityUsage.java](/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/threadmethod/priority/PriorityUsage.java)
     - 代码内容
         ```java
@@ -634,17 +634,17 @@
                 System.out.println("---->task1: " + i++);
             }
         };
-    
+
             Runnable task2 = ()->{
             for(int i=0;;) {
                 Thread.yield();
                 System.out.println("    ---->task2: " + i++);
             }
         };
-    
+
             Thread t1 = new Thread(task1, "t1");
         Thread t2 = new Thread(task2, "t2");
-    
+
             t1.start();
             t2.start();
         }
@@ -655,14 +655,14 @@
 [top](#catalog)
 - 示例
     - 参考代码
-      
+
         - [/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/threadmethod/join/NoJoin.java](/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/threadmethod/join/NoJoin.java)
     - 代码内容
         ```java
         static int count = 0;
         public static void main(String[] args) {
             log.debug("start");
-    
+
             // 任务1: 暂停1s，然后修改 count
             Thread t1 = new Thread(()->{
                 log.debug("start");
@@ -675,7 +675,7 @@
                     e.printStackTrace();
                 }
             });
-    
+
             // 任务2: 线程启动后，直接修改 count
             Thread t2 = new Thread(()->{
                 log.debug("start");
@@ -683,11 +683,11 @@
                 log.debug("count = " + count);
                 log.debug("end");
             });
-    
+
             // 3. 启动线程，检查 count 是否被修改
             t1.start();
             t2.start();
-        
+
             // 4. 一直输出 count=0
             log.debug("count = " + count);
             log.debug("end");
@@ -695,7 +695,7 @@
         ```
 - 每次执行，都会一直输出: `count = 0`
 - 线程 t1、t2启动后，不会立刻执行，所以每次都会先执行 主线程，输出 `count = 0`
-  
+
     - 无论是延迟执行，还是立刻执行，都不会早于主线程执行
 - 所以需要通过 `join` 等待其他线程结束，然后再执行当前线程
 
@@ -704,7 +704,7 @@
 - 如执行 `x.join` 后，会<span style='color:red'>阻塞当前线程</span>，并等待线程 `x` 执行结束，然后再执行后续的操作
 - 示例
     - 参考代码
-      
+
         - [/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/threadmethod/join/UseJoin.java](/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/threadmethod/join/UseJoin.java)
     - 代码内容
         ```java
@@ -744,12 +744,12 @@
             /*
                 4. 先等待 t2 结束，在等待 t1 结束
                 因为 t1 比 t2 快，所以会得到:
-                
+
                 count = 10  <<<<< t1 的修改
                 count = 20  <<<<< t2 的修改
             */
             t2.join();
-            t1.join();// 此时 t1 已经执行完了 
+            t1.join();// 此时 t1 已经执行完了
 
             // 7. 最终输出 t2 中的赋值结果: count = 20
             log.debug("count = " + count);
@@ -763,7 +763,7 @@
 - 如果线程提前结束了，则`join`也会结束
 - 示例
     - 参考代码
-      
+
         - [/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/threadmethod/join/JoinLimitTime.java](/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/threadmethod/join/JoinLimitTime.java)
     - 代码内容
         ```java
@@ -801,7 +801,7 @@
     - 即: 虽然打断了 `sleep`、`wait` 的线程，但是打断状态仍然是 `false` 
 - 示例
     - 参考代码
-      
+
         - [/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/threadmethod/interrupt/InterruptSleep.java](/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/threadmethod/interrupt/InterruptSleep.java)
     - 代码内容
         ```java
@@ -813,10 +813,10 @@
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-    
+
                 log.debug("t1 end");
             });
-    
+
             // 1. 启动线程，并等待 2s
             t1.start();
             // 2. 暂停 1s，等待之前的线程启动
@@ -832,11 +832,11 @@
 [top](#catalog)
 - `interrupt` 可以打断正常的线程操作
     - 线程被打断之后，打断状态会变为 `true`
-    - 即 `t                                                                                                                                   hread.isInterrupted()` 返回 `true`
+    - 即 `thread.isInterrupted()` 返回 `true`
 - 打断状态可以用来**判断是否可以停止线程**
 - 示例
     - 参考处理
-      
+
         - [/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/threadmethod/interrupt/InterruptProcess.java](/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/threadmethod/interrupt/InterruptProcess.java)
     - 代码内容
         ```java
@@ -851,10 +851,10 @@
                         break;
                     }
                 }
-                                                                                                                                                                                                  
+
                 log.debug("while end");
             });
-    
+
             // 1. 启动线程
             t1.start();
             // 2. 休眠 1s，t1 线程中的 while 将一直处于空转状态
@@ -863,12 +863,12 @@
             // 3. 打断线程 t1
             t1.interrupt();
             log.debug("end");
-            
+
             // 一般会输出:
             // [main] c. - try to interrupt
             // [main] c. - end
             // [Thread-0] c. - Interrupted
-            // [Thread-0] c. - while end 
+            // [Thread-0] c. - while end
         }
         ```
 
@@ -884,7 +884,7 @@
 - 可以调用 `Thread.interrupted()` 来清空打断状态
 - 示例
     - 参考代码
-      
+
         - [/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/threadmethod/interrupt/InterruptPark.java](/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/threadmethod/interrupt/InterruptPark.java)
     - 代码内容
         ```java
@@ -892,30 +892,30 @@
             Thread t1 = new Thread(() -> {
                 log.debug("park");
                 LockSupport.park();
-    
+
                 // 1. 被打断，标记不会清空，仍然为 true
                 log.debug("unpark");
-    
+
                 // 2. 输出 true，当前打断状态是 true，但是不会清除打断标记
                 log.debug("打断状态：" + Thread.currentThread().isInterrupted());
-    
+
                 // 3. 打断标记为 true，无法再次进入 park 状态
                 LockSupport.park();
                 log.debug("unpark second");
-    
+
                 // 4. 已经被打断，返回 true，并清除打断标记为 false
                 log.debug("打断状态：" + Thread.interrupted());
                 // 4. 输出 false，打断标记已经被清除
                 log.debug("打断状态：" + Thread.currentThread().isInterrupted());
-    
+
                 // 5. 再次进入 park 状态
                 // 没有打断将会一直处于 park 状态
                 LockSupport.park();
                 log.debug("unpark third");   // 如果不执行第二次打断，则无法停止线程
             });
-    
+
             t1.start();
-    
+
             // 休眠1s后打断
             TimeUnit.SECONDS.sleep(1);
             t1.interrupt();
@@ -945,7 +945,7 @@
 - 通过 `thread.setDaemon(true)` 将某个线程**设置为守护线程**
 - 示例
     - 参考代码
-      
+
         - [/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/threadmethod/daemon/DaemonThread.java](/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/threadmethod/daemon/DaemonThread.java)
     - 代码内容
         ```java
@@ -963,14 +963,14 @@
             // 设置为守护线程
             t1.setDaemon(true);
             t1.start();
-    
+
             TimeUnit.SECONDS.sleep(1);
             // t1.interrupt();
             log.debug("main end");
-    
+
             // 输出:
             // [main] c.Mytest - main end
-    
+
             // 只会输出主线程的信息，子线程是守护进程
             // 当主线程运行结束后，子线程（守护进程 将会立刻结束），
         }
@@ -1010,7 +1010,7 @@
         - 如BIO读写文件
             - 使用BIO读写文件时，线程不会使用CPU，会导致线程上下文切换，进入**阻塞状态**
             - 在BIO操作完成之后，**操作系统将唤醒被阻塞的线程**，转换为`可运行状态`
-        - `阻塞状态`与`可运行状态`的区别    
+        - `阻塞状态`与`可运行状态`的区别
             - `阻塞状态`的线程只要不被唤醒，调度器就不会去执行该线程
             - `可运行状态` 只是在等待CPU时间片，调度器会考虑执行该线程
     5. 终止状态
@@ -1019,7 +1019,7 @@
 ### 6种状态---Java_API层面的划分
 [top](#catalog)
 - 从 Java API 的角度，根据 `Thread.State` 枚举，可以分为 6 种状态
-  
+
     - NEW
         - 指线程被创建 `new Thread`，但是还没有执行 `start()`
     - RUNNABLE
@@ -1037,9 +1037,9 @@
         - WAITING，join
             - **已经获得了锁，但是放弃了锁，进入等待状态**
         - TIMED_WAITING，sleep
-        
+
   - `WAITING`，`TIMED_WAITING` 状态的线程，不会得到任务调度器的调度
-  
+
 - 状态切换图
     ```
                   NEW
@@ -1048,14 +1048,14 @@
               ┌──────────┐
               │ RUNNABLE │
               ├──────────┤
-     ┌─────── │ 可运行状态 │     ┌────>>> TIMED_WAITING
+     ┌─────── │ 可运行状态│     ┌────>>> TIMED_WAITING
      │        ├──────────┤     │
     CPU       │   ^   │  │ <<<─┘
-     │        │   │   V  │ <<<──────>>> WAITING   
+     │        │   │   V  │ <<<──────>>> WAITING
      │        ├──────────┤ <<<─┐
-     └─────>>>│  运行状态　│     │
+     └─────>>>│ 运行状态 │     │
               ├──────────┤     └────>>> BLOCKED
-     分配时间片 │  阻塞状态　│
+     分配时间片│  阻塞状态│
               └──────────┘
                    │
                    V
@@ -1064,7 +1064,7 @@
 
 - 示例
     - 参考代码
-      
+
         - [/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/state/JavaState.java](/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/state/JavaState.java)
     - 代码内容
         ```java
@@ -1080,7 +1080,7 @@
             // 只创建线程对象 t1，但不执行
             log.debug("t1.state = " + t1.getState());
         }
-    
+
         @Test
         public void RUNNABLE() throws InterruptedException {
             // 2. RUNNABLE 状态
@@ -1096,7 +1096,7 @@
             Thread.sleep(500);
             log.debug("t2.state = " + t2.getState());
         }
-    
+
         @Test
         public void TERMINATED() throws InterruptedException {
             // 3. TERMINATED 状态
@@ -1111,7 +1111,7 @@
             t3.join();
             log.debug("t3.state = " + t3.getState());
         }
-    
+
         @Test
         public void TIMED_WAITING() throws InterruptedException {
             // 4. TIMED_WAITING 状态
@@ -1129,7 +1129,7 @@
             Thread.sleep(500);
             log.debug("t4.state = " + t4.getState());
         }
-    
+
         @Test
         public void WAITING() throws InterruptedException {
             Thread tx = new Thread("tx"){
@@ -1155,10 +1155,10 @@
             t5.start();
             Thread.sleep(500);
             log.debug("t5.state = " + t5.getState());
-    
+
             tx.interrupt(); // 终止线程
         }
-    
+
         @Test
         public void BLOCKED() throws InterruptedException {
             // 6. WAITING 状态
@@ -1178,7 +1178,7 @@
             // 先启动 tx，并获取锁
             tx.start();
             Thread.sleep(500);
-    
+
             Thread t6 = new Thread("t6") {
                 @Override
                 public void run() {
@@ -1192,12 +1192,12 @@
                     }
                 }
             };
-    
+
             t6.start();
             // 等待一会，使用 tx 和 t6 同时争夺锁
             Thread.sleep(500);
             log.debug("t6.state = " + t6.getState());
-    
+
         }
         ```
 
@@ -1233,13 +1233,13 @@
                     a++;
                 }
             });
-    
+
             t1.start();
             t2.start();
-    
+
             t1.join();
             t2.join();
-    
+
             // 两个线程一个负责减，一个负责加，但是最后的结果不一定5000
             System.out.println(a);
         }
@@ -1316,7 +1316,7 @@
 
 - 互斥于同步的区别
 
-    - java中互斥、同步都可以采用 synchronized关键字来完成，但是还是有区别的
+    - java中互斥、同步都可以采用 synchronized 关键字来完成，但是还是有区别的
 
     - 互斥是防止临界区的竞态条件，同一时刻只能有一个线程执行临界区代码
 
@@ -1337,16 +1337,16 @@
     1. synchronized(对象)，相当于一个房间，有唯一的入口，并且一次只能进入一个线程
     2. 当线程 t1 执行到 synchronized(对象) 时，t1进入房间，获取了房间的钥匙，并锁住门。然后在房间内部执行操作
     3. 当线程 t2 执行到 synchronized(对象) 时，发现房间已经被锁，只能在门外等待，相当于被阻塞
-        - 即使发生了上下文切换，也会继续阻塞，知道门打开
+        - 即使发生了上下文切换，也会继续阻塞，直到门打开
     4. **即使中途 t1 的时间片被用完，需要暂时离开房间，但是房间仍然被 t1 锁住，t2 仍然无法进入**
     5. 当cpu再次分配时间片给 t1 后，t1可以再次进入房间，继续进行操作
     6. 当 t1 执行完 synchronized{} 内的代码后，从房间出来，并释放锁，唤醒其他被阻塞的线程
     7. 如果有多个线程被阻塞了，t1 结束后会**唤醒所有被阻塞的线程，再由这些线程自己去竞争锁**
 
-- synchronize 实际是用对象锁保证了临界区内代码的原子性
-  
-- 临界区内的代码对外是不可分割的，不会被线程切换锁打断
-  
+- synchronized 实际是用**对象锁**保证了临界区内代码的原子性
+
+- 临界区内的代码**对外是不可分割的**，不会被线程切换所打断
+
 - <span style='color:red'>如果要保护临界区的代码，需要为所有线程、用相同对象进行加锁</span>
 
 - 解决问题
@@ -1362,7 +1362,7 @@
             static int counter = 5000;
             // 创建对象锁
             static Object lock = new Object();
-        
+
             public static void main(String[] args) throws InterruptedException {
                 final Thread t1 = new Thread(() -> {
                     for (int i = 0; i < 5000; i++) {
@@ -1371,7 +1371,7 @@
                         }
                     }
                 }, "t1");
-                
+
                 final Thread t2 = new Thread(() -> {
                     for (int i = 0; i < 5000; i++) {
                         synchronized (lock){
@@ -1379,13 +1379,13 @@
                         }
                     }
                 }, "t2");
-                
+
                 t1.start();
                 t2.start();
-                
+
                 t1.join();
                 t2.join();
-        
+
                 System.out.println(counter);
             }
         }
@@ -1402,28 +1402,27 @@
         ```java
         class Room {
             private int count;
-        
+
             public Room(int count) {
                 this.count = count;
             }
-        
+
             public void increment(){
                 synchronized (this){
                     this.count++;
                 }
             }
-            
+
             public void decrement(){
                 synchronized (this){
                     this.count--;
                 }
             }
-            
+
             public int getCount(){
                 return this.count;
             }
         }
-        
         ```
 
     - 创建对象，并通过对象操作共享变量
@@ -1431,26 +1430,26 @@
         ```java
         public class SynchroOOP {
             static Room room = new Room(5000);
-        
+
             public static void main(String[] args) throws InterruptedException {
                 final Thread t1 = new Thread(() -> {
                     for (int i = 0; i < 5000; i++) {
                         room.increment();
                     }
                 }, "t1");
-        
+
                 final Thread t2 = new Thread(() -> {
                     for (int i = 0; i < 5000; i++) {
                         room.decrement();
                     }
                 }, "t2");
-        
+
                 t1.start();
                 t2.start();
-        
+
                 t1.join();
                 t2.join();
-        
+
                 System.out.println(room.getCount());
             }
         }
@@ -1468,7 +1467,7 @@
     class Test{
         public synchronized void test(){ }
     }
-    
+
     // 等价于
     class Test{
         public void test(){
@@ -1482,11 +1481,11 @@
     class Test{
         public synchronized static void test(){}
     }
-    
+
     // 等价于
     class Test{
         public static void test(){
-            synchronized(Test.class){} 
+            synchronized(Test.class){}
         }
     }
     ```
@@ -1525,7 +1524,7 @@
             public class ThreadUnSafe {
                 static final int THREAD_NUM = 2;
                 static final int LOOP_MUN = 200;
-            
+
                 public static void main(String[] args) {
                     final ThreadUnSafeResource test = new ThreadUnSafeResource();
                     // 启动多个线程，共享一个 test 对象资源
@@ -1537,27 +1536,26 @@
                     }
                 }
             }
-            
+
             class ThreadUnSafeResource {
                 // list 作为共享资源
                 ArrayList<String> list = new ArrayList<>();
-            
+
                 public void method1(int loopNum) {
                     for (int i = 0; i < loopNum; i++) {
                         add();
                         remove();
                     }
                 }
-            
+
                 private void add() {
                     list.add("1");
                 }
-            
+
                 private void remove() {
                     list.remove(0);
                 }
             }
-            
             ```
 
 - 使用局部变量，但是不返回引用
@@ -1575,7 +1573,7 @@
             public class ThreadSafe {
                 static final int THREAD_NUM = 2;
                 static final int LOOP_MUN = 200;
-            
+
                 public static void main(String[] args) {
                     final ThreadSafeResource test = new ThreadSafeResource();
                     // 启动多个线程，共享一个 test 对象资源
@@ -1588,7 +1586,7 @@
                     }
                 }
             }
-            
+
             class ThreadSafeResource {
                 public void method1(int loopNum) {
                     ArrayList<String> list = new ArrayList<>();
@@ -1597,16 +1595,15 @@
                         remove(list);
                     }
                 }
-            
+
                 private void add(ArrayList<String> list) {
                     list.add("1");
                 }
-            
+
                 private void remove(ArrayList<String> list) {
                     list.remove(0);
                 }
             }
-            
             ```
 
 - 传递局部变量的引用
@@ -1623,7 +1620,7 @@
             public class ThreadSafeSub {
                 static final int THREAD_NUM = 2;
                 static final int LOOP_MUN = 200;
-            
+
                 public static void main(String[] args) {
                     final ThreadSafeSubResource test = new ThreadSafeSubResource();
                     // 启动多个线程，共享一个 test 对象资源
@@ -1635,7 +1632,7 @@
                     }
                 }
             }
-            
+
             class ThreadSafeParentResource {
                 public void method1(int loopNum) {
                     ArrayList<String> list = new ArrayList<>();
@@ -1644,32 +1641,31 @@
                         remove(list);
                     }
                 }
-            
+
                 // 将方法改为 public，通过继承来传递局部变量的引用
                 public void add(ArrayList<String> list) {
                     list.add("1");
                 }
-            
+
                 public void remove(ArrayList<String> list) {
                     list.remove(0);
                 }
             }
-            
+
             // 继承并重写方法3
             class ThreadSafeSubResource extends ThreadSafeParentResource {
                 public void remove(ArrayList<String> list) {
-                    // 重写父类方法，，并创建新的线程床底局部变量的引用
+                    // 重写父类方法，，并创建新的线程传递局部变量的引用
                     new Thread(() -> {
                         list.remove(0);
                     }).start();
                 }
             }
-            
             ```
 
 - 局部变量线程安全的设置
     - private 方法修饰符可以保护局部变量的线程安全
-    - 将方法设置为 `public final`，防止方法别覆盖导致的问题
+    - 将方法设置为 `public final`，防止方法被覆盖导致的问题
 
 ## 常见线程安全类
 
@@ -1707,7 +1703,7 @@
                 participant 线程1
                 participant 线程2
                 participant table
-                
+
                 线程1->>table: get("key")==null
                 线程2->>table: get("key")==null
                 线程1->>table: put("key", V1)
@@ -1717,7 +1713,7 @@
 - 不可变类线程安全性
     - 因为其内部的状态不可改变，因此他们的方法都是线程安全的
     - String，Integer 等都是不可变类
-        - String 的 replace、substring 等操作没有修改字符串本身，而是重新创建了一个String对象 
+        - String 的 replace、substring 等操作没有修改字符串本身，而是重新创建了一个String对象
 
 ## Monitor概念
 
@@ -1834,7 +1830,7 @@
 ### 锁膨胀--重量级锁
 [top](#catalog)
 - 锁膨胀的产生
-    - 同时 存在<span style='color:red'>多个线程</span>为相同对象添加了轻量级锁
+    - 同时存在<span style='color:red'>多个线程</span>为相同对象添加了轻量级锁
     - 重复添加 `轻量级锁`时，线程的 CAS 操作失败，会进入锁膨胀
 - 锁膨胀表示<span style='color:red'>存在竞争</span>
 - 锁膨胀的结果
@@ -1858,7 +1854,8 @@
         1. 为 Object 申请 Monitor 锁，让 Object 指向 Monitor
         2. 将 thread1 线程放入 Monitor 的 EntryList
         3.  thread1 程开始等待
-        4. ![imgs/heavyweight_locked/02.png](imgs/heavyweight_locked/02.png)
+        4. Object 中保存的锁记录地址由 `Owner` 来保存
+        5. ![imgs/heavyweight_locked/02.png](imgs/heavyweight_locked/02.png)
         
     5. thread0退出同步块，进行解锁
         1. 使用 CAS 将 Mark Word 恢复给 Object 的对象头。**执行失败**
@@ -2021,6 +2018,7 @@
 2. 其他线程使用对象加锁
 
     - 当其他线程也使用处于偏向锁状态的对象进行加锁时，会将对象提升为轻量级锁状态
+    - 但是需要和之前的线程错开，否则会变成重量锁
 
 3. 调用 wait/notify
 
@@ -2032,15 +2030,15 @@
 - 对象偏向线程A后，如果被多个线程访问，但没有竞争，对象可以偏向其他线程
 - 为什么需要重偏向
     - 对象偏向线程A后，线程B操作时，将会：
-        1. 加锁，使对象撤销偏向锁，对象变为轻量级锁状态
-        2. 解锁后，对象变为 Normal 状态
+        1. 线程B加锁，使对象撤销对线程A的偏向锁，对象变为轻量级锁状态
+        2. 线程B解锁后，对象变为 Normal 状态
         3. 等到再次被线程B使用之前，又再次变为偏向锁状态，即重新偏向线程A
         4. 重复 1、2、3
     - 这种反复恢复、撤销偏向的操作比较消耗性能
 - 重偏向操作的操作内容
     - 重置对象 Mark Word 中保存的的 threadID
 - 重偏向条件
-    - 当某个线程2撤销偏向锁阈值超过 20 次后，jvm会将对象重新偏向线程2
+    - 当某个线程B撤销偏向锁阈值超过 20 次后，jvm会将对象重新偏向线程B
 
 #### 批量撤销
 [top](#catalog)
@@ -2073,11 +2071,11 @@
 [top](#catalog)
 - 当Owner线程调用 `wait` 方法后，会进入 WaitSet 区变为 WAITING 状态
     - ![imgs/monitor_principle.png](imgs/monitor_principle.png)
-- Blocked 和 Waiting 的线程都处于阻塞你状态，不占用CPU实践篇
+- Blocked 和 Waiting 的线程都处于阻塞你状态，不占用CPU时间片
 - Blocked 和 Waiting 的区别
     - Blocked 状态的线程还没有获得锁，处于阻塞、等待状态
     - Waiting 状态的线程已经获得了锁，但是放弃了锁，进入等待状态
-- Blocked线程会在 Owner 线程释放锁是被唤醒
+- Blocked线程会在 Owner 线程释放锁时被唤醒
 - Waiting 线程会在 Owner 线程调用 `notify`、`notifyAll` 时唤醒
     - 唤醒后需要进入 EntryList 中等待并重新竞争锁
 
@@ -2100,7 +2098,7 @@
     - 线程状态都是 Time Waiting
 - 示例
     - 参考代码
-      
+
         - [/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/model/shared/wait/WaitTest.java](/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/model/shared/wait/WaitTest.java)
     - 代码内容
         ```java
@@ -2120,55 +2118,54 @@
                         }
                     }
                 }, "t1");
-        
+
                 t1.start();
-        
+
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-        
+
                 synchronized (obj){
                     log.debug("main start");
                 }
-        
+
                 log.debug("all end");
-        
+
                 // obj.wait(5000); 会释放锁
                 // 23:37:51.208 [t1] c.WaitTest - t1 start
                 // 23:37:52.208 [main] c.WaitTest - main start
                 // 23:37:52.208 [main] c.WaitTest - all end
                 // 23:37:56.213 [t1] c.WaitTest - t1 end
-        
+
                 // Thread.sleep(5000); 不会释放锁，将会按顺序执行
                 // 23:39:26.185 [t1] c.WaitTest - t1 start
                 // 23:39:31.193 [t1] c.WaitTest - t1 end
                 // 23:39:31.194 [main] c.WaitTest - main start
                 // 23:39:31.194 [main] c.WaitTest - all end
             }
-    }
-    
+        }
         ```
 
 ### wait、notify的使用
 [top](#catalog)
-- 使用 `obj.wait()` 替代 `thread.sleep()` 来即使让出线程
+- 使用 `obj.wait()` 替代 `thread.sleep()` ，来让线程立刻放开锁对象
 - 虚假唤醒
     - 如果在多个线程中使用了 `obj.wait()`，使用 notify 时无法准确的唤醒目标线程
     - 可以使用 while 替代 if 判断 + notifyAll，在 synchronized 中循环判断
 - <span style='color:red'>正确的使用方法</span>
-  
+
     ```java
     synchronized(lock){
         // 防止虚假唤醒
         while(条件不成立){
             lock.wait();
         }
-        
+
         // 工作逻辑
     }
-    
+
     // 另一个线程
     synchronized(lock){
         lock.notifyAll()
@@ -2267,7 +2264,7 @@
         1. 调用 `LockSupport.park()`，相当于停下来休息
         2. 调用 `park()`之后，开始检查干粮是否充足，即 `_counter` 是 1 还是 0
             - 如果干粮没了，则旅行者进入帐篷休息。即：`_counter == 0` 时，线程进入 `_cond` 中休眠
-            - 如果干粮充足，则**吃了干粮**，继续前进。即：`_counter == 1` 时，将=设置 `_counter = 0`，线程继续运行
+            - 如果干粮充足，则**吃了干粮**，继续前进。即：`_counter == 1` 时，将设置 `_counter = 0`，线程继续运行
     - `unpark()`理解流程
         1. 调用 `LockSupport.unpark()`，相当于补充干粮。即：设置 `_counter = 1`
         2. 如果旅行者在帐篷里睡觉，则唤醒他，**并吃掉干粮**。即：从 `_cond` 中唤醒线程，然后设置 `_counter = 0`
@@ -2300,7 +2297,6 @@
             4. 继续运行
         - 流程图
             - <img src="imgs/park_unpark/03.png" alt="imgs/park_unpark/03.png" style="zoom:50%;" />
-            
 
 ## 线程间的状态转换
 [top](#catalog)
@@ -2377,14 +2373,14 @@
     - 增加某个线程的睡眠时间，**让多个线程在执行时间上错开**，使某个线程可以执行完
 - 示例
     - 参考代码
-      
+
         - [/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/model/shared/lock/LiveLock.java](/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/model/shared/lock/LiveLock.java)
     - 代码内容
         ```java
         @Slf4j(topic = "c.LiveLock")
         public class LiveLock {
             static volatile int count = 10;
-        
+
             public static void main(String[] args) {
                 // 创建两个线程，同时改变 count 的状态，产生了活锁
                 new Thread(() -> {
@@ -2394,13 +2390,13 @@
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
-        
+
                         count++;
-        
+
                         log.debug("count = {}", count);
                     }
                 }, "t1").start();
-        
+
                 new Thread(() -> {
                     while (count > 0) {
                         try {
@@ -2408,15 +2404,14 @@
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
-        
+
                         count--;
-        
+
                         log.debug("count = {}", count);
                     }
                 }, "t2").start();
             }
-    }
-    
+        }
         ```
 
 ### 饥饿
@@ -2458,7 +2453,7 @@
 ### ReentrantLock--可打断锁
 [top](#catalog)
 - 参考代码
-  
+
     - [/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/reentrantLock/Interrupter.java](/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/reentrantLock/Interrupter.java)
 - 代码内容
     ```java
@@ -2476,45 +2471,43 @@
                 e.printStackTrace();
                 log.debug("can not get lock");
                 return;
-        }
-    
+            }
+
             // 2. 获得锁后，释放锁
             try {
                 log.debug("get lock");
             }finally {
                 // 解锁
                 lock.unlock();
-        }
+            }
         }, "t1");
-    
-    // 主线程先获取锁
+
+        // 主线程先获取锁
         lock.lock();
-    
-    // 启动自线程
+
+        // 启动子线程
         t1.start();
-    
+
         try {
             TimeUnit.SECONDS.sleep(1);
         } catch (InterruptedException e) {
-        e.printStackTrace();
+            e.printStackTrace();
         }
-    
-    // 打断子线程
+
+        // 打断子线程
         t1.interrupt();
-    
+
         lock.unlock();
-      
-                
-            // 输出
-            // 12:27:26.305 [t1] c.Interrupter - try get lock
-            // java.lang.InterruptedException
-            // at java.util.concurrent.locks.AbstractQueuedSynchronizer.doAcquireInterruptibly(AbstractQueuedSynchronizer.java:898)
-            // at java.util.concurrent.locks.AbstractQueuedSynchronizer.acquireInterruptibly(AbstractQueuedSynchronizer.java:1222)
-            // at java.util.concurrent.locks.ReentrantLock.lockInterruptibly(ReentrantLock.java:335)
-            // at com.ljs.learn.mythread.reentrantLock.Interrupter.lambda$main$0(Interrupter.java:19)
-            // at java.lang.Thread.run(Thread.java:748)
-            // 12:27:27.305 [t1] c.Interrupter - can not get lock
-    
+
+        // 输出
+        // 12:27:26.305 [t1] c.Interrupter - try get lock
+        // java.lang.InterruptedException
+        // at java.util.concurrent.locks.AbstractQueuedSynchronizer.doAcquireInterruptibly(AbstractQueuedSynchronizer.java:898)
+        // at java.util.concurrent.locks.AbstractQueuedSynchronizer.acquireInterruptibly(AbstractQueuedSynchronizer.java:1222)
+        // at java.util.concurrent.locks.ReentrantLock.lockInterruptibly(ReentrantLock.java:335)
+        // at com.ljs.learn.mythread.reentrantLock.Interrupter.lambda$main$0(Interrupter.java:19)
+        // at java.lang.Thread.run(Thread.java:748)
+        // 12:27:27.305 [t1] c.Interrupter - can not get lock
     }
     ```
 
@@ -2630,7 +2623,7 @@
     - 主存：所有线程都共享的数据
     - 工作内存：每个线程私有的数据
 - JMM体现在几个方面
-    - 原子性：保正指令不会收到线程上细纹切换的影响
+    - 原子性：保正指令不会受到线程切换的影响
     - 可见性：保证指令不会受CPU缓存的影响
     - 有序性：保证指令不会受CPU指令并行优化的影响
 
@@ -2640,7 +2633,7 @@
 - 无法退出的循环
     - main线程对静态变量的修改，对线程不可见，导致线程无法停止
     - 参考代码
-      
+
         - [/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/jmm/visible/VisibleTest.java](/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/visible/jmm/VisibleTest.java)
     - 代码内容
         ```java
@@ -2650,14 +2643,14 @@
             public static void main(String[] args) throws InterruptedException {
                 new Thread(()->{
                     while(flag){
-        
+
                     }
-        
+
                     log.debug("end");
                 },"t1").start();
-        
+
                 TimeUnit.SECONDS.sleep(2);
-        
+
                 // 尝试让 t1 停止
                 log.debug("try to end t1");
                 flag = false;
@@ -2678,14 +2671,14 @@
         ```java
                    主存
         static boolean flag = true
-          
-                     boolean flag = true 
+
+                     boolean flag = true
                            │
                            │ t1的高速缓存
                            V
         main               t1
         ```
-       
+
     3. 休眠结束之后，main线程修改了 flag 的值，并同步到主存。t1 继续使用工作内存中的值，所以无法停止
         ```java
                    主存
@@ -2789,18 +2782,18 @@
     ```java
     static int i;
     static int j;
-    
+
     // 某个线程内的操作
     i = 1;
     j = 2;
-    
-    // jvm 实际的执行顺序
+
+    // jvm 内，可能发生的实际执行顺序
     j = 2;
     i = 1;
     ```
-- 多线程下指令重排会影响正确性
+- **多线程下指令重排会影响正确性**
 - 指令重排的前提：**指令重排不能影响结果**
-- 在不改变程序结果的前提下，指令的各个阶段可以通过**重排序和组合**来实现**指令级并行8*
+- 在不改变程序结果的前提下，指令的各个阶段可以通过**重排序和组合**来实现**指令级并行**
 - **为变量添加 volatile 可以防止指令重排**
 
 
@@ -2808,14 +2801,11 @@
 ### volatile原理
 [top](#catalog)
 - volatile 的底层实现原理是内存屏障，Memory Barrier
-- 在 volatile 变量的写指令<span style='color:red'>后</span>，会加入写屏障
-- 在 volatile 变量的读指令<span style='color:red'>前</span>，会加入读屏障
-- 写屏障 sfence
-    - 可见性：保证该屏障<span style='color:red'>之前的</span>，对共享变量的改动，都同步到主存
-    - 有序性：保证指令重排时，不会将写屏障之<span style='color:red'>前</span>的代码排在写屏障之<span style='color:red'>后</span>
-- 读屏障 lfence
-    - 可见性：保证该屏障<span style='color:red'>之后的</span>，对共享变量的改动，都同步到主存
-    - 有序性：保证指令重排时，不会将屏障之<span style='color:red'>后</span>的代码排在屏障之<span style='color:red'>前</span>
+- 在 volatile 变量的读指令<span style='color:red'>前</span>，会加入读屏障，lfence
+- 在 volatile 变量的写指令<span style='color:red'>后</span>，会加入写屏障，sfence
+
+- 读写屏障区域内的改动，会同步到主存
+- 读写屏障区域外的改动，不会被排到读写屏障区域内
 - volatile 无法解决原子性
 - synchronized 只能解决 **可见性、原子性**问题，但是内部仍然会有重排序
     - **如果共享变量完全被synchronized保护，则不会有有序性问题**
@@ -2823,12 +2813,14 @@
 ### volatile解决单例模式双重检查的指令重排
 [top](#catalog)
 - `instance = new Singleton()` 的底层指令
-    1. 创建对象，将对象引用入栈， new Singleton
-    2. 复制一份对象的引用地址
-    3. 利用对象引用，调用构造方法
-    4. 将对象引用赋值给 static instance
-- **指令的 3、4 可以发生指令重排**
-- 原始代码的问题
+    1. 等号右边，new Singleton
+        1. 创建对象，将对象引用入栈
+        2. 复制一份对象的引用地址
+        3. 利用对象引用，调用构造方法
+    2. 等号左边
+        1. 将对象引用赋值给 `static instance`
+- **指令的 1.3、2.1 可以发生指令重排**
+- 原始代码的问
     ```java
     public final class Singleton{
         private Singleton(){}
@@ -2843,7 +2835,7 @@
                         // 1. 假设 线程A 发生了指令重排
                         // 先执行了指令 4
                         // instance 获得了对象引用，但是还没有初始化！！！
-                        instance = new Singleton(); 
+                        instance = new Singleton();
                     }
                 }
             }
@@ -2877,108 +2869,114 @@
 ## happens-before规则
 [top](#catalog)
 - happens-before 是可见性与有序性的一套规则
-  
     - 在规则内，对共享变量的写操作，对其他线程可见
-- 规则1：在锁内部对共享变量的写，对其他使用**相同锁**的线程可见
-    ```java
-    static int x;
-    static Object lock = new Object();
-    new Thread(()->{
-        synchronized(lock){
-            x = 10; // 在锁内部对变量进行写操作
-        }
-    }, "t1").start()
-    
-    new Thread(()->{
-        synchronized(lock){
-            System.out.println(x); // 对于其他使用相同锁的线程可见
-        }
-    }, "t2").start()
-    ```
-- 规则2：对volatile线程的写，对其他线程可见
-    ```java
-    volatile static int x;
-    new Thread(()->{
-        x = 10;
-    }, "t1").start()
-    
-    new Thread(()->{
-        System.out.println(x);
-    }, "t2").start()
-    ```
-- 规则3：线程start前，对变量的写操作，在线程启动后可见
-    ```java
-    static int x;
-    x = 10;
-    
-    new Thread(()->{
-        System.out.println(x);
-    }, "t1").start()
-    ```
-- 规则4：线程结束后，对变量的写操作，对其他线程可见。可以调用 `t1.join`, `t1.isAlive`
-    ```java
-    static int x;
-    
-    Thread t1 = new Thread(()->{
-      x = 10;
-    }, "t1")
-    
-    t1.start();
-    t1.join(); // 等待线程结束
-    System.out.println(x); // 线程结束后，修改可见
-    ```
-- 规则5：t1 线程打断 t2 之前，t1对变量的写操作，对其他线程可见
-    ```java
-    static int x;
-    
-    Thread t2 = new Thread(()->{
-        while(true){
-            if (Thread.currentThread().isInterrupted()){
-                System.out.println(x);
-                break;
-            }
-        }
-    }, "t2");
-    t2.start();
-    
-    new Thread(()-{
-        Thread.sleep(2000);
-        x = 10;
-        t2.interrupt(); // t1 打断 t2 后，对 x 的写操作，对其他线程可见
-    }, "t1").start();
-    
-    while(!t2.isInterrupted()){
-        Thread.yield();
-    }
-    
-    System.out.println(x);
-    ```
-- 规则6：对变量默认值：0、false、null 的写，对其他线程可见
-- 规则7：volatile 写屏障前，对变量的写操作对其他线程可见
-    ```java
-    volatile static int x;
-    static int y;
-    
-    new Thread(()->{
-        y = 10;
-        x = 20;
-        // 写屏障。前面对变量x、y的写操作，读其他线程可见
-    }, "t1").start();
-    
-    new Thread(()->{
-        System.out.println(y);
-        System.out.println(x);
-    }, "t2").start();
-    
-    ```
 
+- 与锁相关的规则
+    - 规则1：在锁内部对共享变量的写，对其他使用**相同锁**的线程可见
+        ```java
+        static int x;
+        static Object lock = new Object();
+        new Thread(()->{
+            synchronized(lock){
+                x = 10; // 在锁内部对变量进行写操作
+            }
+        }, "t1").start()
+
+        new Thread(()->{
+            synchronized(lock){
+                System.out.println(x); // 对于其他使用相同锁的线程可见
+            }
+        }, "t2").start()
+        ```
+    - 规则2：t1 线程打断 t2 之前，t1对变量的写操作，对其他线程可见
+        ```java
+        static int x;
+
+        Thread t2 = new Thread(()->{
+            while(true){
+                if (Thread.currentThread().isInterrupted()){
+                    System.out.println(x);
+                    break;
+                }
+            }
+        }, "t2");
+        t2.start();
+
+        new Thread(()->{
+            Thread.sleep(2000);
+            x = 10;
+            t2.interrupt(); // t1 打断 t2 后，对 x 的写操作，对其他线程可见
+        }, "t1").start();
+
+        while(!t2.isInterrupted()){
+            Thread.yield();
+        }
+
+        System.out.println(x);
+        ```
+
+- 线程执行前后
+    - 规则3：线程start前，对变量的写操作，在线程启动后可见
+        ```java
+        static int x;
+        x = 10;
+
+        new Thread(()->{
+            System.out.println(x);
+        }, "t1").start()
+        ```
+    - 规则4：线程结束后，对变量的写操作，对其他线程可见。可以调用 `t1.join`, `t1.isAlive`
+        ```java
+        static int x;
+
+        Thread t1 = new Thread(()->{
+        x = 10;
+        }, "t1")
+
+        t1.start();
+        t1.join(); // 等待线程结束
+        System.out.println(x); // 线程结束后，修改可见
+        ```
+
+- volatile
+    - 规则5：对volatile变量的写，对其他线程可见
+        ```java
+        volatile static int x;
+        new Thread(()->{
+            x = 10;
+        }, "t1").start()
+
+        new Thread(()->{
+            System.out.println(x);
+        }, "t2").start()
+        ```
+
+    - 规则6：volatile 写屏障前，对变量的写操作对其他线程可见
+        ```java
+        volatile static int x;
+        static int y;
+
+        new Thread(()->{
+            y = 10;
+            x = 20;
+            // 写屏障。前面对变量x、y的写操作，读其他线程可见
+        }, "t1").start();
+
+        new Thread(()->{
+            System.out.println(y);
+            System.out.println(x);
+        }, "t2").start();
+        ```
+
+- 默认值
+    - 规则7：对变量默认值：0、false、null 的写，对其他线程可见
 
 # 共享模型--无锁--乐观锁(非阻塞)
 ## CAS
 ### CAS示例--无锁保证线程安全
 [top](#catalog)
 - 参考代码
-  
+
     - [/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/cas/Demo.java](/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/cas/Demo.java)
 - 代码内容
     ```java
@@ -3005,7 +3003,7 @@
                     break;
                 }
             }
-        }  
+        }
     }
     ```
     ```java
@@ -3088,7 +3086,7 @@
     - 解锁后，才能允许其他线程操作
 - CAS 主要特点：无锁并发 + 无阻塞并发
     - 无阻塞并发：没有使用 synchronized，不会因为其他线程对共享变量上锁，而进入阻塞状态，提升了效率
-    - <span style='color:red'>如果竞争激烈，可能会频繁发生重试，返回会影响执行效率</span>
+    - <span style='color:red'>如果竞争激烈，可能会频繁发生重试，反而会影响执行效率</span>
 
 ## 原子整数
 [top](#catalog)
@@ -3131,56 +3129,56 @@
      - 每次发生修改时，同时修改编号
      - 示例
         - 参考代码
-          
+
             - [/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/cas/CasRef.java](/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/cas/CasRef.java)
         - 代码内容
             ```java
             static AtomicStampedReference<String> ref = new AtomicStampedReference("A", 1);
-        
+
             public static void main(String[] args) throws InterruptedException {
                 // 获取值和版本号
                 String prev = ref.getReference();
                 int stamp = ref.getStamp();
-        
+
                 // 引入ABA修改
                 other();
                 TimeUnit.SECONDS.sleep(2);
-        
+
                 // 尝试修改
                 ref.compareAndSet(prev, "X", stamp, stamp + 1);
                 log.debug("value={}, stamp={}", ref.getReference(),ref.getStamp());
-        
+
                 // 执行结果
                 // 17:08:09.965 [Thread-0] c.CasRef - value=B, stamp=2
                 // 17:08:10.966 [Thread-1] c.CasRef - value=A, stamp=3
                 // 17:08:12.968 [main] c.CasRef - value=A, stamp=3
             }
-        
+
             public static void other() throws InterruptedException {
                 // B --> A
                 new Thread(()->{
                     int stamp = ref.getStamp();
                     ref.compareAndSet(ref.getReference(), "B", stamp, stamp + 1);
-        
+
                     log.debug("value={}, stamp={}", ref.getReference(),ref.getStamp());
                 }).start();
-        
+
                 TimeUnit.SECONDS.sleep(1);
-        
+
                 // B --> A
                 new Thread(()->{
                     int stamp = ref.getStamp();
                     ref.compareAndSet(ref.getReference(), "A", stamp, stamp + 1);
-        
+
                     log.debug("value={}, stamp={}", ref.getReference(),ref.getStamp());
                 }).start();
             }
             ```
-- AtomicMarkableReference          
+- AtomicMarkableReference
     - AtomicStampedReference 的简化版
     - 使用场景
         - 不关心引用变更的次数，只关系是否发生过修改
-        
+
 ## 原子累加器
 [top](#catalog)
 - 对于普通的 Atomic 变量，同时操作的线程越多，越容易出现竞争，失败、重新循环的次数就越多，性能也会越差
@@ -3208,9 +3206,9 @@
         @jdk.internal.vm.annotation.Contended static final class Cell
         ```
     - `@Contended` 解决**缓存行伪共享**
-        - 一个缓存行加载了多个 cell对象叫做伪共享
+        - 一个缓存行加载了多个 cell 对象叫做伪共享
         - 从CPU到缓存、内存的速度
-          
+
             |从CPU到|时钟周期|
             |-|-|
             |寄存器|1 cycle（40GHz的cpu大于0.25ns）|
@@ -3231,12 +3229,13 @@
                     - cells 默认初始化长度为：2
                 - cells[0] + cells[1] 会在同一个缓存行，因为数组会一次加载一整块
                     - 一个 cell 的长度 = 16 + 8 = 24，所以一个缓存中可以放下两个
+                    - 两个引用地址 + 一个对象头
                 - 如果两个线程同时使用cells，cells同时被加载到不同CPU的缓存中，**t1如果改了 cell[0]，那么t2中的将失效，t2需要重新到内存中获取**
             - 解决方法：
                 - t1只读取 cells[0]
                 - t2只读取 cells[1]
             - `@Contended`的做法
-                - 附加128个空白，使每个缓存中只有一个 cell        
+                - 附加128个空白，使每个缓存中只有一个 cell
 
 - `add` 方法分析
     ```java
@@ -3346,7 +3345,7 @@
             // Fall back on using base
             else if (casBase(v = base,
                              (fn == null) ? v + x : fn.applyAsLong(v, x)))
-                             
+
                 break done;
         }
     }
@@ -3359,22 +3358,22 @@
     - 直接通过静态方法无法获取，会抛出异常
     - 获取方式
         - 参考代码
-          
+
             - [/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/unsafe/GetUnsafe.java](/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/unsafe/GetUnsafe.java)
         - 代码内容
             ```java
             Field theUnsafe = Unsafe.class.getDeclaredField("theUnsafe");
             theUnsafe.setAccessible(true);
             Unsafe unsafeObj = (Unsafe) theUnsafe.get(null);
-    System.out.println(unsafeObj);
-        
+            System.out.println(unsafeObj);
+
             // 无法直接获取，会抛出异常
             // System.out.println(Unsafe.getUnsafe());
             ```
-    
+
 - Unsafe模拟原子更新器
     - 参考代码
-      
+
         - [/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/unsafe/UnsafeUpdate.java](/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/unsafe/UnsafeUpdate.java)
     - 代码内容
         ```java
@@ -3410,10 +3409,10 @@
             }
         }
         ```
-    
+
 - **模拟原子整数**
     - 参考代码
-      
+
         - [/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/unsafe/UnsafeUpdate.java](/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/unsafe/UnsafeUpdate.java)
     - 代码内容
         ```java
@@ -3449,7 +3448,7 @@
                 while (true) {
                     int expected = value;
                     int newValue = expected - amount;
-    
+
                     if (UNSAFE.compareAndSwapInt(this, valueOffset, expected, newValue)){
                         break;
                     }
@@ -3464,7 +3463,7 @@
 [top](#catalog)
 - 可变对象 SimpleDateFormat 的并发问题
     - 参考代码
-      
+
         - [/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/immutable/date/SimpleDateFormatTest.java](/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/immutable/date/SimpleDateFormatTest.java)
     - 代码内容
         ```java
@@ -3480,10 +3479,10 @@
             }).start();
         }
         ```
-    
+
 - 不可变对象 `DateTimeFormatter`，在多线程下是线程安全的
     - 参考代码
-      
+
         - [/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/immutable/date/DateTimeFormatterTest.java](/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/immutable/date/DateTimeFormatterTest.java)
     - 代码内容
         ```java
@@ -3494,7 +3493,7 @@
             }).start();
         }
         ```
-    
+
 ## 不可变设计
 [top](#catalog)
 - String类是不可变的
@@ -3511,7 +3510,7 @@
 - 保护性拷贝 defensive copy
     - 通过**创建副本对象**来**避免共享**的方法称为**保护性拷贝**
     - 保护性拷贝的问题
-      
+
         - 对象过多
     - 构造方式
         ```java
@@ -3519,8 +3518,7 @@
             this.value = Arrays.copyOf(value, value.length);
         }
         ```
-    ```
-    
+
     - substring()
         ```java
         public String substring(int beginIndex) {
@@ -3531,13 +3529,13 @@
             if (subLen < 0) {
                 throw new StringIndexOutOfBoundsException(subLen);
             }
-        
+
             // 如果下标从0开始，则直接返回this
             // 否则，不会改变原始字符串，内部调用构造 `String(char value[], int offset, int count)`, 会拷贝数组内容来创建新的字符串
             // 即构造新字符串时，会生成新的 char[] value
             return (beginIndex == 0) ? this : new String(value, beginIndex, subLen);
         }
-    ```
+        ```
 
 ## 享元模式
 [top](#catalog)
@@ -3548,13 +3546,13 @@
     - Byte、Short、Long 的范围都是 -128-127
     - Character缓存的范围 0-127
         - char没有负数
-    - Integer的默认范围 -129-127，最小值不能变，最大值可以通过调整虚拟机参数改变：`-Djava.lang.IntegerCache.high`
+    - Integer的默认范围 -128-127，最小值不能变，最大值可以通过调整虚拟机参数改变：`-Djava.lang.IntegerCache.high`
     - Boolean 缓存了 TRUE、FALSE
 
 ## 自定义连接池
 [top](#catalog)
 - 参考代码
-  
+
     - [/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/immutable/PoolTest.java](/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/immutable/PoolTest.java)
 - 线程池实现
     ```java
@@ -3613,7 +3611,7 @@
                     System.out.println(Thread.currentThread().getName() + ": closeConnection");
 
                     // 如果是连接池中的连接，则归还连接
-                    states.set(i, 0); // 只有当前线程使用这个连接，可以直接修改
+                    states.set(i, 0); // 因为只有当前线程使用这个连接，可以直接修改
                     // 唤醒其他等待连接的线程
                     synchronized(this){
                         this.notifyAll();
@@ -3674,7 +3672,7 @@
 - 自定义线程池
     - 组件
         - ThreadPool
-        - Blacking Queue 阻塞队列
+        - Blocking Queue 阻塞队列
             - 用于在生产者-消费者模式下平衡两者速度差异的组件
                 - 调用线程池的方法相当于生产者
                 - 线程池内的线程相当于消费者
@@ -3683,7 +3681,7 @@
     - 整体结构
         ```
             消费者                                           生产者
-        Thread Pool            Blocking Queue 
+        Thread Pool            Blocking Queue
         ┌─────────┐ pool ┌─────────────────────────┐
         │   t1 ───┼─>>───┼───┐                     │
         │         │      │   │                     │
@@ -3783,8 +3781,6 @@
                 lock.unlock();
             }
         }
-    ```
-
 
         // 向队尾添加元素，阻塞添加
         public void put(T e){
@@ -3799,17 +3795,17 @@
                         ex.printStackTrace();
                     }
                 }
-    
+
                 log.debug("task add to BlockingQueue");
                 queue.add(e);
-    
+
                 // 如果队列是空的，添加一个元素后，就可以消费了，所以唤醒其他消费者
                 emptyWaitSet.signalAll();
             }finally{
                 lock.unlock();
             }
         }
-    
+
         // 获取队列大小（不是容量）
         public int size(){
             lock.lock();
@@ -3821,6 +3817,7 @@
         }
     }
     ```
+
 - 线程池，ThreadPool
     ```java
     @Slf4j(topic = "c.ThreadPool")
@@ -3894,7 +3891,8 @@
                     }
                 }
 
-                // 如果离开了循环，说明暂时没有任务，则清除当前线程
+                // 如果超过了指定的等待时间，会离开了循环
+                // 说明暂时没有任务，则清除当前线程
                 synchronized (workers){
                     log.debug("remove work, worker={}", this);
                     workers.remove(this);
@@ -4029,8 +4027,6 @@
                 lock.unlock();
             }
         }
-    ```
-
 
         // 向队尾添加元素，阻塞添加
         public void put(T e){
@@ -4045,17 +4041,17 @@
                         ex.printStackTrace();
                     }
                 }
-    
+
                 log.debug("task add to BlockingQueue");
                 queue.add(e);
-    
+
                 // 如果队列是空的，添加一个元素后，就可以消费了，所以唤醒其他消费者
                 emptyWaitSet.signalAll();
             }finally{
                 lock.unlock();
             }
         }
-    
+
         // 有时间限制的添加
         // 返回值表示是否添加成功
         public boolean offer(T e, long timeout, TimeUnit unit){
@@ -4075,19 +4071,19 @@
                         ex.printStackTrace();
                     }
                 }
-    
+
                 log.debug("task add to BlockingQueue");
                 queue.add(e);
-    
+
                 // 如果队列是空的，添加一个元素后，就可以消费了，所以唤醒其他消费者
                 emptyWaitSet.signalAll();
             }finally{
                 lock.unlock();
             }
-    
+
             return true;
         }
-    
+
         public void tryPut(RejectPolicy<T> rejectPolicy, T task){
             lock.lock();
             try {
@@ -4105,7 +4101,7 @@
                 lock.unlock();
             }
         }
-    
+
         // 获取队列大小（不是容量）
         public int size(){
             lock.lock();
@@ -4254,7 +4250,7 @@
     - [imgs/jdktool/executor_impl.png](imgs/jdktool/executor_impl.png)
 - 主要工具
     - ExecutorService
-        - 线程池最基本的接口，定义了提交任务，管理线程池的方法
+        - 线程池最基本的接口，定义了提交任务、管理线程池的方法
     - ScheduledExecutorService
         - 在 ExecutorService 的基础上增加了任务调度的功能
     - **ThreadPoolExecutor**
@@ -4267,7 +4263,7 @@
 - 使用 int 的高 3 位来表示线程池状态，低 29 位表示线程数量
 - 高 3 位的线程池状态
     - 线程池状态
-    
+
         |状态名|高 3 位|接受新任务|处理阻塞队列任务|说明|
         |-|-|-|-|-|
         |RUNNING|111|Y|Y|线程池刚创建，可以接收新任务、可以执行阻塞队列中的任务|
@@ -4275,12 +4271,12 @@
         |STOP|001|N|N|中断正在执行的任务，并抛弃阻塞队列任务|
         |TIDYING|010|-|-|所有任务执行完成，活动线程为 0，即将变为结束状态|
         |TERMINATED|011|-|-|结束状态|
-        
+
     - 状态大小
         - TERMINATED > TIDYING > STOP > SHUTDOWN > RUNNING
             - RUNNING 的 111，第一个 1 是符号位。RUNNING是负数所以最小
     - 为什么一个变量中，存储两个变量？
-        
+
         - 将线程池状态 + 线程数量，存在一个变量中，就可以**用一次 cas 操作进行赋值**
     - 高 3 位的赋值与 cas 操作
         ```java
@@ -4310,7 +4306,7 @@
                               RejectedExecutionHandler handler)
     ```
 - 参数功能
-  
+
     |参数|功能|
     |-|-|
     |corePoolSize|核心线程数，即最多保留的线程数|
@@ -4358,17 +4354,17 @@
             x1    ---> TERMINATED
             task3 ---> c1
             task4 ---> c2
-            c1    ---> wait...           
-            c2    ---> wait...           
+            c1    ---> wait...
+            c2    ---> wait...
             ```
 - 救急线程必须配合<span style='color:red'>有界队列</span>使用，当任务超过队列大小时，会创建 `最大线程数 - 核心线程数` 数量的线程
     - 如果使用了无界队列，只能从前到后执行
-            
+
 ### ThreadPoolExecutor--拒绝策略
 [top](#catalog)
 - 拒绝策略接口 `RejectedExecutionHandler`
 - ThreadPoolExecutor 内部提供的接口实现
-  
+
     |实现|功能|
     |-|-|
     |AbortPolicy|让调用者抛出 `RejectedExecutionException` 异常，**默认策略**|
@@ -4384,7 +4380,7 @@
 
 ### ThreadPoolExecutor--可用方法
 [top](#catalog)
-- 执行任务 
+- 执行任务
     - execute，执行 Runnable 任务
     - submit，执行 Callable 任务，返回Future对象，可以获得返回值
     - invokeAll，执行一个 Callable 任务序列，当所有任务执行完成后，统一返回所有结果
@@ -4412,20 +4408,19 @@
         - 检查线程池状态是否为 TERMINATED
     - awaitTermination
         - 调用 shutdown 后，由于调用线程并不会等待所有任务运行结束，因此如果想再线程池 TERMINATED 后做某些事，可以用此方法等待
-        
 
 ## ThreadPoolExecutor创建工具--Executors
 ### newFixedThreadPool--创建固定线程数的线程
 [top](#catalog)
 - 这种方式没有救急线程
-    
+
     - 核心线程数 = 最大线程数
 - 阻塞队列
     - LinkedBlockingQueue
     - 阻塞队列是**无界**的，可以暂存任意数量的任务
 - 适用场景
-    
-    - 适用于任务量已知，相对耗时的任务
+
+    - **适用于任务量已知，相对耗时的任务**
 - 源码
     ```java
     // nThreads = 核心线程数 = 最大线程数，没有救急线程
@@ -4439,7 +4434,7 @@
 - 示例
     - 直接创建指定数量的线程池
         - 参考代码
-            
+
             - [/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/threadtool/executors/NewFixedThreadPool.java](/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/threadtool/executors/NewFixedThreadPool.java)
         - 代码内容
             ```java
@@ -4450,8 +4445,8 @@
                     System.out.println(Thread.currentThread().getName() + ": j=" + j);
                 });
             }
-        // 5 个任务执行完成后，线程不会终止，海还会继续运行
-        
+            // 5 个任务执行完成后，线程不会终止，还会继续运行
+
             // pool-1-thread-1: j=0
             // pool-1-thread-2: j=1
             // pool-1-thread-1: j=2
@@ -4460,15 +4455,15 @@
             ```
     - 指定数量 + 线程创建工厂的线程池
         - 参考代码
-            
+
             - [/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/threadtool/executors/NewFixedThreadPoolWithFactory.java](/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/threadtool/executors/NewFixedThreadPoolWithFactory.java)
         - 代码内容
             ```java
             ExecutorService pool = Executors.newFixedThreadPool(
                     2,
                     new ThreadFactory() {
-                    private AtomicInteger i = new AtomicInteger(1);
-        
+                        private AtomicInteger i = new AtomicInteger(1);
+
                         @Override
                         public Thread newThread(Runnable r) {
                             return new Thread(r, "pool-" + i.getAndIncrement());
@@ -4481,8 +4476,8 @@
                     System.out.println(Thread.currentThread().getName() + ": j=" + j);
                 });
             }
-        // 5 个任务执行完成后，线程不会终止，海还会继续运行
-        
+            // 5 个任务执行完成后，线程不会终止，海还会继续运行
+
             // pool-1: j=0
             // pool-2: j=1
             // pool-1: j=2
@@ -4493,9 +4488,8 @@
 ### newCachedThreadPool--带缓冲的线程池
 [top](#catalog)
 - 核心线程为 0，全都是救急线程
-- 线程空间时间60s，60s后会被回收
-- 最大线程数为
-- `Integer.MAX_VALUE`，几乎可以无限创建
+- 线程空闲时间 60s，60s后会被回收
+- 最大线程数为: `Integer.MAX_VALUE`，几乎可以无限创建
 - 阻塞队列：SynchronousQueue
     - 没有容量
     - 只有有线程来取任务时，任务才能被放入。类似于管道，只是用于交换任务的组件
@@ -4551,7 +4545,7 @@
                 e.printStackTrace();
             }
         }, "t3").start();
-        
+
         // 执行结果
         // 12:31:20.061 [t1] c.SynchronousQueueTest - putting 1
         // 12:31:21.062 [t2] c.SynchronousQueueTest - taking 1
@@ -4560,18 +4554,17 @@
         // 12:31:22.067 [t3] c.SynchronousQueueTest - taking 2
         // 12:31:22.068 [t1] c.SynchronousQueueTest - putted 2
         ```
-    
+
 ### newSingleThreadExecutor--单线程执行器
 [top](#catalog)
 - 只有一个核心线程，没有救急线程
 - 任务数 > 1 时，会放入无限队列中排队
 - 适用场景
-    
+
     - 希望多个任务按顺序执行
 - 与串行执行的区别
-    
-- 串行执行时，如果任务失败没有任何补救措施。但是线程池会创建一个新的线程，继续工作
-    
+    - 串行执行时，如果任务失败没有任何补救措施。但是线程池会创建一个新的线程，继续工作
+
 - 源码
     ```java
     public static ExecutorService newSingleThreadExecutor() {
@@ -4590,21 +4583,21 @@
     ```
 - 延迟任务
     - 参考代码
-        
+
         - [/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/threadtool/scheduledthread/ScheduledTest.java](/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/threadtool/scheduledthread/ScheduledTest.java)
     - 代码内容
-        ```java 
+        ```java
         // 创建线程池
-    ScheduledExecutorService pool = Executors.newScheduledThreadPool(2);
-    
-    log.debug("main start");
-    
+        ScheduledExecutorService pool = Executors.newScheduledThreadPool(2);
+
+        log.debug("main start");
+
         // 不会抛出异常，会继续执行后续任务
         pool.schedule(() -> {
             log.debug("task0");
             int a = 1 / 0;
-    }, 1, TimeUnit.SECONDS);
-    
+        }, 1, TimeUnit.SECONDS);
+
         pool.schedule(() -> {
             log.debug("task1");
             try {
@@ -4612,23 +4605,23 @@
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-    }, 1, TimeUnit.SECONDS);
-    
+        }, 1, TimeUnit.SECONDS);
+
         pool.schedule(() -> {
             log.debug("task2");
         }, 1, TimeUnit.SECONDS);
-    ```
-    
+        ```
+
 - 定时执行
     - 参考代码
-        
+
         - [/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/threadtool/scheduledthread/ScheduleAtFixedRateTest.java](/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/threadtool/scheduledthread/ScheduleAtFixedRateTest.java)
     - 代码内容
         ```java
-    ScheduledExecutorService pool = Executors.newScheduledThreadPool(2);
-    
-    log.debug("main start");
-    
+        ScheduledExecutorService pool = Executors.newScheduledThreadPool(2);
+
+        log.debug("main start");
+
         // 每 2s 执行一次任务
         pool.scheduleAtFixedRate(() -> {
             log.debug("task running");
@@ -4665,9 +4658,9 @@
 ### 每周四定时执行任务
 [top](#catalog)
 - 参考代码
-    
-- [/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/threadtool/scheduledthread/WorkSchedule.java](/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/threadtool/scheduledthread/WorkSchedule.java)
-    
+
+    - [/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/threadtool/scheduledthread/WorkSchedule.java](/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/threadtool/scheduledthread/WorkSchedule.java)
+
 - 代码内容
     ```java
     public static void main(String[] args) {
@@ -4703,7 +4696,7 @@
 - 手动 try...catch
 - 使用 Callable + Future，如果有异常`future.get()`会返回异常
     - 参考代码
-        
+
         - [/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/threadtool/PoolErrorTest.java](/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/threadtool/PoolErrorTest.java)
     - 代码内容
         ```java
@@ -4712,7 +4705,7 @@
             int a = 1 / 0;
             return true;
         });
-    
+
         log.debug("result={}" , result.get());
         ```
 
@@ -4720,11 +4713,11 @@
 ### Fork/Join的概念
 [top](#catalog)
 - Fork/Join 是JDK 1.7 加入线程池实现，体现的是一种分治的思想
-    - 适用于**能够进行任务拆分的CPU密集型运算** 
+    - 适用于**能够进行任务拆分的CPU密集型运算**
     - 在分治的基础上加入的多线程
         - 把每个任务的分解和合并交给不同的线程完成，进一步提升运算效率
     - 默认会创建与CPU核心数大小相同的线程池
-        - 因为适用与CPU密集型运算，如果线程数超过了CPU核心数，反而会降低性能
+        - 因为适用于CPU密集型运算，如果线程数超过了CPU核心数，反而会降低性能
 - 任务拆分
     - 将一个大任务拆分为算法上相同的小任务，直到不能拆分并且可以直接求解
     - 与递归相关的计算都可以使用
@@ -4733,9 +4726,9 @@
 ### 创建fork/join
 [top](#catalog)
 - 参考代码
-    
-- [/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/threadtool/forkjoin/CreateForkjoin.java](/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/threadtool/forkjoin/CreateForkjoin.java)
-    
+
+    - [/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/threadtool/forkjoin/CreateForkjoin.java](/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/threadtool/forkjoin/CreateForkjoin.java)
+
 - 代码内容
     ```java
     // RecursiveTask<XXX> 任务有返回值，泛型是结果的类型
@@ -4799,11 +4792,10 @@
     - 每个任务都需要子任务完成后才能继续执行
     - 多层递归之后，会极大的降低性能
 - 优化方式
-    
-- 在一层递归中，拆分出更多的子任务，以此来降低递归的层数
-    
+    - 在一层递归中，拆分出更多的子任务，以此来降低递归的层数
+
 - 参考代码
-    
+
     - [/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/threadtool/forkjoin/OptimizeCreate.java](/java/mylearn/mythread/src/main/java/com/ljs/learn/mythread/threadtool/forkjoin/OptimizeCreate.java)
 - 代码内容
     ```java
