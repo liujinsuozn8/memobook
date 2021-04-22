@@ -2648,3 +2648,7 @@
 4. AbstractAutowireCapableBeanFactory.doCreateBean
 5. AbstractAutowireCapableBeanFactory.populateBean 实例化
 6. AbstractAutowireCapableBeanFactory.initializeBean，赋值
+
+# 向容器中添加bean的方法
+- 注解
+- BeanDefinitionRegistryPostProcessor，手动添加 beanDefinition

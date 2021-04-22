@@ -274,8 +274,8 @@
 
 ### 几个分析的要点
 - 主要的分析点
-	- 注册，生成代理对象的时间，功能，链式调用实现拦截
-- 两个关键的后置处理器
+    - 注册，生成代理对象的时间，功能，链式调用实现拦截
+- <span style='color:red'>需要分清的两个关键的后置处理器</span>
     - InstantiationAwareBeanPostProcessor, 在实例化对象前后执行
     - BeanPostProcess, 在实例化对象完成、初始化前后执行
 
@@ -591,6 +591,8 @@
 [top](#catalog)
 
 - <span style='color:red'>可以在 `AbstractAutowireCapableBeanFactory.resolveBeforeInstantiation` 内部打断点，来观察整个调用链</span>
+
+- <span style='color:red'> @Around 与其他的切面相比，更加复杂，可以在 @Around 标注的方法内的 obj.process() 调用处打断点，来查看整个调用链</span>
 
 - <span style='color:red'>从 `finishBeanFactoryInitialization` 方法开始<span style='color:red'>
 
@@ -1006,7 +1008,75 @@
                     ```
             4. 对增强器进行排序，接 2 的 `eligibleAdvisors = this.sortAdvisors(eligibleAdvisors);`
                 - AspectJAwareAdvisorAutoProxyCreator.sortAdvisors
-                - PartialOrder.sort
+                    ```java
+                    @Override
+                    @SuppressWarnings("unchecked")
+                    protected List<Advisor> sortAdvisors(List<Advisor> advisors) {
+                        List<PartiallyComparableAdvisorHolder> partiallyComparableAdvisors = new ArrayList<>(advisors.size());
+                        for (Advisor element : advisors) {
+                            partiallyComparableAdvisors.add(
+                                    new PartiallyComparableAdvisorHolder(element, DEFAULT_PRECEDENCE_COMPARATOR));
+                        }
+                        // 接下，对所有的增强器进行排序
+                        List<PartiallyComparableAdvisorHolder> sorted = PartialOrder.sort(partiallyComparableAdvisors);
+                        if (sorted != null) {
+                            List<Advisor> result = new ArrayList<>(advisors.size());
+                            for (PartiallyComparableAdvisorHolder pcAdvisor : sorted) {
+                                result.add(pcAdvisor.getAdvisor());
+                            }
+                            return result;
+                        }
+                        else {
+                            return super.sortAdvisors(advisors);
+                        }
+                    }
+                    ```
+                - PartialOrder.sort，执行排序
+                    ```java
+                    public static <T extends PartialOrder.PartialComparable> List<T> sort(List<T> objects) {
+                        if (objects.size() < 2) {
+                            return objects;
+                        } else {
+                            List<PartialOrder.SortObject<T>> sortList = new LinkedList();
+                            Iterator i = objects.iterator();
+
+                            while(i.hasNext()) {
+                                addNewPartialComparable(sortList, (PartialOrder.PartialComparable)i.next());
+                            }
+
+                            int N = objects.size();
+
+                            label44:
+                            for(int index = 0; index < N; ++index) {
+                                PartialOrder.SortObject<T> leastWithNoSmallers = null;
+                                Iterator var5 = sortList.iterator();
+
+                                while(true) {
+                                    PartialOrder.SortObject so;
+                                    do {
+                                        do {
+                                            if (!var5.hasNext()) {
+                                                if (leastWithNoSmallers == null) {
+                                                    return null;
+                                                }
+
+                                                removeFromGraph(sortList, leastWithNoSmallers);
+                                                objects.set(index, leastWithNoSmallers.object);
+                                                continue label44;
+                                            }
+
+                                            so = (PartialOrder.SortObject)var5.next();
+                                        } while(!so.hasNoSmallerObjects());
+                                    } while(leastWithNoSmallers != null && so.object.fallbackCompareTo(leastWithNoSmallers.object) >= 0);
+
+                                    leastWithNoSmallers = so;
+                                }
+                            }
+
+                            return objects;
+                        }
+                    }
+                    ```
         4. 如果**当前bean有可用的增强器**，则创建当前bean的代理对象: `AbstractAutoProxyCreator.createProxy`
             ```java
             protected Object createProxy(Class<?> beanClass, @Nullable String beanName,
