@@ -1,4 +1,113 @@
+# JdbcTemplate
+- Spring 对JDBC 的封装
+- 配置
+    - 引入依赖
+        - mysql-connector-java
+        - spring-jdbc
+            - 里面已经集成了 spring-tx
+    - 添加数据库连接池
+        ```xml
+        <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource" destroy-method="close">
+            <property name="url" value="jdbc:mysql://localhost:3306/test?useUnicode=true&amp;characterEncoding=utf-8"/>
+            <property name="username" value="root"/>
+            <property name="password" value="root"/>
+            <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
+        </bean>
+        ```
+    - 配置 JdbcTemplate 对象，注入 DataSource
+        - 可以通过构造器注入，可以通过 set 方法注入
+            ```xml
+            <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+                <property name="dataSource" ref="dataSource"/>        
+            </bean>
+            ```
+    - 创建 service 创建 dao，在 dao 注入 jdbcTemplate 对象
+- 操作数据库
+    - /java/mylearn/myspring-annotation/src/main/java/com/ljs/learn/myspringannotation/jdbctemplate/jt01/dao/UserDaoImpl.java
+    - 添加
+        1. 对应数据库表创建实体类
+        2. 编写 service 和 dao
+            - 在 dao 中做 insert 操作
+            - 调用 jdbcTemplate.update(sql, sql参数)
+                ```java
+                public void add(User user) {
+                    String sql = "insert into t_user values (?, ?, ?)";
+                    int insertCount = jdbcTemplate.update(sql, user.getUserId(), user.getUsername(), user.getUstatus());
+                    System.out.println("insert data count = " + insertCount);
+                }
+                ```
+    - 修改，和添加类似
+        ```java
+        public void updateUser(User user) {
+            String sql = "update t_user set username=?, ustatus=? where user_id=?";
+            int updateCount = jdbcTemplate.update(sql, user.getUsername(), user.getUstatus(), user.getUserId());
+            System.out.println("update data count = " + updateCount);
+        }
+        ```
+    - 删除，和添加类似
+        ```java
+        public void deleteUser(String userId) {
+            String sql = "delete from t_user where user_id=?";
+            int deleteCount = jdbcTemplate.update(sql, userId);
+            System.out.println("delete data count = " + deleteCount);
+        }
+        ```
+- 查询操作
+    - 查询返回某个值, `T queryForObject(String sql, Class<T> requiredType)`
+        ```java
+        public int selectCount() {
+            String sql = "select count(*) from t_user";
+            Integer count = jdbcTemplate.queryForObject(sql, Integer.class);
+            return count;
+        }
+        ```
+    - 返回一个对象, `T queryForObject(String sql, RowMapper<T> rowMapper, @Nullable Object... args)`
+        ```java
+        public User findUser(String userId) {
+            String sql = "select * from t_user where user_id=?";
+    
+            User user = jdbcTemplate.queryForObject(sql, new BeanPropertyRowMapper<User>(User.class), userId);
+            return user;
+        }
+        ```
+    - 返回集合, `List<T> query(String sql, RowMapper<T> rowMapper, @Nullable Object... args)`
+        ```java
+        public List<User> findAllUser() {
+            String sql = "select * from t_user";
+            List<User> userList = jdbcTemplate.query(sql, new BeanPropertyRowMapper<User>(User.class));
+            return userList;
+        }
+        ```
+- 批量操作
+    - 批量添加
+        ```java
+        public void batchAddUser(List<Object[]> batchArgs) {
+            String sql = "insert into t_user values (?, ?, ?)";
+            int[] ints = jdbcTemplate.batchUpdate(sql, batchArgs);
+            System.out.println(Arrays.toString(ints));
+        }
+        ```
+    - 批量修改
+        ```java
+        public void batchUpdateUser(List<Object[]> batchArgs) {
+            String sql = "update t_user set username=?, ustatus=? where user_id=?";
+            int[] ints = jdbcTemplate.batchUpdate(sql, batchArgs);
+            System.out.println(Arrays.toString(ints));
+        }
+        ```
+    - 批量删除
+        ```java
+        @Override
+        public void batchDeleteUser(List<Object[]> batchArgs) {
+            String sql = "delete from t_user where user_id=?";
+            int[] ints = jdbcTemplate.batchUpdate(sql, batchArgs);
+            System.out.println(Arrays.toString(ints));
+        }
+        ```
 
+- RowMapper
+    - 一个接口，针对不同返回类型的数据，使用这个接口实现数据封装
+            
 # 声明式事务的环境搭建
 - 导入相关依赖
     - 数据源、数据库驱动、SpringJdbc模块
@@ -84,8 +193,74 @@
         }
         ```
 
+# 事务参数
+- propagation, 事务的传播行为
+    - 多事务方法（增删改）直接进行调用，这个过程中事务是如何进行管理的
+    - 示例
+        ```java
+        @Transactonal
+        public void add(){
+            update();
+        }
+        public void update(){}
+        ```
+    - 7种行为
+        - 最常用的两种
+            - Required，如果 add 有事务，调用 update 后，使用 add 的事务。**默认值**
+            - Required_New，add 调用 update，无论 add 有没有事务，update 都会创建新事务
+        - Supports
+            - 如果 add 的事务在运行，update 就在这个事务内运行，否则可以不运行在事务中
+        - Not_Supports
+            - update 不应该运行在事务中，如果 add 运行在事务中，将 update 挂起
+        - Mandatory
+            - update 必须运行在事务内，如果 add 没有运行在事务中，就抛出异常
+        - Never
+            - update 不能运行在事务内，如果 add 运行在事务中，就抛出异常
+        - Nested
+            - 如果 add 有事务在运行，update 应该创建一个嵌套的事务再运行。否则 update 自己创建一个新的事务并运行
+               
+- isolation, 事务隔离级别
+    - 隔离级别
+        
+        |                        |脏读|不可重复读|幻读|
+        |------------------------|---|--------|---|
+        |READ UNCOMMITTED，读未提交|有  |有      |有 |
+        |READ COMMITTED，读已提交  |无  |有      |有 |
+        |REPEATABLE READ，可重复读 |无  |无      |有 |
+        |SERIALIZABLE，串行化      |无  |无      |无 |
+        
+    - 多事务之间不会产生影响，不考虑隔离级别会产生很多问题
+        - 脏读
+            - 对于同一条数据，未提交事务 a 读取到未提交事务 b 的数据，然后未提交事务 b **回滚**
+             
+        - 不可重复读
+            - 未提交事务 a 读取到了已提交事务 b 修改后的数据
+            - 流程
+                - 事务 a 获取到数据 data1
+                - 事务 b 获取到数据 data1
+                - 事务 b 修改数据 data1 --> data2
+                - 事务 b 提交修改
+                - 事务 a 可以读取到事务 b 修改的结果 data2
+                  
+        - 幻读
+            - 未提交事务 a 读取到了已提交事务 b 添加的数据
+- timeout, 提交的超时时间
+    - 在时间内，如果没有提交，会自动回滚
+    - 默认为 -1，没有超时时间
+
+- readOnly, 是否只读
+    - 读: 查询操作
+    - 写: 增删该操作
+    - readOnly 默认值 false，表示可以查询 + 增删改
+    - readonly = true，只能查
+- rollbackFor, 回滚
+    - 设置哪些异常触发回滚
+- noRollbackFor, 不回滚
+    - 设置哪些异常不触发回滚
+
 # 声明式事务原理
 ## 主要功能的实现方式
+- 底层使用 aop
 - 注解导入两个组件: AutoProxyRegistrar + ProxyTransactionManagementConfiguration
     - AutoProxyRegistrar，向容器中注入 InfrastructureAdvisorAutoProxyCreator
 - 两个主要的组件

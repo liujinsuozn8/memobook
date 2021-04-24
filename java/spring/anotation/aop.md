@@ -617,6 +617,10 @@
         4. **先尝试用 `AnnotationAwareAspectJAutoProxyCreator` 后置处理器返回一个代理对象**，如果能返回就使用。**但是好像没有什么用**
             - 调用点: `AbstractAutowireCapableBeanFactory.resolveBeforeInstantiation()`
             - 通过 `AnnotationAwareAspectJAutoProxyCreator.postProcessBeforeInstantiation()` 创建代理对象
+            - <span style='color:red'>需要在 AbstractAutoProxyCreator.postProcessBeforeInstantiation 内打断点检测</span>
+        getCustomTargetSource 返回了一个 null
+
+
         5. 如果无法创建代理，则创建真正的bean
             - AbstractAutowireCapableBeanFactory.doCreateBean
 

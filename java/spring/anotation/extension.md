@@ -141,8 +141,6 @@
 
 - 多播器的创建
     - refresh
-- 多播器的创建
-    - refresh
     - initApplicationEventMulticaster，如果不存在则创建一个 SimpleApplicationEventMulticaster 对象
         ```java
         protected void initApplicationEventMulticaster() {
@@ -194,7 +192,7 @@
     }
     ```
 - 执行原理
-    - EventListenerMethodProcessor, 通过该处理器来解析@EventListener 注解 
+    - EventListenerMethodProcessor, 通过该处理器来解析 @EventListener 注解 
         - 接口 SmartInitializingSingleton 的实现类
     - refresh
     - finishBeanFactoryInitialization(beanFactory); 初始化单实例bean

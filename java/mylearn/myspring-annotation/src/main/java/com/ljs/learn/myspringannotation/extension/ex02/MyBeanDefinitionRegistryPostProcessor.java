@@ -1,0 +1,30 @@
+package com.ljs.learn.myspringannotation.extension.ex02;
+
+import com.ljs.learn.myspringannotation.autowired.demo02.Car;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.beans.factory.support.AbstractBeanDefinition;
+import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
+import org.springframework.stereotype.Component;
+
+@Component
+public class MyBeanDefinitionRegistryPostProcessor implements BeanDefinitionRegistryPostProcessor {
+    @Override
+    public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
+        System.out.println("MyBeanDefinitionRegistryPostProcessor.postProcessBeanDefinitionRegistry  count = " + registry.getBeanDefinitionCount());
+
+        AbstractBeanDefinition bd = BeanDefinitionBuilder.rootBeanDefinition(Car.class).getBeanDefinition();
+        registry.registerBeanDefinition("car", bd);
+    }
+
+    @Override
+    public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
+        System.out.println("MyBeanDefinitionRegistryPostProcessor.postProcessBeanFactory  count = " + beanFactory.getBeanDefinitionCount());
+
+        for (String bn : beanFactory.getBeanDefinitionNames()) {
+            System.out.println(bn);
+        }
+    }
+}
